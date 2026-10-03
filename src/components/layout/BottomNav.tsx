@@ -209,7 +209,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           fill one level down that padding was transparent — a strip of the
           page scrolled past underneath the tabs at 390px. Opaque, because
           elevation is fill; the gold hairline on top is the bar's edge. */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom bg-mystic-900 border-t border-gold/20" aria-label="Main navigation" role="tablist">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom bg-mystic-900 border-t border-gold/20" data-main-nav="" aria-label={t('nav.mainNavigation', { defaultValue: 'Main navigation' })} role="tablist">
         <div>
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {

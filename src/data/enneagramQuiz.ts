@@ -70,6 +70,48 @@ export interface EnneagramResult {
   coPrimary?: number;
 }
 
+/** The three centres: body 8-9-1, heart 2-3-4, head 5-6-7. */
+export const ENNEAGRAM_CENTRES: readonly (readonly number[])[] = [[8, 9, 1], [2, 3, 4], [5, 6, 7]];
+
+const centreOf = (type: number) => ENNEAGRAM_CENTRES.findIndex((c) => c.includes(type));
+
+/**
+ * The tritype for a primary type: the primary, then the strongest type of
+ * EACH of the two other centres, by `scoreOf` (declared order on a tie).
+ */
+export function tritypeFor(primaryType: number, scoreOf: (type: number) => number): [number, number, number] {
+  const top = (group: readonly number[]) => group.reduce((max, type) => (scoreOf(type) > scoreOf(max) ? type : max), group[0]);
+  const others = ENNEAGRAM_CENTRES.filter((g) => !g.includes(primaryType));
+  return [primaryType, top(others[0]), top(others[1])];
+}
+
+/**
+ * The tritype a saved result can show. A row written before Phase 7 holds
+ * the old scorer's tritype, which filled every slot from the primary's own
+ * centre ("Tritype 3-3-3"). A tritype is shown only when it leads with the
+ * primary and names one type from each centre; otherwise it is recomputed
+ * from the saved per-type scores, and when there are none it is not shown.
+ */
+export function displayTritype(
+  result: Pick<EnneagramResult, 'primaryType' | 'tritype' | 'scores'>,
+): [number, number, number] | null {
+  const t = result.tritype;
+  if (
+    Array.isArray(t) &&
+    t.length === 3 &&
+    t[0] === result.primaryType &&
+    new Set(t.map(centreOf)).size === 3 &&
+    !t.map(centreOf).includes(-1)
+  ) {
+    return [t[0], t[1], t[2]];
+  }
+  const scores = result.scores;
+  if (!scores || centreOf(result.primaryType) === -1) return null;
+  const hasAll = [1, 2, 3, 4, 5, 6, 7, 8, 9].every((n) => typeof scores[String(n)] === 'number');
+  if (!hasAll) return null;
+  return tritypeFor(result.primaryType, (n) => scores[String(n)]);
+}
+
 export function calculateEnneagram(scores: Record<string, number>): EnneagramResult {
   const typeScores: Record<string, number> = {
     type1: 0, type2: 0, type3: 0, type4: 0, type5: 0,
@@ -121,24 +163,11 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
   const wing = wingScores[0].score > wingScores[1].score ? wingScores[0].wing :
                wingScores[1].score > wingScores[0].score ? wingScores[1].wing : null;
 
-  const heartTypes = [2, 3, 4];
-  const headTypes = [5, 6, 7];
-  const bodyTypes = [8, 9, 1];
-
-  const getTopFromGroup = (group: number[]) =>
-    group.reduce((max, type) =>
-      typeScores[`type${type}`] > typeScores[`type${max}`] ? type : max, group[0]);
-
   // The tritype is the primary plus the strongest type from EACH of the
   // two other centres — one from body, one from heart, one from head. The
   // previous version resolved all three slots to the primary's own centre
   // and returned [3, 3, 3] for a Three.
-  const otherCentres = [bodyTypes, heartTypes, headTypes].filter((g) => !g.includes(primaryType));
-  const tritype: [number, number, number] = [
-    primaryType,
-    getTopFromGroup(otherCentres[0]),
-    getTopFromGroup(otherCentres[1]),
-  ];
+  const tritype = tritypeFor(primaryType, (type) => typeScores[`type${type}`]);
 
   return {
     primaryType,

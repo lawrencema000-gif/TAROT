@@ -132,11 +132,24 @@ export function sameFrame(a: EarthlyBranch, b: EarthlyBranch): boolean {
  * 3. Scoring a single day
  * ──────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Why a reason was given, as data — so a screen can say it in the reader's
+ * language. `text` is the English sentence (ICS export, tests); `code` plus
+ * `activity` is what a localised screen renders: `activity` points into
+ * MANSION_ACTIVITIES (mansion, list, index), i.e. into the `mansions`
+ * content overlay.
+ */
+export type DayReasonCode =
+  | 'favours' | 'counselsAgainst' | 'auspiciousGeneral' | 'inauspiciousGeneral'
+  | 'dayClash' | 'yearClash' | 'dayCombine' | 'frameSupport';
+
 export interface DayReason {
   /** Positive helps, negative hinders. */
   weight: number;
   text: string;
   kind: 'mansion' | 'personal';
+  code: DayReasonCode;
+  activity?: { mansionKey: MansionKey; list: 'favourable' | 'unfavourable'; index: number };
 }
 
 export interface DayScore {
@@ -198,13 +211,22 @@ export function scoreDay(date: Date, intention: Intention, birth?: BaziResult | 
   const favoured = acts.favourable.filter((a) => wanted.includes(a));
   const avoided = acts.unfavourable.filter((a) => wanted.includes(a));
 
+  const key = mansion.key as MansionKey;
   for (const a of favoured) {
     score += WEIGHTS.activityFavoured;
-    reasons.push({ weight: WEIGHTS.activityFavoured, kind: 'mansion', text: `${mansion.cn} favours ${a.toLowerCase()}` });
+    reasons.push({
+      weight: WEIGHTS.activityFavoured, kind: 'mansion', code: 'favours',
+      activity: { mansionKey: key, list: 'favourable', index: acts.favourable.indexOf(a) },
+      text: `${mansion.cn} favours ${a.toLowerCase()}`,
+    });
   }
   for (const a of avoided) {
     score += WEIGHTS.activityAvoided;
-    reasons.push({ weight: WEIGHTS.activityAvoided, kind: 'mansion', text: `${mansion.cn} counsels against ${a.toLowerCase()}` });
+    reasons.push({
+      weight: WEIGHTS.activityAvoided, kind: 'mansion', code: 'counselsAgainst',
+      activity: { mansionKey: key, list: 'unfavourable', index: acts.unfavourable.indexOf(a) },
+      text: `${mansion.cn} counsels against ${a.toLowerCase()}`,
+    });
   }
   if (favoured.length === 0 && avoided.length === 0) {
     // No direct guidance — fall back to the mansion's overall standing, weighted
@@ -213,6 +235,7 @@ export function scoreDay(date: Date, intention: Intention, birth?: BaziResult | 
     score += w;
     reasons.push({
       weight: w, kind: 'mansion',
+      code: mansion.fortune === 'auspicious' ? 'auspiciousGeneral' : 'inauspiciousGeneral',
       text: mansion.fortune === 'auspicious'
         ? `${mansion.cn} is a 吉宿 — generally favourable, with nothing specific recorded for this`
         : `${mansion.cn} is a 凶宿 — generally unfavourable, with nothing specific recorded for this`,
@@ -226,20 +249,20 @@ export function scoreDay(date: Date, intention: Intention, birth?: BaziResult | 
     if (clashes(d, birth.day.branch)) {
       personalClash = true;
       score += WEIGHTS.dayClash;
-      reasons.push({ weight: WEIGHTS.dayClash, kind: 'personal', text: 'The day branch clashes with your own day pillar (日沖) — the classic reason to pick another date' });
+      reasons.push({ weight: WEIGHTS.dayClash, kind: 'personal', code: 'dayClash', text: 'The day branch clashes with your own day pillar (日沖) — the classic reason to pick another date' });
     }
     if (clashes(d, birth.year.branch)) {
       personalClash = true;
       score += WEIGHTS.yearClash;
-      reasons.push({ weight: WEIGHTS.yearClash, kind: 'personal', text: 'The day clashes with your year branch (沖太歲)' });
+      reasons.push({ weight: WEIGHTS.yearClash, kind: 'personal', code: 'yearClash', text: 'The day clashes with your year branch (沖太歲)' });
     }
     if (combines(d, birth.day.branch)) {
       score += WEIGHTS.dayCombine;
-      reasons.push({ weight: WEIGHTS.dayCombine, kind: 'personal', text: 'The day combines with your day pillar (六合) — an easy, cooperative day for you' });
+      reasons.push({ weight: WEIGHTS.dayCombine, kind: 'personal', code: 'dayCombine', text: 'The day combines with your day pillar (六合) — an easy, cooperative day for you' });
     }
     if (sameFrame(d, birth.day.branch)) {
       score += WEIGHTS.frameSupport;
-      reasons.push({ weight: WEIGHTS.frameSupport, kind: 'personal', text: 'The day shares a 三合 frame with your day pillar — quietly supportive' });
+      reasons.push({ weight: WEIGHTS.frameSupport, kind: 'personal', code: 'frameSupport', text: 'The day shares a 三合 frame with your day pillar — quietly supportive' });
     }
   }
 
@@ -293,7 +316,15 @@ export function daysToAvoid(scored: DayScore[], count = 5): DayScore[] {
  * and a UID derived from the date and intention so re-importing updates the
  * same event instead of duplicating it.
  */
-export function toICS(days: DayScore[], intention: Intention): string {
+/**
+ * `labels` lets a localised screen export the calendar in the reader's
+ * language: the event title and the reason lines. Without it, English.
+ */
+export function toICS(
+  days: DayScore[],
+  intention: Intention,
+  labels?: { title?: string; reason?: (r: DayReason, d: DayScore) => string },
+): string {
   const esc = (s: string) => s.replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
   const stamp = '20260101T000000Z';
   const lines = [
@@ -310,8 +341,8 @@ export function toICS(days: DayScore[], intention: Intention): string {
       `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${compact}`,
       `DTEND;VALUE=DATE:${endCompact}`,
-      `SUMMARY:${esc(`${INTENTIONS[intention].label} — ${d.mansion.cn} ${d.mansion.pinyin}`)}`,
-      `DESCRIPTION:${esc(d.reasons.map((r) => r.text).join('\n'))}`,
+      `SUMMARY:${esc(`${labels?.title ?? INTENTIONS[intention].label} — ${d.mansion.cn} ${d.mansion.pinyin}`)}`,
+      `DESCRIPTION:${esc(d.reasons.map((r) => (labels?.reason ? labels.reason(r, d) : r.text)).join('\n'))}`,
       'TRANSP:TRANSPARENT',
       'END:VEVENT',
     );

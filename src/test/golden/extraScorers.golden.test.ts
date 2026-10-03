@@ -25,6 +25,12 @@ import { calculateCourtMatch } from '../../data/tarotCourtQuiz';
 import { calculateElementAffinity } from '../../data/elementAffinityQuiz';
 import { calculateShadowArchetype, shadowArchetypeQuiz } from '../../data/shadowArchetypeQuiz';
 import { calculateDosha, ayurvedaQuiz } from '../../data/ayurvedaQuiz';
+import { displayTritype } from '../../data/enneagramQuiz';
+import { computeSneakPeek, encouragementFor, ENCOURAGEMENT } from '../../components/quizzes/sneakPeek';
+import { dimensionScaleMax, extraResultName } from '../../components/quizzes/extraNames';
+import { resultChipLabel } from '../../components/quizzes/chipLabel';
+import { calendarDaysBetween, relativeDay } from '../../components/quizzes/relativeDay';
+import { phq2Quiz } from '../../data/extraQuizzesPart2';
 
 /**
  * GOLDEN tests for the Phase 7 scorer fixes (R3 §3). Every expectation is
@@ -171,14 +177,13 @@ describe('scoreWellnessType — balanced is derived (F4)', () => {
 });
 
 describe('scoreBoundaries — healthy and situational are derived (F4)', () => {
-  it('all-Neutral: rigid 3 vs porous 3 — neither ≤ 2.5, so not healthy; a reported rigid/porous tie', () => {
+  it('all-Neutral: nothing is agreed with (every mean 3, none > 3) → unclear, not "Rigid Walls"', () => {
     const r = scoreBoundaries(allAnswers(boundariesQuiz, 3));
-    expect(r.primary).toBe('rigid');
-    expect(r.isTie).toBe(true);
-    expect(r.secondary).toBe('porous');
+    expect(r.primary).toBe('unclear');
+    expect(r.isTie).toBe(false);
   });
 
-  it('healthy items 5, walls and pores 1, situational 1 → healthy (rigid ≤ 2.5 and porous ≤ 2.5)', () => {
+  it('healthy items 5, walls and pores 1, situational 1 → healthy (healthy ≥ 3.5, neither walls nor pores endorsed)', () => {
     const answers = answersFor(boundariesQuiz, (d) => (d === 'healthy' ? 5 : 1));
     expect(scoreBoundaries(answers).primary).toBe('healthy');
   });
@@ -387,5 +392,257 @@ describe('every Likert item keeps "Strongly Disagree" first (the renderer draws 
       expect(q.options.map((o) => o.label)).toEqual(['Not at all', 'Several days', 'More than half the days', 'Nearly every day']);
       expect(q.options.map((o) => o.value)).toEqual([1, 2, 3, 4]);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 7 fix round (R7) — every case below is a reproduced failure.
+// ---------------------------------------------------------------------------
+
+describe('scoreBoundaries — a verdict needs agreement (R7 #99)', () => {
+  it('REPRO: rg1-3 Neutral, rg4 Disagree (2.75), po Disagree (2.0), hl Strongly agree (5.0), sn Strongly disagree → healthy, not Rigid Walls', () => {
+    // rigid (3+3+3+2)/4 = 2.75 < 3.5 → not endorsed; healthy 5 ≥ 3.5 → healthy.
+    const answers = answersFor(boundariesQuiz, (d, id) =>
+      d === 'rigid' ? (id === 'rg4' ? 2 : 3) : d === 'porous' ? 2 : d === 'healthy' ? 5 : 1,
+    );
+    const r = scoreBoundaries(answers);
+    expect(r.averages.rigid).toBe(2.75);
+    expect(r.primary).toBe('healthy');
+  });
+
+  it('REPRO: every answer Strongly disagree (incl. hl1 "I say no when I need to") → unclear, not Healthy Flex', () => {
+    expect(scoreBoundaries(allAnswers(boundariesQuiz, 1)).primary).toBe('unclear');
+  });
+
+  it('walls endorsed (rigid 4) beat a higher healthy mean (5): the healthy items are the agreeable ones', () => {
+    const answers = answersFor(boundariesQuiz, (d) => (d === 'rigid' ? 4 : d === 'healthy' ? 5 : 1));
+    expect(scoreBoundaries(answers).primary).toBe('rigid');
+  });
+
+  it('nothing endorsed but walls lean (3.25 > 3) over healthy 3 → rigid as a leaning', () => {
+    const answers = answersFor(boundariesQuiz, (d, id) => (d === 'rigid' ? (id === 'rg1' ? 4 : 3) : d === 'healthy' ? 3 : 1));
+    expect(scoreBoundaries(answers).primary).toBe('rigid');
+  });
+
+  it('every result the scorer returns has a card', () => {
+    for (const v of [1, 2, 3, 4, 5]) {
+      const k = scoreBoundaries(allAnswers(boundariesQuiz, v)).primary;
+      expect(EXTRA_QUIZ_SCORING['boundaries-v1'].info[k], `all-${v} → ${k}`).toBeDefined();
+    }
+  });
+});
+
+describe('scoreWellnessType — balanced has to be meant (R7 #101)', () => {
+  it('REPRO: all eight items Strongly disagree (every bar 1.0) → unclear, not The Balanced', () => {
+    const r = scoreWellnessType(allAnswers(wellnessTypeQuiz, 1));
+    expect(r.primary).toBe('unclear');
+    expect(EXTRA_QUIZ_SCORING['wellness-type-v1'].info[r.primary]).toBeDefined();
+  });
+
+  it('REPRO: athlete 2 / healer 2.5 / contemplative 2 with w7 = w8 = 1 → unclear (spread 0.5 at a disagree level)', () => {
+    const answers = answersFor(wellnessTypeQuiz, (d, id) => (d === 'healer' ? (id === 'w3' ? 3 : 2) : d === 'balanced' ? 1 : 2));
+    const r = scoreWellnessType(answers);
+    expect(r.averages.healer).toBe(2.5);
+    expect(r.primary).toBe('unclear');
+  });
+
+  it('a flat AGREEING profile with the balance items not disagreed → balanced (all 4, w7/w8 3)', () => {
+    const answers = answersFor(wellnessTypeQuiz, (d) => (d === 'balanced' ? 3 : 4));
+    expect(scoreWellnessType(answers).primary).toBe('balanced');
+  });
+
+  it('a flat agreeing profile whose person disagrees with "a mix" (w7 = w8 = 1) is not balanced: the leader, reported as a tie', () => {
+    const answers = answersFor(wellnessTypeQuiz, (d) => (d === 'balanced' ? 1 : 4));
+    const r = scoreWellnessType(answers);
+    expect(r.primary).toBe('athlete');
+    expect(r.isTie).toBe(true);
+  });
+});
+
+describe('scoreSelfCompassion — "where to practise" only when a component is lower (R7 #160)', () => {
+  const positives = new Set(['self-kind', 'common-humanity', 'mindful']);
+
+  it('REPRO: the maximum score (positives 5, negatives 1, every coded mean 5) names no weakest component', () => {
+    const r = scoreSelfCompassion(answersFor(selfCompassionQuiz, (d) => (positives.has(d ?? '') ? 5 : 1)));
+    expect(r.primary).toBe('high');
+    expect(r.extra?.weakest).toBeUndefined();
+  });
+
+  it('all-Neutral (every coded mean 3) names no weakest component', () => {
+    expect(scoreSelfCompassion(allAnswers(selfCompassionQuiz, 3)).extra?.weakest).toBeUndefined();
+  });
+
+  it('REPRO (ja QA): self-kind 5, every other item Neutral — five components level at coded 3 → no weakest named', () => {
+    const r = scoreSelfCompassion(answersFor(selfCompassionQuiz, (d) => (d === 'self-kind' ? 5 : 3)));
+    expect(r.extra?.weakest).toBeUndefined();
+  });
+
+  it('two components level at the bottom are both named (weakest + weakestAlso)', () => {
+    // self-kind 1 → coded 1; isolation 5 → coded 1; every other component Neutral (3).
+    const answers = answersFor(selfCompassionQuiz, (d) => (d === 'self-kind' ? 1 : d === 'isolation' ? 5 : 3));
+    const r = scoreSelfCompassion(answers);
+    expect(r.extra?.weakest).toBe('self-kind');
+    expect(r.extra?.weakestAlso).toBe('isolation');
+  });
+});
+
+describe('calculateDosha — an exact two-dosha tie is reported (R7 #106)', () => {
+  const spread = (v: number, p: number) => {
+    const out: Record<string, number> = {};
+    ayurvedaQuiz.questions.forEach((q, i) => { out[q.id] = i < v ? 1 : i < v + p ? 2 : 3; });
+    return out;
+  };
+
+  it('REPRO: vata 13, pitta 13, kapha 4 (not tridoshic) → isTie with pitta as co-primary, no "secondary"', () => {
+    const r = calculateDosha(spread(13, 13));
+    expect(r.scores).toEqual({ vata: 13, pitta: 13, kapha: 4 });
+    expect(r.tridoshic).toBe(false);
+    expect(r.isTie).toBe(true);
+    expect(r.coPrimary).toBe('pitta');
+    expect(r.secondary).toBeUndefined();
+  });
+
+  it('a one-point lead is not a tie and keeps its secondary', () => {
+    const r = calculateDosha(spread(13, 12));
+    expect(r.isTie).toBe(false);
+    expect(r.secondary).toBe('pitta');
+  });
+});
+
+describe('displayTritype — saved pre-Phase-7 rows (R7 #104)', () => {
+  const scores = { 1: 40, 2: 52, 3: 92, 4: 60, 5: 48, 6: 56, 7: 72, 8: 64, 9: 44 };
+
+  it('REPRO: an old row {primaryType 3, tritype [3,3,3]} is recomputed from its scores: 3, top of body (8), top of head (7)', () => {
+    expect(displayTritype({ primaryType: 3, tritype: [3, 3, 3], scores })).toEqual([3, 8, 7]);
+  });
+
+  it('an old row without scores shows no tritype', () => {
+    expect(displayTritype({ primaryType: 3, tritype: [3, 3, 3], scores: undefined as unknown as Record<string, number> })).toBeNull();
+  });
+
+  it('a valid tritype (one per centre, primary first) is shown as saved', () => {
+    expect(displayTritype({ primaryType: 3, tritype: [3, 9, 5], scores })).toEqual([3, 9, 5]);
+  });
+
+  it('a fresh scorer result always passes its own check', () => {
+    const r = calculateEnneagram(allAnswers(enneagramQuiz, 4));
+    expect(displayTritype(r)).toEqual(r.tritype);
+  });
+});
+
+// A t() that returns the defaultValue, interpolated — what English renders.
+const tEn = (key: string, opts?: Record<string, unknown>): string => {
+  const raw = typeof opts?.defaultValue === 'string' ? opts.defaultValue : key;
+  return raw.replace(/\{\{(\w+)\}\}/g, (_m, k: string) => String(opts?.[k] ?? ''));
+};
+
+/** The answers on screen at 1-based question `step`: every earlier question answered with pick(). */
+function answeredBefore(quiz: { questions: { id: string; dimension?: string }[] }, step: number, pick: (d: string | undefined, id: string) => number) {
+  const out: Record<string, number> = {};
+  quiz.questions.slice(0, step - 1).forEach((q) => { out[q.id] = pick(q.dimension, q.id); });
+  return out;
+}
+
+describe('early reading — never contradicts the scorer (R7 #27, #100)', () => {
+  it('REPRO #27: the PHQ-2 screener has no early reading, even at 6/12 and 9/12 after a positive screen', () => {
+    // lw1 = lw2 "Nearly every day" (4) → PHQ-2 = 6; every Likert item Strongly agree.
+    const pick = (d: string | undefined) => (d === 'seek-support' ? 4 : 5);
+    for (const step of [3, 6, 9]) {
+      expect(computeSneakPeek(phq2Quiz, answeredBefore(phq2Quiz, step, pick), step, 12, tEn), `step ${step}`).toBeNull();
+    }
+  });
+
+  it('REPRO #100: self-compassion never names a component (its results are bands); with sk1-3 Strongly agree at 8/16 and 12/16 → nothing', () => {
+    const pick = (d: string | undefined) => (d === 'self-kind' ? 5 : 3);
+    for (const step of [4, 8, 12]) {
+      expect(computeSneakPeek(selfCompassionQuiz, answeredBefore(selfCompassionQuiz, step, pick), step, 16, tEn)).toBeNull();
+    }
+  });
+
+  it('REPRO #100: boundaries cannot announce "Healthy Flex" before the situational items are in (derived verdict)', () => {
+    const pick = (d: string | undefined, id: string) => (d === 'rigid' ? (id === 'rg4' ? 2 : 3) : d === 'porous' ? 2 : d === 'healthy' ? 5 : 1);
+    for (const step of [4, 8, 12]) {
+      expect(computeSneakPeek(boundariesQuiz, answeredBefore(boundariesQuiz, step, pick), step, 16, tEn)).toBeNull();
+    }
+  });
+
+  it('a derived-result quiz speaks once every dimension is in, and names what its scorer returns (empath/HSP at 6/12)', () => {
+    // em1-3 = 5 (empath 5.0), hs1-2 = 1 (hsp 1.0) → scoreEmpathHsp → empath.
+    const answers = answeredBefore(empathQuiz, 6, (d) => (d === 'empath' ? 5 : 1));
+    expect(computeSneakPeek(empathQuiz, answers, 6, 12, tEn)).toBe('Leaning Empath so far…');
+    expect(calculateExtraQuiz('empath-hsp-v1', answers)?.primary).toBe('empath');
+  });
+
+  it('a highest-mean quiz names an endorsed leader (DISC dominance 5 vs influence 1 at 10/20)', () => {
+    const answers = answeredBefore(discQuiz, 10, (d) => (d === 'dominance' ? 5 : 1));
+    expect(computeSneakPeek(discQuiz, answers, 10, 20, tEn)).toBe('Leaning Dominance (D) so far…');
+  });
+
+  it('…and stays quiet on a tie or below agreement', () => {
+    expect(computeSneakPeek(discQuiz, answeredBefore(discQuiz, 10, () => 5), 10, 20, tEn)).toBeNull(); // 5.0 vs 5.0
+    expect(computeSneakPeek(discQuiz, answeredBefore(discQuiz, 10, (d) => (d === 'dominance' ? 3 : 1)), 10, 20, tEn)).toBeNull(); // 3.0 < 3.5
+  });
+
+  it('a name is read through the result chain: a scored component without a card asks extraQuizzes.<key>.dimensions.<d>', () => {
+    const asked: string[] = [];
+    const tSpy = (key: string, opts?: Record<string, unknown>) => { asked.push(key); return tEn(key, opts); };
+    expect(extraResultName('self-compassion-v1', 'self-kind', tSpy)).toBe('Self-kindness');
+    expect(asked).toEqual(['extraQuizzes.self-compassion.dimensions.self-kind']);
+  });
+});
+
+describe('encouragement — a position claim only where it is true (R7 #157)', () => {
+  const at = (step: number, total: number) => encouragementFor(step, total)?.en ?? null;
+
+  it('REPRO: DISC 18/20 (90 %) no longer reads "Almost halfway there."', () => {
+    expect(at(18, 20)).toBe('Nearly there now.');
+  });
+
+  it('attachment / dosha 18/30 (60 %) claims no position', () => {
+    const line = at(18, 30);
+    expect(line).not.toBeNull();
+    expect(line).not.toBe('Almost halfway there.');
+    expect(line).not.toBe('Nearly there now.');
+  });
+
+  it('for every long quiz length, "Almost halfway" only at 40-50 % and "Nearly there" only at 80 %+', () => {
+    for (let total = 12; total <= 60; total++) {
+      for (let step = 1; step <= total; step++) {
+        const e = encouragementFor(step, total);
+        if (!e) continue;
+        const p = step / total;
+        if (e.key === 'e4') expect(p >= 0.4 && p < 0.5, `${step}/${total}`).toBe(true);
+        if (e.key === 'e8') expect(p >= 0.8, `${step}/${total}`).toBe(true);
+        expect(step % 6).toBe(0);
+        expect(step).toBeLessThan(total);
+      }
+    }
+    expect(ENCOURAGEMENT).toHaveLength(10);
+  });
+});
+
+describe('quiz list helpers (R7 #158, #156) and the screener scale (R7 #102)', () => {
+  it('REPRO #158: taken 23:00 yesterday, viewed 08:00 today → 1 calendar day ("yesterday"), not "today"', () => {
+    const taken = new Date(2026, 9, 2, 23, 0);
+    const now = new Date(2026, 9, 3, 8, 0);
+    expect(calendarDaysBetween(taken, now)).toBe(1);
+    expect(relativeDay(taken.toISOString(), 'en', now)).toBe('yesterday');
+    expect(relativeDay(new Date(2026, 9, 3, 0, 5).toISOString(), 'en', now)).toBe('today');
+    expect(relativeDay(new Date(2026, 9, 1, 23, 59).toISOString(), 'en', now)).toBe('2 days ago');
+  });
+
+  it('REPRO #156: an old self-compassion row labelled "over-identified" reads "Needs a retake", never the raw key', () => {
+    const sc = EXTRA_QUIZZES.find((q) => q.id === 'self-compassion-v1')!;
+    expect(resultChipLabel(sc, 'over-identified', tEn)).toBe('Needs a retake');
+    expect(resultChipLabel(sc, 'high', tEn)).toBe('Steady self-compassion');
+  });
+
+  it('REPRO #102: the PHQ-2 core items are drawn out of 4, every Likert group out of 5', () => {
+    expect(dimensionScaleMax(phq2Quiz, ['low', 'mild', 'moderate', 'seek-support'])).toEqual({ low: 5, mild: 5, moderate: 5, 'seek-support': 4 });
+    expect(new Set(Object.values(dimensionScaleMax(discQuiz, EXTRA_QUIZ_SCORING['disc-v1'].dimensions)))).toEqual(new Set([5]));
+  });
+
+  it('#161: every quiz title is sentence case (no capital after the first word, bar acronyms and names)', () => {
+    expect(EXTRA_QUIZZES.find((q) => q.id === 'self-compassion-v1')!.title).toBe('Self-compassion');
   });
 });

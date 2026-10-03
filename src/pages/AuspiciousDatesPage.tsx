@@ -4,13 +4,30 @@ import { CalendarDays, Download, AlertTriangle } from 'lucide-react';
 import { Card, Button, Chip, Page, PageHeader, Section, Disclosure, Disclaimer } from '../components/ui';
 import {
   INTENTIONS, scoreWindow, bestDays, daysToAvoid, toICS,
-  type Intention, type DayScore,
+  type Intention, type DayScore, type DayReason, type DayReasonCode,
 } from '../data/auspiciousDates';
+import { MANSION_ACTIVITIES } from '../data/lunarMansions';
 import { MANSION_MEANINGS } from '../data/lunarMansionsContent';
 import { computeBazi } from '../data/bazi';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
 import { setPageMeta } from '../utils/seo';
+import { isNative } from '../utils/platform';
+import { downloadBlob, sharePng } from '../utils/nativeShare';
+
+/** English templates for the reasons a day scored as it did (dates.reasons.*). */
+const REASON_EN: Record<DayReasonCode, string> = {
+  favours: '{{mansion}} favours {{activity}}',
+  counselsAgainst: '{{mansion}} counsels against {{activity}}',
+  auspiciousGeneral: '{{mansion}} is a 吉宿 — generally favourable, with nothing specific recorded for this',
+  inauspiciousGeneral: '{{mansion}} is a 凶宿 — generally unfavourable, with nothing specific recorded for this',
+  dayClash: 'The day branch clashes with your own day pillar (日沖) — the classic reason to pick another date',
+  yearClash: 'The day clashes with your year branch (沖太歲)',
+  dayCombine: 'The day combines with your day pillar (六合) — an easy, cooperative day for you',
+  frameSupport: 'The day shares a 三合 frame with your day pillar — quietly supportive',
+};
 
 const WINDOW_DAYS = 90;
 
@@ -27,6 +44,24 @@ export function AuspiciousDatesPage() {
   const navigate = useNavigate();
   const { t } = useT('app');
   const { profile } = useAuth();
+  // Purposes from the `auspicious` content module; mansion titles and
+  // activities from `mansions`. English until loaded, never blank.
+  const { overlay: auspOverlay } = useContentOverlay('auspicious');
+  const { overlay: mansionsOverlay } = useContentOverlay('mansions');
+  const intentionLabel = (k: Intention) => ct(auspOverlay, `intentions.${k}.label`, INTENTIONS[k].label);
+  const intentionBlurb = (k: Intention) => ct(auspOverlay, `intentions.${k}.blurb`, INTENTIONS[k].blurb);
+  const mansionTitle = (d: DayScore) =>
+    ct(mansionsOverlay, `mansions.${d.mansion.key}.title`, MANSION_MEANINGS[d.mansion.key]?.title ?? '');
+  /** A reason in the reader's language, built from its code (the English `text` is the ICS fallback). */
+  const reasonText = (r: DayReason, d: DayScore): string => {
+    let activity = '';
+    if (r.activity) {
+      const en = MANSION_ACTIVITIES[r.activity.mansionKey]?.[r.activity.list] ?? [];
+      const list = ctList(mansionsOverlay, `mansions.${r.activity.mansionKey}.${r.activity.list}`, en);
+      activity = (list[r.activity.index] ?? '').toLowerCase();
+    }
+    return t(`dates.reasons.${r.code}`, { defaultValue: REASON_EN[r.code], mansion: d.mansion.cn, activity }) as string;
+  };
   const [intention, setIntention] = useState<Intention>('wedding');
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -49,20 +84,20 @@ export function AuspiciousDatesPage() {
   const best = useMemo(() => bestDays(window, 6), [window]);
   const avoid = useMemo(() => daysToAvoid(window, 4), [window]);
 
-  const download = () => {
-    const blob = new Blob([toICS(best, intention)], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `arcana-${intention}-dates.ics`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  // The calendar file in the reader's language. On Android/iOS the WebView
+  // ignores <a download>, so the file goes through the share sheet (the
+  // same path as the data export); on the web it downloads.
+  const download = async () => {
+    const ics = toICS(best, intention, { title: intentionLabel(intention), reason: reasonText });
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const fileName = `arcana-${intention}-dates.ics`;
+    if (isNative()) await sharePng(blob, fileName, { title: intentionLabel(intention) });
+    else downloadBlob(blob, fileName);
   };
 
+  // The app's language, not the device's.
   const fmt = (iso: string) =>
-    new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
+    new Date(`${iso}T12:00:00`).toLocaleDateString(getLocale(), {
       weekday: 'short', month: 'short', day: 'numeric',
     });
 
@@ -81,10 +116,10 @@ export function AuspiciousDatesPage() {
         label={
           <>
             <span className="text-mystic-100 text-ui">{fmt(d.date)}</span>
-            <span className="text-mystic-500 text-meta"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
+            <span className="text-mystic-500 text-meta"> · {mansionTitle(d)}</span>
           </>
         }
-        description={<span className="block truncate text-mystic-500">{d.reasons[0]?.text}</span>}
+        description={<span className="block truncate text-mystic-500">{d.reasons[0] ? reasonText(d.reasons[0], d) : ''}</span>}
         meta={d.personalClash ? <AlertTriangle className="w-4 h-4 text-coral/80" /> : undefined}
         contentClassName="pl-11"
       >
@@ -94,7 +129,7 @@ export function AuspiciousDatesPage() {
               <span className={`tabular-nums ${r.weight > 0 ? 'text-teal' : 'text-coral'}`}>
                 {r.weight > 0 ? '+' : ''}{r.weight}
               </span>{' '}
-              <span className="text-mystic-300">{r.text}</span>
+              <span className="text-mystic-300">{reasonText(r, d)}</span>
             </li>
           ))}
         </ul>
@@ -138,11 +173,11 @@ export function AuspiciousDatesPage() {
               selected={intention === k}
               onSelect={() => { setIntention(k); setExpanded(null); }}
             >
-              <span style={{ fontFamily: 'serif' }} lang="zh-Hant">{INTENTIONS[k].cn}</span> {INTENTIONS[k].label}
+              <span style={{ fontFamily: 'serif' }} lang="zh-Hant">{INTENTIONS[k].cn}</span> {intentionLabel(k)}
             </Chip>
           ))}
         </div>
-        <p className="text-meta text-mystic-500">{INTENTIONS[intention].blurb}</p>
+        <p className="text-meta text-mystic-500">{intentionBlurb(intention)}</p>
       </Section>
 
       {!birth && (
@@ -160,7 +195,7 @@ export function AuspiciousDatesPage() {
         title={t('dates.best', { defaultValue: 'Best days ahead' })}
         headingLevel="h3"
         action={
-          <Button variant="ghost" size="sm" onClick={download}>
+          <Button variant="ghost" size="sm" onClick={() => { void download(); }}>
             <Download className="w-3.5 h-3.5 mr-1.5" />
             {t('dates.export', { defaultValue: 'Add to my calendar' })}
           </Button>

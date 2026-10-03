@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { AdConfigRequest, type AdConfigRequest as TAdConfigRequest } from "../_schema/reading.ts";
+import { rewardedAdStatus } from "../_shared/rewarded-ads.ts";
 
 /**
  * Returns the client's ad configuration (ad-unit IDs, show/hide flags, daily
@@ -40,12 +41,26 @@ Deno.serve(
         throw new AppError("AD_CONFIG_FETCH_FAILED", "Failed to fetch ad configuration", 500);
       }
 
-      let dailyStats = null;
+      let dailyStats: Record<string, unknown> | null = null;
       if (ctx.userId) {
-        const { data } = await ctx.supabase.rpc("get_user_daily_ad_stats", {
-          p_user_id: ctx.userId,
-        });
-        dailyStats = data;
+        const [{ data }, status] = await Promise.all([
+          ctx.supabase.rpc("get_user_daily_ad_stats", { p_user_id: ctx.userId }),
+          rewardedAdStatus(ctx.supabase, ctx.userId),
+        ]);
+        dailyStats = data && typeof data === "object" ? { ...(data as Record<string, unknown>) } : null;
+        // get_user_daily_ad_stats still returns the 999999 "unlimited"
+        // sentinel from 2026-05-22, but the credit has been capped at 6 a
+        // day since 20261003000005. Tell the client the truth so it stops
+        // offering an ad that would earn nothing (p7 #33).
+        if (status) {
+          dailyStats = {
+            ...(dailyStats ?? {}),
+            rewardedRemaining: status.creditsRemaining,
+            rewardedCreditsToday: status.creditsToday,
+            rewardedResetAt: status.resetAt,
+            rewardedNextAt: status.nextAvailableAt,
+          };
+        }
       }
 
       ctx.log.info("ad_config.served", { platform, hasUser: !!ctx.userId });

@@ -10,13 +10,28 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { localDateStr } from '../utils/localDate';
 import { scrollBehavior } from '../utils/motion';
+import {
+  loadConversation,
+  saveConversation,
+  loadDailyCount,
+  saveDailyCount,
+  newConversationId,
+  type CompanionConversation,
+  type CompanionMessage as Message,
+  type CompanionPersona as Persona,
+} from '../components/companion/companionHistory';
 
-type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
+/** The `error.code` a function answered with (FunctionsHttpError keeps the Response on `context`). */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } | string; code?: unknown };
+    const code = typeof body.error === 'object' && body.error ? body.error.code : body.code;
+    return typeof code === 'string' ? code : null;
+  } catch {
+    return null;
+  }
 }
 
 const PERSONAS: Array<{
@@ -30,35 +45,15 @@ const PERSONAS: Array<{
   { id: 'priestess', icon: Flower,        accent: 'text-cosmic-rose' },
 ];
 
-const STORAGE_KEY_PREFIX = 'arcana_companion_v1_';
-
-function loadHistory(persona: Persona): Message[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_PREFIX + persona);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((m): m is Message => m && typeof m.role === 'string' && typeof m.content === 'string');
-  } catch {
-    return [];
-  }
-}
-
-function saveHistory(persona: Persona, history: Message[]) {
-  try {
-    // Keep only last 40 messages to bound storage
-    const trimmed = history.slice(-40);
-    localStorage.setItem(STORAGE_KEY_PREFIX + persona, JSON.stringify(trimmed));
-  } catch {
-    // silent — localStorage full or unavailable
-  }
-}
-
 export function AiCompanionPage() {
   const { t } = useT('app');
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const userId = user?.id ?? null;
   const [persona, setPersona] = useState<Persona>('sage');
-  const [history, setHistory] = useState<Message[]>([]);
+  // History is per account AND per persona (companionHistory.ts); the
+  // conversation id is what the server charges once for.
+  const [convo, setConvo] = useState<CompanionConversation>(() => loadConversation(userId, 'sage'));
+  const history = convo.messages;
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [dailyUsed, setDailyUsed] = useState(0);
@@ -66,20 +61,16 @@ export function AiCompanionPage() {
 
   const DAILY_LIMIT = 20; // free tier; premium bumps to 100 in a future sprint
 
-  // Track daily usage via localStorage. Use the LOCAL calendar date so
-  // the message limit resets at the user's midnight, not UTC midnight.
+  // Track daily usage per account. Use the LOCAL calendar date so the
+  // message limit resets at the user's midnight, not UTC midnight.
   useEffect(() => {
-    const key = `arcana_companion_daily_${localDateStr()}`;
-    try {
-      const n = parseInt(localStorage.getItem(key) || '0', 10);
-      setDailyUsed(Number.isFinite(n) ? n : 0);
-    } catch { /* ignore */ }
-  }, []);
+    setDailyUsed(loadDailyCount(userId, localDateStr()));
+  }, [userId]);
 
-  // Load history for selected persona
+  // Load this account's conversation with the selected persona
   useEffect(() => {
-    setHistory(loadHistory(persona));
-  }, [persona]);
+    setConvo(loadConversation(userId, persona));
+  }, [userId, persona]);
 
   // Auto-scroll on new message
   useEffect(() => {
@@ -87,13 +78,10 @@ export function AiCompanionPage() {
   }, [history, sending]);
 
   const incDailyUsed = useCallback(() => {
-    const key = `arcana_companion_daily_${localDateStr()}`;
-    try {
-      const next = dailyUsed + 1;
-      localStorage.setItem(key, String(next));
-      setDailyUsed(next);
-    } catch { /* ignore */ }
-  }, [dailyUsed]);
+    const next = dailyUsed + 1;
+    setDailyUsed(next);
+    if (userId) saveDailyCount(userId, localDateStr(), next);
+  }, [dailyUsed, userId]);
 
   const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('companion-session');
 
@@ -105,23 +93,32 @@ export function AiCompanionPage() {
 
   const send = async () => {
     const trimmed = input.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending || !userId) return;
     if (dailyUsed >= DAILY_LIMIT) {
       toast(t('companion.dailyLimitReached', { defaultValue: 'Daily message limit reached — come back tomorrow.' }), 'error');
       return;
     }
-    // Charge 50 moonstones once per fresh conversation (premium = no debit;
-    // soft cap counts one slot for the session start, not per message).
+    // One charge per conversation: the server debits once per
+    // `conversationId` (premium = no debit), so the balance is checked
+    // before the first message only.
     if (history.length === 0) {
       const ok = await tryConsume();
       if (!ok) return;
     }
 
+    const prior = convo;
     const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
     const newHistory = [...history, userMsg];
-    setHistory(newHistory);
+    setConvo({ ...prior, messages: newHistory });
     setInput('');
     setSending(true);
+
+    // An unanswered message is taken back out of the thread and returned
+    // to the composer, so sending again is a clean retry, not a double.
+    const restore = () => {
+      setConvo(prior);
+      setInput((cur) => cur || trimmed);
+    };
 
     try {
       const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
@@ -135,16 +132,34 @@ export function AiCompanionPage() {
       const { data, error } = await supabase.functions.invoke('ai-companion-chat', {
         body: {
           persona,
+          conversationId: prior.conversationId,
+          requestId: newConversationId(),
           history: newHistory.map((m) => ({ role: m.role, content: m.content })),
           userContext,
         },
       });
 
+      if (error) {
+        // Out of Moonstones / over today's AI limit is not a connection
+        // problem: re-read the gate, which opens the earn sheet with the
+        // right reason (insufficient or soft cap).
+        const code = await functionErrorCode(error);
+        if (code === 'INSUFFICIENT_BALANCE' || code === 'AI_SOFT_CAP') {
+          restore();
+          const allowed = await tryConsume();
+          if (allowed) {
+            toast(t('companion.balanceChangedRetry', { defaultValue: 'Your balance changed — send your message again.' }), 'info');
+          }
+          return;
+        }
+        throw error;
+      }
+
       // New handler envelope wraps the result as `{ data: { reply, ... }, correlationId }`.
       // Fall back to the legacy flat shape for rollback safety.
       const payload = (data?.data ?? data) as { reply?: string } | null;
-      if (error || !payload?.reply) {
-        throw new Error(error?.message || 'No reply');
+      if (!payload?.reply) {
+        throw new Error('No reply');
       }
 
       const assistantMsg: Message = {
@@ -152,21 +167,24 @@ export function AiCompanionPage() {
         content: payload.reply,
         timestamp: Date.now(),
       };
-      const finalHistory = [...newHistory, assistantMsg];
-      setHistory(finalHistory);
-      saveHistory(persona, finalHistory);
+      const next: CompanionConversation = { ...prior, messages: [...newHistory, assistantMsg] };
+      setConvo(next);
+      saveConversation(userId, persona, next);
       incDailyUsed();
     } catch {
-      toast(t('companion.sendFailed', { defaultValue: "Couldn't reach your companion — check your connection and try again." }), 'error');
-      setHistory(newHistory); // keep user message so they can retry
+      toast(t('companion.sendFailed', { defaultValue: 'Couldn’t reach your companion — check your connection and send again.' }), 'error');
+      restore();
     } finally {
       setSending(false);
     }
   };
 
+  // A new conversation is a new id, so the next message starts (and pays
+  // for) a new conversation, as the cost line says.
   const clearConversation = () => {
-    saveHistory(persona, []);
-    setHistory([]);
+    const fresh: CompanionConversation = { conversationId: newConversationId(), messages: [] };
+    if (userId) saveConversation(userId, persona, fresh);
+    setConvo(fresh);
   };
 
   const currentPersonaInfo = PERSONAS.find((p) => p.id === persona)!;

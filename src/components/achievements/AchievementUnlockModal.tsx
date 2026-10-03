@@ -3,8 +3,10 @@ import { X, Trophy } from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useT } from '../../i18n/useT';
-import { Badge, EyebrowLabel, type Tone } from '../ui';
+import { getLocale } from '../../i18n/config';
+import { Badge, Button, EyebrowLabel, type Tone } from '../ui';
 import { achievementIcon } from './achievementIcons';
+import { rarityLabel } from './localizeAchievement';
 
 const RARITY_TONE: Record<AchievementRarity, Tone> = {
   common: 'neutral',
@@ -16,7 +18,7 @@ const RARITY_TONE: Record<AchievementRarity, Tone> = {
 // Token classes for the parts the Badge does not cover. The -ink variants
 // are the AA text colours for the two cool tones on their own tints.
 const RARITY_TEXT: Record<AchievementRarity, string> = {
-  common: 'text-mystic-400',
+  common: 'text-mystic-300',
   rare: 'text-cosmic-blue-ink',
   epic: 'text-cosmic-violet-ink',
   legendary: 'text-gold',
@@ -27,26 +29,19 @@ const RARITY_BORDER: Record<AchievementRarity, string> = {
   epic: 'border-cosmic-violet/50',
   legendary: 'border-gold/50',
 };
+/** A flat tint of the rarity's hue behind the XP figure (elevation by fill, no gradient). */
+const RARITY_TINT: Record<AchievementRarity, string> = {
+  common: 'bg-mystic-800',
+  rare: 'bg-cosmic-blue/10',
+  epic: 'bg-cosmic-violet/10',
+  legendary: 'bg-gold/10',
+};
 
 interface AchievementUnlockModalProps {
+  /** Pass the row already localised (localizeAchievement) — this renders what it is given. */
   achievement: AchievementWithProgress | null;
   onClose: () => void;
 }
-
-// The solid gradient fills the CTA; the tint is the same hue at 10–15%
-// behind the XP figure.
-const RARITY_GRADIENT: Record<AchievementRarity, string> = {
-  common: 'from-mystic-400 via-mystic-300 to-mystic-400',
-  rare: 'from-cosmic-blue via-cosmic-blue-ink to-cosmic-blue',
-  epic: 'from-cosmic-violet via-cosmic-violetLight to-cosmic-violet',
-  legendary: 'from-gold via-gold-light to-gold',
-};
-const RARITY_TINT: Record<AchievementRarity, string> = {
-  common: 'from-mystic-900 via-mystic-800 to-mystic-900',
-  rare: 'from-cosmic-blue/15 via-cosmic-blue/10 to-cosmic-blue/15',
-  epic: 'from-cosmic-violet/15 via-cosmic-violet/10 to-cosmic-violet/15',
-  legendary: 'from-gold/15 via-gold/10 to-gold/15',
-};
 
 export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlockModalProps) {
   const { t } = useT('app');
@@ -89,23 +84,25 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
 
   const Icon = achievementIcon(achievement.icon_name);
   const rarityColor = RARITY_TEXT[achievement.rarity];
-  const rarityGradient = RARITY_GRADIENT[achievement.rarity];
-  const rarityTint = RARITY_TINT[achievement.rarity];
+  const fmt = new Intl.NumberFormat(getLocale());
 
   return (
     <div
       className={`
         fixed inset-0 z-50 flex items-center justify-center p-4
-        transition-all duration-slow
-        ${showContent ? 'bg-black/80' : 'bg-transparent'}
+        transition-colors duration-slow
+        ${showContent ? 'bg-mystic-950/85' : 'bg-transparent'}
       `}
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="achievement-unlock-title"
         className={`
-          relative max-w-sm w-full bg-gradient-to-b from-mystic-800 to-mystic-900
-          rounded-sheet border border-mystic-700/50 p-8
-          transition-all duration-deliberate
+          relative max-w-sm w-full bg-mystic-900
+          rounded-sheet border border-mystic-700 p-8
+          transition-[transform,opacity] duration-deliberate
           ${showContent ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}
         `}
         onClick={e => e.stopPropagation()}
@@ -113,8 +110,8 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
         <button
           onClick={onClose}
           aria-label={t('common:actions.close', { defaultValue: 'Close' })}
-          className="absolute top-3 right-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-700/50 text-mystic-400
-            hover:bg-mystic-600/50 hover:text-white transition-colors"
+          className="absolute top-3 right-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800 text-mystic-400
+            hover:bg-mystic-700 hover:text-mystic-100 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -124,8 +121,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
             <div
               className={`
                 relative w-24 h-24 rounded-card flex items-center justify-center
-                bg-gradient-to-br from-mystic-700/50 to-mystic-800/50
-                border-2 ${RARITY_BORDER[achievement.rarity]}
+                bg-mystic-800 border-2 ${RARITY_BORDER[achievement.rarity]}
               `}
             >
               <Icon className={`w-12 h-12 ${rarityColor}`} />
@@ -133,47 +129,36 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
 
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
               <Badge tone={RARITY_TONE[achievement.rarity]}>
-                {achievement.rarity}
+                {rarityLabel(achievement.rarity, t)}
               </Badge>
             </div>
           </div>
 
           <EyebrowLabel className="mb-2">
-            Achievement Unlocked!
+            {t('achievements.unlockedEyebrow', { defaultValue: 'Achievement unlocked' })}
           </EyebrowLabel>
 
-          <h2 className="text-2xl font-semibold text-white mb-3">
+          <h2 id="achievement-unlock-title" className="heading-display-md heading-strong text-mystic-100 mb-3">
             {achievement.name}
           </h2>
 
-          <p className="text-mystic-400 text-sm mb-6 max-w-[280px]">
+          <p className="text-ui text-mystic-400 mb-6 max-w-[280px]">
             {achievement.description}
           </p>
 
-          <div
-            className={`
-              flex items-center gap-2 px-5 py-3 rounded-control
-              bg-gradient-to-r ${rarityTint}
-              border border-white/10
-            `}
-          >
-            <Trophy className={`w-5 h-5 ${rarityColor}`} />
-            <span className={`text-2xl font-semibold ${rarityColor}`}>
-              +{xpCount}
+          <div className={`flex items-center gap-2 px-5 py-3 rounded-control ${RARITY_TINT[achievement.rarity]}`}>
+            <Trophy className={`w-5 h-5 ${rarityColor}`} aria-hidden />
+            <span className={`font-sans text-title font-semibold tabular-nums ${rarityColor}`}>
+              +{fmt.format(xpCount)}
             </span>
-            <span className="text-mystic-400 font-medium">XP</span>
+            <span className="text-ui text-mystic-400 font-medium">
+              {t('achievements.xpUnit', { defaultValue: 'XP' })}
+            </span>
           </div>
 
-          <button
-            onClick={onClose}
-            className={`
-              mt-6 w-full py-3 rounded-control font-semibold
-              bg-gradient-to-r ${rarityGradient} text-mystic-900
-              hover:opacity-90 active:scale-[0.98] transition-all
-            `}
-          >
-            Awesome!
-          </button>
+          <Button variant="gold" fullWidth className="mt-6" onClick={onClose}>
+            {t('achievements.unlockContinue', { defaultValue: 'Continue' })}
+          </Button>
         </div>
       </div>
     </div>

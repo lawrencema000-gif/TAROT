@@ -10,6 +10,7 @@ import {
 } from '../data/ziweiContent';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { useContentOverlay, ct } from '../i18n/contentOverlay';
 import { setPageMeta } from '../utils/seo';
 
 /**
@@ -28,6 +29,9 @@ export function ZiweiPage() {
   // used to read left every label English in ja/ko/zh.
   const { t } = useT(['app', 'common']);
   const { profile } = useAuth();
+  // Star, palace, transformation and bureau prose from the `ziwei` content
+  // module, keyed by star / palace / kind / bureau id; English until loaded.
+  const { overlay } = useContentOverlay('ziwei');
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(profile?.birthTime ?? '');
   const [submitted, setSubmitted] = useState(!!profile?.birthDate);
@@ -75,7 +79,7 @@ export function ZiweiPage() {
         label={t('ziwei.aboutLabel', { defaultValue: 'About this system' })}
         description={t('ziwei.aboutDescription', { defaultValue: 'What the chart is, and what it is not' })}
       >
-        <p className="reading-copy">{ZIWEI_INTRO}</p>
+        <p className="reading-copy">{ct(overlay, 'intro', ZIWEI_INTRO)}</p>
       </Disclosure>
 
       {!chart && (
@@ -117,7 +121,9 @@ export function ZiweiPage() {
                   </div>
                   <div className="text-mystic-400 text-meta">{chart.yearStemCn}年 · {chart.hourBranchCn}時</div>
                   {lifePalace && (
-                    <div className="text-mystic-400 text-meta pt-1">命宮 in {lifePalace.branchCn}</div>
+                    <div className="text-mystic-400 text-meta pt-1">
+                      {t('ziwei.lifePalaceIn', { defaultValue: '命宮 in {{branch}}', branch: lifePalace.branchCn })}
+                    </div>
                   )}
                 </div>
               }
@@ -132,7 +138,7 @@ export function ZiweiPage() {
 
           <Section title={t('ziwei.bureau', { defaultValue: 'Your bureau' })} headingLevel="h3" spacing="sm">
             <p className="reading-copy">
-              <span className="text-gold">{chart.bureauCn}</span> — {BUREAU_MEANINGS[chart.bureau]}
+              <span className="text-gold">{chart.bureauCn}</span> — {ct(overlay, `bureaus.${chart.bureau}`, BUREAU_MEANINGS[chart.bureau])}
             </p>
           </Section>
 
@@ -147,8 +153,8 @@ export function ZiweiPage() {
               return (
                 <div key={tr.kind} className="text-ui">
                   <span className="text-gold">{star?.cn ?? tr.star} {meta.cn}</span>
-                  <span className="text-mystic-400"> · {meta.en}</span>
-                  <p className="reading-copy mt-1">{meta.text}</p>
+                  <span className="text-mystic-400"> · {ct(overlay, `transformations.${tr.kind}.name`, meta.en)}</span>
+                  <p className="reading-copy mt-1">{ct(overlay, `transformations.${tr.kind}.text`, meta.text)}</p>
                 </div>
               );
             })}
@@ -176,7 +182,7 @@ export function ZiweiPage() {
                   label={
                     <>
                       <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
-                      <span className="text-mystic-400 text-meta"> {meaning?.en ?? p.en}</span>
+                      <span className="text-mystic-400 text-meta"> {meaning ? ct(overlay, `palaces.${p.key}.name`, meaning.en) : p.en}</span>
                       {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · 身宮</span>}
                     </>
                   }
@@ -187,13 +193,13 @@ export function ZiweiPage() {
                   }
                   contentClassName="pl-7 space-y-3"
                 >
-                  {meaning && <p className="reading-copy">{meaning.text}</p>}
+                  {meaning && <p className="reading-copy">{ct(overlay, `palaces.${p.key}.text`, meaning.text)}</p>}
                   {p.stars.map((s) => {
                     const sm = STAR_MEANINGS[s.key];
                     if (!sm) return null;
                     return (
                       <p key={s.key} className="reading-copy">
-                        <span className="text-gold">{sm.cn} · {sm.title}</span> — {sm.text}
+                        <span className="text-gold">{sm.cn} · {ct(overlay, `stars.${s.key}.title`, sm.title)}</span> — {ct(overlay, `stars.${s.key}.text`, sm.text)}
                       </p>
                     );
                   })}

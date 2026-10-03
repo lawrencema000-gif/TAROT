@@ -42,30 +42,36 @@ const TAB_PARENTS: ReadonlyArray<readonly [prefix: string, tab: Tab]> = [
   ['/runes', 'readings'],
   ['/dice', 'readings'],
   ['/iching', 'readings'],
-  ['/ziwei', 'readings'],
-  ['/mansions', 'readings'],
-  ['/good-days', 'readings'],
   ['/celestial-map', 'readings'],
   ['/spreads', 'readings'],
   ['/tarot-meanings', 'readings'],
   ['/pick-a-card', 'readings'],
   ['/cartomancy', 'readings'],
+  // Opened from Home's ritual rows, and from nowhere else.
+  ['/love-tree', 'home'],
+  ['/soulmate-score', 'home'],
 ];
 
 /**
  * Route pages reached from the More menu. They are not tabs, so no tab
  * lights for them — the More button does. The social tabs are listed too:
  * they are tabs only while their flag is on, and the URL works either way.
+ * Every `route:` item in BottomNav's More menu belongs here (the playing
+ * cards excepted: they are a Readings tab first), and nothing else does —
+ * Zi Wei, Mansions and Good days used to light Readings while the More
+ * panel highlighted them, and Love Tree lit More though More never leads
+ * there (shell.test.ts holds the two lists together).
  */
-const MORE_GROUP_ROUTES: readonly string[] = [
+export const MORE_GROUP_ROUTES: readonly string[] = [
   '/community',
   '/whispering-well',
   '/companion',
   '/wishing-sky',
-  '/love-tree',
-  '/soulmate-score',
   '/people',
   '/charts',
+  '/ziwei',
+  '/mansions',
+  '/good-days',
 ];
 
 /** True when the pathname is one of the bottom-nav tab roots. Deep pages

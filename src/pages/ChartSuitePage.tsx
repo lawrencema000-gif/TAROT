@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, Clock } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Section, EmptyState, Tag, ListRow, ListRowGroup } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, EmptyState, Tag, ListRow, ListRowGroup, Skeleton } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
@@ -14,8 +14,9 @@ import { type NatalChart, type AspectData, toWheelChart, isPlanet, isZodiacSign,
 import { CHART_TYPES, FIRDARIA_LORD_MEANINGS, type ChartTypeInfo } from '../data/chartSuiteContent';
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
-
-type Interp = typeof import('../data/interpretations');
+import { getLocale } from '../i18n/config';
+import { ct, useContentOverlay } from '../i18n/contentOverlay';
+import { useInterpretations } from '../hooks/useAstrology';
 
 /** Types living on other surfaces — hub cards link out. Routes match App.tsx. */
 const LINKED: Record<string, { route: string; noteKey: string; note: string }> = {
@@ -43,6 +44,9 @@ function planetName(p: string): string {
   return isPlanet(p) ? localizePlanetName(p) : p;
 }
 
+/** The overlay id of a Firdaria time lord: `Sun`, … `NorthNode`, `SouthNode`. */
+const lordId = (lord: string) => lord.replace(/\s+/g, '');
+
 /**
  * Chart Library — every chart type Arcana can cast, in one hub.
  * New types (lunar return, tertiary, solar arc, Firdaria, sky-now) render
@@ -60,7 +64,22 @@ export function ChartSuitePage() {
   const [resp, setResp] = useState<SuiteResp | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // Aspect essays (null until loaded), and the chart-library prose — each
+  // type's description and "when to read", the Firdaria chapters — from the
+  // same `interpretations` overlay (chartTypes.<key>.*, firdaria.<lord>).
+  const interp = useInterpretations();
+  const { overlay, ready: overlayReady } = useContentOverlay('interpretations');
+  /** A chart type's name and tagline: short UI strings, so app keys. */
+  const typeName = (c: ChartTypeInfo) => t(`chartSuite.types.${c.key}.name`, { defaultValue: c.name });
+  const typeTagline = (c: ChartTypeInfo) => t(`chartSuite.types.${c.key}.tagline`, { defaultValue: c.tagline });
+  /** A time lord's name: one of the ten planets, or a lunar node. */
+  const lordName = (lord: string) =>
+    lord === 'North Node'
+      ? t('chartWheel.nodes.north', { defaultValue: 'North Node' })
+      : lord === 'South Node'
+        ? t('chartWheel.nodes.south', { defaultValue: 'South Node' })
+        : planetName(lord);
+  const lordMeaning = (lord: string) => ct(overlay, `firdaria.${lordId(lord)}`, FIRDARIA_LORD_MEANINGS[lord] ?? '');
 
   const hasBirth = !!profile?.birthDate;
 
@@ -86,7 +105,6 @@ export function ChartSuitePage() {
     }
     if (error) setErr(t('chartSuite.castFailed', { defaultValue: "Couldn't cast this chart — check your connection and try again." }));
     setLoading(false);
-    import('../data/interpretations').then(setInterp);
   }, [profile, t]);
 
   // A linked type lives on another surface. The library row navigates there
@@ -127,15 +145,15 @@ export function ChartSuitePage() {
             return (
               <ListRow
                 key={c.key}
-                label={c.name}
+                label={typeName(c)}
                 meta={
                   linked ? (
                     <>
-                      <span className="block truncate">{c.tagline}</span>
+                      <span className="block truncate">{typeTagline(c)}</span>
                       <span className="block text-mystic-500">{t(linked.noteKey, { defaultValue: linked.note })}</span>
                     </>
                   ) : (
-                    <span className="block truncate">{c.tagline}</span>
+                    <span className="block truncate">{typeTagline(c)}</span>
                   )
                 }
                 onClick={() => (linked ? navigate(linked.route) : setParams({ type: c.key }))}
@@ -151,7 +169,7 @@ export function ChartSuitePage() {
   const chart = resp?.chart ?? null;
   const momentText = resp?.moment
     ? (() => {
-        const when = new Date(resp.moment).toLocaleString();
+        const when = new Date(resp.moment).toLocaleString(getLocale());
         if (selected.key === 'lunar-return') return t('chartSuite.moment.lunarReturn', { defaultValue: 'Return moment: {{when}}', when });
         if (selected.key === 'sky-now') return t('chartSuite.moment.skyNow', { defaultValue: 'Cast: {{when}}', when });
         return t('chartSuite.moment.progressed', { defaultValue: 'Progressed to: {{when}}', when });
@@ -161,9 +179,13 @@ export function ChartSuitePage() {
   return (
     <Page spacing="md">
       <PageHeader
-        eyebrow={selected.tagline}
-        title={selected.name}
-        subtitle={selected.description}
+        eyebrow={typeTagline(selected)}
+        title={typeName(selected)}
+        subtitle={
+          overlayReady
+            ? ct(overlay, `chartTypes.${selected.key}.description`, selected.description)
+            : <Skeleton height={14} width="80%" className="mx-auto" />
+        }
         onBack={() => setParams({})}
         backLabel={t('chartSuite.eyebrow', { defaultValue: 'Chart Library' })}
         align="center"
@@ -190,12 +212,12 @@ export function ChartSuitePage() {
                   {resp.firdaria.current.sub
                     ? t('chartSuite.firdaria.currentSub', {
                         defaultValue: 'You are in your {{major}} period · {{sub}} sub-period',
-                        major: planetName(resp.firdaria.current.major),
-                        sub: planetName(resp.firdaria.current.sub),
+                        major: lordName(resp.firdaria.current.major),
+                        sub: lordName(resp.firdaria.current.sub),
                       })
                     : t('chartSuite.firdaria.current', {
                         defaultValue: 'You are in your {{major}} period',
-                        major: planetName(resp.firdaria.current.major),
+                        major: lordName(resp.firdaria.current.major),
                       })}
                 </p>
                 <Tag tone="neutral">
@@ -209,11 +231,11 @@ export function ChartSuitePage() {
           </Card>
           {resp.firdaria.current && (
             <Section title={t('chartSuite.sections.chapter', { defaultValue: 'This chapter' })} headingLevel="h3" contentClassName="reading-copy">
-              <p>{FIRDARIA_LORD_MEANINGS[resp.firdaria.current.major]}</p>
+              <p>{lordMeaning(resp.firdaria.current.major)}</p>
               {resp.firdaria.current.sub && resp.firdaria.current.sub !== resp.firdaria.current.major && (
                 <p>
-                  {t('chartSuite.firdaria.flavoredBy', { defaultValue: 'Flavored by {{sub}}:', sub: planetName(resp.firdaria.current.sub) })}{' '}
-                  {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}
+                  {t('chartSuite.firdaria.flavoredBy', { defaultValue: 'Flavored by {{sub}}:', sub: lordName(resp.firdaria.current.sub) })}{' '}
+                  {lordMeaning(resp.firdaria.current.sub)}
                 </p>
               )}
             </Section>
@@ -295,7 +317,11 @@ export function ChartSuitePage() {
         </>
       ) : null}
 
-      <p className="text-ui text-mystic-400 max-w-prose">{selected.whenToRead}</p>
+      {overlayReady && (
+        <p className="text-ui text-mystic-400 max-w-prose">
+          {ct(overlay, `chartTypes.${selected.key}.whenToRead`, selected.whenToRead)}
+        </p>
+      )}
     </Page>
   );
 }

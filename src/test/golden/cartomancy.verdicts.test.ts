@@ -272,7 +272,9 @@ describe('findCombinations', () => {
     const hits = findCombinations(cards('two-of-hearts', 'three-of-hearts', 'four-of-spades'), row3);
     const suit = hits.find((h) => h.id === 'suit-majority');
     expect(suit?.suit).toBe('hearts');
-    expect(suit?.minoritySuit).toBe('clubs');
+    // Clubs and Diamonds tie for fewest (none each): no one suit is "the neglected one"
+    expect(suit?.minoritySuit).toBeUndefined();
+    expect(suit?.total).toBe(3);
     const color = hits.find((h) => h.id === 'color-majority');
     expect(color?.color).toBe('red');
     expect(hits.indexOf(suit!)).toBeGreaterThan(hits.findIndex((h) => h.kind === 'neighbor'));

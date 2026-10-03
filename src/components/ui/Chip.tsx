@@ -229,7 +229,7 @@ export interface TagProps {
   icon?: ReactNode;
   /**
    * `keyword` — the tracked-caps pill under a card: OPPORTUNITY · PROSPERITY.
-   * One size (h-7), one recipe; `tone` and `size` are ignored. On the canvas
+   * One size (min-h-7; a long keyword wraps inside it), one recipe; `tone` and `size` are ignored. On the canvas
    * it is a gold tint with gold-light text; inside `.paper-prose` (a Paper)
    * the `.keyword-pill` class flips it to an ink-gold fill with paper text
    * (5.2:1) — the surface decides, not the caller, so a card detail that
@@ -239,8 +239,13 @@ export interface TagProps {
   className?: string;
 }
 
+// min-h-7, not h-7: a long playing-card keyword ("SMALL TALK THAT MUST
+// BECOME REAL TALK") wraps at phone width, and a fixed 28px pill let the
+// second line hang below its fill (P7 #75). One line is still exactly 28px
+// (py-1 + the 12px caption at leading-tight sits inside min-h-7); two lines
+// grow the pill and stay centred, never wider than the row.
 const KEYWORD_PILL =
-  'keyword-pill inline-flex items-center rounded-full px-3 h-7 text-caption font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
+  'keyword-pill inline-flex items-center justify-center text-center max-w-full rounded-full px-3 py-1 min-h-7 text-caption leading-tight font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
 
 /** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
 export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {

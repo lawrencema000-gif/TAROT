@@ -15,8 +15,7 @@ import { type NatalChart, toWheelChart, isPlanet, isZodiacSign, isAspectType } f
 import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
-
-type Interp = typeof import('../data/interpretations');
+import { useInterpretations } from '../hooks/useAstrology';
 
 const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other', pet: 'Pet' };
 
@@ -29,7 +28,8 @@ export function PersonDetailPage() {
   const { t } = useT('app');
   const [person, setPerson] = useState<Person | null>(null);
   const [chart, setChart] = useState<NatalChart | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // The planet / aspect readings, in the reader's language (null until loaded).
+  const interp = useInterpretations();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -55,7 +55,6 @@ export function PersonDetailPage() {
     if (error) { setErr(t('people.detail.chartFailed', { defaultValue: "Couldn't cast the chart — check your connection and try again." })); setLoading(false); return; }
     setChart((data?.data?.chart ?? data?.chart) as NatalChart);
     setLoading(false);
-    import('../data/interpretations').then(setInterp);
   }, [id, t]);
 
   useEffect(() => { load(); }, [load]);
@@ -119,8 +118,16 @@ export function PersonDetailPage() {
               <div>
                 <div className="heading-display-md text-mystic-100">{petReading.reading.headline}</div>
                 <div className="text-meta text-mystic-400">
-                  {person.species ? SPECIES_INFO[person.species].label : 'Companion'}
-                  {petReading.animal && <> · Year of the {petReading.animal.en} {petReading.animal.cn}</>}
+                  {person.species
+                    ? t(`people.species.${person.species}`, { defaultValue: SPECIES_INFO[person.species].label })
+                    : t('people.pet.companion', { defaultValue: 'Companion' })}
+                  {petReading.animal && (
+                    <> · {t('people.pet.yearOf', {
+                      defaultValue: 'Year of the {{animal}} {{cn}}',
+                      animal: t(`chineseZodiac.${petReading.animal.en.toLowerCase()}.name`, { defaultValue: petReading.animal.en }),
+                      cn: petReading.animal.cn,
+                    })}</>
+                  )}
                 </div>
               </div>
             </div>
@@ -130,16 +137,16 @@ export function PersonDetailPage() {
             </div>
           </Card>
 
-          <Section title="What they need from you" headingLevel="h3" spacing="sm">
+          <Section title={t('people.pet.needsTitle', { defaultValue: 'What they need from you' })} headingLevel="h3" spacing="sm">
             <div className="reading-copy">
               <p>{petReading.reading.needs}</p>
               <p className="border-t border-mystic-800/40 pt-3">
-                <span className="text-gold/80">The quirk:</span> {petReading.reading.quirk}
+                <span className="text-gold/80">{t('people.pet.quirk', { defaultValue: 'The quirk:' })}</span> {petReading.reading.quirk}
               </p>
             </div>
           </Section>
 
-          <p className="text-caption text-mystic-500 italic">{PET_DISCLAIMER}</p>
+          <p className="text-caption text-mystic-500 italic">{t('people.pet.disclaimer', { defaultValue: PET_DISCLAIMER })}</p>
         </>
       )}
 
@@ -186,7 +193,7 @@ export function PersonDetailPage() {
                   </span>
                 }
                 label={
-                  <span className="block truncate">
+                  <span className="block break-words">
                     <span className="text-mystic-100">
                       {isZodiacSign(p.sign)
                         ? t('horoscope.birthChartView.planetInSign', { planet: planetName(p.planet), sign: localizeSignName(p.sign) })
@@ -225,8 +232,15 @@ export function PersonDetailPage() {
                 variant="row"
                 lazy
                 label={
-                  <span className="block truncate text-mystic-100">
-                    {planetName(a.planet1)} {isAspectType(a.type) ? localizeAspectName(a.type) : a.type} {planetName(a.planet2)}
+                  // Wraps rather than truncates: the label is the only place
+                  // the row names both planets and the aspect (review #30).
+                  <span className="block break-words text-mystic-100">
+                    {t('horoscope.birthChartView.aspectRow', {
+                      defaultValue: '{{p1}} {{type}} {{p2}}',
+                      p1: planetName(a.planet1),
+                      type: isAspectType(a.type) ? localizeAspectName(a.type) : a.type,
+                      p2: planetName(a.planet2),
+                    })}
                   </span>
                 }
                 meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}

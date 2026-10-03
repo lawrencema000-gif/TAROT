@@ -68,13 +68,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, 
 
   const deckInner = (
     <>
-          {/* One soft bloom behind the deck — the hero's light, static. */}
-          <div
-            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
-              isShuffling ? 'opacity-100' : 'opacity-50'
-            }`}
-            aria-hidden
-          />
+          {/* No bloom behind the deck: nothing glows (§3.9); the deck sits on the canvas. */}
           {Array.from({ length: DECK_SIZE }).map((_, i) => {
             const offsetX = (i - DECK_SIZE / 2) * 2.4;
             const offsetY = -i * 0.7;
@@ -151,7 +145,9 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, 
           </h2>
           <p className="text-ui text-mystic-400">
             {isShuffling
-              ? t('readings.shuffleView.spreading', { defaultValue: 'Tap the deck to cut it when it feels right.' })
+              ? // A new key: the old `spreading` still says "spreading all 78 cards" in
+                // ja/ko/zh, which the playing-card table (52 cards) reuses too.
+                t('readings.shuffleView.tapToCut', { defaultValue: 'Tap the deck to cut it when it feels right.' })
               : t('readings.shuffleView.focusQuestion', { defaultValue: 'Hold your focus, then shuffle.' })}
           </p>
         </div>

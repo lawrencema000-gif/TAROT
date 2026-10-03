@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Aperture, TrendingUp, Layers, Hash, RotateCcw, Flame, Calendar } from 'lucide-react';
 import { PageHeader, Page, Tabs, EyebrowLabel, Card, Section, EmptyState, Tag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
+import { getMirrorStats, type MirrorPeriod, type MirrorStats, type MirrorRank } from '../services/mirror';
+import { localizeCardName, localizeCardNameSync } from '../i18n/localizeCard';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -23,6 +24,11 @@ const SUIT_DEFAULT: Record<string, string> = {
   Pentacles: 'Pentacles',
 };
 
+const RANK_DEFAULT: Record<MirrorRank, string> = {
+  ace: 'Ace', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
+  page: 'Page', knight: 'Knight', queen: 'Queen', king: 'King',
+};
+
 export function MirrorPage() {
   const { user } = useAuth();
   const { t } = useT('app');
@@ -30,6 +36,9 @@ export function MirrorPage() {
   const [period, setPeriod] = useState<MirrorPeriod>('month');
   const [stats, setStats] = useState<MirrorStats | null>(null);
   const [loading, setLoading] = useState(true);
+  // Saved names are canonical English; the deck index that localises them is
+  // lazy, so bump once it has loaded and the names re-render translated.
+  const [, setDeckReady] = useState(0);
 
   useEffect(() => {
     setPageMeta('Mirror — your reading patterns', 'Aggregate stats from your tarot readings: most-drawn cards, suit balance, reversal rate, and streaks.');
@@ -40,12 +49,23 @@ export function MirrorPage() {
     let cancelled = false;
     setLoading(true);
     getMirrorStats(user.id, period)
-      .then((s) => { if (!cancelled) setStats(s); })
+      .then(async (s) => {
+        if (cancelled) return;
+        setStats(s);
+        if (s.mostDrawnCard) {
+          await localizeCardName(s.mostDrawnCard.name);
+          if (!cancelled) setDeckReady((n) => n + 1);
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [user, period]);
 
   const suitName = (suit: string) => t(`mirror.suits.${suit.toLowerCase()}`, { defaultValue: SUIT_DEFAULT[suit] ?? suit });
+  // Pip ranks are numerals in every language; only the court ranks and the ace are words.
+  const rankName = (rank: MirrorRank) =>
+    /^\d+$/.test(rank) ? rank : t(`mirror.ranks.${rank}`, { defaultValue: RANK_DEFAULT[rank] ?? rank });
+  const cardName = (englishName: string) => localizeCardNameSync(englishName);
 
   if (!user) {
     return (
@@ -93,8 +113,8 @@ export function MirrorPage() {
             <Highlight
               icon={TrendingUp}
               label={t('mirror.highlights.cardNow', { defaultValue: 'Your card right now' })}
-              value={stats.mostDrawnCard.name}
-              caption={t('mirror.captions.appearances', { defaultValue: '{{n}} appearances', n: fmt.format(stats.mostDrawnCard.count) })}
+              value={cardName(stats.mostDrawnCard.name)}
+              caption={t('mirror.captions.appearances', { defaultValue: '{{n}} appearances', count: stats.mostDrawnCard.count, n: fmt.format(stats.mostDrawnCard.count) })}
             />
           )}
 
@@ -104,15 +124,15 @@ export function MirrorPage() {
                 icon={Layers}
                 label={t('mirror.highlights.dominantSuit', { defaultValue: 'Dominant suit' })}
                 value={suitName(stats.mostDrawnSuit.suit)}
-                caption={t('mirror.captions.fromSuit', { defaultValue: '{{n}} cards from this suit', n: fmt.format(stats.mostDrawnSuit.count) })}
+                caption={t('mirror.captions.fromSuit', { defaultValue: '{{n}} cards from this suit', count: stats.mostDrawnSuit.count, n: fmt.format(stats.mostDrawnSuit.count) })}
               />
             )}
             {stats.mostDrawnNumber && (
               <Highlight
                 icon={Hash}
                 label={t('mirror.highlights.recurringNumber', { defaultValue: 'Recurring number' })}
-                value={stats.mostDrawnNumber.value}
-                caption={t('mirror.captions.occurrences', { defaultValue: '{{n}} occurrences', n: fmt.format(stats.mostDrawnNumber.count) })}
+                value={rankName(stats.mostDrawnNumber.value)}
+                caption={t('mirror.captions.occurrences', { defaultValue: '{{n}} occurrences', count: stats.mostDrawnNumber.count, n: fmt.format(stats.mostDrawnNumber.count) })}
               />
             )}
           </div>
@@ -129,7 +149,7 @@ export function MirrorPage() {
                         <div className="flex items-center justify-between gap-3 mb-1.5">
                           <span className="flex items-center gap-2 min-w-0">
                             <Tag tone="neutral" className="tabular-nums shrink-0">{i + 1}</Tag>
-                            <span className="text-ui text-mystic-200 truncate">{c.name}</span>
+                            <span className="text-ui text-mystic-200 truncate">{cardName(c.name)}</span>
                           </span>
                           <span className="text-meta text-mystic-400 tabular-nums shrink-0">
                             {t('mirror.captions.times', { defaultValue: '{{n}}×', n: fmt.format(c.count) })}

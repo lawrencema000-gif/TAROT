@@ -25,6 +25,8 @@ const KIND_LABEL: Record<AstroCategory, string> = {
  * emojifies.
  */
 function entryGlyph(entry: AstroEntry, size: number): ReactNode {
+  // `entry` must be the English source (getAstroEntry), never the localized
+  // copy: `name` is what the overlay translates.
   if (entry.category === 'sign') {
     const Glyph = ZODIAC_ICONS[entry.name as ZodiacSign];
     if (Glyph) return <Glyph size={size} strokeWidth={1.5} />;
@@ -149,7 +151,10 @@ export function AstrologyEntryPage() {
       loading={!ready}
       eyebrow={t(`learn.astrology.kinds.${entry.category}`, { defaultValue: KIND_LABEL[entry.category] })}
       title={entry.name}
-      symbol={entryGlyph(entry, 20)}
+      // The English entry: the icon tables are keyed by the untranslated
+      // name, and the overlay translates `name` (P7 #118: ja/ko/zh got the
+      // ♈ colour emoji fallback in place of the drawn glyph).
+      symbol={entryGlyph(source, 20)}
       lede={entry.shortDescription}
       intro={entry.longDescription}
       facts={facts}

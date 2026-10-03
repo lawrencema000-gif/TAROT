@@ -15,6 +15,8 @@ export interface XPReward {
   new_level: number;
   level_up: boolean;
   seeker_rank: string;
+  /** award_xp paid nothing: a per-day ceiling was reached, or the rung was already paid (20261003000012). */
+  capped?: boolean;
   unlocked_achievements?: UnlockedAchievement[];
 }
 
@@ -47,6 +49,19 @@ const XP_REWARDS: Record<ActivityType, number> = {
   community_comment: 5,
 };
 
+/**
+ * Pay the XP for one activity and report the activity to the badges.
+ *
+ * This is the ONE place an activity reaches check_achievement_progress: a
+ * caller that also calls checkAchievementProgress(user, sameType) counts the
+ * activity twice (p7 #36). Badges that need a value (set and per-card
+ * badges) have their own reporters in services/achievements.ts.
+ *
+ * The server bounds XP for a session (20261003000012): one ritual a day, 20
+ * readings, … and each streak rung once. Past a ceiling the activity still
+ * counts toward badges, but no XP is paid and this resolves null, so callers
+ * show no "+0 XP" line.
+ */
 export async function awardXP(
   userId: string,
   activityType: ActivityType
@@ -67,6 +82,7 @@ export async function awardXP(
 
     const result = data as XPReward;
     const unlockedAchievements = await checkAchievementProgress(userId, activityType);
+    if (!result || !(result.xp_earned > 0)) return null;
 
     const milestoneAchievements = await checkLevelMilestones(
       userId,

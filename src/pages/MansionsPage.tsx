@@ -12,6 +12,7 @@ import {
 } from '../data/lunarMansionsContent';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
 import { setPageMeta } from '../utils/seo';
 
 /**
@@ -36,6 +37,17 @@ export function MansionsPage() {
   // used to read left every label English in ja/ko/zh.
   const { t } = useT(['app', 'common']);
   const { profile } = useAuth();
+  // The prose lives in the `mansions` content module, keyed by mansion key
+  // and quadrant; the English shows until a translation has loaded.
+  const { overlay } = useContentOverlay('mansions');
+  const mTitle = (m: Mansion) => ct(overlay, `mansions.${m.key}.title`, MANSION_MEANINGS[m.key]?.title ?? '');
+  const mText = (m: Mansion) => ct(overlay, `mansions.${m.key}.text`, MANSION_MEANINGS[m.key]?.text ?? '');
+  const mAnimal = (m: Mansion) => ct(overlay, `mansions.${m.key}.animal`, m.animal);
+  const mAdvice = (m: Mansion) => ct(overlay, `mansions.${m.key}.advice`, MANSION_DAILY_ADVICE[m.key] ?? '');
+  const qName = (q: Quadrant) => ct(overlay, `quadrants.${q}.name`, QUADRANT_INFO[q].en);
+  const qText = (q: Quadrant) => ct(overlay, `quadrants.${q}.text`, QUADRANT_MEANINGS[q]?.text ?? '');
+  const qSeason = (q: Quadrant) => ct(overlay, `quadrants.${q}.season`, QUADRANT_INFO[q].season);
+  const qElement = (q: Quadrant) => ct(overlay, `quadrants.${q}.element`, QUADRANT_INFO[q].element);
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   // The 値日 cycle turns at midnight, so only the date matters here. We still
   // pass the profile's time through for the sukuyō reading, which is defined on
@@ -78,8 +90,12 @@ export function MansionsPage() {
   }, []);
 
   const renderActivities = (m: Mansion) => {
-    const acts = MANSION_ACTIVITIES[m.key];
-    if (!acts) return null;
+    const en = MANSION_ACTIVITIES[m.key];
+    if (!en) return null;
+    const acts = {
+      favourable: ctList(overlay, `mansions.${m.key}.favourable`, en.favourable),
+      unfavourable: ctList(overlay, `mansions.${m.key}.unfavourable`, en.unfavourable),
+    };
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
@@ -90,8 +106,8 @@ export function MansionsPage() {
             </p>
           ) : (
             <ul className="space-y-0.5">
-              {acts.favourable.map((a) => (
-                <li key={a} className="text-ui text-mystic-200">{a}</li>
+              {acts.favourable.map((a, i) => (
+                <li key={i} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
@@ -102,8 +118,8 @@ export function MansionsPage() {
             <p className="text-ui text-mystic-300 italic">{t('mansions.nothingAvoided', { defaultValue: 'Nothing particular to avoid.' })}</p>
           ) : (
             <ul className="space-y-0.5">
-              {acts.unfavourable.map((a) => (
-                <li key={a} className="text-ui text-mystic-200">{a}</li>
+              {acts.unfavourable.map((a, i) => (
+                <li key={i} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
@@ -132,7 +148,7 @@ export function MansionsPage() {
         label={t('mansions.aboutLabel', { defaultValue: 'About this system' })}
         description={t('mansions.aboutDescription', { defaultValue: 'Where the twenty-eight come from, and how the daily count works' })}
       >
-        <p className="reading-copy">{MANSION_INTRO}</p>
+        <p className="reading-copy">{ct(overlay, 'intro', MANSION_INTRO)}</p>
       </Disclosure>
 
       {/* Today's governing mansion */}
@@ -144,12 +160,12 @@ export function MansionsPage() {
           </div>
           <div className="flex items-baseline gap-2 flex-wrap">
             <span className="text-display text-gold" style={CJK_SERIF} lang="zh-Hant">{today.cn}</span>
-            <span className="text-mystic-100 text-body">{MANSION_MEANINGS[today.key]?.title}</span>
+            <span className="text-mystic-100 text-body">{mTitle(today)}</span>
             <span className="text-meta text-mystic-400" lang="zh-Hant">
               {today.cn}{PLANET7_INFO[today.planet].cn}{today.animalCn}
             </span>
           </div>
-          <p className="reading-copy">{MANSION_DAILY_ADVICE[today.key]}</p>
+          <p className="reading-copy">{mAdvice(today)}</p>
           {renderActivities(today)}
         </Card>
       )}
@@ -181,15 +197,15 @@ export function MansionsPage() {
             <div className="flex items-baseline gap-3">
               <span className="text-hero text-gold" style={CJK_SERIF} lang="zh-Hant">{birth.cn}</span>
               <div>
-                <div className="text-mystic-100 text-body">{MANSION_MEANINGS[birth.key]?.title}</div>
+                <div className="text-mystic-100 text-body">{mTitle(birth)}</div>
                 <div className="text-meta text-mystic-400" lang="zh-Hant">
                   {birth.cn}{PLANET7_INFO[birth.planet].cn}{birth.animalCn} · {QUADRANT_INFO[birth.quadrant].cn}
                 </div>
               </div>
             </div>
-            <p className="reading-copy">{MANSION_MEANINGS[birth.key]?.text}</p>
+            <p className="reading-copy">{mText(birth)}</p>
             <p className="reading-copy border-t border-mystic-800/40 pt-3">
-              <span className="text-gold">{QUADRANT_INFO[birth.quadrant].en}</span> — {QUADRANT_MEANINGS[birth.quadrant]?.text}
+              <span className="text-gold">{qName(birth.quadrant)}</span> — {qText(birth.quadrant)}
             </p>
           </Card>
 
@@ -199,7 +215,7 @@ export function MansionsPage() {
                 {t('mansions.sukuyoBefore', {
                   defaultValue: 'The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in',
                 })}{' '}
-                <span className="text-gold" lang="zh-Hant">{sukuyo.cn} {MANSION_MEANINGS[sukuyo.key]?.title}</span>.{' '}
+                <span className="text-gold"><span lang="zh-Hant">{sukuyo.cn}</span> {mTitle(sukuyo)}</span>.{' '}
                 {t('mansions.sukuyoAfter', {
                   defaultValue: 'Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you.',
                 })}
@@ -223,8 +239,10 @@ export function MansionsPage() {
           <div key={q} className="space-y-1">
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-ui font-medium text-mystic-100" lang="zh-Hant">{QUADRANT_INFO[q].cn}</span>
-              <span className="text-ui text-mystic-200">{QUADRANT_INFO[q].en}</span>
-              <span className="text-meta text-mystic-400">— {QUADRANT_INFO[q].season}, {QUADRANT_INFO[q].element}</span>
+              <span className="text-ui text-mystic-200">{qName(q)}</span>
+              <span className="text-meta text-mystic-400">
+                — {t('mansions.seasonElement', { defaultValue: '{{season}}, {{element}}', season: qSeason(q), element: qElement(q) })}
+              </span>
             </div>
             {byQuadrant[q].map((m) => {
               const open = openKey === m.key;
@@ -239,8 +257,8 @@ export function MansionsPage() {
                   }
                   label={
                     <>
-                      <span className="text-mystic-100 text-ui">{MANSION_MEANINGS[m.key]?.title}</span>
-                      <span className="text-meta text-mystic-400"> · {m.animal}</span>
+                      <span className="text-mystic-100 text-ui">{mTitle(m)}</span>
+                      <span className="text-meta text-mystic-400"> · {mAnimal(m)}</span>
                     </>
                   }
                   meta={
@@ -250,7 +268,7 @@ export function MansionsPage() {
                   }
                   contentClassName="pl-8 space-y-2"
                 >
-                  <p className="reading-copy">{MANSION_MEANINGS[m.key]?.text}</p>
+                  <p className="reading-copy">{mText(m)}</p>
                   {renderActivities(m)}
                 </Disclosure>
               );

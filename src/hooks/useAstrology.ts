@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
@@ -6,6 +6,8 @@ import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId'
 import { apiCall, ApiError, ApiContractError, handleSessionExpired } from '../lib/apiClient';
 import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
+import { useContentOverlay } from '../i18n/contentOverlay';
+import { withOverlay, type Interpretations, type InterpModule } from '../data/interpretations/localize';
 
 const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
 
@@ -34,6 +36,11 @@ function userMessage(e: unknown, key: string, fallback: string): string {
   }
   if (code === 'RATE_LIMITED' || status === 429) {
     return tErr('rateLimited', 'Too many requests — wait a moment and try again.');
+  }
+  if (code === 'NATAL_CHART_MISSING') {
+    // Not a connection problem: the chart is not cast yet (a first visit,
+    // or a reading asked for before the cast landed).
+    return tErr('chartMissing', 'Your birth chart isn’t set up yet. Open Horoscope to cast it, then try again.');
   }
   if (e instanceof ApiContractError) {
     return tErr('contract', 'The server sent something this version couldn’t read — try again in a moment.');
@@ -444,4 +451,26 @@ export function useTransitCalendar() {
   }, []);
 
   return { events, loading, error, load };
+}
+
+/**
+ * The interpretation library (planet in sign / house, aspects, houses, sign
+ * compatibility) in the reader's language: the lazily imported English
+ * library read through the `interpretations` content overlay. Null until
+ * both have loaded — render a skeleton until then, never the English for a
+ * frame and then the translation.
+ */
+export function useInterpretations(): Interpretations | null {
+  const [mod, setMod] = useState<InterpModule | null>(null);
+  const { overlay, ready } = useContentOverlay('interpretations');
+  useEffect(() => {
+    let alive = true;
+    import('../data/interpretations').then((m) => {
+      if (alive) setMod(m);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return useMemo(() => (mod && ready ? withOverlay(mod, overlay) : null), [mod, ready, overlay]);
 }

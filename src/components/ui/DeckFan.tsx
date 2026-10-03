@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { cardBackSources, DEFAULT_CARD_BACK, type ImageSources } from '../../utils/imageUrl';
 
 /**
  * Three card backs fanned on the table.
@@ -13,11 +14,10 @@ import type { CSSProperties } from 'react';
  * the entrance to its final frame, so the fan simply is there.
  *
  * `back` is the user's chosen card back, or the Arcana default. Every
- * copy is one `<img>` of the same URL, decoded once. A back that is one of
- * the bundled card images (`/bundled-cards/…/<card>.webp`, 512×768) is
- * served from its 150px thumbnail at 1× and the 400px rendition at 2×: the
- * widest card here is 96px, so the full image was 157 KB of pixels nobody
- * could see. The default back is an SVG and needs no srcset.
+ * copy is one `<img>` of the same URL, decoded once, at the size the card
+ * is drawn (src/utils/imageUrl.ts): the widest card here is 96px, and the
+ * stock back in Storage is a 2.6 MB PNG that drew top-down while it
+ * streamed. The default back is an SVG and needs no srcset.
  *
  * The deck sits on the canvas by itself. A blurred gold disc used to sit
  * behind it; it was a glow by another name, and HomeHero shows the fan
@@ -42,24 +42,19 @@ const SIZES: Record<DeckFanSize, { w: number; box: [number, number]; spread: num
 
 const KEYFRAMES = `@keyframes arcana-fan{from{opacity:0;transform:translate(-50%,-50%) translate(0,12px) rotate(0deg) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) translate(var(--fan-x),var(--fan-y)) rotate(var(--fan-r)) scale(1)}}`;
 
-const BUNDLED_RE = /^\/bundled-cards\/(major-arcana|minor-arcana)\/([^/]+\.webp)$/;
-
 /**
- * The 1× source and the srcset for a card back. Only the bundled card
- * images have renditions (see src/config/bundledImages.ts); anything else
- * — the default SVG, a user upload — is used as given.
+ * The 1x source and the srcset for a card back on a `cssWidth`-px card.
+ * See src/utils/imageUrl.ts: the bundled card images use their 150/400
+ * renditions, the stock Storage back its 200/480 WebP, any other Storage
+ * file the image transform; the default SVG is used as given.
  */
-export function deckFanSources(src: string): { src: string; srcSet?: string } {
-  const m = BUNDLED_RE.exec(src);
-  if (!m) return { src };
-  const thumb = `/bundled-cards/thumb/${m[1]}/${m[2]}`;
-  const full = `/bundled-cards/full/${m[1]}/${m[2]}`;
-  return { src: thumb, srcSet: `${thumb} 1x, ${full} 2x` };
+export function deckFanSources(src: string, cssWidth = 96): ImageSources {
+  return cardBackSources(src, cssWidth);
 }
 
 export function DeckFan({ back, size = 'md', animate = true, className = '' }: DeckFanProps) {
-  const sources = deckFanSources(back || '/card-backs/default.svg');
   const s = SIZES[size];
+  const sources = deckFanSources(back || DEFAULT_CARD_BACK, s.w);
   const fan = [
     { r: -s.rot, x: -s.spread, y: s.drop },
     { r: 0, x: 0, y: 0 },
@@ -87,6 +82,7 @@ export function DeckFan({ back, size = 'md', animate = true, className = '' }: D
           <img
             src={sources.src}
             srcSet={sources.srcSet}
+            sizes={sources.sizes}
             alt=""
             width={s.w}
             height={Math.round(s.w * 1.5)}

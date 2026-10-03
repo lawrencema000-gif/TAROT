@@ -36,6 +36,19 @@ import { EditProfileForm } from '../profile/EditProfileForm';
 import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
 import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
+import { isNative } from '../../utils/platform';
+import { downloadBlob, sharePng } from '../../utils/nativeShare';
+import type { UserProfile } from '../../types';
+
+/**
+ * "Default" clears the column. UserProfile types these as `string | undefined`,
+ * but AuthContext.mapProfileToDb drops undefined keys, so `url || undefined`
+ * wrote nothing and Default could never be chosen again (P7 #17/#55). An
+ * explicit null reaches the upsert and clears it.
+ */
+function appearanceUpdate(field: 'card_back_url' | 'background_url', url: string | null): Partial<UserProfile> {
+  return { [field]: url } as unknown as Partial<UserProfile>;
+}
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
 
@@ -198,7 +211,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const handleSelectCardBack = async (url: string | null) => {
     setSavingCardBack(true);
     try {
-      const { error } = await updateProfile({ card_back_url: url || undefined });
+      const { error } = await updateProfile(appearanceUpdate('card_back_url', url));
       if (error) throw error;
     } catch (err) {
       console.error('Failed to save card back:', err);
@@ -257,7 +270,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const handleSelectBackground = async (url: string | null) => {
     setSavingBackground(true);
     try {
-      const { error } = await updateProfile({ background_url: url || undefined });
+      const { error } = await updateProfile(appearanceUpdate('background_url', url));
       if (error) throw error;
       await refreshProfile();
     } catch (err) {
@@ -296,15 +309,30 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       }
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `arcana-data-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast(tAppSettings('settings.toasts.exportReady', { defaultValue: 'Your data is ready' }), 'success');
+      const fileName = `arcana-data-export-${new Date().toISOString().split('T')[0]}.json`;
+
+      // Say "ready" only once the file has actually gone somewhere. The
+      // Android/iOS WebView ignores <a download>, so on native the file is
+      // written to the app cache and handed to the share sheet (save to
+      // Files/Drive, mail it…). nativeShare's native file path is
+      // type-agnostic despite the name `sharePng`; on the web it is a
+      // plain download.
+      if (isNative()) {
+        const outcome = await sharePng(blob, fileName, {
+          title: tAppSettings('settings.exportShareTitle', { defaultValue: 'Your Arcana data' }) as string,
+        });
+        if (outcome === 'shared') {
+          toast(tAppSettings('settings.toasts.exportShared', { defaultValue: 'Your data export is in the place you chose.' }), 'success');
+        } else if (outcome === 'cancelled') {
+          toast(tAppSettings('settings.toasts.exportCancelled', { defaultValue: 'Export not saved. Tap Export my data to try again.' }), 'info');
+        } else {
+          throw new Error('native export share failed');
+        }
+      } else if (downloadBlob(blob, fileName)) {
+        toast(tAppSettings('settings.toasts.exportDownloaded', { defaultValue: 'Your data export has downloaded.' }), 'success');
+      } else {
+        throw new Error('download unavailable');
+      }
     } catch (err) {
       console.error('Export failed:', err);
       toast(tAppSettings('settings.toasts.exportFailed', { defaultValue: 'Couldn’t prepare your export — check your connection and try again.' }), 'error');
@@ -554,7 +582,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     {!profile?.card_back_url && <SelectedTick />}
                   </button>
 
-                  {cardBacks.map((cardBack) => {
+                  {cardBacks.map((cardBack, idx) => {
                     const on = profile?.card_back_url === cardBack.url;
                     return (
                       <button
@@ -562,7 +590,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                         type="button"
                         role="radio"
                         aria-checked={on}
-                        aria-label={cardBack.name}
+                        aria-label={tAppSettings('settings.cardBackOption', {
+                          defaultValue: 'Card back {{n}} of {{total}}',
+                          n: idx + 1,
+                          total: cardBacks.length,
+                        }) as string}
                         onClick={() => handleSelectCardBack(cardBack.url)}
                         disabled={savingCardBack}
                         className={`${SWATCH} aspect-[2/3] bg-mystic-800 min-h-[120px] ${on ? SWATCH_ON : SWATCH_OFF}`}
@@ -655,7 +687,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     {profile?.background_url === CELESTIAL_BG_URL && <SelectedTick />}
                   </button>
 
-                  {backgrounds.map((bg) => {
+                  {backgrounds.map((bg, idx) => {
                     const on = profile?.background_url === bg.url;
                     return (
                       <button
@@ -663,7 +695,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                         type="button"
                         role="radio"
                         aria-checked={on}
-                        aria-label={bg.name}
+                        aria-label={tAppSettings('settings.backgroundOption', {
+                          defaultValue: 'Painted background {{n}} of {{total}}',
+                          n: idx + 1,
+                          total: backgrounds.length,
+                        }) as string}
                         onClick={() => handleSelectBackground(bg.url)}
                         disabled={savingBackground}
                         className={`${SWATCH} aspect-video bg-mystic-800 min-h-[88px] ${on ? SWATCH_ON : SWATCH_OFF}`}

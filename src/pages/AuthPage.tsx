@@ -44,10 +44,10 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
 
   useEffect(() => {
     setPageMeta(
-      'Sign in',
-      'Sign in to Arcana — your daily tarot, astrology, and reflective journaling practice. Continue your ritual.',
+      t('authPage.metaTitle', { defaultValue: 'Sign in' }),
+      t('authPage.metaDescription', { defaultValue: 'Sign in to Arcana — your daily tarot, astrology, and reflective journaling practice. Continue your ritual.' }),
     );
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -58,7 +58,9 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
       const decodedError = (errorDescription || errorParam || '').replace(/\+/g, ' ');
       console.error('[Auth] Sign-in callback returned an error:', decodedError);
       toast(getAuthErrorMessage(decodedError), 'error');
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Drop the error, keep where the visitor was headed (App's `next`).
+      const next = urlParams.get('next');
+      window.history.replaceState({}, document.title, window.location.pathname + (next ? `?next=${encodeURIComponent(next)}` : ''));
     }
   }, []);
 

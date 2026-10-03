@@ -82,10 +82,12 @@ export function TodayForYouView({ content, loading, error, refresh, actions }: T
   if (error || !content) {
     return (
       <div className="py-10 text-center space-y-4">
+        {/* The hook's message says what actually happened (a connection
+            failure, a session that ended, a chart not cast yet); a fixed
+            "check your connection" blamed the network for all of them. */}
         <p className="text-ui text-mystic-300">
           {error
-            ? t('horoscope.todayForYou.loadFailed', { defaultValue: 'Couldn’t load today’s reading — check your connection and try again.' })
-            : t('horoscope.todayForYou.noDailyContent')}
+            || t('horoscope.todayForYou.noDailyContent')}
         </p>
         <Button variant="outline" size="sm" onClick={() => refresh()}>
           <RefreshCw className="w-4 h-4 mr-2" aria-hidden />

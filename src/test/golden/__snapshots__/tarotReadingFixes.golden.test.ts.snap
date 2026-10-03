@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the AI gets the folded combinations (#60) > one line per neighbour rule, so the pairs and majorities still fit in six 1`] = `
+[
+  "Three Aces — Good news; several beginnings at once.",
+  "Ace of Spades touching the Nine of Clubs, the Two of Clubs, the Five of Hearts, the Ace of Diamonds, the Jack of Diamonds, the Ace of Hearts… — That card’s matter is ending or being decided finally.",
+  "Five of Hearts beside the Ace of Spades; Ace of Hearts beside the Ace of Spades — The difficulty is softened by care; the trouble is real but held.",
+  "Nine of Clubs beside the Ace of Diamonds; Two of Clubs beside the Ace of Diamonds and the Jack of Diamonds; Four of Clubs beside the… — Money earned rather than received; effort turning into means.",
+  "Seven of Diamonds intensifies the Ace of Spades, the Jack of Diamonds and the Four of Clubs — That neighbor is intensified; read it more strongly.",
+  "Nine of Clubs with the Four of Clubs — Potential that ripens into a harvest; the work pays.",
+]
+`;

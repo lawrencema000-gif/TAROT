@@ -10,6 +10,7 @@ import {
   reasoningEffortFor,
 } from "../_shared/ai-providers.ts";
 import { localeInstruction } from "../_shared/locale.ts";
+import { cardPromptLines, fallbackReadingText } from "./reading-text.ts";
 
 /**
  * generate-reading — the AI interpretation of a laid spread, for the tarot
@@ -107,15 +108,6 @@ const spreadPositions: Record<string, string[]> = {
     "Final outcome",
   ],
 };
-
-function excerpt(input: string | undefined, maxChars: number): string {
-  if (!input) return "";
-  const s = input.replace(/\s+/g, " ").trim();
-  if (s.length <= maxChars) return s;
-  const cut = s.slice(0, maxChars);
-  const lastStop = Math.max(cut.lastIndexOf("."), cut.lastIndexOf("!"), cut.lastIndexOf("?"));
-  return (lastStop > Math.min(120, maxChars / 2) ? cut.slice(0, lastStop + 1) : cut).trim();
-}
 
 const MAX_QUESTION_LENGTH = 500;
 const MAX_CARDS_TAROT = 10;
@@ -220,30 +212,9 @@ function buildPrompt(
   cards.forEach((card, index) => {
     const position = positions[index] || `Position ${index + 1}`;
     const orientation = card.reversed ? "Reversed" : "Upright";
-
-    const baseMeaning = card.reversed ? card.meaningReversed : card.meaningUpright;
-
-    const focusMeaning =
-      focusArea === "love"
-        ? card.loveMeaning
-        : focusArea === "career"
-          ? card.careerMeaning
-          : focusArea === "general"
-            ? card.adviceMeaning
-            : undefined;
-
-    const canonical = focusMeaning || baseMeaning;
-
     prompt += `\n- ${position}: ${card.name} (${orientation})\n`;
-
-    if (card.keywords?.length) {
-      prompt += `  Keywords: ${card.keywords.slice(0, 6).join(", ")}\n`;
-    }
-
-    if (canonical) {
-      prompt += `  Canonical meaning excerpt: ${excerpt(canonical, excerptChars)}\n`;
-    } else if (baseMeaning) {
-      prompt += `  Canonical meaning excerpt: ${excerpt(baseMeaning, excerptChars)}\n`;
+    for (const line of cardPromptLines(card, focusArea, excerptChars)) {
+      prompt += `  ${line}\n`;
     }
   });
 
@@ -463,30 +434,15 @@ async function callAiWithFallback(system: string, prompt: string): Promise<AiCal
   throw new Error(`All AI providers failed. Last: ${lastErr}`);
 }
 
-function generateFallbackReading(request: ReadingRequest): string {
-  const { cards, question } = request;
-  const positions = positionsFor(request);
-
-  let reading = "";
-
-  if (question) {
-    reading += `Regarding your question, the cards offer the following guidance:\n\n`;
-  }
-
-  cards.forEach((card, index) => {
-    const position = positions[index] || `Position ${index + 1}`;
-    const meaning = card.reversed ? card.meaningReversed : card.meaningUpright;
-    reading += `**${position}: ${card.name}${card.reversed ? " (Reversed)" : ""}**\n`;
-    reading += `${meaning || "This card invites you to trust your intuition and look within for answers."}\n\n`;
+function generateFallbackReading(request: ReadingRequest, notCharged: boolean): string {
+  return fallbackReadingText({
+    cards: request.cards,
+    positions: positionsFor(request),
+    question: request.question ? sanitizeUserInput(request.question) : undefined,
+    verdict: request.verdict ? sanitizeUserInput(request.verdict, MAX_VERDICT_LENGTH) : undefined,
+    locale: request.locale,
+    notCharged,
   });
-
-  if (request.verdict) {
-    reading += `**Verdict:** ${sanitizeUserInput(request.verdict, MAX_VERDICT_LENGTH)}\n\n`;
-  }
-
-  reading += `\nTaken together, these cards suggest a time of ${cards.length > 1 ? "transition and growth" : "reflection"}. Trust the journey and know that you have the wisdom within to navigate whatever arises.`;
-
-  return reading;
 }
 
 Deno.serve(
@@ -585,12 +541,14 @@ Deno.serve(
       const prompt = buildPrompt(body, { journalThemes });
       let interpretation: string;
       let usedLlm = false;
+      let notCharged = false;
 
       // Cache by system + full prompt — same cards + spread + focus + zodiac
       // + locale = same reading. Interpretations are deterministic given the
       // same inputs, so we cache aggressively (7d TTL). The tag is bumped on
       // every prompt/model change so no pre-change entry is served.
-      const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-reading-v3-decks`;
+      // v4: reversed cards are read from their reversed meaning (p7 #13).
+      const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-reading-v4-reversed`;
       const cacheKey = await aiCacheKey("generate-reading", CACHE_MODEL_TAG, system, prompt);
       const cachedReading = await aiCacheGet<string>(ctx, cacheKey);
       if (cachedReading) {
@@ -647,8 +605,25 @@ Deno.serve(
           costCents,
         });
       } catch (llmError) {
+        // Every provider failed. The template below is the cards' own
+        // meanings — not what was paid for — so the charge is given back
+        // (p7 #34), the reading says so in its first line, and it is not
+        // saved as a premium reading (it would take a daily slot).
         ctx.log.warn("generate_reading.llm_failed", { err: llmError });
-        interpretation = generateFallbackReading(body);
+        const waived = await ctx.waiveSpend("ai_unavailable");
+        notCharged = waived || ctx.spend?.charged !== true;
+        interpretation = generateFallbackReading(body, notCharged);
+        return new Response(
+          JSON.stringify({
+            interpretation,
+            usedLlm: false,
+            fallback: true,
+            charged: !notCharged,
+            cardCount: body.cards.length,
+            deck,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
       }
 
       // Cache fresh successful LLM reading for future identical-prompt hits.

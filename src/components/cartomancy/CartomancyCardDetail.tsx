@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Share2, Heart, Briefcase, Feather, BookOpen, Compass, User } from 'lucide-react';
 import { KeywordRow, Paper, Tabs, Tag, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -46,6 +46,14 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
     ...(person && card.asPerson ? [{ id: 'person' as const, label: t('cartomancy.card.asPerson', { defaultValue: 'As a person' }), icon: User }] : []),
     { id: 'reflect', label: t('tarot.detail.tabs.reflect'), icon: Feather },
   ];
+
+  // The tab survives prev/next (the same instance renders the next card), so a
+  // tab the new card does not have — "As a person" on a pip card — falls back
+  // to the meaning instead of leaving no tab selected over an empty panel.
+  const shownTab: DetailTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : 'meaning';
+  useEffect(() => {
+    if (shownTab !== activeTab) setActiveTab(shownTab);
+  }, [shownTab, activeTab]);
 
   const suitLabel = isJoker(source)
     ? t('cartomancy.suits.joker', { defaultValue: 'Joker' })
@@ -114,7 +122,7 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
       <Tabs
         idPrefix="carto-card-detail"
         aria-label={card.name}
-        value={activeTab}
+        value={shownTab}
         onChange={setActiveTab}
         size="sm"
         items={tabs.map((tab) => ({ id: tab.id, icon: tab.icon, label: <span className="hidden sm:inline">{tab.label}</span>, 'aria-label': tab.label }))}
@@ -124,7 +132,7 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
       <div className="-mx-2">
         <Paper as="div">
           <div className="min-h-[200px] space-y-5">
-            {activeTab === 'meaning' && (
+            {shownTab === 'meaning' && (
               <>
                 <section className="space-y-2">
                   {heading(t('tarot.upright'))}
@@ -159,31 +167,31 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
                 )}
               </>
             )}
-            {activeTab === 'love' && (
+            {shownTab === 'love' && (
               <section className="space-y-2">
                 {heading(t('tarot.detail.loveTitle'))}
                 <p className="reading-copy">{card.loveMeaning}</p>
               </section>
             )}
-            {activeTab === 'career' && (
+            {shownTab === 'career' && (
               <section className="space-y-2">
                 {heading(t('tarot.detail.careerTitle'))}
                 <p className="reading-copy">{card.careerMeaning}</p>
               </section>
             )}
-            {activeTab === 'advice' && card.adviceMeaning && (
+            {shownTab === 'advice' && card.adviceMeaning && (
               <section className="space-y-2">
                 {heading(t('cartomancy.card.advice', { defaultValue: 'Advice' }))}
                 <p className="reading-copy">{card.adviceMeaning}</p>
               </section>
             )}
-            {activeTab === 'person' && card.asPerson && (
+            {shownTab === 'person' && card.asPerson && (
               <section className="space-y-2">
                 {heading(t('cartomancy.card.asPerson', { defaultValue: 'As a person' }))}
                 <p className="reading-copy">{card.asPerson}</p>
               </section>
             )}
-            {activeTab === 'reflect' && (
+            {shownTab === 'reflect' && (
               <section className="space-y-4">
                 {heading(t('tarot.detail.reflectionTitle'))}
                 <blockquote className="reading-quote">{card.reflectionPrompt}</blockquote>

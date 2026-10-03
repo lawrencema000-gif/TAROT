@@ -8,18 +8,23 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
+import { localizeCard } from '../i18n/localizeCard';
+import { ct, useContentOverlay } from '../i18n/contentOverlay';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { ORACLE_SUGGESTIONS, type OracleContext } from '../data/oracleSuggestions';
 import { localDateStr } from '../utils/localDate';
 import { ALL_CARDS } from '../config/bundledImages';
-import { fullDeck } from '../data/tarotDeck';
+import { getCardById } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getPlayingCard, getPlayingCardBySlug, PLAYING_CARDS_ALL } from '../data/cartomancy';
 import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import type { PlayingCard } from '../types/cartomancy';
+import { aiFailureOf, failedBeforeCharge, keepFocusOnPress, splitReading, type AiFailure } from '../components/reports/aiReading';
+import { PaperBlock } from '../components/reports/PaperBlock';
 
+/** The lenses, English as the fallback; the label shown and sent is `quickReading.lens.<key>`. */
 const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
   { key: 'general', label: 'Anything' },
   { key: 'love', label: 'Love' },
@@ -82,11 +87,6 @@ function tarotIdFor(card: QuickReadingCard): number | null {
   return ALL_CARDS.find((c) => cardKey(c.name) === wanted)?.id ?? null;
 }
 
-function tarotKeywordsFor(name: string): string[] {
-  const wanted = cardKey(name);
-  return fullDeck.find((c) => cardKey(c.name) === wanted)?.keywords.slice(0, 4) ?? [];
-}
-
 function playingCardFor(card: QuickReadingCard): PlayingCard | undefined {
   if (typeof card.id === 'number') {
     const byId = getPlayingCard(card.id);
@@ -100,41 +100,6 @@ function playingCardFor(card: QuickReadingCard): PlayingCard | undefined {
   return PLAYING_CARDS_ALL.find((c) => c.name.toLowerCase() === wanted);
 }
 
-/**
- * The summary is the opening of the first paragraph — at most two
- * sentences, the lede the sheet centres — and everything after it is the
- * body. The model's first paragraph runs to ninety words; centring all of
- * it reads as a wall.
- */
-function splitReading(text: string): { summary: string; rest: string } {
-  const parts = text
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return { summary: text.trim(), rest: '' };
-  const sentences = parts[0].split(/(?<=[.!?…][’”"')\]]?)\s+(?=\S)/);
-  const summary = sentences.slice(0, 2).join(' ');
-  const tail = sentences.slice(2).join(' ');
-  const rest = [tail, ...parts.slice(1)].filter(Boolean).join('\n\n');
-  return { summary, rest };
-}
-
-/**
- * A placeholder block for the paper sheet. The shared Skeleton is a navy
- * sweep for the navy canvas; on cream it reads as a row of dark bars, so
- * the loading sheet uses the paper hairline tone instead, still (nothing
- * on a reading surface loops).
- */
-function PaperBlock({ w, h, className = '' }: { w: number | string; h: number; className?: string }) {
-  return (
-    <div
-      aria-hidden
-      className={`bg-paper-hairline rounded-inset ${className}`.trim()}
-      style={{ width: typeof w === 'number' ? `${w}px` : w, height: `${h}px` }}
-    />
-  );
-}
-
 export function QuickReadingPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
@@ -146,17 +111,25 @@ export function QuickReadingPage() {
   const [deck, setDeck] = useState<Deck>(readDeck);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Exclude<AiFailure, 'insufficient' | 'soft-cap'> | null>(null);
   const [context, setContext] = useState<OracleContext>('general');
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('quick-reading');
-  // One id per attempt. It survives a failure so "Try again" is the same
-  // request (and the same charge); it is cleared once a reading lands.
-  const attemptId = useRef<string | null>(null);
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('quick-reading');
+  // The request this screen last sent and did not get a reading back for:
+  // its id and the exact body. Pressing the button again with the same
+  // body is a retry of that request — the server charges it at most once
+  // and returns the same reading — so it goes straight out, without the
+  // client balance gate: a first attempt that was charged and then lost on
+  // the way back can leave the balance under the cost, and the gate would
+  // then block the free retry of a reading already paid for (review #28).
+  // A different question, lens or deck is a new request: new id, gate first.
+  const attempt = useRef<{ id: string; body: string } | null>(null);
   // A drawn playing card's keywords come from the cartomancy corpus, which
   // ja/ko/zh fetch on demand: start when the playing deck is picked.
   const resultCard = result?.card;
   const resultIsPlaying = !!resultCard && (resultCard.deck ?? (typeof resultCard.id === 'number' && resultCard.id >= 100 ? 'playing' : 'tarot')) === 'playing';
   const cartoReady = useCartomancyCorpus(deck === 'playing' || resultIsPlaying);
+  // The card's affirmation in ja/ko/zh comes from the enrichment overlay.
+  const { overlay: enrichment, ready: enrichmentReady } = useContentOverlay('enrichment');
 
   useEffect(() => {
     try {
@@ -166,25 +139,30 @@ export function QuickReadingPage() {
     }
   }, [deck]);
 
+  const lensLabel = useCallback(
+    (key: OracleContext) =>
+      t(`quickReading.lens.${key}`, { defaultValue: ORACLE_CONTEXTS.find((c) => c.key === key)?.label ?? key }),
+    [t],
+  );
+
   // "Guess what you want to ask" — 4 suggestion chips per lens, rotating
-  // daily so the hub feels alive without any server round-trip.
+  // daily so the hub feels alive without any server round-trip. Each one is
+  // `quickReading.suggestions.<lens>.<index>`, so tapping it writes the
+  // question — and sends it — in the reader's language.
   const suggestions = useMemo(() => {
     const pool = ORACLE_SUGGESTIONS[context] ?? [];
     const day = localDateStr();
     let h = 0;
     for (let i = 0; i < day.length; i++) h = (h * 31 + day.charCodeAt(i)) | 0;
     const start = Math.abs(h) % Math.max(1, pool.length);
-    return Array.from({ length: Math.min(4, pool.length) }, (_, i) => pool[(start + i) % pool.length]);
-  }, [context]);
+    return Array.from({ length: Math.min(4, pool.length) }, (_, i) => {
+      const idx = (start + i) % pool.length;
+      return t(`quickReading.suggestions.${context}.${idx}`, { defaultValue: pool[idx] });
+    });
+  }, [context, t]);
 
   const submit = useCallback(async () => {
     if (question.trim().length < 3) return;
-    const ok = await tryConsume();
-    if (!ok) return;
-    if (!attemptId.current) attemptId.current = crypto.randomUUID();
-    setLoading(true);
-    setError(null);
-    setResult(null);
     const sunSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
     const userContext = {
       zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
@@ -192,44 +170,91 @@ export function QuickReadingPage() {
       locale: getLocale(),
       displayName: profile?.displayName ?? undefined,
     };
-    // Context lens rides inside the question so the server prompt stays
-    // schema-stable; sliced to the 500-char contract.
-    const label = ORACLE_CONTEXTS.find((c) => c.key === context)?.label ?? '';
+    // The lens rides inside the question so the server prompt stays
+    // schema-stable, worded in the reader's language like the question;
+    // sliced to the 500-char contract.
     const sent = context === 'general'
       ? question.trim()
-      : `[${label} question] ${question.trim()}`.slice(0, 500);
+      : t('quickReading.lensQuestion', {
+          defaultValue: '[{{lens}} question] {{question}}',
+          lens: lensLabel(context),
+          question: question.trim(),
+        }).slice(0, 500);
+    const body = { question: sent, userContext, deck };
+    const signature = JSON.stringify(body);
+    if (attempt.current?.body !== signature) {
+      const ok = await tryConsume();
+      if (!ok) return;
+      attempt.current = { id: crypto.randomUUID(), body: signature };
+    }
+    const requestId = attempt.current.id;
+    setLoading(true);
+    setError(null);
+    setResult(null);
     const { data, error: err } = await supabase.functions.invoke('ai-quick-reading', {
-      body: { question: sent, userContext, deck, requestId: attemptId.current },
+      body: { ...body, requestId },
     });
     setLoading(false);
     if (err) {
-      await refund();
-      const anyErr = err as { context?: { status?: number }; message?: string };
-      if (anyErr?.context?.status === 429) setError('rate-limit');
-      else if (anyErr?.context?.status === 503) setError('unavailable');
-      else setError('generic');
+      const failure = await aiFailureOf(err);
+      if (failure === 'insufficient' || failure === 'soft-cap') {
+        // Rejected before the debit: there is nothing to retry for free.
+        // The gate opens the Earn sheet with the balance or the reset time.
+        attempt.current = null;
+        if (await tryConsume()) setError('generic');
+        return;
+      }
+      setError(failure);
       return;
     }
     const payload = (data?.data ?? data) as QuickReadingResponse | null;
     if (!payload?.reading) {
-      await refund();
       setError('generic');
       return;
     }
-    attemptId.current = null;
+    attempt.current = null;
     setResult(payload);
-  }, [question, profile, tryConsume, refund, context, deck]);
+  }, [question, profile, tryConsume, context, deck, t, lensLabel]);
 
   const reset = () => {
-    attemptId.current = null;
+    attempt.current = null;
     setResult(null);
     setError(null);
     setQuestion('');
   };
 
+  /** The drawn card as this screen shows it: localized name, keywords and affirmation. */
+  const shownCard = (() => {
+    const card = result?.card;
+    if (!card) return null;
+    const cardDeck: Deck = card.deck ?? (typeof card.id === 'number' && card.id >= 100 ? 'playing' : 'tarot');
+    const playingEn = cardDeck === 'playing' ? playingCardFor(card) : undefined;
+    const playing = playingEn && cartoReady ? localizePlayingCard(playingEn) : playingEn;
+    const tarotId = !playingEn ? tarotIdFor(card) : null;
+    const tarotEn = tarotId !== null ? getCardById(tarotId) : undefined;
+    const tarot = tarotEn ? localizeCard(tarotEn) : undefined;
+    // Until the cartomancy corpus is in, a playing card shows no keywords
+    // rather than English ones under a translated page; the tarot corpus
+    // arrives with the locale.
+    const keywords = playing ? (cartoReady ? playing.keywords.slice(0, 4) : []) : (tarot?.keywords.slice(0, 4) ?? []);
+    const name = playing?.name ?? tarot?.name ?? card.name;
+    // The affirmation: English in English; in ja/ko/zh only once the
+    // enrichment overlay has it — an English line under a translated
+    // reading is worse than none.
+    const affirmationEn = tarotEn ? getEnrichment(tarotEn.name)?.affirmation : undefined;
+    const affirmation = !affirmationEn
+      ? undefined
+      : getLocale() === 'en'
+        ? affirmationEn
+        : enrichmentReady
+          ? ct(enrichment, `${tarotId}.affirmation`, '') || undefined
+          : undefined;
+    return { card, playing, tarotId, name, keywords, affirmation };
+  })();
+
   const handleShare = async () => {
     if (!result) return;
-    const text = `"${question.trim()}"\n\n${result.reading}\n\n— ${result.card?.name ?? 'Arcana'}`;
+    const text = `"${question.trim()}"\n\n${result.reading}\n\n— ${shownCard?.name ?? 'Arcana'}`;
     if (navigator.share) {
       try {
         await navigator.share({ text });
@@ -277,14 +302,9 @@ export function QuickReadingPage() {
 
   if (result) {
     const { summary, rest } = splitReading(result.reading);
-    const card = result.card;
-    const cardDeck: Deck = card?.deck ?? (card && typeof card.id === 'number' && card.id >= 100 ? 'playing' : 'tarot');
-    const playingEn = card && cardDeck === 'playing' ? playingCardFor(card) : undefined;
-    const playing = playingEn && cartoReady ? localizePlayingCard(playingEn) : playingEn;
-    const tarotId = card && !playing ? tarotIdFor(card) : null;
-    // Until the corpus is in, a playing card shows no keywords rather than English ones.
-    const keywords = card ? (playing ? (cartoReady ? playing.keywords.slice(0, 4) : []) : tarotKeywordsFor(card.name)) : [];
-    const affirmation = card && !playing ? getEnrichment(card.name)?.affirmation : undefined;
+    const { card, playing, tarotId, name, keywords, affirmation } = shownCard ?? {
+      card: undefined, playing: undefined, tarotId: null, name: '', keywords: [] as string[], affirmation: undefined,
+    };
     return (
       <Page spacing="md">
         <PageHeader title={title} />
@@ -311,7 +331,7 @@ export function QuickReadingPage() {
                     {/* The name sits beside the face, so the plate stays quiet
                         and the heading names the orientation. */}
                     <TarotFace
-                      card={{ id: tarotId, name: card.name }}
+                      card={{ id: tarotId, name }}
                       size="fill"
                       detail="quiet"
                       reversed={card.reversed}
@@ -323,7 +343,7 @@ export function QuickReadingPage() {
                 <div className="min-w-0 flex-1 space-y-2">
                   <p className="reading-meta">{t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}</p>
                   <h3 className="heading-display-md heading-strong text-ink">
-                    {card.name}
+                    {name}
                     {card.reversed && (
                       <span className="reading-meta ml-2 font-sans normal-case">
                         {t('readings.revealView.reversedParen')}
@@ -393,7 +413,7 @@ export function QuickReadingPage() {
       <div className="space-y-2.5">
         <div className="flex flex-wrap gap-1.5">
           {ORACLE_CONTEXTS.map((c) => (
-            <Chip key={c.key} label={c.label} size="sm" selected={context === c.key} onSelect={() => setContext(c.key)} />
+            <Chip key={c.key} label={lensLabel(c.key)} size="sm" selected={context === c.key} onSelect={() => setContext(c.key)} />
           ))}
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -430,8 +450,15 @@ export function QuickReadingPage() {
                   ? t('quickReading.errorUnavailable', { defaultValue: 'Readings are temporarily unavailable.' })
                   : t('quickReading.errorGeneric', { defaultValue: 'Could not generate a reading. Try again.' })}
             </p>
+            {/* Say only what is true for this failure: a request refused
+                before the debit cost nothing; any other may have been
+                charged, and then the retry (same request) is free. */}
             <p className="text-meta text-mystic-400 mt-1">
-              {t('quickReading.errorNoCharge', { defaultValue: 'Nothing was charged for a reading you did not receive.' })}
+              {failedBeforeCharge(error)
+                ? t('quickReading.errorNoCharge', { defaultValue: 'Nothing was charged for a reading you did not receive.' })
+                : t('quickReading.errorRetryFree', {
+                    defaultValue: 'If you were charged, Try again returns the same reading at no extra cost.',
+                  })}
             </p>
           </div>
         </div>
@@ -443,6 +470,8 @@ export function QuickReadingPage() {
         size="lg"
         fullWidth
         onClick={submit}
+        onPointerDown={keepFocusOnPress}
+        onMouseDown={keepFocusOnPress}
         disabled={loading || question.trim().length < 3}
       >
         {error ? (

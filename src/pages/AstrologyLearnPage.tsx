@@ -49,8 +49,11 @@ export function AstrologyLearnPage() {
 
   useEffect(() => {
     setPageMeta(
-      'Astrology Learn — Signs, Planets, Houses & Aspects',
-      `Complete astrology reference: 12 zodiac signs, 10 planets, 12 houses, and 6 major aspects. ${astrologyEntries.length} entries with rulerships, correspondences, and FAQ.`,
+      t('astrologyLearn.metaTitle', { defaultValue: 'Astrology Learn — Signs, Planets, Houses & Aspects' }),
+      t('astrologyLearn.metaDescription', {
+        defaultValue: 'Complete astrology reference: 12 zodiac signs, 10 planets, 12 houses, and 6 major aspects. {{n}} entries with rulerships, correspondences, and FAQ.',
+        n: astrologyEntries.length,
+      }),
     );
     removeJsonLd();
     addJsonLd({
@@ -79,7 +82,7 @@ export function AstrologyLearnPage() {
         { '@type': 'ListItem', position: 2, name: 'Astrology', item: 'https://tarotlife.app/astrology' },
       ],
     });
-  }, []);
+  }, [t]);
 
   return (
     <Page spacing="lg">

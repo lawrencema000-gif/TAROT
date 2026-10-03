@@ -516,6 +516,7 @@ function ActivationList({
 function Bodygraph({
   definedCenters, channels,
 }: { definedCenters: Center[]; definedGates: number[]; channels: string[] }) {
+  const { t } = useT('app');
   // Centre positions — rough but correct geometry (Head top, Root bottom,
   // Throat-G-Sacral on the midline, Ajna sits between Head and Throat,
   // Heart sits right of G, Spleen sits left of Sacral, Solar Plexus
@@ -559,7 +560,7 @@ function Bodygraph({
   };
 
   return (
-    <svg viewBox="0 0 300 410" className="w-full max-w-xs mx-auto" aria-label="Human Design bodygraph">
+    <svg viewBox="0 0 300 410" className="w-full max-w-xs mx-auto" role="img" aria-label={t('humanDesign.bodygraphAria', { defaultValue: 'Human Design bodygraph' }) as string}>
       {/* Channel lines behind centres */}
       {channels.map((ch) => {
         const [a, b] = ch.split('-').map((n) => parseInt(n, 10));
@@ -602,7 +603,7 @@ function Bodygraph({
               fontFamily="Inter, sans-serif"
               style={{ pointerEvents: 'none', userSelect: 'none' }}
             >
-              {pos.label.split(' ')[0]}
+              {t(`humanDesign.centerShort.${center}`, { defaultValue: pos.label.split(' ')[0] })}
             </text>
           </g>
         );

@@ -5086,7 +5086,7 @@
       "plans": {
         "monthly": "月額",
         "yearly": "年額",
-        "lifetime": "買い切り"
+        "lifetime": "永久プラン"
       },
       "periods": {
         "month": "/月",

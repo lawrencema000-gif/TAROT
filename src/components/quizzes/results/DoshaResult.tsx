@@ -6,6 +6,7 @@ import {
   AfterResult,
   Affirmation,
   Bullets,
+  CloseCall,
   Prose,
   ResultBody,
   ResultSection,
@@ -28,8 +29,13 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const localized = (path: string, fallback: string) => t(`ayurveda.doshas.${key}.${path}`, { defaultValue: fallback });
   const nameOf = (d: Dosha) => t(`ayurveda.doshas.${d}.name`, { defaultValue: DOSHA_INFO[d].name });
   const name = nameOf(key);
-  const dietTips = t(`ayurveda.doshas.${key}.dietTips`, { returnObjects: true, defaultValue: info.dietTips }) as string[];
-  const lifestyleTips = t(`ayurveda.doshas.${key}.lifestyleTips`, { returnObjects: true, defaultValue: info.lifestyleTips }) as string[];
+  // A list from the locale only when it IS a list of strings (a half-merged block arrives as an object).
+  const list = (field: 'dietTips' | 'lifestyleTips') => {
+    const raw: unknown = t(`ayurveda.doshas.${key}.${field}`, { returnObjects: true, defaultValue: info[field] });
+    return Array.isArray(raw) && raw.every((x) => typeof x === 'string') ? (raw as string[]) : info[field];
+  };
+  const dietTips = list('dietTips');
+  const lifestyleTips = list('lifestyleTips');
   const tridoshic = result.tridoshic === true;
 
   return (
@@ -64,6 +70,8 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
+          {result.isTie && result.coPrimary && DOSHA_INFO[result.coPrimary] && <CloseCall a={name} b={nameOf(result.coPrimary)} />}
+
           <ResultSection title={t('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}>
             <div className="space-y-4">
               {DOSHAS.map((d) => (

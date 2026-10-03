@@ -260,7 +260,7 @@ export const RELATIONSHIP_READINESS_INFO: Record<RelationshipReadiness, Dimensio
 // ---------------------------------------------------------------
 // 5. Wellness Type
 // ---------------------------------------------------------------
-export type WellnessType = 'athlete' | 'healer' | 'contemplative' | 'balanced';
+export type WellnessType = 'athlete' | 'healer' | 'contemplative' | 'balanced' | 'unclear';
 
 export const wellnessTypeQuiz: QuizDefinition = {
   id: 'wellness-type-v1',
@@ -312,22 +312,46 @@ export const WELLNESS_TYPE_INFO: Record<WellnessType, DimensionalResultInfo> = {
     shadow: ['Spreading too thin across practices', 'Never mastering one deeply'],
     affirmation: 'My balance is my practice. I tend all three legs of the stool.',
   },
+  unclear: {
+    name: 'Still exploring',
+    tagline: 'None of these practices clearly restores you yet.',
+    summary: 'You did not clearly agree that effort, slow care or solitude restores you, and you did not say you need a mix. That is useful to know. What restores you may be something these questions did not name — time outdoors, making things, good company — or you may not have had room to find out. Try one small experiment from each practice this week and notice which leaves you lighter.',
+    strengths: ['Room to discover what actually works', 'No habit to unlearn'],
+    shadow: ['Running on empty without noticing', 'Waiting for rest to happen instead of planning it'],
+    affirmation: 'I am allowed to experiment until I find what restores me.',
+  },
 };
 
+/** The level a practice must reach before it is named (neutral or better). */
+const WELLNESS_ENDORSED = 3;
+
 /**
- * "Balanced" is derived, not a fourth trait: the result is balanced when
- * the three practices are within half a Likert point of each other OR the
- * two balance items average 4+; otherwise the leading practice, with a
- * tie reported when the top two are within TIE_MARGIN.
+ * "Balanced" is derived, not a fourth trait, and it has to be meant:
+ *
+ *  1. balanced when the two balance items (w7 "a mix", w8) average 4+;
+ *  2. balanced when the three practices sit within half a point of each
+ *     other AT an endorsed level (the highest ≥ 3) and the balance items
+ *     are not disagreed with (mean > 2);
+ *  3. otherwise the leading practice when it is at least neutral (≥ 3),
+ *     with a tie reported when the top two are within TIE_MARGIN;
+ *  4. otherwise `unclear` — nothing here restores this person yet.
+ *
+ * Before, a flat profile at any level was "The Balanced", including
+ * someone who strongly disagreed with every statement and with "I am at
+ * my best with a mix" itself.
  */
 export function scoreWellnessType(answers: Record<string, number>): DimensionalResult<WellnessType> {
   const dims: WellnessType[] = ['athlete', 'healer', 'contemplative', 'balanced'];
   const { scores, averages } = likertMeans(wellnessTypeQuiz, answers, dims);
   const trio: WellnessType[] = ['athlete', 'healer', 'contemplative'];
   const trioMeans = trio.map((d) => averages[d]);
-  const spread = Math.max(...trioMeans) - Math.min(...trioMeans);
-  if (spread <= 0.5 || averages.balanced >= 4) {
+  const top = Math.max(...trioMeans);
+  const spread = top - Math.min(...trioMeans);
+  if (averages.balanced >= 4 || (spread <= 0.5 && top >= WELLNESS_ENDORSED && averages.balanced > 2)) {
     return { primary: 'balanced', scores, averages, isTie: false, margin: spread };
+  }
+  if (top < WELLNESS_ENDORSED) {
+    return { primary: 'unclear', scores, averages, isTie: false, margin: 0 };
   }
   const ranked = rankDimensions(averages, trio);
   return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary };

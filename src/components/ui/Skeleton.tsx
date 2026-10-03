@@ -93,7 +93,7 @@ export function TarotCardSkeleton() {
 
 export function HoroscopeSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700">
+    <div className="bg-mystic-850 rounded-card p-6 border border-mystic-700">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={48} height={48} />
@@ -252,7 +252,7 @@ export function HoroscopePageSkeleton() {
         <Skeleton height={36} width={80} className="rounded-full" />
         <Skeleton height={36} width={100} className="rounded-full" />
       </div>
-      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700">
+      <div className="bg-mystic-850 rounded-card p-6 border border-mystic-700">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div>
@@ -281,7 +281,7 @@ export function HoroscopePageSkeleton() {
 
 export function RitualCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700 min-h-[400px]">
+    <div className="bg-mystic-850 rounded-card p-6 border border-mystic-700 min-h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <Skeleton height={24} width={120} />
         <Skeleton variant="circular" width={32} height={32} />

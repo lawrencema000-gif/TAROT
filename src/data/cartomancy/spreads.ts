@@ -233,6 +233,8 @@ export const CARTO_SPREADS: CartoSpread[] = [
     name: "The Nine-Card Square",
     category: "general",
     cardCount: 9,
+    // its reading method: "four or more of one suit sets the subject"
+    suitMajorityMin: 4,
     difficulty: "intermediate",
     durationMin: 25,
     free: false,

@@ -2,46 +2,32 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './utils/polyfills'; // must load before any code that may call Array.at / String.at
 import App from './App.tsx';
+import { isStaleChunkMessage, reloadForStaleChunk } from './components/layout/staleChunk';
+import { holdPrerenderedHero } from './components/layout/prerenderedHero';
 
 // Stale-chunk recovery. When a new deploy replaces hashed JS chunks,
 // any browser still showing the previous index.html will reference
 // chunk hashes that no longer exist on the CDN. Netlify's SPA fallback
-// serves index.html for those missing URLs; the browser then tries to
-// execute HTML as JS and emits one of:
-//   - "'text/html' is not a valid JavaScript MIME type"
-//   - "Failed to load module script"
-//   - "Importing a module script failed"
-// All of these mean the same thing: the page is on an obsolete bundle
-// and just needs to refetch index.html. We force one hard reload (guarded
-// by sessionStorage so we never reload-loop if the new index.html also
-// fails for some reason).
+// serves HTML for those missing URLs; the browser then reports a module
+// load failure (see isStaleChunkMessage). The page is on an obsolete bundle
+// and just needs to refetch index.html, so it reloads once (time-windowed
+// in sessionStorage so a failing new deploy cannot loop). These listeners
+// catch the entry and modulepreload failures; a React.lazy screen catches
+// its own (lazyWithReload), because React swallows that rejection.
 {
-  const onStaleChunk = (msg: string) => {
-    if (sessionStorage.getItem('arcana_stale_chunk_reloaded')) return;
-    sessionStorage.setItem('arcana_stale_chunk_reloaded', String(Date.now()));
-    console.warn('[stale-chunk] reloading after:', msg);
-    window.location.reload();
-  };
   window.addEventListener('error', (e) => {
     const msg = String(e.message || '');
-    if (
-      msg.includes('not a valid JavaScript MIME type') ||
-      msg.includes('Importing a module script failed') ||
-      msg.includes('Failed to load module script')
-    ) {
-      onStaleChunk(msg);
-    }
+    if (isStaleChunkMessage(msg)) reloadForStaleChunk(msg);
   });
   window.addEventListener('unhandledrejection', (e) => {
     const reason = e?.reason;
     const msg = reason instanceof Error ? reason.message : String(reason ?? '');
-    if (
-      msg.includes('not a valid JavaScript MIME type') ||
-      msg.includes('Importing a module script failed') ||
-      msg.includes('Failed to fetch dynamically imported module')
-    ) {
-      onStaleChunk(msg);
-    }
+    if (isStaleChunkMessage(msg)) reloadForStaleChunk(msg);
+  });
+  // Vite's own signal for a failed dynamic-import preload (CSS or JS).
+  window.addEventListener('vite:preloadError', (e) => {
+    const payload = (e as Event & { payload?: unknown }).payload;
+    if (reloadForStaleChunk(payload ?? 'vite:preloadError')) e.preventDefault();
   });
 }
 import { initAnalytics } from './services/analytics';
@@ -173,7 +159,12 @@ initWebVitals();
 captureAttributionFromUrl();
 
 const mount = () => {
-  createRoot(document.getElementById('root')!).render(
+  const root = document.getElementById('root')!;
+  // A cold visitor at `/` is already looking at the prerendered hero; keep it
+  // up while the app boots behind it, instead of swapping it for the boot
+  // screen and a blank Suspense fallback (released by LandingPage or App).
+  holdPrerenderedHero(root);
+  createRoot(root).render(
     <StrictMode>
       <App />
     </StrictMode>

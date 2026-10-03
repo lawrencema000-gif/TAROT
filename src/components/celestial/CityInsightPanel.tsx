@@ -12,6 +12,8 @@ import {
 } from '../../utils/celestialGeo';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { getInterpretation } from '../../data/celestialInterpretations';
+import { ct, useContentOverlay } from '../../i18n/contentOverlay';
+import { localizePlanetName } from '../../i18n/localizeNames';
 import {
   generateCelestialReading,
   type CelestialReadingResponse,
@@ -103,6 +105,9 @@ export function CityInsightPanel({
   onUpgrade,
 }: Props) {
   const { t } = useT('app');
+  // The line readings in ja/ko/zh: the `celestial` content overlay,
+  // `lines.<Planet>.<Angle>.{headline,body}`, over the English.
+  const { overlay: celestialOverlay, ready: overlayReady } = useContentOverlay('celestial');
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [loadingReading, setLoadingReading] = useState(false);
   const [reading, setReading] = useState<CelestialReadingResponse | null>(null);
@@ -200,7 +205,7 @@ export function CityInsightPanel({
                   : ''}
               {cityInfo && !isFarFromCity && (
                 <span className="ml-2">
-                  · {Math.round(cityInfo.distanceKm)} km from tap
+                  · {t('celestial.city.kmFromTap', { defaultValue: '{{km}} km from tap', km: Math.round(cityInfo.distanceKm) })}
                 </span>
               )}
             </p>
@@ -227,7 +232,12 @@ export function CityInsightPanel({
             <div className="space-y-2">
               {visibleHits.map((hit, i) => {
                 const key = `${hit.planet}-${hit.angle}`;
-                const interp = getInterpretation(hit.planet, hit.angle);
+                const en = getInterpretation(hit.planet, hit.angle);
+                const linePath = `lines.${hit.planet}.${hit.angle}`;
+                const interp = {
+                  headline: ct(celestialOverlay, `${linePath}.headline`, en.headline),
+                  body: ct(celestialOverlay, `${linePath}.body`, en.body),
+                };
                 const isExpanded = expandedKey === key;
                 return (
                   <motion.div
@@ -253,13 +263,15 @@ export function CityInsightPanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-ui font-medium text-mystic-100">
-                            {hit.planet} {hit.angle}
+                            {localizePlanetName(hit.planet)} {hit.angle}
                           </span>
-                          <span className="text-meta text-mystic-400">
-                            · {Math.round(hit.distanceKm)} km
+                          <span className="text-meta text-mystic-400 tabular-nums">
+                            · {t('celestial.city.km', { defaultValue: '{{km}} km', km: Math.round(hit.distanceKm) })}
                           </span>
                         </div>
-                        <p className="text-ui text-mystic-200 mt-0.5">{interp.headline}</p>
+                        {/* The overlay is a small lazy chunk: hold the line
+                            for it rather than flash the English first. */}
+                        <p className="text-ui text-mystic-200 mt-0.5">{overlayReady ? interp.headline : '\u00a0'}</p>
                       </div>
                       <ChevronDown
                         className={`w-4 h-4 text-mystic-400 flex-shrink-0 transition-transform mt-1.5 ${isExpanded ? 'rotate-180' : ''}`}

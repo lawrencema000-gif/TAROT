@@ -71,7 +71,9 @@ export function AchievementStats({
             <Icon className={`w-4 h-4 ${stat.color}`} aria-hidden />
             {/* dt before dd in the DOM (a dl group is term, then value); the
                 figure is drawn above its label with flex order. */}
-            <dt className="order-last text-caption text-mystic-500 whitespace-nowrap truncate max-w-full leading-tight">
+            {/* Two lines, never an ellipsis: at 390 the ja labels were cut to
+                「ストリ…」 (P7 #96). */}
+            <dt className="order-last text-caption text-mystic-500 text-center line-clamp-2 break-words max-w-full leading-tight">
               {stat.label}
             </dt>
             <dd className="text-ui font-semibold tabular-nums text-mystic-100 leading-tight">

@@ -9,6 +9,7 @@ import {
   AchievementUnlockModal,
 } from '../components/achievements';
 import { achievementIcon } from '../components/achievements/achievementIcons';
+import { localizeAchievement } from '../components/achievements/localizeAchievement';
 import type {
   AchievementWithProgress,
   AchievementCategory,
@@ -28,21 +29,8 @@ import { getLocale } from '../i18n/config';
 
 type FilterCategory = 'all' | AchievementCategory;
 
-/**
- * The i18n key for a definition. The `achievements` table has no slug
- * column, so the stable key is a kebab of its English `name` — the seed
- * (20260127070447) inserts by name and the admin never renames a row.
- * "Fools Journey" → `fools-journey`, "Level 50 Club" → `level-50-club`.
- * A definition without a key (B3's cartomancy set lands in another
- * migration) falls through to the DB text via defaultValue.
- */
-export function achievementSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[’']/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
+// The slug + localiser are shared with the app-wide unlock celebration.
+export { achievementSlug } from '../components/achievements/localizeAchievement';
 
 export function AchievementsPage() {
   const { t } = useT('app');
@@ -59,14 +47,7 @@ export function AchievementsPage() {
 
   /** The DB row with its name and description read through the locale. */
   const localize = useCallback(
-    (a: AchievementWithProgress): AchievementWithProgress => {
-      const slug = achievementSlug(a.name);
-      return {
-        ...a,
-        name: t(`achievements.defs.${slug}.name`, { defaultValue: a.name }),
-        description: t(`achievements.defs.${slug}.description`, { defaultValue: a.description }),
-      };
-    },
+    (a: AchievementWithProgress): AchievementWithProgress => localizeAchievement(a, t),
     [t],
   );
 

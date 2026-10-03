@@ -4,7 +4,7 @@
 // localStorage is the cache and the offline fallback. Each day gets one
 // entry; re-opening the same day overwrites it. The functions below are
 // the local layer only — MoodDiaryPage merges them with the DAL and
-// uploads any device-only history the first time it sees the table.
+// uploads the account's own not-yet-synced days when the table answers.
 
 import type { MoodGlyphId } from '../components/journal/MoodGlyphs';
 
@@ -104,7 +104,29 @@ export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
   },
 };
 
-const STORAGE_KEY = 'arcana_mood_diary_v1';
+/**
+ * The device cache is per ACCOUNT. It used to be one device-global key
+ * (`arcana_mood_diary_v1`) that sign-out never cleared, and the sync step
+ * uploads every cached day the server lacks — so on a shared phone the
+ * previous account's moods and private notes were written into whichever
+ * account signed in next (P7 review #1). Now:
+ *
+ *  - every read and write names the account (`arcana_mood_diary_v2:<uid>`),
+ *    so one account can never see, pre-fill or upload another's days;
+ *  - the legacy unscoped cache is never read, uploaded or shown. Nothing in
+ *    it records who wrote it, so it cannot be attributed safely; sign-out
+ *    deletes it (AuthContext → clearLegacyMoodCache).
+ *
+ * An account's own cache survives sign-out on purpose: a day saved offline
+ * and not yet synced is uploaded the next time THAT account loads the diary.
+ */
+const LEGACY_STORAGE_KEY = 'arcana_mood_diary_v1';
+const STORAGE_PREFIX = 'arcana_mood_diary_v2:';
+
+/** The cache key for one account. Exported for tests and sign-out tooling. */
+export function moodStorageKey(userId: string): string {
+  return STORAGE_PREFIX + userId;
+}
 
 // Local-calendar helper used internally by getLast30Days + getTodayEntry.
 // External callers (MoodDiaryPage, DailyMissionCard, AiCompanionPage)
@@ -114,57 +136,67 @@ const STORAGE_KEY = 'arcana_mood_diary_v1';
 // downstream chunk, producing `localDateStr is not defined` at runtime).
 import { localDateStr } from '../utils/localDate';
 
-export function loadMoodEntries(): MoodEntry[] {
-  if (typeof window === 'undefined') return [];
+const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+
+function writeCache(userId: string, entries: MoodEntry[], what: string): void {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    window.localStorage.setItem(moodStorageKey(userId), JSON.stringify(entries));
+  } catch (err) {
+    // Don't crash the UI — but DO log so a quota / private-mode failure is
+    // visible in DevTools instead of a silent "mood doesn't save".
+    console.warn(`[mood] ${what} failed to persist to localStorage:`, err);
+  }
+}
+
+/** This account's cached days. No account → nothing (the legacy cache is never read). */
+export function loadMoodEntries(userId: string | null | undefined): MoodEntry[] {
+  if (typeof window === 'undefined' || !userId) return [];
+  try {
+    const raw = window.localStorage.getItem(moodStorageKey(userId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((e): e is MoodEntry => (
-      e && typeof e.date === 'string' && typeof e.category === 'string' && typeof e.intensity === 'number'
+      e && typeof e.date === 'string' && isMoodCategory(e.category) && typeof e.intensity === 'number'
     ));
   } catch {
     return [];
   }
 }
 
-export function saveMoodEntry(entry: Omit<MoodEntry, 'savedAt'>): MoodEntry {
+export function saveMoodEntry(userId: string, entry: Omit<MoodEntry, 'savedAt'>): MoodEntry {
   const full: MoodEntry = { ...entry, savedAt: Date.now() };
-  const all = loadMoodEntries();
+  const all = loadMoodEntries(userId);
   // One entry per date — last write wins
   const filtered = all.filter((e) => e.date !== full.date);
   filtered.push(full);
   // Keep only last 90 days to bound storage size
-  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - NINETY_DAYS_MS;
   const trimmed = filtered.filter((e) => e.savedAt >= cutoff);
   trimmed.sort((a, b) => (a.date > b.date ? 1 : -1));
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch (err) {
-    // Don't crash the UI — but DO log to console so failures are
-    // visible in DevTools (quota exceeded, private-browsing storage
-    // disabled, JSON.stringify issue, etc.). Previously this catch
-    // silently swallowed all errors which made user-reported "mood
-    // doesn't work" issues impossible to diagnose.
-    console.warn('[mood] saveMoodEntry failed to persist to localStorage:', err);
-  }
+  writeCache(userId, trimmed, 'saveMoodEntry');
   return full;
 }
 
 /**
- * Replace the local cache with the merged set after a sync. Keeps the same
- * 90-day bound as saveMoodEntry so the cache cannot outgrow the record.
+ * Replace this account's cache with the merged set after a sync. Keeps the
+ * same 90-day bound as saveMoodEntry so the cache cannot outgrow the record.
  */
-export function replaceLocalMoodEntries(entries: MoodEntry[]): void {
+export function replaceLocalMoodEntries(userId: string, entries: MoodEntry[]): void {
   if (typeof window === 'undefined') return;
-  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - NINETY_DAYS_MS;
   const trimmed = entries.filter((e) => e.savedAt >= cutoff || e.date >= localDateStr(new Date(cutoff)));
   trimmed.sort((a, b) => (a.date > b.date ? 1 : -1));
+  writeCache(userId, trimmed, 'replaceLocalMoodEntries');
+}
+
+/** Delete the pre-scoping, device-global cache. Called on sign-out. */
+export function clearLegacyMoodCache(): void {
+  if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch (err) {
-    console.warn('[mood] replaceLocalMoodEntries failed to persist to localStorage:', err);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {
+    /* storage unavailable — nothing to clear */
   }
 }
 
@@ -176,17 +208,30 @@ export function mergeMoodEntries(preferred: MoodEntry[], other: MoodEntry[]): Mo
   return [...byDate.values()].sort((a, b) => (a.date > b.date ? 1 : -1));
 }
 
-export function getLast30Days(): MoodEntry[] {
-  const all = loadMoodEntries();
+/**
+ * The days of THIS account's cache the server does not have yet (or has an
+ * older copy of, by more than a minute of clock slack). The caller passes
+ * the account's own cache — never anything read from another key.
+ */
+export function pendingMoodUploads(local: MoodEntry[], remote: MoodEntry[]): MoodEntry[] {
+  const remoteByDate = new Map(remote.map((e) => [e.date, e]));
+  return local.filter((e) => {
+    const r = remoteByDate.get(e.date);
+    return !r || e.savedAt > r.savedAt + 60_000;
+  });
+}
+
+export function getLast30Days(userId: string | null | undefined): MoodEntry[] {
+  const all = loadMoodEntries(userId);
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
   const cutoffStr = localDateStr(cutoff);
   return all.filter((e) => e.date >= cutoffStr);
 }
 
-export function getTodayEntry(): MoodEntry | null {
+export function getTodayEntry(userId: string | null | undefined): MoodEntry | null {
   const today = localDateStr();
-  const all = loadMoodEntries();
+  const all = loadMoodEntries(userId);
   return all.find((e) => e.date === today) ?? null;
 }
 

@@ -19,6 +19,16 @@ function CartomancyReadingPageBody() {
   const [params] = useSearchParams();
   const [paywall, setPaywall] = useState<string | null>(null);
 
+  // Open at the top: the app has no route-level scroll reset, so this page
+  // arrived at whatever depth the previous one was scrolled to.
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0 });
+    } catch {
+      // jsdom and old WebViews
+    }
+  }, []);
+
   useEffect(() => {
     setPageMeta(
       t('cartomancy.seo.readingTitle', { defaultValue: 'Playing card reading' }),

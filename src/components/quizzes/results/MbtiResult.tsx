@@ -29,7 +29,7 @@ const AXES: { axis: MBTIAxis; a: string; b: string }[] = [
  * paper so a coin-flip letter reads as a coin flip (R3 §2.1): each axis
  * shows both poles' share and a "Borderline" tag when the scorer says so.
  */
-export function MbtiResult({ quiz, result, onBack, onRetake, saving, onSaveToProfile }: QuizResultViewProps<MBTIScore>) {
+export function MbtiResult({ quiz, result, onBack, onRetake, saving, saved, onSaveToProfile }: QuizResultViewProps<MBTIScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
   const info = mbtiDescriptions[result.type];
@@ -56,6 +56,7 @@ export function MbtiResult({ quiz, result, onBack, onRetake, saving, onSaveToPro
       actions={
         <VerdictActions
           saving={saving}
+          saved={saved}
           onSave={onSaveToProfile ? () => onSaveToProfile('mbti', result.type) : undefined}
           onShare={() =>
             share({

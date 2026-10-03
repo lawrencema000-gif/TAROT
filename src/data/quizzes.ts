@@ -909,6 +909,20 @@ export function calculateMoodCheck(scores: Record<string, number>): MoodCheckRes
   };
 }
 
+/**
+ * The need behind a saved mood check. Rows written before Phase 7 store
+ * only the English `suggestion` (identical to MOOD_SUGGESTIONS, which is
+ * where it came from) and no `need`; defaulting those to `balance` replayed
+ * the wrong suggestion. Returns null when the text matches nothing.
+ */
+export function moodNeedOf(result: Pick<MoodCheckResult, 'need' | 'suggestion'>): MoodNeed | null {
+  if (result.need && result.need in MOOD_SUGGESTIONS) return result.need;
+  const text = result.suggestion?.trim();
+  if (!text) return null;
+  const hit = (Object.keys(MOOD_SUGGESTIONS) as MoodNeed[]).find((k) => MOOD_SUGGESTIONS[k] === text);
+  return hit ?? null;
+}
+
 export const MOOD_SUGGESTIONS: Record<MoodNeed, string> = {
   rest: 'Take a moment to breathe deeply. Consider a short nap or gentle stretching.',
   support: 'Reach out to someone you trust. Sometimes sharing how we feel can lighten the load.',

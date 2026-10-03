@@ -18,11 +18,23 @@
  *   4. Flip the cashout row to `paid` with stripe_transfer_id, OR fail it
  *      through advisor_cashout_fail_srv, which sets `failed` and writes the
  *      compensating 'refund' row so the debited Moonstones come back (once).
+ *
+ * Only a DEFINITIVE Stripe refusal fails and refunds (p7 #117). A
+ * connection error, a timeout or a 5xx may come back after Stripe has
+ * already made the transfer; refunding then let the advisor cash out the
+ * same stones again under a new cashout id — paid twice. On an ambiguous
+ * error the transfer is retried once with the SAME idempotency key (Stripe
+ * returns the original transfer if it exists, for 24 h); if that is still
+ * ambiguous the row stays `processing` with its stones debited and the
+ * advisor is told it is pending. Reconciling a stuck `processing` row is a
+ * retry with idempotencyKey `cashout_<id>` within 24 h, or a look-up of the
+ * transfer by metadata.cashout_id in the Stripe dashboard after that.
  */
 
 import Stripe from "npm:stripe@14.10.0";
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
+import { isDefinitiveStripeError } from "./stripe-errors.ts";
 
 const RequestSchema = z.object({
   moonstones: z.number().int().min(100).max(100_000),
@@ -31,7 +43,7 @@ type Req = z.infer<typeof RequestSchema>;
 
 interface Resp {
   cashoutId: string;
-  state: 'paid' | 'failed';
+  state: 'paid' | 'failed' | 'processing';
   payoutCents: number;
   platformFeeCents: number;
   transferId?: string;
@@ -92,8 +104,8 @@ Deno.serve(handler<Req, Resp>({
     // Mark processing
     await ctx.supabase.from("advisor_cashouts").update({ state: "processing" }).eq("id", cashoutId);
 
-    try {
-      const transfer = await stripe.transfers.create(
+    const createTransfer = () =>
+      stripe.transfers.create(
         {
           amount: payoutCents,
           currency: "usd",
@@ -108,6 +120,19 @@ Deno.serve(handler<Req, Resp>({
         { idempotencyKey: `cashout_${cashoutId}` },
       );
 
+    let transfer: Awaited<ReturnType<typeof createTransfer>> | null = null;
+    let lastErr: unknown = null;
+    for (let attempt = 0; attempt < 2 && !transfer; attempt++) {
+      try {
+        transfer = await createTransfer();
+      } catch (e) {
+        lastErr = e;
+        if (isDefinitiveStripeError(e)) break;
+        ctx.log.warn("advisor_cashout.transfer_ambiguous", { cashoutId, attempt, err: errMessage(e) });
+      }
+    }
+
+    if (transfer) {
       await ctx.supabase
         .from("advisor_cashouts")
         .update({
@@ -126,14 +151,31 @@ Deno.serve(handler<Req, Resp>({
         platformFeeCents,
         transferId: transfer.id,
       };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Transfer failed";
+    }
+
+    if (isDefinitiveStripeError(lastErr)) {
+      // Stripe refused: no transfer exists. Fail the row and return the stones.
+      const msg = errMessage(lastErr);
       await failCashout(ctx.supabase, cashoutId, msg);
       ctx.log.error("advisor_cashout.failed", { cashoutId, err: msg });
       throw new AppError("STRIPE_TRANSFER_FAILED", msg, 502);
     }
+
+    // Unknown whether Stripe made the transfer: keep the row `processing`
+    // and the stones debited. Refunding here is how a payout happened twice.
+    ctx.log.error("advisor_cashout.pending_reconcile", { cashoutId, err: errMessage(lastErr) });
+    return {
+      cashoutId,
+      state: "processing",
+      payoutCents,
+      platformFeeCents,
+    };
   },
 }));
+
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : "Transfer failed";
+}
 
 /**
  * Fail a cashout and return its Moonstones in one transaction

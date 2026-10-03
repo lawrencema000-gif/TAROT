@@ -6,7 +6,7 @@ import { memo } from 'react';
  * The journal and the mood diary used platform emoji for moods — a yellow
  * smiley at 24 px beside gold line art, drawn by whatever font the phone
  * shipped. These are the same ten feelings as weather and ground: sun,
- * cloud, wave, leaf, moon, spark, drop, mountain, wind, heart. One stroke
+ * cloud, wave, leaf, moon, spark, drop, mountain, wind, heart, flame, gift. One stroke
  * weight (1.5 on a 24-box), round caps, `currentColor`, so a glyph takes
  * the tint of the tile it sits in and reads as part of the set the zodiac
  * and planet glyphs belong to.
@@ -24,7 +24,9 @@ export type MoodGlyphId =
   | 'drop'
   | 'mountain'
   | 'wind'
-  | 'heart';
+  | 'heart'
+  | 'flame'
+  | 'gift';
 
 export const MOOD_GLYPH_IDS: readonly MoodGlyphId[] = [
   'sun',
@@ -37,18 +39,29 @@ export const MOOD_GLYPH_IDS: readonly MoodGlyphId[] = [
   'mountain',
   'wind',
   'heart',
+  'flame',
+  'gift',
 ];
 
-/** Journal mood value → glyph. The journal's mood list lives in JournalPage. */
+/**
+ * Journal mood value → glyph. The journal's mood list lives in JournalPage.
+ *
+ * One glyph, one meaning across both diaries: the mood diary draws Steady as
+ * the mountain and Curious as the leaf, so the journal's Frustrated (was the
+ * mountain) and Grateful (was the leaf) have their own glyphs — a user who
+ * learned mountain = Steady was recording "Frustrated" (P7 #82). Shared
+ * glyphs (sun, wave, wind, spark, moon, drop) mean the same family of
+ * feeling in both.
+ */
 export const JOURNAL_MOOD_GLYPHS: Record<string, MoodGlyphId> = {
   happy: 'sun',
   calm: 'wave',
   anxious: 'wind',
-  grateful: 'leaf',
+  grateful: 'gift',
   inspired: 'spark',
   tired: 'moon',
   sad: 'drop',
-  frustrated: 'mountain',
+  frustrated: 'flame',
   loved: 'heart',
   thoughtful: 'cloud',
 };
@@ -85,6 +98,15 @@ const FORMS: Record<MoodGlyphId, JSX.Element> = {
     </>
   ),
   heart: <path d="M12 20.5s-7.5-4.6-7.5-10A4.1 4.1 0 0 1 12 7.6a4.1 4.1 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10Z" />,
+  flame: <path d="M12 21a6 6 0 0 0 6-6c0-4.6-3.6-6.6-4.6-11.5-2.6 2.3-3.6 4.8-3.6 7.2-1-.6-1.8-1.6-2.2-2.9C6.6 9.6 6 11.6 6 15a6 6 0 0 0 6 6Z" />,
+  gift: (
+    <>
+      <path d="M4.5 11.5h15v8.5a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1Z" />
+      <path d="M3.5 8h17v3.5h-17Z" />
+      <path d="M12 8v13" />
+      <path d="M12 8c-1.2-2.8-4.8-3.6-5.3-1.6C6.3 8 9.5 8 12 8c2.5 0 5.7 0 5.3-1.6-.5-2-4.1-1.2-5.3 1.6" />
+    </>
+  ),
 };
 
 export interface MoodGlyphProps {

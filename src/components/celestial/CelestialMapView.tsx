@@ -8,6 +8,8 @@ import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { haversineKm, type City } from '../../utils/celestialGeo';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
 import type { DestinedPlace } from '../../types';
+import { useT } from '../../i18n/useT';
+import { localizePlanetName } from '../../i18n/localizeNames';
 
 /**
  * Interactive SVG world map for astrocartography.
@@ -106,6 +108,7 @@ export function CelestialMapView({
   destinedAnimateEntrance = false,
   birthLocation,
 }: Props) {
+  const { t } = useT('app');
   const reduceMotion = !!useReducedMotion();
   const engine = useCelestialMapEngine({ lines, initialMode });
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -330,7 +333,7 @@ export function CelestialMapView({
         className="celestial-drag-surface w-full h-full relative z-10 cursor-grab active:cursor-grabbing"
         onClick={handleSvgClick}
         role="img"
-        aria-label="Interactive celestial map with planetary lines on a world projection"
+        aria-label={t('celestial.controls.mapAria', { defaultValue: 'Interactive celestial map with planetary lines on a world projection' })}
       >
         <defs>
           <filter id="celestial-glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -489,7 +492,7 @@ export function CelestialMapView({
               if (!proj) return null;
               return (
                 <text
-                  key={label.name}
+                  key={label.id}
                   x={proj[0]}
                   y={proj[1]}
                   textAnchor="middle"
@@ -504,7 +507,7 @@ export function CelestialMapView({
                   }}
                   opacity={0.55}
                 >
-                  {label.name}
+                  {t(`celestial.continents.${label.id}`, { defaultValue: label.name })}
                 </text>
               );
             })}
@@ -680,7 +683,7 @@ export function CelestialMapView({
             className="absolute bottom-3 inset-x-3 z-20 flex justify-center pointer-events-none"
           >
             <Tag tone="neutral" size="md" className="max-w-full text-center">
-              Drag to pan · Pinch to zoom · Tap a place for insight
+              {t('celestial.controls.hint', { defaultValue: 'Drag to pan · Pinch to zoom · Tap a place for insight' })}
             </Tag>
           </motion.div>
         )}
@@ -697,7 +700,7 @@ export function CelestialMapView({
             className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900 hairline-gold-soft text-meta text-mystic-100 pointer-events-none"
           >
             <span style={{ color: PLANET_COLORS[engine.hovered.planet] }}>●</span>
-            <span className="ml-2">{engine.hovered.planet} {engine.hovered.angle}</span>
+            <span className="ml-2">{localizePlanetName(engine.hovered.planet)} {engine.hovered.angle}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -728,11 +731,12 @@ export function CelestialMapView({
   );
 }
 
-const CONTINENT_LABELS: Array<{ name: string; lon: number; lat: number; size: number }> = [
-  { name: 'North America', lon: -100, lat: 45, size: 14 },
-  { name: 'South America', lon: -60, lat: -15, size: 13 },
-  { name: 'Europe', lon: 15, lat: 50, size: 12 },
-  { name: 'Africa', lon: 20, lat: 5, size: 14 },
-  { name: 'Asia', lon: 90, lat: 45, size: 16 },
-  { name: 'Oceania', lon: 135, lat: -25, size: 12 },
+/** Continent labels: `celestial.continents.<id>`, the English as the fallback. */
+const CONTINENT_LABELS: Array<{ id: string; name: string; lon: number; lat: number; size: number }> = [
+  { id: 'northAmerica', name: 'North America', lon: -100, lat: 45, size: 14 },
+  { id: 'southAmerica', name: 'South America', lon: -60, lat: -15, size: 13 },
+  { id: 'europe', name: 'Europe', lon: 15, lat: 50, size: 12 },
+  { id: 'africa', name: 'Africa', lon: 20, lat: 5, size: 14 },
+  { id: 'asia', name: 'Asia', lon: 90, lat: 45, size: 16 },
+  { id: 'oceania', name: 'Oceania', lon: 135, lat: -25, size: 12 },
 ];

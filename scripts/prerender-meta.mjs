@@ -629,6 +629,13 @@ function escapeAttr(s) {
   return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
+/** The un-prerendered app shell: the template minus the home page's URL claims. */
+function appShell(template) {
+  return template
+    .replace(/\s*<link rel="canonical"[^>]*>/, '')
+    .replace(/\s*<meta property="og:url"[^>]*>/, '');
+}
+
 function writeRoute(routePath, meta, template, body, opts) {
   const html = rewriteHead(template, meta, body, opts);
   // "/" → dist/index.html (overwrite the root template too — outer routes
@@ -689,6 +696,16 @@ async function main() {
     playAlt = landing.play?.alt;
   }
   catch (e) { console.warn('[prerender-meta] landing.json unreadable — root gets a head-only page:', e.message); }
+
+  // The SPA fallback (`/* /app.html 200` in public/_redirects and
+  // netlify.toml): the bare Vite shell, written BEFORE the root route below
+  // overwrites dist/index.html with the landing hero. Every path without a
+  // file of its own (/reading/:token, /reset-password, /unsubscribe,
+  // /invite/:code, every member page) used to be answered with the hero
+  // page, so a shared reading or a password-reset link opened on "Create my
+  // free account" for seconds, with the home page's canonical. The shell has
+  // no canonical or og:url: setPageMeta writes the route's own at runtime.
+  writeFileSync(join(DIST, 'app.html'), appShell(template));
 
   // Public root + auth pages + main hubs. Hubs get crawlable link lists so
   // Googlebot can reach every leaf page from raw HTML.

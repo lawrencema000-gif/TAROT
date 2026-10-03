@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { checkAchievementProgress } from '../services/achievements';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
-import { localizeCartoLesson, localizePlayingCard } from '../i18n/localizePlayingCard';
+import { localizeCartoLesson, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
@@ -29,9 +29,11 @@ function CartomancyLessonPageBody() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const locale = getLocale();
-  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale]);
+  // re-read the corpus when it lands: the page stays mounted through a language change
+  const corpusReady = useCartomancyCorpus();
+  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const source = slug ? getCartoLesson(slug) : null;
-  const lesson = useMemo(() => (source ? localizeCartoLesson(source, locale) : null), [source, locale]);
+  const lesson = useMemo(() => (source ? localizeCartoLesson(source, locale) : null), [source, locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const [done, setDone] = useState(() => loadLessonsDone());
   const isDone = source ? done.has(source.slug) : false;
 

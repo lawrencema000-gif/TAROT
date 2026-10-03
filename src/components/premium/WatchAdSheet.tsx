@@ -27,6 +27,11 @@ import { useFocusTrap } from '../../hooks/useFocusTrap';
  * On the web there is no ad SDK. The sheet says so instead of describing a
  * button that is not there (R5 M-9), and points at the two paths that do
  * exist: spend what you have, or Premium.
+ *
+ * Ads earn Moonstones at most 6 times a UTC day (the server's cap). Once
+ * they are used up the sheet stops offering an ad and says to come back
+ * tomorrow, instead of letting the user watch an ad that earns nothing and
+ * then blaming their connection (p7 #33).
  */
 
 interface WatchAdSheetProps {
@@ -85,6 +90,8 @@ export function WatchAdSheet({
   const [adLoading, setAdLoading] = useState(false);
   const [spendLoading, setSpendLoading] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
+  /** Ads that can still earn today; null = unknown (offer the ad). */
+  const [adsLeft, setAdsLeft] = useState<number | null>(() => rewardedAdsService.getCreditsRemaining());
   const panelRef = useRef<HTMLDivElement>(null);
   useFocusTrap(panelRef, open, { initialFocus: panelRef });
 
@@ -99,6 +106,14 @@ export function WatchAdSheet({
     });
     return () => { cancelled = true; off(); };
   }, [open, user?.id]);
+
+  useEffect(() => {
+    if (!open) return;
+    setAdsLeft(rewardedAdsService.getCreditsRemaining());
+    const onCredits = (e: Event) => setAdsLeft((e as CustomEvent<number>).detail);
+    window.addEventListener('rewarded:credits', onCredits);
+    return () => window.removeEventListener('rewarded:credits', onCredits);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -156,6 +171,22 @@ export function WatchAdSheet({
             'error',
           );
           break;
+        case 'daily-cap':
+          toast(
+            t('premium.watchAd.toasts.dailyCap', {
+              defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again tomorrow.',
+            }),
+            'info',
+          );
+          break;
+        case 'too-soon':
+          toast(
+            t('premium.watchAd.toasts.tooSoon', {
+              defaultValue: 'That ad came too soon after the last one to count. Wait a few seconds, then try again.',
+            }),
+            'error',
+          );
+          break;
         case 'dismissed':
           break;
         case 'disabled':
@@ -196,7 +227,7 @@ export function WatchAdSheet({
       }
       if (!res.data.allowed) {
         toast(
-          adAvailable
+          adAvailable && !adsCapped
             ? t('premium.watchAd.toasts.insufficient', {
                 defaultValue: 'You need {{n}} Moonstones for this. Watch an ad to earn more.',
                 n: cost,
@@ -230,11 +261,26 @@ export function WatchAdSheet({
 
   const canSpend = balance !== null && balance >= cost;
   const adAvailable = isNative();
+  /** Today's ad credits are used up: no ad is offered. */
+  const adsCapped = adAvailable && adsLeft === 0;
   const shortfall = balance !== null ? Math.max(0, cost - balance) : null;
   const titleId = 'watch-ad-sheet-title';
 
   // The one sentence under the headline, honest about which paths exist here.
   const subtitle = (() => {
+    if (adsCapped) {
+      return earnOnly
+        ? t('premium.watchAd.earnOnlySubtitleCapped', {
+            defaultValue:
+              'It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again tomorrow, the daily check-in earns more, or Premium opens everything.',
+            cost,
+          })
+        : t('premium.watchAd.unlockSubtitleCapped', {
+            defaultValue:
+              'Spend {{cost}} Moonstones to read it now. Today’s ad Moonstones are used up — the daily check-in earns more, or Premium opens everything.',
+            cost,
+          });
+    }
     if (adAvailable) {
       return earnOnly
         ? t('premium.watchAd.earnOnlySubtitle', {
@@ -336,7 +382,16 @@ export function WatchAdSheet({
               </Button>
             )}
 
-            {adAvailable ? (
+            {adsCapped ? (
+              <div className="flex items-start gap-3 rounded-control bg-mystic-800/50 p-3 text-left" role="status">
+                <CalendarCheck className="w-4 h-4 text-teal shrink-0 mt-0.5" aria-hidden />
+                <p className="text-meta text-mystic-300">
+                  {t('premium.watchAd.adCapReached', {
+                    defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again tomorrow; the daily check-in on Home earns more today.',
+                  })}
+                </p>
+              </div>
+            ) : adAvailable ? (
               <Button
                 variant="outline"
                 fullWidth

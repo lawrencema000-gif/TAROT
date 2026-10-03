@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { z } from "npm:zod@3.24.1";
 import { AppError, handler } from "../_shared/handler.ts";
+import { AD_MIN_GAP_MS, rewardedAdStatus } from "../_shared/rewarded-ads.ts";
 
 /**
  * Rewarded-ad Moonstone credit.
@@ -19,6 +20,12 @@ import { AppError, handler } from "../_shared/handler.ts";
  * GET from Google) — an AdMob console task for the owner; this function is
  * where that callback would be verified and the credit issued instead of on
  * the client's word.
+ *
+ * Every answer says how many credits are left today (`creditsRemaining`),
+ * and the two refusals carry what the client needs to stop offering an ad
+ * that would earn nothing (p7 #33):
+ *   429 AD_DAILY_CAP  details { creditsRemaining: 0, resetAt }
+ *   429 AD_TOO_SOON   details { retryAfterMs, creditsRemaining }
  */
 
 const RequestSchema = z.object({
@@ -30,6 +37,10 @@ interface Resp {
   amountCredited: number;
   newBalance: number;
   alreadyCredited: boolean;
+  /** Credits still possible today (UTC); null if the ledger could not be read. */
+  creditsRemaining: number | null;
+  /** When the daily cap resets (next UTC midnight, ISO). */
+  resetAt: string | null;
 }
 
 Deno.serve(
@@ -48,14 +59,23 @@ Deno.serve(
       if (error) {
         const msg = error.message ?? "";
         if (msg.startsWith("AD_DAILY_CAP")) {
+          const status = await rewardedAdStatus(ctx.supabase, ctx.userId!);
           throw new AppError(
             "AD_DAILY_CAP",
             "You have earned today's rewarded-ad Moonstones. Come back tomorrow.",
             429,
+            { creditsRemaining: 0, resetAt: status?.resetAt ?? null },
           );
         }
         if (msg.startsWith("AD_TOO_SOON")) {
-          throw new AppError("AD_TOO_SOON", "Give it a moment before the next ad.", 429);
+          const status = await rewardedAdStatus(ctx.supabase, ctx.userId!);
+          const retryAfterMs = status
+            ? Math.max(0, Date.parse(status.nextAvailableAt) - Date.now())
+            : AD_MIN_GAP_MS;
+          throw new AppError("AD_TOO_SOON", "Give it a moment before the next ad.", 429, {
+            retryAfterMs,
+            creditsRemaining: status?.creditsRemaining ?? null,
+          });
         }
         ctx.log.error("ad_reward.rpc_failed", { err: msg });
         throw new AppError("CREDIT_FAILED", "Could not credit the reward", 500);
@@ -64,10 +84,13 @@ Deno.serve(
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) throw new AppError("NO_ROW", "RPC returned no row", 500);
 
+      const status = await rewardedAdStatus(ctx.supabase, ctx.userId!);
       const result: Resp = {
         amountCredited: Number(row.amount_credited ?? 0),
         newBalance: Number(row.new_balance ?? 0),
         alreadyCredited: Boolean(row.already_credited),
+        creditsRemaining: status?.creditsRemaining ?? null,
+        resetAt: status?.resetAt ?? null,
       };
       ctx.log.info("ad_reward.credited", {
         amount: result.amountCredited,

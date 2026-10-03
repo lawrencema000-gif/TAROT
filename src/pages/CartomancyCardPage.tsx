@@ -10,7 +10,7 @@ import type { PlayingCard, PlayingSuit } from '../types/cartomancy';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
-import { localizePlayingCard } from '../i18n/localizePlayingCard';
+import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
@@ -34,7 +34,9 @@ function CartomancyCardPageBody() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const locale = getLocale();
-  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale]);
+  // re-read the corpus when it lands: the page stays mounted through a language change
+  const corpusReady = useCartomancyCorpus();
+  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const source = slug ? getPlayingCardBySlug(slug) : undefined;
   const card = useMemo(() => (source ? localize(source) : null), [source, localize]);

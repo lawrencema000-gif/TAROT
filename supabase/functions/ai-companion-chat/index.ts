@@ -2,6 +2,7 @@ import { AppError, handler } from "../_shared/handler.ts";
 import { callAIText, embedText } from "../_shared/ai-providers.ts";
 import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.4";
 
 /**
  * AI Companion — multi-turn chat with chosen persona, now with pgvector memory.
@@ -26,6 +27,15 @@ import { z } from "npm:zod@3.24.1";
  *
  * Rate limiting: 20 messages per minute per user. Higher-tier gating is
  * enforced client-side today (10 free / 100 Arcana+ / unlimited SVIP).
+ *
+ * Pricing: 50 Moonstones per CONVERSATION, not per message. The client sends
+ * `conversationId` (a UUID it mints when a conversation starts, and keeps
+ * for every message of it). The first message charges 50 (Premium: one
+ * soft-cap slot); every later message with the same conversationId and
+ * persona, for 24 hours from that charge, is free — still under the AI
+ * daily ceiling. A failed first message refunds; a failed later message
+ * refunds nothing (it was free). A request without conversationId (the
+ * shipped v1.2.0 Android build) is charged per message, as before.
  */
 
 const MessageSchema = z.object({
@@ -36,6 +46,8 @@ const MessageSchema = z.object({
 const RequestSchema = z.object({
   persona: z.enum(["sage", "oracle", "mystic", "priestess"]),
   history: z.array(MessageSchema).min(1).max(100),
+  /** One per conversation, minted by the client. Same id + persona = same paid session for 24 h. */
+  conversationId: z.string().uuid().optional(),
   userContext: z.object({
     zodiacSign: z.string().optional(),
     mbtiType: z.string().optional(),
@@ -61,6 +73,10 @@ interface ChatResponse {
    *   search-failed — the pgvector RPC errored (e.g. dimension mismatch)
    */
   memoryStatus: "searched" | "embed-failed" | "search-failed";
+  /** This message took the conversation's charge (50, or a Premium soft-cap slot). */
+  charged: boolean;
+  /** This message was free: its conversation was already paid for. */
+  conversationPaid: boolean;
 }
 
 // Provider chain (OpenAI primary, Gemini fallback) lives in _shared/ai-providers.ts.
@@ -142,7 +158,7 @@ async function summarizeTurns(turns: Array<{ role: string; content: string }>): 
 // ≥SUMMARIZE_AFTER_N_USER_TURNS unsummarized user turns. Runs after the
 // response has been returned — failures are logged but never surface.
 async function maybeSummarize(
-  supabase: ReturnType<typeof import("npm:@supabase/supabase-js@2.57.4").createClient>,
+  supabase: SupabaseClient,
   userId: string,
   persona: Persona,
   log: (msg: string, extra?: Record<string, unknown>) => void,
@@ -205,7 +221,15 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
   ai: true,
-  spend: { actionKey: "companion-session", cost: 50 },
+  spend: {
+    actionKey: "companion-session",
+    cost: 50,
+    // One charge per (persona, conversationId) for 24 h; see the header.
+    session: {
+      key: (body) => (body.conversationId ? `${body.persona}:${body.conversationId.toLowerCase()}` : null),
+      ttlHours: 24,
+    },
+  },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const userId = ctx.userId!;
@@ -286,6 +310,13 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
       // Non-fatal.
     }
 
-    return { reply, persona, memoriesUsed: memories.length, memoryStatus };
+    return {
+      reply,
+      persona,
+      memoriesUsed: memories.length,
+      memoryStatus,
+      charged: ctx.spend?.charged === true,
+      conversationPaid: ctx.spend?.continuing === true,
+    };
   },
 }));

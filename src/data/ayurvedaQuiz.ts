@@ -182,6 +182,10 @@ export interface DoshaResult {
   scores: Record<Dosha, number>;
   /** All three doshas within three points of each other: a balanced (tridoshic) constitution. */
   tridoshic: boolean;
+  /** The top two doshas scored exactly the same: `primary` is only declaration order. */
+  isTie?: boolean;
+  /** The dosha level with `primary` in an exact tie. */
+  coPrimary?: Dosha;
 }
 
 export function calculateDosha(answers: Record<string, number>): DoshaResult {
@@ -192,9 +196,12 @@ export function calculateDosha(answers: Record<string, number>): DoshaResult {
   }
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]) as [Dosha, number][];
   const primary = sorted[0][0];
-  const secondary = sorted[0][1] - sorted[1][1] <= 3 ? sorted[1][0] : undefined;
+  // An exact tie at the top is reported, not presented as "Vata with
+  // secondary Pitta": the stable sort only reflects declaration order.
+  const isTie = sorted[0][1] === sorted[1][1];
+  const secondary = !isTie && sorted[0][1] - sorted[1][1] <= 3 ? sorted[1][0] : undefined;
   const tridoshic = sorted[0][1] - sorted[2][1] <= 3;
-  return { primary, secondary, scores, tridoshic };
+  return { primary, secondary, scores, tridoshic, isTie, coPrimary: isTie ? sorted[1][0] : undefined };
 }
 
 /** Copy for the balanced constitution; the per-dosha cards still render for the leading dosha. */

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { filterByQualifiers, splitPlace } from "./qualifier.ts";
 
 /**
  * Forward-geocode a birth place string. Called during onboarding BEFORE the
@@ -22,6 +23,14 @@ import { AppError, handler } from "../_shared/handler.ts";
  * The response keeps the `{ results: [{ lat, lon, displayName }] }` shape
  * callers consume; `source`, `timezone` and `upstream` (provider failures,
  * for a non-blocking notice) are additive.
+ *
+ * "City, Region[, Country]" (p7 #35): Open-Meteo is searched on the city
+ * (20 candidates when a qualifier was typed) and only the rows whose
+ * region / country match the qualifier are kept. If none match, Nominatim
+ * gets the full string; if it has nothing either, the unfiltered rows come
+ * back with `qualifierMatched: false` so the picker can say they are not
+ * in the region typed. Each displayName carries its region and country, so
+ * same-name places are told apart.
  */
 
 interface GeoResult {
@@ -133,17 +142,25 @@ interface OpenMeteoRow {
   latitude: number;
   longitude: number;
   country?: string;
+  country_code?: string;
   admin1?: string;
   admin2?: string;
   timezone?: string;
 }
 
-async function openMeteo(place: string, language: string): Promise<GeoResult[]> {
+const RESULT_LIMIT = 5;
+
+async function openMeteo(
+  place: string,
+  language: string,
+): Promise<{ results: GeoResult[]; qualified: boolean; matched: boolean }> {
+  // Open-Meteo matches on the place NAME; a "City, Region" string finds
+  // nothing, so search on the first comma-separated part and check the
+  // rest against each candidate's region and country.
+  const { name, qualifiers } = splitPlace(place);
   const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
-  // Open-Meteo matches on the place NAME; a "City, Country" string finds
-  // nothing, so search on the first comma-separated part.
-  url.searchParams.set("name", place.split(",")[0].trim().slice(0, 100));
-  url.searchParams.set("count", "5");
+  url.searchParams.set("name", name.slice(0, 100));
+  url.searchParams.set("count", qualifiers.length ? "20" : String(RESULT_LIMIT));
   url.searchParams.set("language", language);
   url.searchParams.set("format", "json");
   const res = await fetch(url, {
@@ -154,8 +171,11 @@ async function openMeteo(place: string, language: string): Promise<GeoResult[]> 
     throw new Error(`open-meteo ${res.status}`);
   }
   const data = await res.json();
-  const rows: OpenMeteoRow[] = Array.isArray(data?.results) ? data.results : [];
-  return rows
+  const all: OpenMeteoRow[] = Array.isArray(data?.results) ? data.results : [];
+  const matching = filterByQualifiers(all, qualifiers);
+  const matched = matching.length > 0;
+  const rows = (matched ? matching : all).slice(0, RESULT_LIMIT);
+  const results = rows
     .map((r) => {
       const parts = [r.name, r.admin1, r.country].filter(
         (p, i, arr): p is string => typeof p === "string" && p.length > 0 && arr.indexOf(p) === i,
@@ -168,6 +188,7 @@ async function openMeteo(place: string, language: string): Promise<GeoResult[]> 
       };
     })
     .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lon) && r.displayName);
+  return { results, qualified: qualifiers.length > 0, matched };
 }
 
 Deno.serve(
@@ -202,9 +223,27 @@ Deno.serve(
       let results: GeoResult[] = [];
       let source = "open-meteo";
       const failures: string[] = [];
+      // False when the user typed a region/country and no result is in it.
+      let qualifierMatched = true;
 
       try {
-        results = await openMeteo(birthPlace, language);
+        const om = await openMeteo(birthPlace, language);
+        results = om.results;
+        if (om.qualified && !om.matched && results.length > 0) {
+          // Same-name places elsewhere. Ask Nominatim for the full string
+          // before settling for them.
+          qualifierMatched = false;
+          try {
+            const alt = await nominatim(birthPlace, acceptLanguage);
+            if (alt.length > 0) {
+              results = alt;
+              source = "nominatim";
+              qualifierMatched = true;
+            }
+          } catch (e) {
+            failures.push(String(e).slice(0, 120));
+          }
+        }
       } catch (e) {
         failures.push(String(e).slice(0, 120));
       }
@@ -234,12 +273,12 @@ Deno.serve(
         ctx.log.warn("astrology_geocode.provider_failed", { failures, servedBy: source, resultCount: results.length });
       }
 
-      if (results.length > 0) cacheSet(cacheKey, results, source);
+      if (results.length > 0 && qualifierMatched) cacheSet(cacheKey, results, source);
       ctx.log.info("astrology_geocode.served", { resultCount: results.length, source });
 
       // Preserve the `{ results }` shape callers already consume.
       return new Response(
-        JSON.stringify({ results, source, upstream: failures }),
+        JSON.stringify({ results, source, upstream: failures, qualifierMatched }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     },

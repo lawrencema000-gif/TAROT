@@ -20,11 +20,22 @@ export interface DisclaimerProps {
   /** Which lead sentence. Pick the one that names what the screen just did. */
   kind?: DisclaimerKind;
   /**
-   * Close a `<Paper tail />`: full-bleed (`-mx-4`), square top corners and
-   * the sheet's bottom radius, so the dark block is the foot of the cream
-   * sheet. Render it directly after the Paper, as its sibling.
+   * Close a `<Paper tail />`: full-bleed (`-mx-4`), square top corners, the
+   * sheet's bottom radius, and no top margin, so the dark block is the foot
+   * of the cream sheet. Render it directly after the Paper, as its sibling.
+   * The parent is nearly always a spaced stack (Page, ResultLayout), whose
+   * `space-y-*` (0,3,0) used to push a 16–32px strip of canvas between the
+   * two square edges (P7 #120/#162); `!mt-0` beats it.
    */
   tail?: boolean;
+  /**
+   * Translated copy that replaces the kind's lead sentence and the standing
+   * body, for a screen the standard body would undercut (a wellbeing check
+   * must not call itself "entertainment"). Keeps the block's recipe, so no
+   * screen needs a twin of it.
+   */
+  lead?: string;
+  body?: string;
   className?: string;
 }
 
@@ -40,9 +51,9 @@ export interface DisclaimerProps {
  * Not for: forms, lists, Home, or anywhere nothing was read for meaning.
  * One per screen, at the end.
  */
-export function Disclaimer({ kind = 'general', tail = false, className = '' }: DisclaimerProps) {
+export function Disclaimer({ kind = 'general', tail = false, lead, body, className = '' }: DisclaimerProps) {
   const { t } = useT('common');
-  const shape = tail ? '-mx-4 rounded-b-sheet' : 'rounded-card';
+  const shape = tail ? '-mx-4 !mt-0 rounded-b-sheet' : 'rounded-card';
   return (
     <aside
       className={`bg-mystic-900 px-6 py-5 text-center ${shape} ${className}`.trim()}
@@ -52,9 +63,9 @@ export function Disclaimer({ kind = 'general', tail = false, className = '' }: D
         {t('disclaimer.label', { defaultValue: 'Disclaimer' })}
       </EyebrowLabel>
       <p className="mt-2 text-ui font-semibold text-mystic-100">
-        {t(`disclaimer.lead.${kind}`, { defaultValue: LEAD[kind] })}
+        {lead ?? t(`disclaimer.lead.${kind}`, { defaultValue: LEAD[kind] })}
       </p>
-      <p className="mt-1.5 text-meta text-mystic-400">{t('disclaimer.body', { defaultValue: BODY })}</p>
+      <p className="mt-1.5 text-meta text-mystic-400">{body ?? t('disclaimer.body', { defaultValue: BODY })}</p>
     </aside>
   );
 }

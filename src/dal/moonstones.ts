@@ -74,6 +74,29 @@ export interface CheckinResult {
 }
 
 export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
+  // Already checked in today (another tab, another device, a widget left
+  // open since before the claim)? Say so without calling the RPC: before
+  // 20261003000012 its repeat branch returned the amount credited earlier,
+  // which read as a fresh "+100" (p7 #115). The date is UTC, as the
+  // server's CURRENT_DATE is.
+  const { data: authData } = await supabase.auth.getUser();
+  const uid = authData.user?.id;
+  if (uid) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: existing } = await supabase
+      .from('moonstone_daily_checkins')
+      .select('streak_day')
+      .eq('user_id', uid)
+      .eq('date', today)
+      .maybeSingle();
+    if (existing) {
+      const streakDay = Number((existing as { streak_day?: number }).streak_day ?? 1);
+      return {
+        ok: true,
+        data: { amountAwarded: 0, streakDay, isStreakContinuation: streakDay > 1, alreadyCheckedIn: true },
+      };
+    }
+  }
   const { data, error } = await supabase.rpc('moonstone_daily_checkin');
   if (error) {
     captureException('dal.moonstones.doDailyCheckin', error);
@@ -95,12 +118,9 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
     alreadyCheckedIn: amountAwarded === 0,
   };
   // Refetch + broadcast balance so the home widget updates without a re-mount.
-  if (outcome.amountAwarded > 0) {
-    const { data: balData } = await supabase.auth.getUser();
-    if (balData.user?.id) {
-      const balRes = await getBalance(balData.user.id);
-      if (balRes.ok) broadcast(balRes.data);
-    }
+  if (outcome.amountAwarded > 0 && uid) {
+    const balRes = await getBalance(uid);
+    if (balRes.ok) broadcast(balRes.data);
   }
   return { ok: true, data: outcome };
 }

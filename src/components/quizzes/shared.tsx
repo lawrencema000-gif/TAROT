@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Share2, Bookmark } from 'lucide-react';
+import { Share2, Bookmark, Check } from 'lucide-react';
 import { AffirmationPanel, Button, Disclaimer, EyebrowLabel, Paper, ResultLayout, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { shareOrDownloadCard } from '../../utils/shareCard';
@@ -24,6 +24,8 @@ export interface QuizResultViewProps<R> {
   /** Start the same quiz again. */
   onRetake: () => void;
   saving?: boolean;
+  /** This result has been written to the profile: the save button becomes a receipt. */
+  saved?: boolean;
   /** Present on the quizzes that write a profile field (mbti, love-language, enneagram, attachment). */
   onSaveToProfile?: (type: string, label: string, extra?: Record<string, unknown>) => void;
 }
@@ -54,16 +56,64 @@ export const CATEGORY_LABEL_EN: Record<QuizCategory, string> = {
   'tarot-spirit': 'Tarot & spirit',
 };
 
-/** The cream reading body of a result: one Paper, the quiz Disclaimer as its tail, then anything that follows. */
-export function ResultBody({ children, after }: { children: ReactNode; after?: ReactNode }) {
+/**
+ * The cream reading body of a result: one Paper, its Disclaimer as the
+ * tail, then anything that follows.
+ *
+ * `disclaimer="wellbeing"` closes the low-mood, anxiety and burnout
+ * screens. The standing quiz disclaimer calls every reading "for
+ * reflection and entertainment", which, directly under crisis resources
+ * and "please talk to someone", undercut the one thing those screens
+ * exist to say (R7 #107).
+ */
+export function ResultBody({
+  children,
+  after,
+  disclaimer = 'quiz',
+}: {
+  children: ReactNode;
+  after?: ReactNode;
+  disclaimer?: 'quiz' | 'wellbeing';
+}) {
   return (
     <>
       <Paper as="article" tail>
         <div className="mx-auto max-w-[66ch] space-y-8">{children}</div>
       </Paper>
-      <Disclaimer kind="quiz" tail />
+      {disclaimer === 'wellbeing' ? <WellbeingDisclaimer /> : <Disclaimer kind="quiz" tail />}
       {after}
     </>
+  );
+}
+
+/**
+ * The Disclaimer block's recipe (mystic-900 tail under the Paper, tracked
+ * label, one bold lead, one quiet body) with wellbeing copy: a screen, not
+ * a diagnosis, and who to talk to. The Disclaimer primitive has one body
+ * sentence for every kind; until it grows a `wellbeing` kind this is its
+ * twin, held to the same classes.
+ */
+function WellbeingDisclaimer() {
+  const { t } = useT('app');
+  const { t: tc } = useT('common');
+  return (
+    <aside
+      className="-mx-4 rounded-b-sheet bg-mystic-900 px-6 py-5 text-center"
+      aria-label={tc('disclaimer.label', { defaultValue: 'Disclaimer' })}
+    >
+      <EyebrowLabel tone="ink" className="text-mystic-400">
+        {tc('disclaimer.label', { defaultValue: 'Disclaimer' })}
+      </EyebrowLabel>
+      <p className="mt-2 text-ui font-semibold text-mystic-100">
+        {t('quizzes.disclaimer.wellbeingLead', { defaultValue: 'A screen, not a diagnosis.' })}
+      </p>
+      <p className="mt-1.5 text-meta text-mystic-400">
+        {t('quizzes.disclaimer.wellbeingBody', {
+          defaultValue:
+            'This check helps you notice how you have been. It cannot diagnose anything. If your result worries you, or you do not feel safe, talk to a doctor or a mental-health professional.',
+        })}
+      </p>
+    </aside>
   );
 }
 
@@ -200,23 +250,30 @@ export function Affirmation({ text }: { text: string }) {
   return <AffirmationPanel text={text} surface="paper" />;
 }
 
-/** The action row under the verdict: share, and save-to-profile where the quiz writes one. */
+/**
+ * The action row under the verdict: share, and save-to-profile where the
+ * quiz writes one. Once saved, the button says so and stops taking taps.
+ */
 export function VerdictActions({
   onShare,
   onSave,
   saving,
+  saved = false,
 }: {
   onShare: () => void;
   onSave?: () => void;
   saving?: boolean;
+  saved?: boolean;
 }) {
   const { t } = useT('app');
   return (
     <>
       {onSave && (
-        <Button variant="outline" fullWidth onClick={onSave} disabled={saving}>
-          <Bookmark className="h-4 w-4" aria-hidden />
-          {t('quizzes.saveToProfile', { defaultValue: 'Save to my profile' })}
+        <Button variant="outline" fullWidth onClick={onSave} disabled={saving || saved}>
+          {saved ? <Check className="h-4 w-4" aria-hidden /> : <Bookmark className="h-4 w-4" aria-hidden />}
+          {saved
+            ? t('quizzes.savedToProfile', { defaultValue: 'Saved to your profile' })
+            : t('quizzes.saveToProfile', { defaultValue: 'Save to my profile' })}
         </Button>
       )}
       <Button variant="outline" fullWidth onClick={onShare}>

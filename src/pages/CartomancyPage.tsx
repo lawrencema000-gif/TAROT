@@ -14,7 +14,7 @@ import type { CartoSpread, PlayingCard } from '../types/cartomancy';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
-import { localizeCartoLesson, localizeCartoSpread, localizePlayingCard } from '../i18n/localizePlayingCard';
+import { localizeCartoLesson, localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { localDateStr } from '../utils/localDate';
@@ -44,15 +44,27 @@ function CartomancyPageBody() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const locale = getLocale();
-  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale]);
-  const spreads = useMemo(() => CARTO_SPREADS.map((s) => localizeCartoSpread(s, locale)), [locale]);
-  const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale]);
+  // re-read the corpus when it lands: the page stays mounted through a language change
+  const corpusReady = useCartomancyCorpus();
+  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  const spreads = useMemo(() => CARTO_SPREADS.map((s) => localizeCartoSpread(s, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const [done] = useState(() => loadLessonsDone());
   const [detail, setDetail] = useState<{ card: PlayingCard; reversed: boolean } | null>(null);
 
   const today = localDateStr();
   const daily = useMemo(() => cartoCardOfTheDay(user?.id, today), [user?.id, today]);
   const dailyCard = localize(daily.card);
+
+  // Open at the top: the app has no route-level scroll reset, so this page
+  // arrived at whatever depth the previous one was scrolled to.
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0 });
+    } catch {
+      // jsdom and old WebViews
+    }
+  }, []);
 
   useEffect(() => {
     setPageMeta(

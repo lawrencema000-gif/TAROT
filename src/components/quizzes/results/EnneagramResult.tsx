@@ -1,7 +1,7 @@
 import { ResultLayout } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { tResultCopy } from '../../../i18n/localizeQuiz';
-import { enneagramDescriptions, type EnneagramResult as EnneagramScore } from '../../../data/enneagramQuiz';
+import { displayTritype, enneagramDescriptions, type EnneagramResult as EnneagramScore } from '../../../data/enneagramQuiz';
 import {
   AfterResult,
   Bullets,
@@ -18,7 +18,7 @@ import {
   type QuizResultViewProps,
 } from '../shared';
 
-export function EnneagramResult({ quiz, result, onBack, onRetake, saving, onSaveToProfile }: QuizResultViewProps<EnneagramScore>) {
+export function EnneagramResult({ quiz, result, onBack, onRetake, saving, saved, onSaveToProfile }: QuizResultViewProps<EnneagramScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
   const n = result.primaryType;
@@ -32,6 +32,9 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, onSave
   const section = (key: string, fallback: string) => t(`quizzes.resultSections.${key}`, { defaultValue: fallback });
   const name = copy('name', info.name);
   const wingName = result.wing ? typeName(result.wing) : null;
+  // A row saved by the pre-Phase-7 scorer carries an impossible tritype
+  // (3-3-3); displayTritype recomputes it from the saved scores or hides it.
+  const tritype = displayTritype(result);
 
   return (
     <ResultLayout
@@ -55,6 +58,7 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, onSave
       actions={
         <VerdictActions
           saving={saving}
+          saved={saved}
           onSave={onSaveToProfile ? () => onSaveToProfile('enneagram', String(n), { enneagram_wing: result.wing }) : undefined}
           onShare={() =>
             share({
@@ -113,9 +117,9 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, onSave
             <Quote>{copy('journalPrompt', info.journalPrompt)}</Quote>
           </ResultSection>
 
-          {Array.isArray(result.tritype) && result.tritype.length === 3 && (
+          {tritype && (
             <p className="reading-meta tabular-nums">
-              {t('quizzes.resultSections.tritype', { defaultValue: 'Tritype {{a}}-{{b}}-{{c}}: your leading type in each of the three centres, your own first.', a: result.tritype[0], b: result.tritype[1], c: result.tritype[2] })}
+              {t('quizzes.resultSections.tritype', { defaultValue: 'Tritype {{a}}-{{b}}-{{c}}: your leading type in each of the three centres, your own first.', a: tritype[0], b: tritype[1], c: tritype[2] })}
             </p>
           )}
         </ResultBody>

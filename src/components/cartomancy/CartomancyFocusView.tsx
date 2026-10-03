@@ -13,13 +13,18 @@ import { SuitGlyph } from './SuitGlyph';
  * typed. The Wish is read against the wish stated, Yes or No against the
  * question asked, and the result sheet's title is that sentence. Optional
  * for every spread; the placeholder changes with the spread so a Wish
- * invites "I wish to…" and Yes or No a question.
+ * invites "I wish to…" and Yes or No a question. A spread with a variant
+ * count (Yes or No: three cards, or five for a finer grade) offers the
+ * choice here, before the shuffle.
  */
 
 export interface CartomancyFocusViewProps {
   spread: CartoSpread;
   selectedFocus: FocusArea | null;
   question: string;
+  /** Cards this reading will draw: the spread's count, or its variant's. */
+  cardCount?: number;
+  onCardCountChange?: (count: number) => void;
   onBack: () => void;
   onSelect: (focus: FocusArea) => void;
   onQuestionChange: (question: string) => void;
@@ -28,9 +33,21 @@ export interface CartomancyFocusViewProps {
 
 const QUESTION_MAX = 140;
 
-export function CartomancyFocusView({ spread, selectedFocus, question, onBack, onSelect, onQuestionChange, onContinue }: CartomancyFocusViewProps) {
+export function CartomancyFocusView({
+  spread,
+  selectedFocus,
+  question,
+  cardCount = spread.cardCount,
+  onCardCountChange,
+  onBack,
+  onSelect,
+  onQuestionChange,
+  onContinue,
+}: CartomancyFocusViewProps) {
   const { t } = useT('app');
   const kind = spread.verdict?.kind;
+  const variantCount = spread.layout.kind === 'row' ? spread.layout.variant?.cardCount : undefined;
+  const counts = variantCount && onCardCountChange ? [spread.cardCount, variantCount] : null;
   const placeholder =
     kind === 'wish'
       ? t('cartomancy.focus.wishPlaceholder', { defaultValue: 'I wish to…' })
@@ -61,6 +78,27 @@ export function CartomancyFocusView({ spread, selectedFocus, question, onBack, o
           </div>
         ))}
       </div>
+
+      {counts && (
+        <div className="space-y-2 text-center">
+          <p id="carto-draw-count" className="text-meta text-mystic-400">
+            {t('cartomancy.focus.drawCountLabel', { defaultValue: 'How many cards' })}
+          </p>
+          <div role="group" aria-labelledby="carto-draw-count" className="flex justify-center gap-2">
+            {counts.map((n) => (
+              <Chip
+                key={n}
+                label={t('cartomancy.focus.cards', { count: n, defaultValue_one: '{{count}} card', defaultValue: '{{count}} cards' })}
+                selected={cardCount === n}
+                onSelect={() => onCardCountChange?.(n)}
+              />
+            ))}
+          </div>
+          <p className="text-meta text-mystic-500 text-balance">
+            {t('cartomancy.focus.fiveCardHint', { defaultValue: 'Five cards grade the answer from a clear yes to a clear no.' })}
+          </p>
+        </div>
+      )}
 
       <Input
         label={kind === 'wish' ? t('cartomancy.focus.wishLabel', { defaultValue: 'Your wish' }) : t('cartomancy.focus.questionLabel', { defaultValue: 'Your question' })}

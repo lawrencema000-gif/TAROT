@@ -280,6 +280,72 @@ export async function checkSpecificCardAchievement(userId: string, cardName: str
   await checkAchievementProgress(userId, 'specific_card_drawn', 1, cardName);
 }
 
+/*
+ * Value reporters for the badges that count WHICH thing, not how many times
+ * (migration 20261003000004). Each sends the stable value the server
+ * compares against the seed (20260127070447); a bare checkAchievementProgress
+ * call with no value cannot advance these badges.
+ *
+ * Counter activities (reading_complete, reading_saved, horoscope_viewed,
+ * quiz_complete, journal_entry, ritual_complete, community_*) are reported by
+ * awardXP() in services/levelSystem.ts — call that once per activity and do
+ * NOT also call checkAchievementProgress for the same type: that counts the
+ * activity twice (p7 #36).
+ */
+
+/** The five quiz types the "Quiz Master" set lists — Quiz.type values in src/data. */
+export const QUIZ_MASTER_TYPES = ['mbti', 'love-language', 'big-five', 'enneagram', 'attachment'] as const;
+/** The three spreads the "Spread Explorer" set lists — tarot spread ids. */
+export const SPREAD_EXPLORER_TYPES = ['single', 'three-card', 'celtic-cross'] as const;
+
+/**
+ * A quiz was completed: `quizType` is the quiz's `type` ('mbti',
+ * 'love-language', 'big-five', 'enneagram', 'attachment' count toward Quiz
+ * Master; any other type is ignored). Call once per completion, next to
+ * awardXP(user, 'quiz_complete').
+ */
+export async function reportQuizTypeComplete(userId: string, quizType: string): Promise<UnlockedAchievement[]> {
+  if (!(QUIZ_MASTER_TYPES as readonly string[]).includes(quizType)) return [];
+  return checkAchievementProgress(userId, 'quiz_types_complete', 1, quizType);
+}
+
+/**
+ * A tarot spread was laid: `spreadType` is the spread id ('single',
+ * 'three-card', 'celtic-cross' count toward Spread Explorer).
+ */
+export async function reportSpreadTypeUsed(userId: string, spreadType: string): Promise<UnlockedAchievement[]> {
+  if (!(SPREAD_EXPLORER_TYPES as readonly string[]).includes(spreadType)) return [];
+  return checkAchievementProgress(userId, 'spread_types_used', 1, spreadType);
+}
+
+/** Cards this session has already reported, so swiping back and forth costs one call per card. */
+const exploredThisSession = new Set<string>();
+
+/**
+ * A tarot card's detail was viewed — opened from the library OR reached by
+ * swiping in the detail view. `cardId` is the tarot card id (0–77); the
+ * server counts DISTINCT ids toward Library Scholar (22) and Card Master (78).
+ */
+export async function reportCardExplored(userId: string, cardId: number): Promise<UnlockedAchievement[]> {
+  if (!Number.isInteger(cardId) || cardId < 0 || cardId > 77) return [];
+  const key = `${userId}:${cardId}`;
+  if (exploredThisSession.has(key)) return [];
+  exploredThisSession.add(key);
+  const unlocked = await checkAchievementProgress(userId, 'cards_explored', 1, String(cardId));
+  return unlocked;
+}
+
+/**
+ * A zodiac sign's page or horoscope was viewed: `sign` is the English sign
+ * id in lower case ('aries' … 'pisces'); the server counts distinct signs
+ * toward the 12-sign badge.
+ */
+export async function reportZodiacSignViewed(userId: string, sign: string): Promise<UnlockedAchievement[]> {
+  const id = sign.trim().toLowerCase();
+  if (!/^(aries|taurus|gemini|cancer|leo|virgo|libra|scorpio|sagittarius|capricorn|aquarius|pisces)$/.test(id)) return [];
+  return checkAchievementProgress(userId, 'zodiac_signs_viewed', 1, id);
+}
+
 export async function getAchievementStats(userId: string): Promise<AchievementStats | null> {
   try {
     const { data, error } = await supabase.rpc('get_user_achievement_stats', {

@@ -106,7 +106,8 @@
     "tryAgain": "Try again",
     "orDivider": "or",
     "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy.",
-    "entertainmentNote": "Arcana is for reflection and entertainment only."
+    "entertainmentNote": "Arcana is for reflection and entertainment only.",
+    "unknownError": "Unknown error"
   },
   "cardMeaning": {
     "yesNo": {
@@ -139,7 +140,19 @@
     "opposingIntro": "These cards create tension with {{name}} — {{reason}}",
     "faq": "Frequently asked questions",
     "correspondences": "Astrology and numerology",
-    "combinations": "Card combinations"
+    "combinations": "Card combinations",
+    "faqItems": {
+      "astrologyQ": "What is the astrological correspondence of the {{name}}?",
+      "combinationsA": "Reinforcing: {{reinforcing}}. Opposing: {{opposing}}.",
+      "combinationsQ": "What cards reinforce or oppose the {{name}}?",
+      "meaningQ": "What does the {{name}} tarot card mean?",
+      "pair": "{{label}}: {{value}}",
+      "pairSeparator": " · ",
+      "reversedQ": "What does the {{name}} mean reversed?",
+      "yesNoA": "{{answer}}. {{reason}}",
+      "yesNoQ": "Is the {{name}} a yes or no card?"
+    },
+    "listSeparator": ", "
   },
   "celestial": {
     "eyebrow": "Celestial Map",
@@ -182,7 +195,9 @@
         "cautionsLabel": "Watch for",
         "practiceLabel": "First three days here"
       },
-      "lockedCount": "{{count}} more planetary lines run through here"
+      "lockedCount": "{{count}} more planetary lines run through here",
+      "km": "{{km}} km",
+      "kmFromTap": "{{km}} km from tap"
     },
     "form": {
       "dateRequired": "Please enter your birth date.",
@@ -211,11 +226,48 @@
       "eyebrow": "What you can divine",
       "subtitle": "Tap a theme to filter the map for that intent.",
       "love": {
-        "body": "Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last."
+        "body": "Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last.",
+        "title": "Where love finds you"
+      },
+      "career": {
+        "body": "Discover the cities where doors open, your reputation builds faster, and the right people notice. Best for relocations, sabbaticals, or job hunts.",
+        "title": "Where your work shines"
+      },
+      "growth": {
+        "body": "Intense places that crack you open — best when you are ready for radical change, identity shifts, and the version of yourself that hasn't arrived yet.",
+        "title": "Where you transform"
+      },
+      "healing": {
+        "body": "Quiet places where grief moves, anxiety eases, and the body remembers how to rest. Useful for retreats, recovery, and long-overdue stillness.",
+        "title": "Where to heal"
+      },
+      "home": {
+        "body": "Find the places that feel like home before you arrive — where your nervous system softens, family bonds deepen, and roots come naturally.",
+        "title": "Where to settle"
+      },
+      "travel": {
+        "body": "The destinations where adventure, expansion, and \"this changed me\" moments come unbidden. Plan vacations the universe co-signs.",
+        "title": "Where to roam"
       }
     },
     "angles": {
-      "title": "How to read the lines"
+      "title": "How to read the lines",
+      "ac": {
+        "body": "Where the planet was on the eastern horizon — about identity, how others see you, your fresh start energy.",
+        "label": "AC · Rising"
+      },
+      "dc": {
+        "body": "Where the planet was on the western horizon — about partners, mirrors, and what arrives through other people.",
+        "label": "DC · Setting"
+      },
+      "ic": {
+        "body": "Where the planet was at the bottom of the sky — about home, family roots, and your inner world.",
+        "label": "IC · Foundation"
+      },
+      "mc": {
+        "body": "Where the planet was at the top of the sky — about public reputation, career, and visible achievement.",
+        "label": "MC · Midheaven"
+      }
     },
     "controls": {
       "flat": "Flat map",
@@ -223,7 +275,9 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "reset": "Reset view",
-      "findMe": "Find my birth place"
+      "findMe": "Find my birth place",
+      "hint": "Drag to pan · Pinch to zoom · Tap a place for insight",
+      "mapAria": "Interactive celestial map with planetary lines on a world projection"
     },
     "intro": {
       "title": "Drawing your celestial map",
@@ -282,6 +336,14 @@
       "map": "{{count}} more lines cross your map",
       "map_one": "{{count}} more line crosses your map",
       "map_other": "{{count}} more lines cross your map"
+    },
+    "continents": {
+      "africa": "Africa",
+      "asia": "Asia",
+      "europe": "Europe",
+      "northAmerica": "North America",
+      "oceania": "Oceania",
+      "southAmerica": "South America"
     }
   },
   "readings": {
@@ -394,7 +456,8 @@
       "spreading": "Tap the deck to cut it when it feels right.",
       "focusQuestion": "Hold your focus, then shuffle.",
       "shuffleDeck": "Shuffle the deck",
-      "cutDeck": "Cut the deck"
+      "cutDeck": "Cut the deck",
+      "tapToCut": "Tap the deck to cut it when it feels right."
     },
     "selectView": {
       "chooseMore_one": "Choose {{count}} more card",
@@ -408,7 +471,8 @@
       "deck": "The deck",
       "cardOf": "Card {{n}} of {{total}}",
       "returnCard": "Return the card in {{position}} to the deck",
-      "cardN": "Card {{n}}"
+      "cardN": "Card {{n}}",
+      "trustIntuitionDeck": "Trust your intuition • All {{n}} cards"
     },
     "revealView": {
       "focusReading": "{{focus}} reading",
@@ -433,7 +497,10 @@
       "share": "Share this reading",
       "revealPosition": "Reveal {{position}}",
       "openCard": "Open {{name}}",
-      "showCardMeaningsPlain": "Show card meanings"
+      "showCardMeaningsPlain": "Show card meanings",
+      "aiTooManyCards": "AI readings take spreads of up to {{n}} cards",
+      "sharing": "Preparing the share image",
+      "showAIReading": "Show the AI reading"
     },
     "celticCross": {
       "caption": "The cross and the staff"
@@ -454,7 +521,8 @@
       "aiInsufficient": "Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.",
       "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.",
       "shared": "Shared",
-      "imageSaved": "Image saved to your downloads"
+      "imageSaved": "Image saved to your downloads",
+      "aiTooManyCards": "AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged."
     },
     "positions": {
       "yourCard": "Your card",
@@ -520,7 +588,9 @@
     "customSpread": "Custom spread",
     "result": {
       "yourQuestion": "Your question",
-      "readFullMeaning": "Read the full meaning"
+      "readFullMeaning": "Read the full meaning",
+      "cardLead": "{{name}}: {{sentence}}",
+      "uprightFocusLabel": "{{focus}}, when the card is upright"
     },
     "shareCardText": "{{name}} — {{keyword}}. Read the card on Arcana: {{url}}",
     "systems": {
@@ -602,7 +672,8 @@
       "deleteFailed": "Couldn’t delete this entry — try again.",
       "savedLockedXp": "Saved and locked · +{{n}} XP",
       "savedXp": "Saved · +{{n}} XP",
-      "saveFailed": "Couldn’t save this entry — check your connection and try again."
+      "saveFailed": "Couldn’t save this entry — check your connection and try again.",
+      "savedUnlocked": "Entry saved and unlocked"
     },
     "linkReading": "Link a reading",
     "startWriting": "Write my first entry",
@@ -671,7 +742,10 @@
     },
     "timesCount": "{{n}}×",
     "weekStrip": "This week",
-    "writeToday": "Write today"
+    "writeToday": "Write today",
+    "saveAndUnlock": "Save and unlock",
+    "wordCount_one": "{{n}} word",
+    "wordCount_other": "{{n}} words"
   },
   "quizzes": {
     "title": "Quizzes",
@@ -2055,7 +2129,9 @@
       "courtSplit": "Your answers split evenly on {{what}}; the card above follows your answer to the tie-break question.",
       "courtSplitBoth": "both suit and rank",
       "courtSplitSuit": "suit",
-      "courtSplitRank": "rank"
+      "courtSplitRank": "rank",
+      "courtSuitUnsettled": "Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.",
+      "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere."
     },
     "takeAnother": "Take another quiz",
     "courtCards": {
@@ -4487,7 +4563,15 @@
     "xpEarned": "+{{xp}} XP earned",
     "stale": {
       "title": "This result needs a retake",
-      "body": "This quiz has been revised since you took it, so the saved result no longer matches how it is scored. It takes a few minutes to take again."
+      "body": "This quiz has been revised since you took it, so the saved result no longer matches how it is scored. It takes a few minutes to take again.",
+      "chip": "Needs a retake"
+    },
+    "savedToProfile": "Saved to your profile",
+    "saveToProfileFailed": "Could not save this to your profile. Try again.",
+    "resultNotSaved": "Your result could not be saved. You can still read it here.",
+    "disclaimer": {
+      "wellbeingLead": "A screen, not a diagnosis.",
+      "wellbeingBody": "This check helps you notice how you have been. It cannot diagnose anything. If your result worries you, or you do not feel safe, talk to a doctor or a mental-health professional."
     }
   },
   "horoscope": {
@@ -4576,7 +4660,8 @@
         "Earth": "Earth",
         "Air": "Air",
         "Water": "Water"
-      }
+      },
+      "aspectRow": "{{p1}} {{type}} {{p2}}"
     },
     "forecastView": {
       "thisWeek": "This week",
@@ -4739,7 +4824,10 @@
     },
     "yourProgress": "Your progress",
     "toasts": {
-      "saveFailed": "Couldn’t save your profile — check your connection and try again."
+      "saveFailed": "Couldn’t save your profile — check your connection and try again.",
+      "birthDateRequired": "Add your birth date — every chart is cast from it.",
+      "nameRequired": "Add a name so we know what to call you.",
+      "pickCity": "Pick your birth city from the list so your charts use the right place."
     },
     "untitled": "Your profile",
     "elements": {
@@ -4755,7 +4843,8 @@
       "reading": "Reading",
       "tarot": "Tarot"
     },
-    "totalXp": "{{n}} XP in total"
+    "totalXp": "{{n}} XP in total",
+    "pickCityHint": "Choose the city from the list to save it."
   },
   "achievements": {
     "noInCategory": "No achievements in this category yet.",
@@ -4983,9 +5072,60 @@
       "zodiac-scholar": {
         "description": "Read about all 12 zodiac signs in the compatibility section.",
         "name": "Zodiac Scholar"
+      },
+      "first-hand": {
+        "name": "First Hand",
+        "description": "Complete your first playing-card reading."
+      },
+      "card-sharp": {
+        "name": "Card Sharp",
+        "description": "Complete 10 playing-card readings."
+      },
+      "full-deck": {
+        "name": "Full Deck",
+        "description": "Complete 52 playing-card readings, one for every card in the deck."
+      },
+      "four-suits": {
+        "name": "Four Suits",
+        "description": "Read with five different playing-card spreads."
+      },
+      "romany-table": {
+        "name": "Romany Table",
+        "description": "Lay and read the twenty-one card Romany spread."
+      },
+      "the-wish-card": {
+        "name": "The Wish Card",
+        "description": "Draw the Nine of Hearts, the wish card, in a reading."
+      },
+      "card-reader": {
+        "name": "Card Reader",
+        "description": "Finish all twelve lessons in the playing-card guide."
+      },
+      "the-jokers-laugh": {
+        "name": "The Joker’s Laugh",
+        "description": "Draw a Joker. You had them in the deck, after all."
       }
     },
-    "unlockedOf": "{{n}} of {{total}}"
+    "unlockedOf": "{{n}} of {{total}}",
+    "hiddenDescription": "Complete hidden tasks to unlock this achievement.",
+    "premiumBadge": "Premium",
+    "ranksShort": {
+      "adept": "Adept",
+      "apprentice": "Apprentice",
+      "master": "Master",
+      "novice": "Novice",
+      "oracle": "Oracle"
+    },
+    "rarity": {
+      "common": "Common",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "rare": "Rare"
+    },
+    "unlockContinue": "Continue",
+    "unlockedEyebrow": "Achievement unlocked",
+    "xpReward": "+{{n}} XP",
+    "xpUnit": "XP"
   },
   "blog": {
     "title": "News & insights",
@@ -5118,7 +5258,8 @@
     "prevNext": "Previous and next card",
     "emailInvalid": "Enter a valid email address.",
     "emailFailed": "Couldn’t sign you up. Try again in a moment.",
-    "startReading": "Start a reading"
+    "startReading": "Start a reading",
+    "breadcrumb": "Breadcrumb"
   },
   "admin": {
     "verifications": {
@@ -5293,7 +5434,7 @@
         },
         "unlimitedReadings": {
           "heading": "Keep reading today",
-          "outcome": "Free accounts get three tarot readings a day. Premium lifts that limit and opens every spread, with no ads.",
+          "outcome": "Free accounts get three readings a day, tarot and playing cards together. Premium lifts that limit and opens every spread, with no ads.",
           "cta": "Lift the daily limit"
         },
         "horoscopeChart": {
@@ -5442,7 +5583,9 @@
         "insufficient": "You need {{n}} Moonstones for this. Watch an ad to earn more.",
         "adsDisabled": "Ads aren’t available on this device.",
         "creditedEarnOnly": "{{n}} Moonstones added.",
-        "insufficientWeb": "You need {{n}} Moonstones for this. The daily check-in earns more."
+        "insufficientWeb": "You need {{n}} Moonstones for this. The daily check-in earns more.",
+        "dailyCap": "You’ve earned today’s Moonstones from ads. Ads earn again tomorrow.",
+        "tooSoon": "That ad came too soon after the last one to count. Wait a few seconds, then try again."
       },
       "unlockTitle": "Unlock this reading",
       "unlockSubtitle": "Spend {{cost}} Moonstones to read it now, or watch a short ad to earn {{ad}} first.",
@@ -5454,7 +5597,10 @@
       "earnOnlySubtitleWeb": "It costs {{cost}} Moonstones. There is no ad to watch on the web — the daily check-in earns Moonstones, or Premium opens everything.",
       "noAdWeb": "No ad here: the daily check-in on Home earns Moonstones every day you open Arcana.",
       "shortfall": "{{n}} more to unlock",
-      "unlockSubtitleWeb": "Spend {{cost}} Moonstones to read it now. There is no ad to watch on the web — the daily check-in earns more, or Premium opens everything."
+      "unlockSubtitleWeb": "Spend {{cost}} Moonstones to read it now. There is no ad to watch on the web — the daily check-in earns more, or Premium opens everything.",
+      "earnOnlySubtitleCapped": "It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again tomorrow, the daily check-in earns more, or Premium opens everything.",
+      "unlockSubtitleCapped": "Spend {{cost}} Moonstones to read it now. Today’s ad Moonstones are used up — the daily check-in earns more, or Premium opens everything.",
+      "adCapReached": "You’ve earned today’s Moonstones from ads. Ads earn again tomorrow; the daily check-in on Home earns more today."
     }
   },
   "settings": {
@@ -5541,7 +5687,10 @@
       "devModeEnabled": "Developer mode enabled",
       "deleteFailed": "Couldn’t delete your account — try again, or contact support.",
       "exportFailed": "Couldn’t prepare your export — check your connection and try again.",
-      "exportReady": "Your data is ready"
+      "exportReady": "Your data is ready",
+      "exportCancelled": "Export not saved. Tap Export my data to try again.",
+      "exportDownloaded": "Your data export has downloaded.",
+      "exportShared": "Your data export is in the place you chose."
     },
     "editProfile": {
       "title": "Edit profile",
@@ -5654,7 +5803,10 @@
         "legal": "Legal counsel or guidance",
         "medical": "Medical or mental-health diagnosis"
       }
-    }
+    },
+    "backgroundOption": "Painted background {{n}} of {{total}}",
+    "cardBackOption": "Card back {{n}} of {{total}}",
+    "exportShareTitle": "Your Arcana data"
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",
@@ -6434,7 +6586,8 @@
     "rateLimited": "Too many requests — wait a moment and try again.",
     "contract": "The server sent something this version couldn’t read — try again in a moment.",
     "geocodeNone": "No places matched — try the nearest city, or add the country.",
-    "geocodeUnavailable": "Place search isn’t responding — check your connection and try again."
+    "geocodeUnavailable": "Place search isn’t responding — check your connection and try again.",
+    "chartMissing": "Your birth chart isn’t set up yet. Open Horoscope to cast it, then try again."
   },
   "savedSheet": {
     "threeCardSpread": "Three-card spread",
@@ -6788,7 +6941,19 @@
     "eyebrowWithShare": "Human Design · {{share}} of people",
     "gateLabel": "Gate",
     "lineLabel": "Line",
-    "strategyLabel": "Your strategy"
+    "strategyLabel": "Your strategy",
+    "bodygraphAria": "Human Design bodygraph",
+    "centerShort": {
+      "Ajna": "Ajna",
+      "G": "G",
+      "Head": "Head",
+      "Heart": "Heart",
+      "Root": "Root",
+      "Sacral": "Sacral",
+      "SolarPlexus": "Solar",
+      "Spleen": "Spleen",
+      "Throat": "Throat"
+    }
   },
   "bazi": {
     "title": "Bazi — Four Pillars of Destiny",
@@ -6894,13 +7059,73 @@
     "affirmationLabel": "Your affirmation",
     "doshas": {
       "vata": {
-        "name": "Vata"
+        "name": "Vata",
+        "elements": "Air + Space",
+        "tagline": "The wind — quick, creative, changing.",
+        "summary": "Vata rules movement, circulation, breath, and thought. When balanced, you are creative, adaptable, and full of fresh ideas — the wind that carries things into new territory. When imbalanced, that same wind scatters you: anxiety, dryness, poor sleep, irregular digestion, overwhelm from too much stimulation.",
+        "thriving": "Warm, nourishing, grounded, routine. Your gift is lightness and creativity — but only when anchored by consistency.",
+        "outOfBalance": "Anxiety, constipation, dry skin, insomnia, feeling scattered or depleted, irregular appetite.",
+        "affirmation": "I slow down. I stay warm. I return to my rhythm — and my creativity becomes a gift.",
+        "dietTips": [
+          "Warm, cooked, moist foods — soups, stews, warm grains",
+          "Sweet, sour, salty tastes — healthy fats, ripe fruits, nuts",
+          "Avoid raw foods, cold drinks, excessive caffeine, frozen desserts",
+          "Eat regularly at the same times — skipping meals worsens Vata"
+        ],
+        "lifestyleTips": [
+          "Routine is medicine — consistent sleep, meals, movement",
+          "Warm oil self-massage (abhyanga) with sesame oil before shower",
+          "Gentle yoga, walking, tai chi — avoid over-exertion",
+          "Early bed, warm environment",
+          "Limit screens and stimulation, especially at night"
+        ]
       },
       "pitta": {
-        "name": "Pitta"
+        "name": "Pitta",
+        "elements": "Fire + Water",
+        "tagline": "The flame — sharp, driven, transformative.",
+        "summary": "Pitta rules metabolism, digestion, intellect, and transformation. When balanced, you are focused, courageous, a natural leader with sharp discernment. When imbalanced, the same fire burns too hot: irritability, inflammation, perfectionism, burnout, a tendency to criticize self and others harshly.",
+        "thriving": "Cool, calm, with purposeful work that serves a cause larger than yourself. Your fire illuminates.",
+        "outOfBalance": "Irritability, heartburn, skin rashes, inflammation, perfectionism, burnout, harsh self-judgement, excessive competition.",
+        "affirmation": "My fire illuminates. I let myself cool so the flame does not burn the hand that holds it.",
+        "dietTips": [
+          "Cooling foods — cucumbers, melons, leafy greens, coconut",
+          "Sweet, bitter, astringent tastes — avoid spicy, salty, sour excess",
+          "Eat at regular times — hunger makes Pitta worse",
+          "Limit red meat, alcohol, caffeine, fried foods",
+          "Hydrate — cool (not cold) water throughout the day"
+        ],
+        "lifestyleTips": [
+          "Moderate intensity — you will push yourself too hard by default",
+          "Cooling exercise — swimming, moonlit walks, gentle cycling",
+          "Cool environments, shady spots in summer",
+          "Coconut oil self-massage",
+          "Release the need to win every conversation — pause before responding when heated"
+        ]
       },
       "kapha": {
-        "name": "Kapha"
+        "name": "Kapha",
+        "elements": "Earth + Water",
+        "tagline": "The earth — steady, nurturing, enduring.",
+        "summary": "Kapha rules structure, lubrication, immunity, and endurance. When balanced, you are calm, loyal, compassionate, with rock-solid stamina — the steady ground everyone relies on. When imbalanced, the ground becomes a swamp: weight gain, congestion, lethargy, stuck patterns, difficulty starting new things.",
+        "thriving": "Movement, variety, warmth, stimulation. Your natural stability pairs beautifully with regular novelty.",
+        "outOfBalance": "Weight gain, congestion, excessive sleep, lethargy, depression, clinging to patterns that no longer serve, emotional over-eating.",
+        "affirmation": "My steadiness is my gift. I move, I warm, I light my own fire — and I let the ground bloom.",
+        "dietTips": [
+          "Light, warm, pungent foods — ginger, black pepper, cinnamon",
+          "Pungent, bitter, astringent tastes — reduce sweet, salty, sour",
+          "Eat your biggest meal at midday when digestion is strongest",
+          "Limit dairy, wheat, sugar, cold drinks, heavy oily foods",
+          "Some Kapha routines include a lighter breakfast; check with a practitioner before changing how you eat"
+        ],
+        "lifestyleTips": [
+          "Move every day — even 20 minutes makes a difference for Kapha",
+          "Vigorous exercise — running, dance, hot yoga",
+          "Rise early (pre-6am ideal), avoid daytime naps",
+          "Dry brushing before shower to stimulate circulation",
+          "Variety matters — break routine regularly",
+          "Declutter your space monthly — Kapha accumulates"
+        ]
       }
     },
     "tridoshic": {
@@ -7487,6 +7712,20 @@
             "Exhaustion from code-switching"
           ],
           "affirmation": "My values are the same everywhere. I find the places where I forget that — and I return."
+        },
+        "unclear": {
+          "name": "No clear pattern",
+          "tagline": "Your answers do not settle on one way of holding boundaries.",
+          "summary": "You did not clearly agree with any of the four patterns — walls, openness, healthy flex or shifting with the room. Your boundaries may still be forming, they may change more than these questions can catch, or none of the statements sounded like you. Try noticing one recent moment when you said yes or no, and what it cost you.",
+          "affirmation": "I learn where my lines are by noticing where they get crossed.",
+          "strengths": [
+            "Openness to looking at it fresh",
+            "No single pattern locked in"
+          ],
+          "shadow": [
+            "Hard to change what you cannot yet name",
+            "Answers that drift toward what sounds right rather than what is true"
+          ]
         }
       }
     },
@@ -8252,7 +8491,8 @@
     },
     "common": {
       "scoreDistribution": "Score distribution",
-      "scoreScale": "Average agreement per dimension, out of 5."
+      "scoreScale": "Average agreement per dimension, out of 5.",
+      "scoreScaleMixed": "Average answer per group of questions. How-often questions are scored out of 4, agreement questions out of 5."
     },
     "jungian-functions": {
       "title": "Jungian functions",
@@ -8898,7 +9138,7 @@
       }
     },
     "self-compassion": {
-      "title": "Self-Compassion",
+      "title": "Self-compassion",
       "description": "Based on Kristin Neff’s model of self-compassion. Sixteen questions on how you actually treat yourself when you are struggling — and which part of that is the place to practise.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -9012,7 +9252,8 @@
         "over-identified": "Over-identification"
       },
       "whereToPractise": "Where to practise",
-      "weakestBody": "The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture."
+      "weakestBody": "The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.",
+      "weakestBodyTwo": "The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture."
     },
     "mood-screener": {
       "title": "Mood screener",
@@ -9626,6 +9867,20 @@
             "Never mastering one deeply"
           ],
           "affirmation": "My balance is my practice. I tend all three legs of the stool."
+        },
+        "unclear": {
+          "name": "Still exploring",
+          "tagline": "None of these practices clearly restores you yet.",
+          "summary": "You did not clearly agree that effort, slow care or solitude restores you, and you did not say you need a mix. That is useful to know. What restores you may be something these questions did not name — time outdoors, making things, good company — or you may not have had room to find out. Try one small experiment from each practice this week and notice which leaves you lighter.",
+          "affirmation": "I am allowed to experiment until I find what restores me.",
+          "strengths": [
+            "Room to discover what actually works",
+            "No habit to unlearn"
+          ],
+          "shadow": [
+            "Running on empty without noticing",
+            "Waiting for rest to happen instead of planning it"
+          ]
         }
       }
     }
@@ -9655,28 +9910,44 @@
     },
     "categories": {
       "calm": {
-        "name": "Calm"
+        "name": "Calm",
+        "journalPrompt": "What is creating this quiet in me today? How can I protect it?",
+        "recommendation": "Stay close to what made this calm possible — don’t over-schedule the rest of your day."
       },
       "charged": {
-        "name": "Charged"
+        "name": "Charged",
+        "journalPrompt": "What is this energy asking me to do? What am I being called toward?",
+        "recommendation": "Channel the charge into one focused action, not three scattered ones."
       },
       "drained": {
-        "name": "Drained"
+        "name": "Drained",
+        "journalPrompt": "What drained me? What have I been carrying that is not mine to carry?",
+        "recommendation": "This is not a day to push. Rest is the work. Do the minimum and come back tomorrow."
       },
       "steady": {
-        "name": "Steady"
+        "name": "Steady",
+        "journalPrompt": "What is the rhythm holding me up today? Can I let more of this into my life?",
+        "recommendation": "A good day to pick up something requiring sustained effort. You have the ground."
       },
       "anxious": {
-        "name": "Anxious"
+        "name": "Anxious",
+        "journalPrompt": "What specifically is my nervous system bracing for? What would it take to name the fear out loud?",
+        "recommendation": "Breath slower than the thoughts. Five minutes of 4-7-8 breathing before any big decision."
       },
       "joyful": {
-        "name": "Joyful"
+        "name": "Joyful",
+        "journalPrompt": "What brought the joy? Write it down — so future-you has a map back.",
+        "recommendation": "Let this be uncomplicated. Don’t analyse joy; metabolise it."
       },
       "heavy": {
-        "name": "Heavy"
+        "name": "Heavy",
+        "journalPrompt": "What am I grieving, even quietly? What is this weight trying to tell me?",
+        "recommendation": "Move your body — a walk, a stretch. Heaviness lifts through motion more reliably than through thought."
       },
       "curious": {
-        "name": "Curious"
+        "name": "Curious",
+        "journalPrompt": "What is tugging at me? What question wants to be followed today?",
+        "recommendation": "Follow the thread. Curiosity is rare — feed it while it’s awake."
       }
     },
     "needMoreForLetter": "Log at least 3 days for a weekly letter.",
@@ -9702,7 +9973,18 @@
     "pickLabel": "Today’s mood",
     "storageLocal": "Saved on this device for now — it moves to your account the next time the connection is there.",
     "storageSynced": "Saved to your account. It comes with you to any device and is part of your data export.",
-    "syncFailed": "Saved on this device — it will sync when the connection returns."
+    "syncFailed": "Saved on this device — it will sync when the connection returns.",
+    "pattern": {
+      "falling": "Curve dipping — this week has been heavier than last.",
+      "heavierShift": "Heavier this week — the dominant note shifted from {{from}} to {{to}}.",
+      "lighterShift": "Lighter this week — moved from {{from}} to {{to}}.",
+      "mixed": "A mixed week — no single mood has dominated.",
+      "mixedWord": "mixed",
+      "mostlyHeaviestDay": "Mostly {{mood}} this week. {{day}} has tended to be the heaviest day.",
+      "mostlySteady": "Mostly {{mood}} this week. A steady note.",
+      "rising": "Curve rising — this week feels lighter than last.",
+      "tooFew": "Log a few more days to see a pattern emerge."
+    }
   },
   "compat": {
     "title": "Partner compatibility",
@@ -9808,7 +10090,52 @@
     "fix": "Remedy",
     "share": "Share my Bagua",
     "starN": "Star {{n}}",
-    "whatItGoverns": "What this area governs"
+    "whatItGoverns": "What this area governs",
+    "directions": {
+      "E": "East",
+      "N": "North",
+      "NE": "Northeast",
+      "NW": "Northwest",
+      "S": "South",
+      "SE": "Southeast",
+      "SW": "Southwest",
+      "W": "West"
+    },
+    "elements": {
+      "Earth": "Earth",
+      "Fire": "Fire",
+      "Metal": "Metal",
+      "Water": "Water",
+      "Wood": "Wood"
+    },
+    "groups": {
+      "East": "East",
+      "West": "West"
+    },
+    "locations": {
+      "bathroom": "Bathroom",
+      "bedroom": "Bedroom",
+      "front-door": "Front Door",
+      "general": "General",
+      "kitchen": "Kitchen",
+      "office": "Office"
+    },
+    "severity": {
+      "high": "High",
+      "low": "Low",
+      "medium": "Medium"
+    },
+    "shareText": "Feng Shui reading: {{area}}",
+    "trigrams": {
+      "Dui": "Dui",
+      "Gen": "Gen",
+      "Kan": "Kan",
+      "Kun": "Kun",
+      "Li": "Li",
+      "Qian": "Qian",
+      "Xun": "Xun",
+      "Zhen": "Zhen"
+    }
   },
   "community": {
     "title": "Community",
@@ -9873,7 +10200,8 @@
       "newWhisper": "Whisper into the well",
       "placeholder": "What needs to be said but has no audience?",
       "send": "Send whisper",
-      "empty": "The well is quiet. Be the first to whisper."
+      "empty": "The well is quiet. Be the first to whisper.",
+      "replyAnonymous": "Replies here are anonymous"
     },
     "publishPost": "Publish my post",
     "youMarker": "You",
@@ -9883,7 +10211,15 @@
     "reportConfirm": "Report",
     "reportPrompt": "Choose a reason, then confirm.",
     "reportedTag": "Reported",
-    "yourPost": "Your post"
+    "yourPost": "Your post",
+    "reactions": {
+      "eye": "Eye",
+      "flame": "Flame",
+      "heart": "Heart",
+      "moon": "Moon",
+      "sparkle": "Sparkle"
+    },
+    "unnamedMember": "A member"
   },
   "common": {
     "mainContent": "Main content",
@@ -9937,7 +10273,8 @@
     },
     "gateCheckFailed": "Couldn’t check your balance — try again.",
     "costLineConversation": "Starting a conversation uses <gold>{{n}} Moonstones</gold>",
-    "costLinePortrait": "Painting the portrait uses <gold>{{n}} Moonstones</gold>"
+    "costLinePortrait": "Painting the portrait uses <gold>{{n}} Moonstones</gold>",
+    "costLinePerConversation": "A conversation uses <gold>{{n}} Moonstones</gold>, every reply included"
   },
   "askOracle": {
     "cta": "Ask the Oracle about this",
@@ -9979,7 +10316,8 @@
         "name": "Priestess",
         "intro": "Warm, embodied, intuitive. Tracks the person behind the question. Offers practices as often as wisdom."
       }
-    }
+    },
+    "balanceChangedRetry": "Your balance changed — send your message again."
   },
   "advisors": {
     "title": "Advisors",
@@ -10091,7 +10429,13 @@
     "oracleFailedBody": "Check your connection and try again — this cast is one request, so you won’t be charged twice.",
     "tryAgain": "Try again",
     "oracleEyebrow": "The cast as a whole",
-    "oracleCard": "Card drawn alongside: {{name}}"
+    "oracleCard": "Card drawn alongside: {{name}}",
+    "aiCast": "my rune cast — {{runes}}",
+    "aiCastAsked": "my rune cast — {{runes}}, asked about: {{question}}",
+    "aiJoin": ", ",
+    "aiRune": "{{rune}} in {{position}}",
+    "aiRuneReversed": "{{rune}} (reversed) in {{position}}",
+    "shareTitle": "My rune cast"
   },
   "dice": {
     "title": "Dice Oracle",
@@ -10105,7 +10449,10 @@
     "askOracle": "Ask the Oracle about this",
     "oracleQuestion": "The astro dice gave me {{planet}} in {{sign}} in House {{house}}. What is this pointing to for me right now?",
     "modeAstro": "Astro dice",
-    "modeClassic": "Classic"
+    "modeClassic": "Classic",
+    "astroTitle": "{{planet}} in {{sign}}, House {{house}}",
+    "houseLine": "House {{n}} — {{title}}: {{keywords}}.",
+    "keywordJoin": ", "
   },
   "crisis": {
     "title": "You are not alone",
@@ -10155,7 +10502,9 @@
       "accountTooOld": "Referral codes only work in the first 30 days.",
       "generic": "Couldn’t redeem that code — check it and try again."
     },
-    "codeUnavailable": "Couldn’t fetch your code right now."
+    "codeUnavailable": "Couldn’t fetch your code right now.",
+    "invitesCount_one": "{{n}} friend joined with your code",
+    "invitesCount_other": "{{n}} friends joined with your code"
   },
   "yearAhead": {
     "title": "Year Ahead",
@@ -10232,7 +10581,57 @@
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
     "upgradeToPremium": "See what Premium includes",
     "earnNow": "Watch an ad, earn {{n}} Moonstones",
-    "noAspects": "No aspects computed."
+    "noAspects": "No aspects computed.",
+    "chartRulerLabel": "Chart ruler:",
+    "crossAspectRow": "{{partner}} {{type}} {{natal}}",
+    "dominantPlanetsLabel": "Dominant planets:",
+    "inHouseOf": "In your house of {{theme}}.",
+    "listJoin": ", ",
+    "needsBirthTime": "needs birth time",
+    "optional": "optional",
+    "partner": "Partner",
+    "planetLines": {
+      "Jupiter": {
+        "inSign": "Your growth comes easily when it wears {{sign}}’s clothes.",
+        "theme": "Expansion, faith, where life overflows if you let it."
+      },
+      "Mars": {
+        "inSign": "You fight and initiate in {{sign}}’s key.",
+        "theme": "Drive, anger, how you take action and pursue what you want."
+      },
+      "Mercury": {
+        "inSign": "Your mind runs in {{sign}}’s style — which shapes how you learn and persuade.",
+        "theme": "Mind, speech, the pattern of your thinking."
+      },
+      "Moon": {
+        "inSign": "You regulate by way of {{sign}}’s instincts.",
+        "theme": "Emotional blueprint — what safety and home feel like."
+      },
+      "Neptune": {
+        "inSign": "Your imagination and spirituality take a {{sign}} shape.",
+        "theme": "Dissolution, dreams, where ego softens into meaning."
+      },
+      "Pluto": {
+        "inSign": "You transform through {{sign}}’s territory.",
+        "theme": "Transformation, power, what you are compelled to alchemize."
+      },
+      "Saturn": {
+        "inSign": "Your discipline matures through {{sign}} lessons.",
+        "theme": "Structure, discipline, the long work of your life."
+      },
+      "Sun": {
+        "inSign": "You’re here to express yourself through the lens of {{sign}}.",
+        "theme": "Ego, vitality, the thing you came here to become."
+      },
+      "Uranus": {
+        "inSign": "Your revolution shows up in the {{sign}} theme of your generation.",
+        "theme": "Disruption, originality, where you break free of the given."
+      },
+      "Venus": {
+        "inSign": "You love the {{sign}} way — it’s the gravity field of your attractions.",
+        "theme": "Love, aesthetic, how you attract and what pleases you."
+      }
+    }
   },
   "careerReport": {
     "title": "Career Archetype",
@@ -10501,7 +10900,117 @@
     "deckTarot": "Tarot",
     "deckPlaying": "Playing cards",
     "errorNoCharge": "Nothing was charged for a reading you did not receive.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "errorRetryFree": "If you were charged, Try again returns the same reading at no extra cost.",
+    "lens": {
+      "astrology": "Astrology",
+      "bazi": "Bazi",
+      "career": "Career",
+      "dice": "Quick call",
+      "general": "Anything",
+      "iching": "I Ching",
+      "love": "Love",
+      "tarot": "Tarot"
+    },
+    "lensQuestion": "[{{lens}} question] {{question}}",
+    "suggestions": {
+      "astrology": {
+        "0": "Why does this week feel heavy?",
+        "1": "What is Mercury retrograde doing to me?",
+        "2": "What does my chart say about love?",
+        "3": "Why do I clash with certain signs?",
+        "4": "What's the full moon stirring up for me?",
+        "5": "Is Saturn testing me right now?",
+        "6": "When will my luck shift this year?",
+        "7": "What career suits my birth chart?",
+        "8": "Why am I so emotional lately?",
+        "9": "What transit should I watch this month?"
+      },
+      "bazi": {
+        "0": "What element am I missing?",
+        "1": "Am I in a good luck cycle right now?",
+        "2": "When does my next luck pillar begin?",
+        "3": "Is this year favorable for money?",
+        "4": "What does my Day Master say about me?",
+        "5": "Which direction supports my career?",
+        "6": "Why do some years feel harder than others?",
+        "7": "Is this a year to push, or to wait?",
+        "8": "What color and element strengthen me?",
+        "9": "When is a lucky window to start something?"
+      },
+      "career": {
+        "0": "Should I quit my job?",
+        "1": "Is this the right time to change careers?",
+        "2": "Why do I feel invisible at work?",
+        "3": "Should I ask for a raise this month?",
+        "4": "Is my side project worth pursuing?",
+        "5": "How do I deal with a difficult boss?",
+        "6": "Am I burning out or just tired?",
+        "7": "Will this interview go my way?",
+        "8": "Take the risky offer, or stay safe?",
+        "9": "What's blocking my next step at work?"
+      },
+      "dice": {
+        "0": "Should I text them tonight?",
+        "1": "Will tomorrow go my way?",
+        "2": "Yes or no: should I do it?",
+        "3": "Is today a good day to ask?",
+        "4": "Should I say yes to the invite?",
+        "5": "Will the news be good?",
+        "6": "Do they miss me?",
+        "7": "Should I buy it or wait?",
+        "8": "Is it worth one more try?",
+        "9": "Quick roll: how's this week looking?"
+      },
+      "general": {
+        "0": "Why do I feel stuck lately?",
+        "1": "What should I focus on this month?",
+        "2": "Am I on the right path?",
+        "3": "What am I not seeing about my situation?",
+        "4": "How do I stop overthinking everything?",
+        "5": "What's draining my energy right now?",
+        "6": "Is it time for a big change?",
+        "7": "What do I need to let go of?",
+        "8": "Why does everything feel heavy right now?",
+        "9": "What's going well that I keep ignoring?"
+      },
+      "iching": {
+        "0": "Should I act now, or wait for the moment?",
+        "1": "What is this change trying to teach me?",
+        "2": "How should I handle this conflict?",
+        "3": "Is it wiser to hold on or let go?",
+        "4": "What happens if I stay the course?",
+        "5": "How do I move through this uncertainty?",
+        "6": "What attitude serves me best right now?",
+        "7": "Is this ending actually a beginning?",
+        "8": "Where should I yield, and where stand firm?",
+        "9": "What does this moment ask of me?"
+      },
+      "love": {
+        "0": "Do they still think about me?",
+        "1": "Is this relationship worth fighting for?",
+        "2": "Why do I keep attracting the same type?",
+        "3": "Should I text my ex?",
+        "4": "Are we just friends, or something more?",
+        "5": "When will I meet someone real?",
+        "6": "How do I know if they actually care?",
+        "7": "Is it too soon to say I love you?",
+        "8": "Why am I scared to let someone in?",
+        "9": "Should I give them another chance?"
+      },
+      "tarot": {
+        "0": "What energy surrounds me today?",
+        "1": "What does my heart already know?",
+        "2": "Show me what I'm avoiding.",
+        "3": "What's the lesson in this situation?",
+        "4": "What's coming into my life next?",
+        "5": "What do they feel about me, truly?",
+        "6": "Pull a card for my week ahead.",
+        "7": "What should I release before the new moon?",
+        "8": "Where is this connection headed?",
+        "9": "What hidden strength can I lean on?"
+      }
+    }
   },
   "tarotCompanion": {
     "title": "Tarot companion",
@@ -10514,7 +11023,10 @@
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
     "aiFailed": "Couldn’t reach the oracle — check your connection and ask again.",
-    "thinking": "The oracle is thinking…"
+    "thinking": "The oracle is thinking…",
+    "cardReversed": "{{name}} (reversed)",
+    "readCta": "Read this card",
+    "readPrompt": "Ask the oracle to read this card with you."
   },
   "journalCoach": {
     "askCta": "Ask the journal coach",
@@ -10694,7 +11206,8 @@
     "eyebrow": "Chinese astrology",
     "gengNote": "Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌), which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.",
     "lede": "Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.",
-    "noTimeNote": "Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift."
+    "noTimeNote": "Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.",
+    "lifePalaceIn": "命宮 in {{branch}}"
   },
   "mansions": {
     "title": "The Lunar Mansions",
@@ -10716,7 +11229,8 @@
     "nothingFavoured": "The almanacs record nothing favoured here — a day to keep small rather than start.",
     "sukuyoAfter": "Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you.",
     "sukuyoBefore": "The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in",
-    "sukuyoEyebrow": "Sukuyō · the Japanese reading"
+    "sukuyoEyebrow": "Sukuyō · the Japanese reading",
+    "seasonElement": "{{season}}, {{element}}"
   },
   "dates": {
     "title": "Pick a good day",
@@ -10729,7 +11243,17 @@
     "disclaimer": "A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.",
     "windowNote": "Looking at the next {{days}} days. Tap a day to see exactly why it scored the way it did.",
     "eyebrow": "Chinese date selection",
-    "lede": "Zeri — choosing the day for a thing"
+    "lede": "Zeri — choosing the day for a thing",
+    "reasons": {
+      "auspiciousGeneral": "{{mansion}} is a 吉宿 — generally favourable, with nothing specific recorded for this",
+      "counselsAgainst": "{{mansion}} counsels against {{activity}}",
+      "dayClash": "The day branch clashes with your own day pillar (日沖) — the classic reason to pick another date",
+      "dayCombine": "The day combines with your day pillar (六合) — an easy, cooperative day for you",
+      "favours": "{{mansion}} favours {{activity}}",
+      "frameSupport": "The day shares a 三合 frame with your day pillar — quietly supportive",
+      "inauspiciousGeneral": "{{mansion}} is a 凶宿 — generally unfavourable, with nothing specific recorded for this",
+      "yearClash": "The day clashes with your year branch (沖太歲)"
+    }
   },
   "freeCourse": {
     "errors": {
@@ -10883,7 +11407,51 @@
       "friendship": "Friendship",
       "work": "Work",
       "strongest": "Your strongest connections",
-      "crossRow": "Your {{mine}} {{type}} {{name}}’s {{theirs}}"
+      "crossRow": "Your {{mine}} {{type}} {{name}}’s {{theirs}}",
+      "signPair": "{{a}} & {{b}}"
+    },
+    "aiReading": {
+      "another": "Read another focus →",
+      "errorNoCharge": "The reading didn’t come through. Nothing was charged.",
+      "errorRateLimit": "Too many readings at once — wait a moment and try again.",
+      "errorRetryFree": "The reading didn’t come through. If you were charged, Reveal reading again returns it at no extra cost.",
+      "errorUnavailable": "Readings are paused for a moment. Nothing was charged.",
+      "focus": {
+        "career": "Career",
+        "growth": "Growth",
+        "love": "Love",
+        "overview": "Overview"
+      },
+      "focusLabel": "Focus",
+      "intro": "A personal, chart-grounded interpretation of {{name}}’s stars.",
+      "loading": "Reading the stars…",
+      "reveal": "Reveal reading",
+      "title": "AI reading"
+    },
+    "circle": {
+      "count": "{{count}} people",
+      "count_one": "{{count}} person",
+      "count_other": "{{count}} people",
+      "signs": "Signs",
+      "title": "Your circle"
+    },
+    "pet": {
+      "companion": "Companion",
+      "disclaimer": "A bit of fun for you and them. It describes tendencies, not health — anything that actually worries you about your animal is a conversation for your vet, not for a birth chart.",
+      "needsTitle": "What they need from you",
+      "quirk": "The quirk:",
+      "yearOf": "Year of the {{animal}} {{cn}}"
+    },
+    "species": {
+      "bird": "Bird",
+      "cat": "Cat",
+      "dog": "Dog",
+      "fish": "Fish",
+      "horse": "Horse",
+      "other": "Companion",
+      "rabbit": "Rabbit",
+      "reptile": "Reptile",
+      "smallPet": "Small pet"
     }
   },
   "mirror": {
@@ -10921,7 +11489,13 @@
       "appearances": "{{n}} appearances",
       "fromSuit": "{{n}} cards from this suit",
       "occurrences": "{{n}} occurrences",
-      "times": "{{n}}×"
+      "times": "{{n}}×",
+      "appearances_one": "{{n}} appearance",
+      "appearances_other": "{{n}} appearances",
+      "fromSuit_one": "{{n}} card from this suit",
+      "fromSuit_other": "{{n}} cards from this suit",
+      "occurrences_one": "{{n}} occurrence",
+      "occurrences_other": "{{n}} occurrences"
     },
     "major": "Major",
     "minor": "Minor",
@@ -10930,13 +11504,36 @@
       "pentacles": "Pentacles",
       "swords": "Swords",
       "wands": "Wands"
+    },
+    "ranks": {
+      "ace": "Ace",
+      "king": "King",
+      "knight": "Knight",
+      "page": "Page",
+      "queen": "Queen"
     }
   },
   "spreadDetail": {
     "notFound": "Spread not found",
     "backToAll": "Back to all spreads",
     "allSpreads": "All spreads",
-    "readThisSpread": "Read this spread"
+    "readThisSpread": "Read this spread",
+    "bestFor": "Best for",
+    "difficulty": {
+      "advanced": "Advanced",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate"
+    },
+    "duration": "~{{n}} min",
+    "exampleQuestions": "Example questions",
+    "faq": "Frequently asked questions",
+    "history": "Origin & tradition",
+    "positionsDescription": "Each card placed in this spread answers a specific question. Read in order.",
+    "positionsTitle": "Position-by-position meaning",
+    "quoted": "“{{text}}”",
+    "related": "Related spreads",
+    "signUpToRead": "Sign up to read this spread",
+    "whenToUse": "When to use"
   },
   "chartSuite": {
     "eyebrow": "Chart Library",
@@ -10978,6 +11575,64 @@
       "natalReport": "Opens in your natal report →",
       "yearAhead": "Opens in your year-ahead report →",
       "people": "Opens in People →"
+    },
+    "types": {
+      "composite": {
+        "name": "Composite Chart",
+        "tagline": "The chart of the relationship itself"
+      },
+      "davison": {
+        "name": "Davison Chart",
+        "tagline": "A real moment between two births"
+      },
+      "firdaria": {
+        "name": "Firdaria",
+        "tagline": "Ancient time-lords of your life story"
+      },
+      "lunar-return": {
+        "name": "Lunar Return",
+        "tagline": "Your emotional month, mapped"
+      },
+      "natal": {
+        "name": "Natal Chart",
+        "tagline": "The sky at your first breath"
+      },
+      "progressed-composite": {
+        "name": "Progressed Composite",
+        "tagline": "How your bond evolves over time"
+      },
+      "progressions": {
+        "name": "Secondary Progressions",
+        "tagline": "Your inner life, slowly unfolding"
+      },
+      "sky-now": {
+        "name": "Sky Now",
+        "tagline": "The current sky, no birth data needed"
+      },
+      "solar-arc": {
+        "name": "Solar Arc Directions",
+        "tagline": "Every planet moving at the Sun’s pace"
+      },
+      "solar-return": {
+        "name": "Solar Return",
+        "tagline": "Your birthday chart for the year"
+      },
+      "synastry": {
+        "name": "Synastry",
+        "tagline": "Two charts in conversation"
+      },
+      "tertiary": {
+        "name": "Tertiary Progressions",
+        "tagline": "The fast current beneath your months"
+      },
+      "transits": {
+        "name": "Transits",
+        "tagline": "Where the sky meets your chart today"
+      },
+      "ziwei": {
+        "name": "Zi Wei Dou Shu",
+        "tagline": "The Chinese Emperor-star chart"
+      }
     }
   },
   "foolsJourney": {
@@ -10988,7 +11643,9 @@
     "nextMilestone": "Next milestone",
     "level": "Level {{level}}",
     "youAreHere": "You are here",
-    "footnote": "Each level unlocks as you build your daily practice — pulling cards, journaling readings, completing rituals."
+    "footnote": "Each level unlocks as you build your daily practice — pulling cards, journaling readings, completing rituals.",
+    "metaDescription": "22-level progression mapped to the Major Arcana. From Wandering Seeker to Returned Whole.",
+    "metaTitle": "The Fool’s Journey — Your progression"
   },
   "soulmatePortrait": {
     "title": "Your soulmate portrait",
@@ -11012,7 +11669,68 @@
     "timedOut": "The portrait is taking longer than usual. Nothing was lost — try again in a moment.",
     "waitNearly": "Nearly there — portraits take up to 90 seconds",
     "waitNote": "You can keep reading — the portrait appears here when it is done.",
-    "waitStill": "Still painting — this usually takes about a minute"
+    "waitStill": "Still painting — this usually takes about a minute",
+    "stillPainting": "Still painting. Tap “Show my portrait” in a minute to collect it — you won’t be charged again.",
+    "connectionDropped": "The connection dropped while painting. Tap “Show my portrait” to collect it — you won’t be charged twice.",
+    "expired": "That portrait can’t be shown again. Paint a new one.",
+    "failedNotCharged": "The portrait couldn’t be painted, and your Moonstones weren’t charged. Try again in a moment.",
+    "collect": "Show my portrait",
+    "pendingNote": "Your last portrait was still being painted. Tap to collect it — it is already paid for.",
+    "symbol": {
+      "descendant": "Descendant"
+    },
+    "symbolIn": "{{label}} in {{sign}}",
+    "meaning": {
+      "descendant": "You’re drawn to what feels {{mood}}.",
+      "venus": "You love through {{love}}.",
+      "mars": "Attraction sparks for you in a {{register}} register.",
+      "moon": "Emotionally you need {{love}}."
+    },
+    "captionDescVenus": "Drawn from your {{desc}} Descendant and Venus in {{venus}} — the qualities your chart reaches for in a partner.",
+    "captionDesc": "Drawn from your {{desc}} Descendant — the qualities your chart reaches for in a partner.",
+    "captionVenus": "Drawn from Venus in {{venus}} — the qualities you love through.",
+    "moods": {
+      "aries": "bold, kinetic, unafraid",
+      "taurus": "sensual, still, unhurried",
+      "gemini": "quick, curious, doubled",
+      "cancer": "tender, protective, moonlit",
+      "leo": "radiant, generous, theatrical",
+      "virgo": "precise, devoted, quietly warm",
+      "libra": "graceful, balanced, beautiful",
+      "scorpio": "magnetic, private, transformative",
+      "sagittarius": "adventurous, candid, wide-horizoned",
+      "capricorn": "steady, ambitious, quietly loyal",
+      "aquarius": "unconventional, luminous, free",
+      "pisces": "dreamlike, compassionate, boundless"
+    },
+    "registers": {
+      "aries": "bold",
+      "taurus": "sensual",
+      "gemini": "quick",
+      "cancer": "tender",
+      "leo": "radiant",
+      "virgo": "precise",
+      "libra": "graceful",
+      "scorpio": "magnetic",
+      "sagittarius": "adventurous",
+      "capricorn": "steady",
+      "aquarius": "unconventional",
+      "pisces": "dreamlike"
+    },
+    "loves": {
+      "aries": "directness and spark",
+      "taurus": "steadiness and touch",
+      "gemini": "wit and conversation",
+      "cancer": "safety and devotion",
+      "leo": "warmth and being adored",
+      "virgo": "care shown in details",
+      "libra": "harmony and beauty",
+      "scorpio": "depth and total honesty",
+      "sagittarius": "freedom and shared adventure",
+      "capricorn": "commitment and reliability",
+      "aquarius": "friendship and originality",
+      "pisces": "tenderness and imagination"
+    }
   },
   "wishingSky": {
     "eyebrow": "The Wishing Sky",
@@ -11074,7 +11792,11 @@
     "linkedCount": "{{count}} linked",
     "reportConfirm": "Tap again to report",
     "reportedTag": "Reported",
-    "wishCount": "{{count}} wishes"
+    "wishCount": "{{count}} wishes",
+    "echoCount_one": "{{count}} echo",
+    "echoCount_other": "{{count}} echoes",
+    "wishCount_one": "{{count}} wish",
+    "wishCount_other": "{{count}} wishes"
   },
   "spreadBuilder": {
     "signInPrompt": "Custom spreads are saved to your account.",
@@ -11091,18 +11813,44 @@
     "deleteSpread": "Delete {{name}}",
     "deleteTitle": "Delete {{name}}?",
     "deleteBody": "This removes the spread and its positions from your account. It can’t be undone.",
-    "startReading": "Start a reading"
+    "startReading": "Start a reading",
+    "addPosition": "Add position ({{n}}/{{max}})",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "When to use this spread, what kind of question it answers…",
+    "metaDescription": "Design your own tarot spread with custom card positions and meanings.",
+    "metaTitle": "Custom Spread Builder",
+    "nameLabel": "Spread name",
+    "namePlaceholder": "e.g. Morning intention",
+    "positionCount": "{{count}} positions",
+    "positionCount_one": "{{count}} position",
+    "positionCount_other": "{{count}} positions",
+    "positionMeaningPlaceholder": "What this position represents…",
+    "positionNamePlaceholder": "Position name (e.g. The challenge)",
+    "positions": "Positions",
+    "removePosition": "Remove position {{n}}",
+    "save": "Save spread",
+    "savedTitle": "Your saved spreads",
+    "saving": "Saving…",
+    "subtitle": "Design your own spread with up to {{n}} positions. Save unlimited custom spreads tied to your account.",
+    "title": "Custom spread builder"
   },
   "authBootstrap": {
     "backToSignIn": "Back to sign in",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "completingSignIn": "Completing sign-in…",
+    "loadingRitual": "Loading your daily ritual…",
+    "takingLonger": "Taking longer than expected?",
+    "loadingProfile": "Loading your profile…"
   },
   "publicNav": {
     "signIn": "Sign in",
-    "backToArcana": "Back to Arcana"
+    "backToArcana": "Back to Arcana",
+    "home": "Arcana home"
   },
   "astrologyLearn": {
-    "title": "Astrology"
+    "title": "Astrology",
+    "metaTitle": "Astrology Learn — Signs, Planets, Houses & Aspects",
+    "metaDescription": "Complete astrology reference: 12 zodiac signs, 10 planets, 12 houses, and 6 major aspects. {{n}} entries with rulerships, correspondences, and FAQ."
   },
   "spreads": {
     "pageTitle": "Tarot spreads",
@@ -11551,6 +12299,36 @@
           "4": "The new dance"
         }
       }
+    },
+    "sections": {
+      "career": {
+        "description": "Work decisions, financial flow, and professional direction.",
+        "title": "Career & money"
+      },
+      "daily": {
+        "description": "Quick spreads for ritual check-ins and weekly forecasts.",
+        "title": "Daily practice"
+      },
+      "decision": {
+        "description": "Crossroads, yes/no nuance, and choice clarification.",
+        "title": "Decisions"
+      },
+      "general": {
+        "description": "Classic spreads for any question or open inquiry.",
+        "title": "General"
+      },
+      "love": {
+        "description": "Spreads tuned to romance, partnership, and connection.",
+        "title": "Love & relationships"
+      },
+      "lunar": {
+        "description": "New-moon intention setting and full-moon release.",
+        "title": "Lunar cycles"
+      },
+      "spiritual": {
+        "description": "Inner work, integration, and higher-self guidance.",
+        "title": "Spiritual & shadow"
+      }
     }
   },
   "share": {
@@ -11621,7 +12399,12 @@
       "questionPlaceholder": "What is on your mind? (optional)",
       "wishLabel": "Your wish",
       "wishPlaceholder": "I wish to…",
-      "yesNoPlaceholder": "Ask a question the cards can answer yes or no"
+      "yesNoPlaceholder": "Ask a question the cards can answer yes or no",
+      "drawCountLabel": "How many cards",
+      "cards": "{{count}} cards",
+      "cards_one": "{{count}} card",
+      "cards_other": "{{count}} cards",
+      "fiveCardHint": "Five cards grade the answer from a clear yes to a clear no."
     },
     "guide": {
       "cardsInLesson": "Cards in this lesson",
@@ -11664,7 +12447,14 @@
       "readFull": "Read the full meaning",
       "reflect": "Reflect",
       "showCardMeanings": "Show card meanings",
-      "yourQuestion": "Your question"
+      "yourQuestion": "Your question",
+      "summaryLead": "{{name}}: {{sentence}}",
+      "suitMajority": "{{n}} of {{total}} are {{suit}}",
+      "colorMajority": "{{n}} of {{total}} are {{color}}",
+      "colorNames": {
+        "red": "red",
+        "black": "black"
+      }
     },
     "seo": {
       "cardDesc": "{{name}} in playing-card reading: {{keywords}}. Upright and reversed, love, career, advice and timing.",
@@ -11732,7 +12522,17 @@
   "sharedReading": {
     "copyLink": "Copy share link",
     "drawn": "Drawn {{date}}",
-    "suggests": "What this reading suggests"
+    "suggests": "What this reading suggests",
+    "backToArcana": "Back to Arcana",
+    "cta": "Get your own reading on Arcana",
+    "eyebrow": "Shared reading",
+    "invalidBody": "The link may be malformed or from an older version of the app.",
+    "invalidTitle": "This reading link is invalid",
+    "pageDescription": "A reading shared with you on Arcana. Open the link to see the cards drawn.",
+    "pageTitle": "Shared tarot reading — {{count}} cards",
+    "pageTitleInvalid": "Shared tarot reading",
+    "pageTitle_one": "Shared tarot reading — one card",
+    "pageTitle_other": "Shared tarot reading — {{count}} cards"
   },
   "createAccount": {
     "appleCta": "Continue with Apple"
@@ -11947,5 +12747,12 @@
         "crown": "Crown"
       }
     }
+  },
+  "shell": {
+    "overlayFailed": "This panel could not open. Reload the app and try again."
+  },
+  "authPage": {
+    "metaTitle": "Sign in",
+    "metaDescription": "Sign in to Arcana — your daily tarot, astrology, and reflective journaling practice. Continue your ritual."
   }
 }

@@ -194,6 +194,25 @@ export async function apiCall<TReq, TRes>(options: ApiCallOptions<TReq, TRes>): 
       }
     }
 
+    // A replay of a paid request (same body.requestId) whose first run is
+    // still in flight: the server answers 409 REQUEST_IN_FLIGHT after
+    // waiting ~20 s for it. Ask again with the SAME body — it is free and
+    // returns the first run's result — while the timeout allows.
+    while (res.status === 409) {
+      const envelope = safeJson(await res.clone().text());
+      const parsed = ErrorEnvelope.safeParse(envelope);
+      if (!parsed.success || parsed.data.error.code !== 'REQUEST_IN_FLIGHT') break;
+      const retryAfter = Number((parsed.data.error.details as { retryAfterMs?: unknown } | undefined)?.retryAfterMs) || 3_000;
+      if (performance.now() - started + retryAfter > timeoutMs) break;
+      await new Promise((r) => setTimeout(r, retryAfter));
+      res = await fetch(`${API_BASE}/${fn}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body ?? {}),
+        signal: controller.signal,
+      });
+    }
+
     const respCorrelationId = res.headers.get(CORRELATION_ID_HEADER) ?? correlationId;
     const text = await res.text();
 

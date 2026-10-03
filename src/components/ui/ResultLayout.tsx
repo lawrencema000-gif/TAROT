@@ -2,6 +2,7 @@ import { HTMLAttributes, ReactNode, forwardRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Disclosure } from './Disclosure';
 import { EyebrowLabel } from './Ornament';
+import { useT } from '../../i18n/useT';
 
 /**
  * The answer first, then the working.
@@ -74,9 +75,9 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
       glyph,
       glyphHidden = true,
       onBack,
-      backLabel = 'Back',
+      backLabel,
       actions,
-      detailLabel = 'Read the full reading',
+      detailLabel,
       detailMeta,
       detailOpen,
       defaultDetailOpen = false,
@@ -88,6 +89,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
     },
     ref,
   ) => {
+    const { t } = useT('common');
     return (
       <div ref={ref} className={`space-y-5 ${className}`} {...props}>
         {onBack && (
@@ -96,19 +98,21 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
             onClick={onBack}
             className="
               inline-flex items-center gap-2 -ml-2 px-2 min-h-[44px] rounded-lg
-              text-sm text-mystic-400 transition-colors hover:text-mystic-200
+              text-ui text-mystic-400 transition-colors hover:text-mystic-200
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
               focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950
             "
           >
             <ArrowLeft className="w-4 h-4" aria-hidden />
-            {backLabel}
+            {backLabel ?? t('actions.back', { defaultValue: 'Back' })}
           </button>
         )}
 
         {/* The verdict block is the one place on a result screen that is
             allowed to be loud: a gold hairline and one step up the surface ramp (800 over the page's 850), no shadow, no halo. Everything below it stays flat so this reads as the
-            top of the hierarchy rather than one card among many. */}
+            top of the hierarchy rather than one card among many.
+            The glyph sits in a flat 850 disc on a gold hairline: the gold-to-navy
+            gradient it had was the last glow on every quiz verdict (P7 #171). */}
         <section
           className="
             rounded-card border border-gold/25 bg-mystic-800
@@ -119,7 +123,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
             <div
               className="
                 w-24 h-24 mx-auto rounded-full flex items-center justify-center
-                bg-gradient-to-br from-gold/25 to-mystic-800 border border-gold/30
+                bg-mystic-850 border border-gold/30
                 text-gold font-display text-3xl
                 [&>svg]:w-10 [&>svg]:h-10
               "
@@ -146,7 +150,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
 
         {children != null && (
           <Disclosure
-            label={detailLabel}
+            label={detailLabel ?? t('resultLayout.readFullReading', { defaultValue: 'Read the full reading' })}
             meta={detailMeta}
             open={detailOpen}
             defaultOpen={defaultDetailOpen}

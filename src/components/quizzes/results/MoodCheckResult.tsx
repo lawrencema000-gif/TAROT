@@ -1,6 +1,6 @@
 import { ProgressRing, ResultLayout } from '../../ui';
 import { useT } from '../../../i18n/useT';
-import { moodDescriptions, MOOD_DIMENSIONS, MOOD_SUGGESTIONS, type MoodCheckResult as MoodScore } from '../../../data/quizzes';
+import { moodDescriptions, moodNeedOf, MOOD_DIMENSIONS, MOOD_SUGGESTIONS, type MoodCheckResult as MoodScore } from '../../../data/quizzes';
 import {
   AfterResult,
   MOOD_INK,
@@ -32,8 +32,13 @@ export function MoodCheckResult({ quiz, result, onBack, onRetake }: QuizResultVi
   const verdictKey = result.overallMood.toLowerCase();
   const label = t(`quizzes.mood.${verdictKey}.label`, { defaultValue: result.overallMood });
   const copy = (field: keyof typeof info, fallback: string) => t(`quizzes.mood.${verdictKey}.${field}`, { defaultValue: fallback });
-  const need = result.need ?? 'balance';
-  const suggestion = t(`quizzes.mood.suggestions.${need}`, { defaultValue: result.suggestion ?? MOOD_SUGGESTIONS[need] });
+  // Older rows have no `need`, only the English suggestion they were given:
+  // recover the need from it, and if the text is unknown show it as stored
+  // rather than a different (balance) suggestion.
+  const need = moodNeedOf(result);
+  const suggestion = need
+    ? t(`quizzes.mood.suggestions.${need}`, { defaultValue: MOOD_SUGGESTIONS[need] })
+    : result.suggestion || t('quizzes.mood.suggestions.balance', { defaultValue: MOOD_SUGGESTIONS.balance });
   const section = (key: string, fallback: string) => t(`quizzes.resultSections.${key}`, { defaultValue: fallback });
 
   return (

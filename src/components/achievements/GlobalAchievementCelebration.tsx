@@ -8,6 +8,8 @@ import {
 } from '../../services/achievements';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
+import { useT } from '../../i18n/useT';
+import { localizeAchievement } from './localizeAchievement';
 
 /**
  * App-shell achievement celebration drainer.
@@ -29,6 +31,7 @@ import { useUI } from '../../context/UIContext';
 export function GlobalAchievementCelebration() {
   const { user } = useAuth();
   const { activeTab } = useUI();
+  const { t } = useT('app');
   const [current, setCurrent] = useState<AchievementWithProgress | null>(null);
   const queueRef = useRef<AchievementWithProgress[]>([]);
   const drainingRef = useRef(false);
@@ -76,7 +79,9 @@ export function GlobalAchievementCelebration() {
 
   return (
     <AchievementUnlockModal
-      achievement={current}
+      // Read through the locale exactly as the Achievements page does — the
+      // raw DB row is English in every language (P7 #22/#48).
+      achievement={current ? localizeAchievement(current, t) : null}
       onClose={showNext}
     />
   );

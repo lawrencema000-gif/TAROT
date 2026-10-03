@@ -19,7 +19,7 @@ import {
   type QuizResultViewProps,
 } from '../shared';
 
-export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, onSaveToProfile }: QuizResultViewProps<LoveLanguageScore>) {
+export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, saved, onSaveToProfile }: QuizResultViewProps<LoveLanguageScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
   const sorted = Object.entries(result.scores ?? {}).sort((a, b) => b[1] - a[1]);
@@ -51,6 +51,7 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, onS
       actions={
         <VerdictActions
           saving={saving}
+          saved={saved}
           onSave={onSaveToProfile ? () => onSaveToProfile('love-language', primary) : undefined}
           onShare={() =>
             share({

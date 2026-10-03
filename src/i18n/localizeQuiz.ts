@@ -20,13 +20,15 @@ import i18n from './config';
  * "Strongly disagree" … because the quiz happened to have five options
  * everywhere, and the PHQ-2 screener now mixes four-point frequency items
  * with ten Likert items.
+ *
+ * Every lookup asks `i18n.exists` first. Most of these keys do not exist
+ * by design (a per-option label exists only for a forced-choice option a
+ * locale translated), and a bare `t()` on a missing key fires i18next's
+ * missingKey event: the quiz list used to log 2,510 "[i18n] missing key"
+ * warnings per load and forward each one to Sentry in production.
  */
 export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
-  const t = (key: string, fallback: string): string => {
-    const result = i18n.t(key, { ns: 'app' });
-    // i18next returns the key itself when no translation is found
-    return result === key ? fallback : result;
-  };
+  const t = (key: string, fallback: string): string => lookup(key) ?? fallback;
 
   const basePath = quizBasePath(quiz);
 
@@ -42,11 +44,8 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
     const options = q.options.map((opt) => {
       // Per-quiz per-question option translation (forced-choice and bespoke items)
       if (basePath) {
-        const perOptionKey = `${basePath}.questions.${q.id}.options.${opt.value}`;
-        const translated = i18n.t(perOptionKey, { ns: 'app' });
-        if (translated !== perOptionKey) {
-          return { ...opt, label: translated };
-        }
+        const translated = lookup(`${basePath}.questions.${q.id}.options.${opt.value}`);
+        if (translated !== null) return { ...opt, label: translated };
       }
       // Shared Likert labels (only for a real agreement item). The label is
       // chosen by what the option SAYS, never by the value it records: a
@@ -70,6 +69,13 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
     description,
     questions: localizedQuestions,
   };
+}
+
+/** The `app` string at `key` (through the fallback language), or null — without a missingKey event. */
+function lookup(key: string): string | null {
+  if (!i18n.exists(key, { ns: 'app' })) return null;
+  const value = i18n.t(key, { ns: 'app' });
+  return typeof value === 'string' && value !== key ? value : null;
 }
 
 /** The agreement scale in drawing order; position + 1 is the quizzes.likert.<n> key. */
@@ -139,15 +145,16 @@ export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGe
     typeKey === 'shadow-archetype' ? 'shadowArchetype' :
     typeKey === 'element-affinity' ? 'elementAffinity' :
     typeKey;
-  const timeEstimate = i18n.t(
-    `quizzes.definitions.${definitionKey}.timeEstimate`,
-    { ns: 'app', defaultValue: fallback.timeEstimate },
-  );
-  const whatYouGetRaw = i18n.t(
-    `quizzes.definitions.${definitionKey}.whatYouGet`,
-    { ns: 'app', returnObjects: true, defaultValue: fallback.whatYouGet },
-  );
-  const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
+  return localizeMetadataAt(`quizzes.definitions.${definitionKey}`, fallback);
+}
+
+function localizeMetadataAt<T extends { timeEstimate: string; whatYouGet: readonly string[] }>(base: string, fallback: T): T {
+  const timeEstimate = lookup(`${base}.timeEstimate`) ?? fallback.timeEstimate;
+  const whatYouGetRaw = i18n.exists(`${base}.whatYouGet`, { ns: 'app' })
+    ? i18n.t(`${base}.whatYouGet`, { ns: 'app', returnObjects: true })
+    : null;
+  const whatYouGet =
+    Array.isArray(whatYouGetRaw) && whatYouGetRaw.every((x) => typeof x === 'string') ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
   return { ...fallback, timeEstimate, whatYouGet };
 }
 
@@ -165,16 +172,7 @@ export function localizeExtraQuizMetadata<T extends { timeEstimate: string; what
 ): T {
   // Strip the version suffix: "money-personality-v1" → "money-personality"
   const key = quizId.replace(/-v\d+$/, '');
-  const timeEstimate = i18n.t(
-    `extraQuizzes.${key}.timeEstimate`,
-    { ns: 'app', defaultValue: fallback.timeEstimate },
-  );
-  const whatYouGetRaw = i18n.t(
-    `extraQuizzes.${key}.whatYouGet`,
-    { ns: 'app', returnObjects: true, defaultValue: fallback.whatYouGet },
-  );
-  const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
-  return { ...fallback, timeEstimate, whatYouGet };
+  return localizeMetadataAt(`extraQuizzes.${key}`, fallback);
 }
 
 /**

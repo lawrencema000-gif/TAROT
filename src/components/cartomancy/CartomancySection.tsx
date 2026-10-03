@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Settings2, Lock } from 'lucide-react';
-import { Badge, Button, ListRow, ListRowGroup, Sheet, toast } from '../ui';
+import { Badge, Button, ListRow, ListRowGroup, ListSkeleton, Sheet, toast } from '../ui';
 import { SpreadGlyph, type SpreadGlyphPosition } from '../icons';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
-import { localizeCartoSpread, localizePlayingCard } from '../../i18n/localizePlayingCard';
+import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import { useAuth } from '../../context/AuthContext';
 import { useGamification } from '../../context/GamificationContext';
 import { tarotReadings } from '../../dal';
@@ -122,18 +122,47 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const [canWatchAd, setCanWatchAd] = useState(false);
   const [settings, setSettings] = useState<CartoSettings>(() => loadCartoSettings());
   const [showSettings, setShowSettings] = useState(false);
+  /** Cards to draw when the spread offers a variant (Yes or No: 3 or 5); null is the spread's own count. */
+  const [drawCount, setDrawCount] = useState<number | null>(null);
+  /**
+   * The gate's async inputs — today's count, whether an ad can be watched,
+   * the temporary unlocks — have resolved. A spread launched from a deep
+   * link waits for them: run against the initial `0` / `false` / `{}`, the
+   * gates let a reader past the daily limit to the focus step and send an
+   * Android reader straight to the subscription paywall instead of the
+   * Moonstone or ad unlock.
+   */
+  const [countsReady, setCountsReady] = useState(false);
+  const [accessReady, setAccessReady] = useState(false);
 
   const shuffleTimerRef = useRef<number | null>(null);
   const rewardedRef = useRef(false);
 
-  const spread = useMemo(() => localizeCartoSpread(cartoSpreadOrDefault(currentSlug), locale), [currentSlug, locale]);
-  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale]);
-  const spreads = useMemo(() => CARTO_SPREADS.map((s) => localizeCartoSpread(s, locale)), [locale]);
+  // Re-read the corpus when it lands: the section stays mounted through a
+  // language change (CartomancyCorpusGate holds only the first mount), so the
+  // text re-localizes in place instead of the table being thrown away.
+  const corpusReady = useCartomancyCorpus();
+  const spread = useMemo(() => localizeCartoSpread(cartoSpreadOrDefault(currentSlug), locale), [currentSlug, locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  const spreads = useMemo(() => CARTO_SPREADS.map((s) => localizeCartoSpread(s, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const significator = settings.significator ? getPlayingCardBySlug(settings.significator) ?? null : null;
+  const variantCount = spread.layout.kind === 'row' ? spread.layout.variant?.cardCount ?? null : null;
+  const cardCount = drawCount !== null && (drawCount === spread.cardCount || drawCount === variantCount) ? drawCount : spread.cardCount;
 
   useEffect(() => {
-    getDailyReadingCount().then(setDailyReadingCount);
-    if (isNative()) rewardedAdsService.canWatchAd().then(setCanWatchAd);
+    let live = true;
+    Promise.all([
+      getDailyReadingCount(),
+      isNative() ? rewardedAdsService.canWatchAd().catch(() => false) : Promise.resolve(false),
+    ]).then(([count, canWatch]) => {
+      if (!live) return;
+      setDailyReadingCount(count);
+      setCanWatchAd(canWatch);
+      setCountsReady(true);
+    });
+    return () => {
+      live = false;
+    };
   }, []);
 
   useEffect(
@@ -146,21 +175,34 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
 
   useEffect(() => {
+    let live = true;
     const checkTemporaryAccess = async () => {
-      if (profile?.isPremium) return;
-      const accessMap: Record<string, boolean> = {};
-      for (const s of CARTO_SPREADS) {
-        const feature = cartoSpreadFeature(s);
-        if (feature && !s.free) accessMap[s.slug] = await rewardedAdsService.hasTemporaryAccess(feature, s.slug);
+      if (profile?.isPremium) {
+        setAccessReady(true);
+        return;
       }
-      accessMap['extra_reading'] = await rewardedAdsService.hasTemporaryAccess('extra_reading');
+      const accessMap: Record<string, boolean> = {};
+      try {
+        for (const s of CARTO_SPREADS) {
+          const feature = cartoSpreadFeature(s);
+          if (feature && !s.free) accessMap[s.slug] = await rewardedAdsService.hasTemporaryAccess(feature, s.slug);
+        }
+        accessMap['extra_reading'] = await rewardedAdsService.hasTemporaryAccess('extra_reading');
+      } catch {
+        // no grants known: the gates fall back to the paywall or the unlock sheet
+      }
+      if (!live) return;
       setHasTemporaryAccess((prev) => {
         const next = { ...prev };
         for (const [key, granted] of Object.entries(accessMap)) next[key] = prev[key] || granted;
         return next;
       });
+      setAccessReady(true);
     };
     checkTemporaryAccess();
+    return () => {
+      live = false;
+    };
   }, [profile?.isPremium, adRequest]);
 
   // Each stage starts at its top: the select stage of a 21-card spread is
@@ -185,6 +227,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
 
   const resetReadingState = () => {
     setSelectedFocus(null);
+    setDrawCount(null);
     setQuestion('');
     setIsSaved(false);
     setShowAIInterpretation(false);
@@ -217,13 +260,20 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setView('focus');
   };
 
-  const launchedRef = useRef<string | null>(null);
+  // A deep link (?spread=) begins its spread once every gate input is known:
+  // the daily count, the ad and unlock state, and the profile (a premium
+  // reader whose profile has not loaded yet must not meet the paywall).
+  const gatesReady = countsReady && accessReady && (!user || !!profile);
+  const [launched, setLaunched] = useState<string | null>(null);
+  const launchable = !!initialSpread && CARTO_SPREADS.some((s) => s.slug === initialSpread);
+  /** The deep-linked spread is waiting on the gates: hold the picker back so it does not flash first. */
+  const launchPending = launchable && launched !== initialSpread;
   useEffect(() => {
-    if (!initialSpread || launchedRef.current === initialSpread) return;
-    launchedRef.current = initialSpread;
-    if (CARTO_SPREADS.some((s) => s.slug === initialSpread)) beginReading(initialSpread);
+    if (!initialSpread || launched === initialSpread || !gatesReady) return;
+    setLaunched(initialSpread);
+    if (launchable) beginReading(initialSpread);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSpread]);
+  }, [initialSpread, gatesReady]);
 
   const goHome = () => {
     setView('home');
@@ -289,15 +339,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setSelectedIndices((prev) => {
       const at = prev.indexOf(cardId);
       if (at >= 0) return prev.slice(0, at);
-      if (prev.length >= spread.cardCount) return prev;
+      if (prev.length >= cardCount) return prev;
       return [...prev, cardId];
     });
   };
 
   const handleRevealSelected = () => {
-    if (selectedIndices.length !== spread.cardCount) return;
+    if (selectedIndices.length !== cardCount) return;
     const cards = selectedIndices.map((id) => getPlayingCard(id)).filter((c): c is PlayingCard => !!c);
-    if (cards.length !== spread.cardCount) {
+    if (cards.length !== cardCount) {
       toast(t('readings.toasts.cardsNotFound'), 'error');
       return;
     }
@@ -339,16 +389,20 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     if (view !== 'reveal' || drawnCards.length === 0 || !allRevealed || rewardedRef.current) return;
     rewardedRef.current = true;
     if (!user) return;
+    // awardXP reports 'reading_complete' to the achievements itself
+    // (levelSystem.ts); a second report here counted every reading twice.
     awardXP(user.id, 'reading_complete').then(() => refreshProfile());
-    checkAchievementProgress(user.id, 'reading_complete');
     for (const event of cartoAchievementEvents(currentSlug, drawnCards.map((d) => d.card))) {
       checkAchievementProgress(user.id, event.activityType, 1, event.value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, allRevealed, drawnCards.length]);
 
+  // The five-card Yes or No numbers its cards: the spread names three positions.
   const getPositionLabel = (index: number): string =>
-    cartoPositionLabel(spread, index, (n) => t('readings.positions.generic', { index: n }));
+    cardCount !== spread.cardCount
+      ? t('readings.selectView.cardN', { n: index + 1, defaultValue: 'Card {{n}}' })
+      : cartoPositionLabel(spread, index, (n) => t('readings.positions.generic', { index: n }));
 
   const focusForAI: CartoFocus = selectedFocus === 'Love' ? 'love' : selectedFocus === 'Career' || selectedFocus === 'Money' ? 'career' : 'general';
   const tableCards = drawnCards.map((d) => d.card);
@@ -418,8 +472,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     }
     setIsSaved(true);
     toast(t('readings.toasts.readingSaved'), 'success');
+    // awardXP reports 'reading_saved' to the achievements itself.
     awardXP(user.id, 'reading_saved').then(() => refreshProfile());
-    checkAchievementProgress(user.id, 'reading_saved');
     await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
     await ratePromptService.incrementPositiveActions(user.id);
     if (await ratePromptService.shouldShowPrompt(user.id)) {
@@ -478,6 +532,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         spread={spread}
         selectedFocus={selectedFocus}
         question={question}
+        cardCount={cardCount}
+        onCardCountChange={setDrawCount}
         onBack={goHome}
         onSelect={setSelectedFocus}
         onQuestionChange={setQuestion}
@@ -489,8 +545,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       <TarotShuffleView isShuffling={isShuffling} cardBackUrl={profile?.card_back_url} onBack={handleShuffleBack} onShuffle={handleShuffleStart} onCut={handleCutDeck} />
     );
   } else if (view === 'select') {
-    const needsMore = spread.cardCount - selectedIndices.length;
-    const positionLabels = Array.from({ length: spread.cardCount }, (_, i) => getPositionLabel(i));
+    const needsMore = cardCount - selectedIndices.length;
+    const positionLabels = Array.from({ length: cardCount }, (_, i) => getPositionLabel(i));
     stage = (
       <TarotSelectView
         deckCards={deckCards}
@@ -533,6 +589,12 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         onToggleAI={setShowAIInterpretation}
         onNewReading={goHome}
       />
+    );
+  } else if (launchPending) {
+    stage = (
+      <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+        <ListSkeleton count={3} />
+      </div>
     );
   } else {
     stage = (

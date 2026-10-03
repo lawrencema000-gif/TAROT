@@ -6,7 +6,7 @@ import { loadLessonsDone } from '../components/cartomancy/cartoFlow';
 import { CARTO_LESSONS } from '../data/cartomancy';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
-import { localizeCartoLesson } from '../i18n/localizePlayingCard';
+import { localizeCartoLesson, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
@@ -19,9 +19,21 @@ function CartomancyGuidePageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const locale = getLocale();
-  const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale]);
+  // re-read the corpus when it lands: the page stays mounted through a language change
+  const corpusReady = useCartomancyCorpus();
+  const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const [done] = useState(() => loadLessonsDone());
   const doneCount = lessons.filter((l) => done.has(l.slug)).length;
+
+  // Open at the top: the hub's rows sit far down its page, and the app has
+  // no route-level scroll reset, so this page arrived mid-list.
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0 });
+    } catch {
+      // jsdom and old WebViews
+    }
+  }, []);
 
   useEffect(() => {
     setPageMeta(

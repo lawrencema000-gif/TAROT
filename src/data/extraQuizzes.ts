@@ -296,7 +296,7 @@ export const MONEY_INFO: Record<MoneyType, DimensionalResultInfo> = {
 // 4. Boundaries
 // ---------------------------------------------------------------
 
-export type BoundaryType = 'rigid' | 'porous' | 'healthy' | 'situational';
+export type BoundaryType = 'rigid' | 'porous' | 'healthy' | 'situational' | 'unclear';
 
 export const boundariesQuiz: QuizDefinition = {
   id: 'boundaries-v1',
@@ -356,25 +356,53 @@ export const BOUNDARIES_INFO: Record<BoundaryType, DimensionalResultInfo> = {
     shadow: ['Inconsistency confuses people around you', 'Disowning a part of yourself in certain relationships', 'Exhaustion from code-switching'],
     affirmation: 'My values are the same everywhere. I find the places where I forget that — and I return.',
   },
+  unclear: {
+    name: 'No clear pattern',
+    tagline: 'Your answers do not settle on one way of holding boundaries.',
+    summary: 'You did not clearly agree with any of the four patterns — walls, openness, healthy flex or shifting with the room. Your boundaries may still be forming, they may change more than these questions can catch, or none of the statements sounded like you. Try noticing one recent moment when you said yes or no, and what it cost you.',
+    strengths: ['Openness to looking at it fresh', 'No single pattern locked in'],
+    shadow: ['Hard to change what you cannot yet name', 'Answers that drift toward what sounds right rather than what is true'],
+    affirmation: 'I learn where my lines are by noticing where they get crossed.',
+  },
 };
+
+/** A Likert mean at which a boundary pattern counts as endorsed ("Agree" on average). */
+const BOUNDARY_ENDORSED = 3.5;
+/** Neutral: a pattern above it is leaning, at or below it is not claimed. */
+const BOUNDARY_NEUTRAL = 3;
 
 /**
  * Healthy and situational boundaries are patterns derived from the other
  * two, not independent traits, and the four "healthy" items are the ones
  * everyone agrees with — so a max-wins scorer typed almost everyone
- * healthy. Decision order: situational when it is clearly endorsed (mean
- * ≥ 3.5) and leads; healthy when neither walls nor porousness are
- * elevated (both means ≤ 2.5); otherwise whichever of rigid / porous is
- * higher, flagged as a tie when they are within TIE_MARGIN.
+ * healthy. Every verdict now needs the person to have AGREED with it:
+ *
+ *  1. situational — its mean is endorsed (≥ 3.5) and leads;
+ *  2. rigid / porous — the higher of the two is endorsed (≥ 3.5); it wins
+ *     even over a higher healthy mean, because the healthy items are the
+ *     agreeable ones;
+ *  3. healthy — the healthy items are endorsed (≥ 3.5) and neither walls
+ *     nor porousness is;
+ *  4. otherwise the highest of rigid / porous / healthy that is still on
+ *     the agree side of neutral (> 3), as a leaning;
+ *  5. otherwise `unclear`: a flat or all-disagree profile is no pattern.
+ *
+ * Before, a rigid mean of 2.75 (the disagree side) typed "Rigid Walls" over
+ * a healthy 5.0, and disagreeing with every healthy statement typed
+ * "Healthy Flex". rigid / porous are flagged as a tie within TIE_MARGIN.
  */
 export function scoreBoundaries(answers: Record<string, number>): DimensionalResult<BoundaryType> {
   const dims: BoundaryType[] = ['rigid', 'porous', 'healthy', 'situational'];
   const { scores, averages: a } = likertMeans(boundariesQuiz, answers, dims);
   const lead = Math.max(a.rigid, a.porous, a.healthy, a.situational);
+  const wallsOrPores: BoundaryType = a.rigid >= a.porous ? 'rigid' : 'porous';
+  const topWallsOrPores = Math.max(a.rigid, a.porous);
   let primary: BoundaryType;
-  if (a.situational >= 3.5 && a.situational >= lead) primary = 'situational';
-  else if (a.rigid <= 2.5 && a.porous <= 2.5) primary = 'healthy';
-  else primary = a.rigid >= a.porous ? 'rigid' : 'porous';
+  if (a.situational >= BOUNDARY_ENDORSED && a.situational >= lead) primary = 'situational';
+  else if (topWallsOrPores >= BOUNDARY_ENDORSED) primary = wallsOrPores;
+  else if (a.healthy >= BOUNDARY_ENDORSED) primary = 'healthy';
+  else if (Math.max(topWallsOrPores, a.healthy) > BOUNDARY_NEUTRAL) primary = a.healthy > topWallsOrPores ? 'healthy' : wallsOrPores;
+  else primary = 'unclear';
   const wallsVsPores = Math.abs(a.rigid - a.porous);
   const isTie = (primary === 'rigid' || primary === 'porous') && wallsVsPores <= TIE_MARGIN;
   const secondary = isTie ? (primary === 'rigid' ? 'porous' : 'rigid') : undefined;
@@ -949,6 +977,24 @@ const DEDICATED_SCORERS: Record<string, (answers: Record<string, number>) => Dim
   'boundaries-v1': scoreBoundaries,
   'wellness-type-v1': scoreWellnessType,
 };
+
+/** True when the quiz's result is derived by its own scorer rather than "highest mean wins". */
+export function hasDedicatedScorer(quizId: string): boolean {
+  return quizId in DEDICATED_SCORERS;
+}
+
+/**
+ * The validated clinical screener: its result is a cutoff on two items, so
+ * nothing may guess at it before the end (no early reading).
+ */
+export const CLINICAL_SCREENERS: ReadonlySet<string> = new Set(['mood-screener-v1']);
+
+/**
+ * Wellbeing screens — low mood, anxiety, burnout. Their results close with
+ * the wellbeing disclaimer ("a screen, not a diagnosis"), never with the
+ * "reflection and entertainment" line the personality quizzes carry.
+ */
+export const WELLBEING_SCREENERS: ReadonlySet<string> = new Set(['mood-screener-v1', 'anxiety-profile-v1', 'burnout-v1']);
 
 export function calculateExtraQuiz(quizId: string, answers: Record<string, number>): DimensionalResult | null {
   const entry = EXTRA_QUIZ_SCORING[quizId];

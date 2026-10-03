@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Button, toast, PageHeader, EmptyState, ReadingProse, Page, Chip, Tag, EyebrowLabel, Section } from '../components/ui';
 import { MoodGlyph } from '../components/journal/MoodGlyphs';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
@@ -15,11 +16,13 @@ import {
   saveMoodEntry,
   replaceLocalMoodEntries,
   mergeMoodEntries,
+  pendingMoodUploads,
   entryToYValue,
   derivePattern,
   type MoodCategory,
   type MoodEntry,
   type MoodPattern,
+  type DayOfWeek,
 } from '../data/moodDiary';
 import * as moodEntriesDal from '../dal/moodEntries';
 // Import localDateStr DIRECTLY from utils — going through the moodDiary
@@ -82,38 +85,40 @@ export function MoodDiaryPage() {
     }
   };
 
-  // Local first (instant), then the record. Any day the device knows and the
-  // account does not is uploaded, so a log kept before this table existed
-  // becomes part of the account without the user doing anything.
+  // Local first (instant), then the record. The local copy is THIS
+  // account's cache only (data/moodDiary.ts scopes it by user id), so the
+  // days uploaded here are days this account wrote on this device while the
+  // table was unreachable — never another account's history.
   useEffect(() => {
     let cancelled = false;
-    const local = loadMoodEntries();
+    // A fresh account starts from a blank form, not the last one's pick.
+    setSelected(null);
+    setIntensity(3);
+    setNote('');
+    const local = loadMoodEntries(user?.id);
     adopt(local);
     if (!user) {
       setSyncState('local');
       return;
     }
+    const userId = user.id;
     (async () => {
-      const res = await moodEntriesDal.listForUser(user.id);
+      const res = await moodEntriesDal.listForUser(userId);
       if (cancelled) return;
       if (!res.ok) {
         setSyncState('local');
         return;
       }
       const remote = res.data;
-      const remoteByDate = new Map(remote.map((e) => [e.date, e]));
-      const pending = local.filter((e) => {
-        const r = remoteByDate.get(e.date);
-        return !r || e.savedAt > r.savedAt + 60_000;
-      });
+      const pending = pendingMoodUploads(local, remote);
       let uploaded = true;
       if (pending.length > 0) {
-        const up = await moodEntriesDal.upsertMany(user.id, pending);
+        const up = await moodEntriesDal.upsertMany(userId, pending);
         if (cancelled) return;
         uploaded = up.ok;
       }
       const merged = mergeMoodEntries(pending, remote);
-      replaceLocalMoodEntries(merged);
+      replaceLocalMoodEntries(userId, merged);
       adopt(merged);
       setSyncState(uploaded ? 'synced' : 'local');
     })();
@@ -134,17 +139,20 @@ export function MoodDiaryPage() {
       intensity,
       note: note.trim() || undefined,
     };
+    // Every route is signed-in (App gates on a user), so there is always an
+    // account to file the day under.
+    if (!user) return;
+    const userId = user.id;
     // The cache is written first so the day is never lost to a dropped
     // request; the record follows.
-    const saved = saveMoodEntry(entry);
-    adopt(loadMoodEntries());
+    const saved = saveMoodEntry(userId, entry);
+    adopt(loadMoodEntries(userId));
     toast(t('mood.saved', { defaultValue: 'Mood logged for today' }), 'success');
-    if (!user) return;
-    const res = await moodEntriesDal.upsert(user.id, entry);
+    const res = await moodEntriesDal.upsert(userId, entry);
     if (res.ok) {
       setSyncState('synced');
-      const merged = mergeMoodEntries([res.data], loadMoodEntries());
-      replaceLocalMoodEntries(merged);
+      const merged = mergeMoodEntries([res.data], loadMoodEntries(userId));
+      replaceLocalMoodEntries(userId, merged);
       setAllEntries(merged);
       setTodayEntry(merged.find((e) => e.date === today) ?? saved);
     } else {
@@ -207,7 +215,9 @@ export function MoodDiaryPage() {
           entries: recent,
           userContext: {
             displayName: profile?.displayName || undefined,
-            locale: navigator.language?.slice(0, 2) || undefined,
+            // The app's language, not the device's: a Japanese UI on an
+            // English phone gets a Japanese letter.
+            locale: getLocale(),
           },
         },
       });
@@ -576,6 +586,68 @@ export function MoodDiaryPage() {
   );
 }
 
+// ─── Pattern copy ─────────────────────────────────────────────────
+// derivePattern() returns the facts; the sentence is built here, through
+// t(), so the insight reads in the UI's language (its English `headline`
+// field is kept for non-UI callers only).
+
+const WEEKDAY_INDEX: Record<DayOfWeek, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+/** The weekday in the UI's language (4 Jan 2026 was a Sunday). */
+function weekdayName(day: DayOfWeek): string {
+  const d = new Date(2026, 0, 4 + WEEKDAY_INDEX[day]);
+  try {
+    return new Intl.DateTimeFormat(getLocale(), { weekday: 'long' }).format(d);
+  } catch {
+    return day;
+  }
+}
+
+type TFn = (k: string, o?: Record<string, unknown>) => unknown;
+
+function patternHeadline(p: MoodPattern, t: TFn): string {
+  const mood = (c: MoodCategory | null) =>
+    c
+      ? (t(`mood.categories.${c}.name`, { defaultValue: MOOD_CATEGORIES[c].name }) as string)
+      : (t('mood.pattern.mixedWord', { defaultValue: 'mixed' }) as string);
+  if (p.sampleSize < 3) {
+    return t('mood.pattern.tooFew', { defaultValue: 'Log a few more days to see a pattern emerge.' }) as string;
+  }
+  if (p.drift === 'rising' && p.categoryShifted) {
+    return t('mood.pattern.lighterShift', {
+      defaultValue: 'Lighter this week — moved from {{from}} to {{to}}.',
+      from: mood(p.priorWeekDominant),
+      to: mood(p.dominantCategory),
+    }) as string;
+  }
+  if (p.drift === 'falling' && p.categoryShifted) {
+    return t('mood.pattern.heavierShift', {
+      defaultValue: 'Heavier this week — the dominant note shifted from {{from}} to {{to}}.',
+      from: mood(p.priorWeekDominant),
+      to: mood(p.dominantCategory),
+    }) as string;
+  }
+  if (p.drift === 'rising') {
+    return t('mood.pattern.rising', { defaultValue: 'Curve rising — this week feels lighter than last.' }) as string;
+  }
+  if (p.drift === 'falling') {
+    return t('mood.pattern.falling', { defaultValue: 'Curve dipping — this week has been heavier than last.' }) as string;
+  }
+  if (p.dominantCategory) {
+    return p.heaviestDay
+      ? (t('mood.pattern.mostlyHeaviestDay', {
+          defaultValue: 'Mostly {{mood}} this week. {{day}} has tended to be the heaviest day.',
+          mood: mood(p.dominantCategory),
+          day: weekdayName(p.heaviestDay),
+        }) as string)
+      : (t('mood.pattern.mostlySteady', {
+          defaultValue: 'Mostly {{mood}} this week. A steady note.',
+          mood: mood(p.dominantCategory),
+        }) as string);
+  }
+  return t('mood.pattern.mixed', { defaultValue: 'A mixed week — no single mood has dominated.' }) as string;
+}
+
 // ─── Insight card ─────────────────────────────────────────────────
 // Surfaces the derived weekly pattern in compact form. When `expanded`
 // is true it also shows the heaviest/lightest-day detail and the
@@ -610,7 +682,7 @@ function InsightCard({
             <EyebrowLabel align="left" className="block mb-1">
               {t('mood.patternLabel', { defaultValue: 'This week' }) as string}
             </EyebrowLabel>
-            <p className="text-ui text-mystic-200 leading-relaxed">{pattern.headline}</p>
+            <p className="text-ui text-mystic-200 leading-relaxed">{patternHeadline(pattern, t)}</p>
 
             {expanded && (
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -619,7 +691,7 @@ function InsightCard({
                     <p className="text-meta text-mystic-400">
                       {t('mood.heaviestDayLabel', { defaultValue: 'Heaviest day' }) as string}
                     </p>
-                    <p className="text-ui text-coral font-medium">{pattern.heaviestDay}</p>
+                    <p className="text-ui text-coral font-medium">{weekdayName(pattern.heaviestDay)}</p>
                   </div>
                 )}
                 {pattern.lightestDay && (
@@ -627,7 +699,7 @@ function InsightCard({
                     <p className="text-meta text-mystic-400">
                       {t('mood.lightestDayLabel', { defaultValue: 'Lightest day' }) as string}
                     </p>
-                    <p className="text-ui text-teal font-medium">{pattern.lightestDay}</p>
+                    <p className="text-ui text-teal font-medium">{weekdayName(pattern.lightestDay)}</p>
                   </div>
                 )}
                 <div className="bg-mystic-800 rounded-inset px-3 py-2 col-span-2">

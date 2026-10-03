@@ -144,9 +144,6 @@ const RULES: Rule[] = [
       'src/components/ui/Tabs.tsx',
       'src/components/readings/tarot/TarotSelectView.tsx',
       // burn-down (offenders on 2026-10-02)
-      'src/App.tsx',
-      'src/components/achievements/AchievementCard.tsx',
-      'src/components/achievements/AchievementUnlockModal.tsx',
       'src/components/bazi/BaziAIReading.tsx',
       'src/components/celestial/CelestialMapIntroLoader.tsx',
       'src/components/celestial/CityInsightPanel.tsx',
@@ -156,14 +153,11 @@ const RULES: Rule[] = [
       'src/components/error/ErrorBoundary.tsx',
       'src/components/oracle/AskOracleButton.tsx',
       'src/components/setup/MissingSupabaseConfig.tsx',
-      'src/components/ui/ResultLayout.tsx',
-      'src/components/ui/Sheet.tsx',
       'src/components/ui/Skeleton.tsx',
       'src/pages/CareerReportPage.tsx',
       'src/pages/CompatInvitePage.tsx',
       'src/pages/NatalChartReportPage.tsx',
       'src/pages/PeoplePage.tsx',
-      'src/pages/ResetPasswordPage.tsx',
       'src/pages/UnsubscribePage.tsx',
       'src/pages/YearAheadReportPage.tsx',
     ]),
@@ -173,10 +167,7 @@ const RULES: Rule[] = [
     // sits on the canvas, as HomeHero proves it can.
     name: 'blur blooms',
     re: /\bblur-(?:xl|2xl|3xl)\b/,
-    allowed: new Set([
-      // burn-down (offenders on 2026-10-02)
-      'src/components/readings/tarot/TarotShuffleView.tsx',
-    ]),
+    allowed: new Set([]),
   },
   {
     // Colour comes from the tokens. The share-card canvas renderer is the
@@ -221,8 +212,6 @@ const RULES: Rule[] = [
     re: /\btext-sm\b/,
     allowed: new Set([
       // burn-down (offenders on 2026-10-02)
-      'src/components/achievements/AchievementCard.tsx',
-      'src/components/achievements/AchievementUnlockModal.tsx',
       'src/components/admin/AdAnalyticsPanel.tsx',
       'src/components/admin/AdvisorVerificationPanel.tsx',
       'src/components/admin/BlogManager.tsx',
@@ -246,7 +235,6 @@ const RULES: Rule[] = [
       'src/components/ui/EmptyState.tsx',
       'src/components/ui/Input.tsx',
       'src/components/ui/PageHeader.tsx',
-      'src/components/ui/ResultLayout.tsx',
       'src/components/ui/Section.tsx',
       'src/pages/AdminPage.tsx',
       'src/pages/BlogPage.tsx',

@@ -3,6 +3,7 @@ import type { AchievementCategory } from '../../services/achievements';
 import { getCategoryDisplayName, getCategoryIcon } from '../../services/achievements';
 import { ProgressRing } from '../ui';
 import { achievementIcon } from './achievementIcons';
+import { useT } from '../../i18n/useT';
 
 interface CategoryProgressProps {
   category: AchievementCategory;
@@ -19,8 +20,10 @@ export function CategoryProgress({
   isSelected = false,
   onSelect,
 }: CategoryProgressProps) {
+  const { t } = useT('app');
   const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
   const Icon = achievementIcon(getCategoryIcon(category), Circle);
+  const name = t(`achievements.categories.${category}`, { defaultValue: getCategoryDisplayName(category) }) as string;
 
   return (
     <button
@@ -38,7 +41,7 @@ export function CategoryProgress({
         size={40}
         strokeWidth={3}
         tone={isSelected ? 'gold' : 'neutral'}
-        label={getCategoryDisplayName(category)}
+        label={name}
       >
         <Icon className={`
           w-5 h-5 transition-colors duration-slow
@@ -51,9 +54,9 @@ export function CategoryProgress({
           text-caption font-medium transition-colors duration-slow
           ${isSelected ? 'text-gold' : 'text-mystic-400'}
         `}>
-          {getCategoryDisplayName(category)}
+          {name}
         </p>
-        <p className="text-caption text-mystic-500">
+        <p className="text-caption text-mystic-500 tabular-nums">
           {unlocked}/{total}
         </p>
       </div>

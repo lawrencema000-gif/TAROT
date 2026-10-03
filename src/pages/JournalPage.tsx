@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -11,6 +11,7 @@ import {
   X,
   Link2,
   Lock,
+  Unlock,
   Sparkles,
   BookOpen,
   Lightbulb,
@@ -46,6 +47,7 @@ import {
   type Tone,
 } from '../components/ui';
 import { MoodGlyph, JOURNAL_MOOD_GLYPHS, type MoodGlyphId } from '../components/journal/MoodGlyphs';
+import { countWords } from '../components/journal/wordCount';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -202,6 +204,13 @@ export function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreEntries, setHasMoreEntries] = useState(false);
+  // The week on screen, read by date range — the paged list above holds
+  // only the newest page, so an older week looked empty (P7 #54).
+  const [weekEntries, setWeekEntries] = useState<JournalEntry[]>([]);
+  const [weekVersion, setWeekVersion] = useState(0);
+  // Every entry, lean, for the Insights tab (null until that tab opens).
+  const [insightEntries, setInsightEntries] = useState<JournalEntry[] | null>(null);
+  const activeTabRef = useRef<JournalTab>('entries');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -247,6 +256,16 @@ export function JournalPage() {
       setHasMoreEntries(res.data.length === ENTRIES_PAGE_SIZE);
     }
     setLoading(false);
+    // Anything that changed the list also changes the week and the stats.
+    setWeekVersion((v) => v + 1);
+    if (activeTabRef.current === 'insights') void loadInsightEntries();
+    else setInsightEntries(null);
+  };
+
+  const loadInsightEntries = async () => {
+    if (!user) return;
+    const res = await journalEntries.listForInsights(user.id);
+    if (res.ok) setInsightEntries(res.data as unknown as JournalEntry[]);
   };
 
   const loadMoreEntries = async () => {
@@ -323,13 +342,33 @@ export function JournalPage() {
       days.push({
         date,
         dateStr,
-        hasEntry: entries.some(e => e.date === dateStr),
+        hasEntry: entries.some(e => e.date === dateStr) || weekEntries.some(e => e.date === dateStr),
         isToday: dateStr === today,
         isFuture: dateStr > today,
       });
     }
     return days;
-  }, [calendarDate, entries, today]);
+  }, [calendarDate, entries, weekEntries, today]);
+
+  // Load the visible week's entries whenever the week (or the data) changes.
+  const weekFrom = calendarDays[0].dateStr;
+  const weekTo = calendarDays[6].dateStr;
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    journalEntries.listInRange(user.id, weekFrom, weekTo).then((res) => {
+      if (alive && res.ok) setWeekEntries(res.data as unknown as JournalEntry[]);
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, weekFrom, weekTo, weekVersion]);
+
+  // Insights read every entry, not the first page.
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+    if (activeTab === 'insights' && insightEntries === null) void loadInsightEntries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(calendarDate);
@@ -375,7 +414,7 @@ export function JournalPage() {
 
   const openDayEntry = (dateStr: string) => {
     if (dateStr > today) return;
-    const existingEntry = entries.find(e => e.date === dateStr);
+    const existingEntry = weekEntries.find(e => e.date === dateStr) ?? entries.find(e => e.date === dateStr);
     if (existingEntry) {
       openEditEntry(existingEntry);
     } else {
@@ -390,10 +429,16 @@ export function JournalPage() {
     setSelectedTemplate(null);
   };
 
-  const saveEntry = async (lock = false) => {
+  /**
+   * `keep` (the primary button) leaves an entry's lock as it was — fixing a
+   * typo in a locked entry used to unlock it (P7 #56). Locking and
+   * unlocking are their own, explicit actions.
+   */
+  const saveEntry = async (lockChoice: 'keep' | 'lock' | 'unlock' = 'keep') => {
     if (!user || !content.trim() || saving) return;
+    const lock = lockChoice === 'lock' || (lockChoice === 'keep' && Boolean(editingEntry?.is_locked));
 
-    if (lock && !profile?.isPremium) {
+    if (lockChoice === 'lock' && !profile?.isPremium) {
       toast(t('journal.toast.upgradeToLock'), 'error');
       return;
     }
@@ -435,7 +480,12 @@ export function JournalPage() {
     dismissToasts();
 
     if (!wasNew) {
-      toast(lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'), 'success');
+      toast(
+        lockChoice === 'unlock'
+          ? t('journal.toast.savedUnlocked', { defaultValue: 'Entry saved and unlocked' })
+          : lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'),
+        'success',
+      );
       return;
     }
 
@@ -501,7 +551,8 @@ export function JournalPage() {
   }, [entries, searchQuery, selectedTagFilter, tagLabel]);
 
   const todayEntry = entries.find(e => e.date === today);
-  const todayMood = getTodayMood();
+  // This account's cached mood only — the cache is scoped per user.
+  const todayMood = getTodayMood(user?.id);
 
   const readingById = useMemo(() => {
     const map = new Map<string, TarotReading>();
@@ -509,7 +560,9 @@ export function JournalPage() {
     return map;
   }, [recentReadings]);
 
+  const entriesForStats = entries;
   const insights = useMemo(() => {
+    const entries = insightEntries ?? entriesForStats;
     const moodCounts: Record<string, number> = {};
     const tagCounts: Record<string, number> = {};
     const writingDays: Record<number, number> = {};
@@ -558,11 +611,16 @@ export function JournalPage() {
     const hasSignal =
       entries.length >= INSIGHT_MIN_ENTRIES && (sortedMoods.length >= 2 || sortedTags.length >= 2);
 
-    const wordCount = (e: JournalEntry) => e.word_count || e.content.split(/\s+/).filter(Boolean).length;
-    const totalWords = entries.reduce((sum, e) => sum + wordCount(e), 0);
+    // Counted from the text: the stored word_count is a whitespace split,
+    // which makes a Japanese entry one word (P7 #93).
+    const totalWords = entries.reduce((sum, e) => sum + countWords(e.content ?? '', locale), 0);
 
     return {
-      totalEntries: entries.length,
+      // Until every entry is loaded, the paged list may be a first page only:
+      // the profile's counter is the better total then.
+      totalEntries: insightEntries
+        ? insightEntries.length
+        : hasMoreEntries ? Math.max(entries.length, profile?.totalJournalEntries ?? 0) : entries.length,
       last30DaysEntries: last30Days.length,
       moodDistribution: sortedMoods.slice(0, 5).map(([mood, count]) => ({
         mood,
@@ -581,7 +639,7 @@ export function JournalPage() {
       totalMoods,
       totalTagged: entries.filter(e => (e.tags ?? []).length > 0).length,
     };
-  }, [entries, profile?.streak]);
+  }, [insightEntries, entriesForStats, hasMoreEntries, profile?.streak, profile?.totalJournalEntries, locale]);
 
   const generatedInsight = useMemo(() => {
     if (!insights.hasSignal || insights.busiestDay === null || !insights.topMood) return '';
@@ -636,7 +694,7 @@ export function JournalPage() {
   const writeTodayLabel = todayEntry
     ? t('journal.openToday', { defaultValue: 'Open today’s entry' })
     : t('journal.writeToday', { defaultValue: 'Write today' });
-  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const wordCount = countWords(content, locale);
   const isSearching = Boolean(searchQuery.trim() || selectedTagFilter);
   const editorDateLabel = formatDate(draftDate);
 
@@ -1188,7 +1246,7 @@ export function JournalPage() {
                   className="w-full mt-4 bg-transparent border-0 p-0 text-body leading-relaxed text-ink placeholder:text-ink-muted resize-none focus:outline-none min-h-[12rem]"
                 />
                 <p className="reading-caption text-right tabular-nums mt-1">
-                  {t('journal.wordCount', { n: numberFmt.format(wordCount) })}
+                  {t('journal.wordCount', { defaultValue: '{{n}} words', count: wordCount, n: numberFmt.format(wordCount) })}
                 </p>
               </Paper>
             </div>
@@ -1258,29 +1316,22 @@ export function JournalPage() {
 
               <div>
                 <p className="text-meta text-mystic-400 mb-3" id="journal-mood-label">{t('journal.editSheet.howFeeling')}</p>
-                <div className="grid grid-cols-5 gap-2" role="group" aria-labelledby="journal-mood-label">
+                {/* Every mood is named on screen — a glyph alone does not say
+                    "Frustrated" on a touch screen, where title never shows. */}
+                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="journal-mood-label">
                   {MOODS.map(mood => {
                     const active = selectedMood === mood.value;
                     return (
-                      <button
+                      <Chip
                         key={mood.value}
-                        type="button"
-                        onClick={() => setSelectedMood(active ? '' : mood.value)}
-                        aria-pressed={active}
-                        aria-label={moodLabel(mood.value)}
-                        title={moodLabel(mood.value)}
-                        className={`h-12 w-full rounded-control border flex items-center justify-center transition-[border-color,background-color,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ${
-                          active
-                            ? 'bg-gold/10 border-gold text-gold'
-                            : 'bg-mystic-800 border-mystic-700 text-mystic-300 [@media(hover:hover)]:hover:border-mystic-500'
-                        }`}
-                      >
-                        <MoodGlyph glyph={moodGlyph(mood.value)} size={22} />
-                      </button>
+                        label={moodLabel(mood.value)}
+                        icon={<MoodGlyph glyph={moodGlyph(mood.value)} size={16} />}
+                        selected={active}
+                        onSelect={() => setSelectedMood(active ? '' : mood.value)}
+                      />
                     );
                   })}
                 </div>
-                {selectedMood && <p className="text-caption text-mystic-400 mt-2">{moodLabel(selectedMood)}</p>}
               </div>
 
               <div>
@@ -1336,21 +1387,33 @@ export function JournalPage() {
               <Button variant="ghost" fullWidth onClick={closeEditor}>
                 {t('journal.editor.cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <Button variant="gold" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()} loading={saving}>
+              <Button variant="gold" fullWidth onClick={() => saveEntry('keep')} disabled={!content.trim()} loading={saving}>
                 {t('journal.saveEntry', { defaultValue: 'Save this entry' })}
               </Button>
             </div>
 
             {profile?.isPremium && (
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => saveEntry(true)}
-                disabled={!content.trim() || saving}
-              >
-                <Lock className="w-4 h-4" aria-hidden />
-                {t('journal.saveAndLock', { defaultValue: 'Save and lock' })}
-              </Button>
+              editingEntry?.is_locked ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  onClick={() => saveEntry('unlock')}
+                  disabled={!content.trim() || saving}
+                >
+                  <Unlock className="w-4 h-4" aria-hidden />
+                  {t('journal.saveAndUnlock', { defaultValue: 'Save and unlock' })}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  onClick={() => saveEntry('lock')}
+                  disabled={!content.trim() || saving}
+                >
+                  <Lock className="w-4 h-4" aria-hidden />
+                  {t('journal.saveAndLock', { defaultValue: 'Save and lock' })}
+                </Button>
+              )
             )}
 
             {editingEntry && (

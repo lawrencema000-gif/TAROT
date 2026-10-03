@@ -3,12 +3,13 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
 import { Button, KeywordRow, Page, ResultLayout, TarotFace, toast } from '../components/ui';
 import { firstSentences } from '../components/readings/tarot/readingText';
+import { cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
-import { ALL_CARDS, getBundledCardPath } from '../config/bundledImages';
+import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../services/shareableReadings';
@@ -215,7 +216,7 @@ export function PickACardPage() {
         keyword,
         cardImageUrl: getBundledCardPath(pickedCard.id) || undefined,
       },
-      `arcana-${pickedCard.name.toLowerCase().replace(/\s+/g, '-')}.png`,
+      `arcana-${cardMeaningSlug(pickedCard.id)}.png`,
       shareText,
     );
 
@@ -393,8 +394,9 @@ export function PickACardPage() {
                 <Button
                   variant="gold"
                   fullWidth
-                  // By id, so a localized name still opens the (English-slugged) page.
-                  onClick={() => navigate(`/tarot-meanings/${ALL_CARDS.find((c) => c.id === pickedCard.id)?.slug ?? ''}`)}
+                  // By id, through the one canonical slug ("the-wheel-of-fortune", as the
+                  // card page, the sitemap and the prerender spell it).
+                  onClick={() => navigate(cardMeaningPath(pickedCard.id))}
                 >
                   <BookOpen className="w-4 h-4 mr-2" aria-hidden />
                   {t('pickACard.learnMore', { defaultValue: "Read this card's meaning" })}

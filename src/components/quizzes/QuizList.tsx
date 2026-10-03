@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button, Chip, ListRow, ListSkeleton, Tag } from '../ui';
 import { useT } from '../../i18n/useT';
 import type { QuizDefinition } from '../../types';
@@ -6,6 +6,7 @@ import type { QuizCategory, QuizMetadataEntry } from '../../data/quizzes';
 import { CATEGORY_ORDER, CATEGORY_LABEL_EN, TILE_INK } from './shared';
 import { QuizGlyph } from './icons';
 import { resultChipLabel } from './chipLabel';
+import { relativeDay } from './relativeDay';
 
 export interface QuizListEntry {
   quiz: QuizDefinition;
@@ -24,18 +25,9 @@ export interface QuizListProps {
   onStart: (quiz: QuizDefinition) => void;
   onSeeResult: (quiz: QuizDefinition) => void;
   locale: string;
-}
-
-/** "today" / "yesterday" / "3 days ago" in the viewer's language; a short date beyond a week. */
-function relativeDay(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
-  try {
-    if (days < 7) return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-days, 'day');
-    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-  } catch {
-    return date.toLocaleDateString();
-  }
+  /** The category tab on screen. The page owns it, so it survives a quiz. */
+  category: QuizCategory;
+  onCategoryChange: (category: QuizCategory) => void;
 }
 
 /**
@@ -45,9 +37,8 @@ function relativeDay(dateStr: string, locale: string): string {
  * the whole card one ambiguous tap. The page owns the Page + PageHeader
  * around this (titles gate); this is the body.
  */
-export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult, locale }: QuizListProps) {
+export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult, locale, category, onCategoryChange }: QuizListProps) {
   const { t } = useT('app');
-  const [category, setCategory] = useState<QuizCategory>('personality');
 
   const grouped = useMemo(() => {
     const map = new Map<QuizCategory, QuizListEntry[]>();
@@ -65,13 +56,13 @@ export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult
       <div
         role="group"
         aria-label={t('quizzes.list.categories.label', { defaultValue: 'Quiz categories' })}
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x"
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 scroll-px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x"
       >
         {CATEGORY_ORDER.map((c) => (
           <Chip
             key={c}
             selected={category === c}
-            onSelect={() => setCategory(c)}
+            onSelect={() => onCategoryChange(c)}
             label={`${t(`quizzes.list.categories.${c}`, { defaultValue: CATEGORY_LABEL_EN[c] })} · ${grouped.get(c)?.length ?? 0}`}
           />
         ))}
@@ -99,15 +90,18 @@ export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult
                       icon={<QuizGlyph icon={metadata.icon} className={`h-5 w-5 ${tile}`} />}
                       label={quiz.title}
                       meta={`${meta} · ${relativeDay(last.completed_at, locale)}`}
-                      value={
-                        chip ? (
-                          <Tag tone="gold" size="sm">
-                            {chip}
-                          </Tag>
-                        ) : undefined
-                      }
                       trailing="none"
                     />
+                    {/* The verdict sits under the title, not in the row's value
+                        slot: that slot is capped at 45% and clipped "Higher
+                        signal — reach out" mid-word at 390px. */}
+                    {chip && (
+                      <div className="-mt-1 px-4 pb-2 pl-[68px]">
+                        <Tag tone="gold" size="sm" className="max-w-full">
+                          <span className="min-w-0 truncate">{chip}</span>
+                        </Tag>
+                      </div>
+                    )}
                     <div className="flex gap-2 px-4 pb-3 pl-[68px]">
                       <Button size="sm" variant="outline" onClick={() => onSeeResult(quiz)}>
                         {t('quizzes.list.seeResult', { defaultValue: 'See result' })}

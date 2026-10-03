@@ -1294,6 +1294,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logError('auth.signOut.clearCache', 'Cache clear failed', { error: e });
     }
 
+    // 7. Delete the pre-scoping, device-global private caches (mood diary,
+    //    Companion conversations). Their writer is unknowable, so they are
+    //    never read or uploaded; the per-account caches that replaced them
+    //    are scoped by user id and stay for that account's next sign-in.
+    try {
+      const [{ clearLegacyMoodCache }, { clearLegacyCompanionCache }] = await Promise.all([
+        import('../data/moodDiary'),
+        import('../components/companion/companionHistory'),
+      ]);
+      clearLegacyMoodCache();
+      clearLegacyCompanionCache();
+    } catch (e) {
+      logError('auth.signOut.clearLegacyCaches', 'Legacy cache clear failed', { error: e });
+    }
+
     logInfo('auth.signOut.complete', 'Sign out complete');
     endSpan(span, 'success');
   };

@@ -4,6 +4,8 @@ import { FACE_H, FACE_W, pipSizeFor, pipsFor } from '../../data/cartomancy/pipLa
 import { SUIT_GLYPH_BOX, SuitGlyphPaths, suitInkClass } from './SuitGlyph';
 import { CourtEmblem, EMBLEM_BOX } from './CourtEmblem';
 import { JOKER_INDEX_STAR, JokerEmblem } from './JokerEmblem';
+import { TAB, titleTabLabel, titleTabLayout } from './titleTab';
+import type { SupportedLocale } from '../../i18n/config';
 
 /**
  * The face of a playing card, drawn.
@@ -18,8 +20,13 @@ import { JOKER_INDEX_STAR, JokerEmblem } from './JokerEmblem';
  * repeated rotated in the bottom-right, as on any printed deck since the
  * 1880s, so a small tile reads either way up.
  *
- * Pure in `(card, detail, surface, reversed)`: no randomness, no state, so
- * two renders are byte-identical and the markup can be written to disk.
+ * The tab names the card in the active locale, from its id (titleTab.ts):
+ * an English or a localized `card` draws the same face, so a live reading
+ * and the same reading saved or shared agree.
+ *
+ * Pure in `(card, detail, surface, reversed, locale)`: no randomness, no
+ * state, so two renders are byte-identical and the markup can be written
+ * to disk.
  *
  * Colour: the frame and the rank letters take `currentColor` (set
  * `text-gold` on the parent, or `text-gold/70` for a card at rest). Hearts
@@ -42,9 +49,6 @@ const RING = { r: 52, dashedR: 46 } as const;
 /** Corner index: a rank glyph over a small suit mark, top-left and (rotated) bottom-right. */
 const INDEX = { x: 24, y: 30, textX: 9, baseline: 18, glyph: 14, glyphY: 22 } as const;
 
-/** The title tab at the foot of the face. */
-const TAB = { y: 256, h: 20, rx: 4, baseline: 270, fontSize: 10, letterSpacing: 1.4, padX: 7, minW: 72, maxW: 150 } as const;
-
 const DISPLAY_FONT = "'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', Georgia, serif";
 const UI_FONT = "Inter, 'Inter Fallback', 'Inter Fallback Android', system-ui, sans-serif";
 
@@ -65,25 +69,6 @@ export const RANK_INDEX_LABEL: Record<PlayingRank, string> = {
 };
 
 const f = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''));
-
-/**
- * Advance width of the tab's uppercase Inter 600 label at 10 units, from
- * Inter's cap widths (narrow I/J, wide M/W, the rest around 0.7 em) plus the
- * letter-spacing. The text is also given `textLength`, so a fallback font
- * with other metrics is spaced into the same box rather than spilling out.
- */
-function tabTextWidth(label: string): number {
-  let w = 0;
-  for (const ch of label) {
-    if (ch === ' ') w += 3;
-    else if (ch === 'I' || ch === 'J') w += 3.4;
-    else if (ch === 'M' || ch === 'W') w += 9.4;
-    else if (ch === 'L' || ch === 'F' || ch === 'T' || ch === 'E') w += 6.3;
-    else w += 7.3;
-    w += TAB.letterSpacing;
-  }
-  return w - TAB.letterSpacing;
-}
 
 function isCourt(rank: PlayingCard['rank']): rank is CourtRank {
   return rank === 'jack' || rank === 'queen' || rank === 'king';
@@ -107,6 +92,8 @@ export interface PlayingCardFaceProps extends Omit<SVGProps<SVGSVGElement>, 'vie
   surface?: 'card' | 'paper' | 'none';
   /** Turn the face through 180°; the title tab then reads at the top. */
   reversed?: boolean;
+  /** The language the title tab is set in. Default: the active locale. */
+  locale?: SupportedLocale;
 }
 
 function CornerIndex({ card, paper }: { card: PlayingCard; paper: boolean }) {
@@ -198,28 +185,27 @@ function Medallion({ card, ink }: { card: PlayingCard; ink: string }) {
 }
 
 function TitleTab({ label, reversed }: { label: string; reversed: boolean }) {
-  const text = label.toUpperCase();
-  const textW = tabTextWidth(text);
-  const w = Math.min(TAB.maxW, Math.max(TAB.minW, Math.round(textW + TAB.padX * 2)));
-  const x = CX - w / 2;
+  const tab = titleTabLayout(label);
   const cy = TAB.y + TAB.h / 2;
+  // Latin caps are tracked and fitted to their estimated width, so a fallback
+  // font with other metrics is spaced into the same box. CJK and Hangul are
+  // never fitted: compressing their spacing makes the glyphs touch.
+  const fit = tab.latin ? { letterSpacing: f(tab.letterSpacing), textLength: f(tab.textW), lengthAdjust: 'spacing' } : {};
   return (
     <g data-tab="1" aria-hidden transform={reversed ? `rotate(180 ${CX} ${cy})` : undefined}>
-      <rect x={f(x)} y={TAB.y} width={w} height={TAB.h} rx={TAB.rx} fill="none" stroke="currentColor" strokeWidth="0.9" opacity="0.8" />
+      <rect x={f(tab.x)} y={TAB.y} width={tab.w} height={TAB.h} rx={TAB.rx} fill="none" stroke="currentColor" strokeWidth="0.9" opacity="0.8" />
       <text
         x={CX}
         y={TAB.baseline}
         textAnchor="middle"
         fontFamily={UI_FONT}
         fontWeight={600}
-        fontSize={TAB.fontSize}
-        letterSpacing={TAB.letterSpacing}
-        textLength={f(Math.min(textW, w - TAB.padX * 2))}
-        lengthAdjust="spacing"
+        fontSize={f(tab.fontSize)}
+        {...fit}
         fill="currentColor"
         stroke="none"
       >
-        {text}
+        {tab.text}
       </text>
     </g>
   );
@@ -230,12 +216,13 @@ export function PlayingCardFace({
   detail = 'full',
   surface = 'card',
   reversed = false,
+  locale,
   className = '',
   ...props
 }: PlayingCardFaceProps) {
   const paper = surface === 'paper';
   const ink = suitInkClass(card.suit, card.color, paper);
-  const title = card.suit === 'joker' ? 'Joker' : card.name;
+  const title = detail === 'full' ? titleTabLabel(card.id, locale) : '';
   return (
     <svg
       viewBox={`0 0 ${FACE_W} ${FACE_H}`}
@@ -279,7 +266,7 @@ export function PlayingCardFace({
         </g>
         {/* the index: top-left, and at `quiet` the same turned through 180° for the
             bottom-right, so a small tile reads either way up. At `full` the title tab
-            owns the foot of the face (the long names run to 150 units, under where
+            owns the foot of the face (the long names run to 136 units, under where
             a second index would sit), so the tab is the bottom index. */}
         <CornerIndex card={card} paper={paper} />
         {detail === 'quiet' && (

@@ -6,6 +6,7 @@ import {
   AfterResult,
   Affirmation,
   Bullets,
+  CloseCall,
   Prose,
   ResultBody,
   ResultSection,
@@ -15,6 +16,24 @@ import {
   type QuizResultViewProps,
 } from '../shared';
 
+/** The keys sharing the top count, when exactly two do (the only unsettled split six answers allow). */
+function tiedPair<K extends string>(scores: Record<K, number> | undefined): [K, K] | null {
+  if (!scores) return null;
+  const entries = Object.entries(scores) as [K, number][];
+  const top = Math.max(...entries.map(([, v]) => v));
+  const tied = entries.filter(([, v]) => v === top).map(([k]) => k);
+  return tied.length === 2 ? [tied[0], tied[1]] : null;
+}
+
+/**
+ * `elementTie` / `rankTie` mean the vote was split AND the tie-break
+ * question (ce6 / cr5) chose neither side, so the card follows declaration
+ * order. The note says exactly that — the old line claimed the card
+ * "follows your answer to the tie-break question" in the one case where it
+ * did not, and called a 2-2-1-1 vote "even" — and a CloseCall names the
+ * other card the split allows, computed from the saved scores so a replayed
+ * row reads the same.
+ */
 export function CourtMatchResult({ quiz, result, onBack, onRetake }: QuizResultViewProps<CourtScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
@@ -28,7 +47,14 @@ export function CourtMatchResult({ quiz, result, onBack, onRetake }: QuizResultV
   const shadow = t(`quizzes.courtCards.${key}.shadow`, { returnObjects: true, defaultValue: info.shadow }) as string[];
   const section = (k: string, fallback: string) => t(`quizzes.resultSections.${k}`, { defaultValue: fallback });
   const Suit = SUIT_GLYPHS[result.element] ?? SUIT_GLYPHS.major;
-  const split = result.elementTie || result.rankTie;
+  const cardName = (rank: string, element: string) => {
+    const k = `${rank}-of-${element}` as CourtScore['courtCard'];
+    return t(`quizzes.courtCards.${k}.name`, { defaultValue: getCourtCardInfo(k).name });
+  };
+  const suits = result.elementTie ? tiedPair(result.elementScores) : null;
+  const ranks = result.rankTie ? tiedPair(result.rankScores) : null;
+  const otherSuit = suits ? (suits[0] === result.element ? suits[1] : suits[0]) : null;
+  const otherRank = ranks ? (ranks[0] === result.rank ? ranks[1] : ranks[0]) : null;
 
   return (
     <ResultLayout
@@ -57,17 +83,25 @@ export function CourtMatchResult({ quiz, result, onBack, onRetake }: QuizResultV
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {split && (
-            <p className="reading-meta">
-              {t('quizzes.resultSections.courtSplit', {
-                defaultValue: 'Your answers split evenly on {{what}}; the card above follows your answer to the tie-break question.',
-                what: result.elementTie && result.rankTie
-                  ? t('quizzes.resultSections.courtSplitBoth', { defaultValue: 'both suit and rank' })
-                  : result.elementTie
-                    ? t('quizzes.resultSections.courtSplitSuit', { defaultValue: 'suit' })
-                    : t('quizzes.resultSections.courtSplitRank', { defaultValue: 'rank' }),
-              })}
-            </p>
+          {result.elementTie && (
+            <div className="space-y-3">
+              <p className="reading-meta">
+                {t('quizzes.resultSections.courtSuitUnsettled', {
+                  defaultValue: 'Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.',
+                })}
+              </p>
+              {otherSuit && <CloseCall a={name} b={cardName(result.rank, otherSuit)} />}
+            </div>
+          )}
+          {result.rankTie && (
+            <div className="space-y-3">
+              <p className="reading-meta">
+                {t('quizzes.resultSections.courtRankUnsettled', {
+                  defaultValue: 'Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere.',
+                })}
+              </p>
+              {otherRank && <CloseCall a={name} b={cardName(otherRank, result.element)} />}
+            </div>
           )}
 
           <ResultSection title={section('whenDrawn', 'When this card appears')}>

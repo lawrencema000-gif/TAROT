@@ -151,3 +151,6 @@ export function annualHighlights(year: number) {
   }
   return { auspicious, inauspicious };
 }
+
+/** The per-star text, keyed by star number — read by the content corpus (contentCorpora.ts). */
+export const STAR_BASE_TEXT: Readonly<Record<FlyingStar, { meaning: string; remedy: string }>> = STAR_BASE;

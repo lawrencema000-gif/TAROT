@@ -6,6 +6,7 @@ import { forwardRef, type ReactNode } from 'react';
 // Same pass-through as phase7.test.tsx: the toast stack's state, not its motion.
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
+  LayoutGroup: ({ children }: { children: ReactNode }) => <>{children}</>,
   motion: {
     div: forwardRef<HTMLDivElement, { children?: ReactNode; className?: string }>(function MotionDiv(
       { children, className },
@@ -59,16 +60,29 @@ describe('KeywordRow align', () => {
 });
 
 describe('Toasts are announced', () => {
-  it('the stack is a polite status region; an error toast is an alert', () => {
+  it('success and info ride a polite status region; an error rides a sibling alert region', () => {
     render(<ToastContainer />);
     const region = screen.getByRole('status');
+    const alert = screen.getByRole('alert');
+    // Both regions exist, empty, before anything is announced.
     expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+    expect(region).toBeEmptyDOMElement();
+    expect(alert).toBeEmptyDOMElement();
     act(() => {
       toast('Reading saved', 'success');
       toast('Couldn’t save', 'error');
     });
     expect(region).toHaveTextContent('Reading saved');
-    expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t save');
+    expect(region).not.toHaveTextContent('Couldn’t save');
+    expect(alert).toHaveTextContent('Couldn’t save');
+    // P7 #124: never a live region inside another (announced twice).
+    expect(region.contains(alert)).toBe(false);
+    expect(alert.contains(region)).toBe(false);
+    expect(region.querySelector('[role="alert"],[aria-live]')).toBeNull();
+    expect(alert.querySelector('[role="status"],[aria-live]')).toBeNull();
+    // P7 #153: the dismiss control is named through i18n, not a literal.
+    expect(screen.getAllByRole('button', { name: 'Dismiss' })).toHaveLength(2);
     act(() => dismissToasts());
   });
 });

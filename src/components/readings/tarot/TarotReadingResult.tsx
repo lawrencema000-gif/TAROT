@@ -3,16 +3,19 @@ import { ArrowUp, ArrowDown } from 'lucide-react';
 import { ResultSheet, Tag, KeywordRow, ReadingProse, AffirmationPanel, Disclosure } from '../../ui';
 import { SUIT_GLYPHS, suitKeyFor } from '../../icons/SuitGlyphs';
 import { useT } from '../../../i18n/useT';
+import { useContentOverlay } from '../../../i18n/contentOverlay';
 import type { TarotCard } from '../../../types';
-import type { FocusArea } from './types';
+import { FOCUS_AREA_I18N_KEY, type FocusArea } from './types';
 import {
   affirmationFor,
   focusMeaningFor,
   hasMoreThan,
+  joinSentences,
   sentencesOf,
   splitLede,
   summarySentencesFrom,
   synthesisFor,
+  uprightFocusFor,
 } from './readingText';
 
 /**
@@ -29,6 +32,12 @@ import {
  * opening the rest (the focus meaning, the traditional meaning when the
  * focus one led, and the reflection prompt). With an AI interpretation on
  * screen the summary is its first paragraph and the body the rest.
+ *
+ * A focus reading (Love, Career, Money) leads with the card's focus
+ * meaning only when one is written for the card's orientation. Most love
+ * and career texts read the upright card; a reversed card with no reversed
+ * focus text leads with its reversed meaning, and the upright focus text
+ * waits in the full meaning under a label that says so.
  */
 export interface TarotReadingResultProps {
   cards: { card: TarotCard; reversed: boolean }[];
@@ -61,12 +70,21 @@ export function TarotReadingResult({
   className = '',
 }: TarotReadingResultProps) {
   const { t } = useT('app');
+  // The affirmations' translations; the English stands until the overlay lands.
+  const { overlay: enrichment } = useContentOverlay('enrichment');
   const first = cards[0];
   const Glyph = first ? SUIT_GLYPHS[suitKeyFor(first.card)] : null;
   const ai = aiInterpretation ? splitLede(aiInterpretation) : null;
-  const summary = ai ? ai.lede : synthesisFor(cards, selectedFocus);
-  const affirmation = first ? affirmationFor(first.card.id) : undefined;
+  const summary = ai
+    ? ai.lede
+    : synthesisFor(cards, selectedFocus, (name, sentence) =>
+        t('readings.result.cardLead', { name, sentence, defaultValue: '{{name}}: {{sentence}}' }),
+      );
+  const affirmation = first ? affirmationFor(first.card.id, enrichment) : undefined;
   const asked = Boolean(question && question.trim());
+  // A saved row's focus is free text in the table: name it only when it is one of ours.
+  const focusKey = selectedFocus ? FOCUS_AREA_I18N_KEY[selectedFocus] : undefined;
+  const focusName = focusKey ? t(focusKey) : selectedFocus ?? '';
 
   return (
     <ResultSheet
@@ -84,12 +102,14 @@ export function TarotReadingResult({
         <div className="space-y-8">
           {cards.map(({ card, reversed }, i) => {
             const focusText = focusMeaningFor(card, selectedFocus, reversed);
+            const uprightFocus = uprightFocusFor(card, selectedFocus, reversed);
             const traditional = reversed ? card.meaningReversed : card.meaningUpright;
             const lead = focusText ?? traditional;
             // The section continues where the summary stopped, so no sentence is printed twice.
             const taken = summarySentencesFrom(i, cards.length);
-            const short = sentencesOf(lead).slice(taken, taken + 2).join(' ');
-            const more = hasMoreThan(lead, taken + 2) || Boolean(focusText) || Boolean(card.reflectionPrompt);
+            const short = joinSentences(sentencesOf(lead).slice(taken, taken + 2));
+            const more =
+              hasMoreThan(lead, taken + 2) || Boolean(focusText) || Boolean(uprightFocus) || Boolean(card.reflectionPrompt);
             return (
               <section key={i} aria-label={`${getPositionLabel(i)}: ${card.name}`}>
                 <div className="text-center">
@@ -121,6 +141,17 @@ export function TarotReadingResult({
                               : t('tarot.uprightMeaning', { defaultValue: 'Upright meaning' })}
                           </p>
                           <ReadingProse lede={false} text={traditional} />
+                        </div>
+                      )}
+                      {uprightFocus && (
+                        <div>
+                          <p className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted mb-2">
+                            {t('readings.result.uprightFocusLabel', {
+                              focus: focusName,
+                              defaultValue: '{{focus}}, when the card is upright',
+                            })}
+                          </p>
+                          <ReadingProse lede={false} text={uprightFocus} />
                         </div>
                       )}
                       {card.reflectionPrompt && (

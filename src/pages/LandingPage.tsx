@@ -3,6 +3,7 @@
 // import landing.css globally.
 import '../styles/landing.css';
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, type KeyboardEvent, type ReactNode } from 'react';
+import { releasePrerenderedHero } from '../components/layout/prerenderedHero';
 import { ChevronRight, Flame, ListChecks, Menu, PenLine } from 'lucide-react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
@@ -457,6 +458,11 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   );
   useEffect(() => {
     document.documentElement.removeAttribute(PRERENDER_MARK);
+  }, []);
+  // main.tsx held the prerendered hero over the booting app; swap it for
+  // this one before the browser paints, so there is no frame without a hero.
+  useLayoutEffect(() => {
+    releasePrerenderedHero();
   }, []);
   const [navSolid, setNavSolid] = useState(false);
   // The nav's links below 900px: a sheet, opened from a Menu button.

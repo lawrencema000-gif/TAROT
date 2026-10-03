@@ -12,6 +12,7 @@ import { localDateStr } from '../../utils/localDate';
 import { isPlanet } from '../../lib/chart';
 import { PlanetGlyph } from '../icons';
 import { DAILY_SCORE_FRAMES } from '../../data/oracleSuggestions';
+import { useContentOverlay, ctList } from '../../i18n/contentOverlay';
 
 interface Influence {
   transiting: string; natal: string; type: string; orb: number; effect: number; harmonious: boolean;
@@ -22,12 +23,21 @@ interface ScoreData {
   counts: { harmonious: number; challenging: number; neutral: number };
 }
 
-const CACHE_KEY = 'arcana_daily_score';
+/**
+ * The score is computed from ONE account's natal chart, so the day's cache
+ * is filed under that account and stamped with the birth data it was cast
+ * from. The old device-global `arcana_daily_score` showed the previous
+ * account's score and natal influences to whoever signed in next that day,
+ * and kept a stale score after a birth-time edit.
+ */
+const LEGACY_CACHE_KEY = 'arcana_daily_score';
+const cacheKey = (userId: string) => `arcana_daily_score_v2:${userId}`;
 
-function frameForDay(day: string): string {
+/** Which framing line a day gets — an index, so every language picks the same line. */
+function frameIndexForDay(day: string): number {
   let h = 0;
   for (let i = 0; i < day.length; i++) h = (h * 31 + day.charCodeAt(i)) | 0;
-  return DAILY_SCORE_FRAMES[Math.abs(h) % DAILY_SCORE_FRAMES.length];
+  return Math.abs(h) % DAILY_SCORE_FRAMES.length;
 }
 
 /** Palette tones for the gauge, from the token set rather than loose hexes. */
@@ -48,16 +58,25 @@ export function DailyCosmicScore() {
   const [data, setData] = useState<ScoreData | null>(null);
   const [open, setOpen] = useState(false);
   const today = localDateStr();
+  // The cosmic-weather lines live in the `missions` content module (Home's
+  // daily lines); English until the overlay lands, never blank.
+  const { overlay } = useContentOverlay('missions');
+  const frames = ctList(overlay, 'scoreFrames', DAILY_SCORE_FRAMES);
+
+  const userId = user?.id ?? null;
+  const natalStamp = [profile?.birthDate, profile?.birthTime, profile?.birthLat, profile?.birthLon].join('|');
 
   useEffect(() => {
-    if (!user || !profile?.birthDate) return;
+    if (!userId || !profile?.birthDate) return;
     let cancelled = false;
+    setData(null);
     (async () => {
+      appStorage.remove(LEGACY_CACHE_KEY).catch(() => {});
       try {
-        const cached = await appStorage.get(CACHE_KEY);
+        const cached = await appStorage.get(cacheKey(userId));
         if (cached) {
-          const parsed = JSON.parse(cached) as ScoreData & { localDay?: string };
-          if (parsed.localDay === today) { if (!cancelled) setData(parsed); return; }
+          const parsed = JSON.parse(cached) as ScoreData & { localDay?: string; natal?: string };
+          if (parsed.localDay === today && parsed.natal === natalStamp) { if (!cancelled) setData(parsed); return; }
         }
       } catch { /* recompute */ }
       const { data: res, error } = await supabase.functions.invoke('astrology-daily-score', { body: {} });
@@ -65,11 +84,11 @@ export function DailyCosmicScore() {
       const score = (res?.data ?? res) as ScoreData;
       if (score?.score != null) {
         setData(score);
-        appStorage.set(CACHE_KEY, JSON.stringify({ ...score, localDay: today })).catch(() => {});
+        appStorage.set(cacheKey(userId), JSON.stringify({ ...score, localDay: today, natal: natalStamp })).catch(() => {});
       }
     })();
     return () => { cancelled = true; };
-  }, [user, profile?.birthDate, today]);
+  }, [userId, profile?.birthDate, natalStamp, today]);
 
   if (!profile?.birthDate || !data) return null;
 
@@ -98,7 +117,7 @@ export function DailyCosmicScore() {
             <HoroscopeWheelIcon className="w-3.5 h-3.5 text-gold" />
             <EyebrowLabel>{t('home.cosmicScore.eyebrow', { defaultValue: 'Today’s cosmic weather' })}</EyebrowLabel>
           </div>
-          <p className="text-ui text-mystic-200 leading-snug mt-1">{frameForDay(data.date)}</p>
+          <p className="text-ui text-mystic-200 leading-snug mt-1">{frames[frameIndexForDay(data.date)]}</p>
           <p className="text-meta text-mystic-500 mt-1">
             {t('home.cosmicScore.counts', {
               defaultValue: '{{flowing}} flowing · {{demanding}} demanding',

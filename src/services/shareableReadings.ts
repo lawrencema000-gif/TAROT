@@ -9,18 +9,28 @@ import { isNative } from '../utils/platform';
 // Format: base64url(JSON.stringify(payload))
 // Payload schema versioned with `v` so the decoder can evolve safely.
 //
-//   v1  tarot only: s (spread), c (cards), q, d
-//   v2  adds `k` — the deck the ids belong to. 'p' is the playing deck
-//       (ids 100..153, src/data/cartomancy); absent means tarot. A v1 link
-//       still decodes: the recipient's page reads the deck from `k`, or
-//       from a `carto-` spread slug for a link made before `k` existed.
+//   v1  tarot: s (spread), c (cards), q, d. Every tarot reading is still
+//       emitted as v1, byte for byte the shape the app has always made:
+//       an installed Android build owns tarotlife.app/reading through App
+//       Links, and its decoder returns null for any `v` other than 1. Raising
+//       the version for a payload that did not change would break every link
+//       opened in an app that has not updated yet.
+//   v2  a playing-card reading: v1's fields plus `k: 'p'` — the ids are the
+//       playing deck's (100..153, src/data/cartomancy). An older app cannot
+//       draw those cards, so it is meant to refuse them as "from a newer
+//       version" rather than lay tarot cards for them.
+//   The decoder accepts both, and tells a playing-card link made before `k`
+//   existed by its `carto-` spread slug.
 //
 // Inspired by Labyrinthos's URL-shareable readings — every shared reading
 // is an organic acquisition surface, since the recipient lands on
 // tarotlife.app already inside a meaningful experience.
 
-const VERSION = 2;
-const ACCEPTED_VERSIONS: ReadonlySet<number> = new Set([1, 2]);
+/** The version a tarot payload carries: the shape every app build reads. */
+export const TAROT_SHARE_VERSION = 1;
+/** The version a playing-card payload carries (adds `k`). */
+export const PLAYING_SHARE_VERSION = 2;
+const ACCEPTED_VERSIONS: ReadonlySet<number> = new Set([TAROT_SHARE_VERSION, PLAYING_SHARE_VERSION]);
 
 export type SharedDeckKind = 'p';
 
@@ -30,7 +40,7 @@ export interface SharedReadingPayload {
   c: Array<[number, 0 | 1]>;          // [cardId, reversedFlag] pairs in position order
   q?: string;                         // optional question (truncated to 200 chars)
   d?: string;                         // optional ISO date the reading was created
-  k?: SharedDeckKind;                 // 'p' = playing deck; absent = tarot (v2)
+  k?: SharedDeckKind;                 // 'p' = playing deck (v2 only); absent = tarot (v1)
 }
 
 function toBase64Url(s: string): string {
@@ -53,13 +63,16 @@ export function encodeReading(input: {
   /** 'playing' marks the ids as the playing deck's. Default tarot. */
   kind?: 'tarot' | 'playing';
 }): string {
+  const playing = input.kind === 'playing';
+  // Key order is part of the contract: a tarot token must stay identical to
+  // what pre-Phase-7 builds emitted (v, s, c, q?, d?).
   const payload: SharedReadingPayload = {
-    v: VERSION,
+    v: playing ? PLAYING_SHARE_VERSION : TAROT_SHARE_VERSION,
     s: input.spreadSlug,
     c: input.cards.map((c) => [c.id, c.reversed ? 1 : 0]),
     ...(input.question ? { q: input.question.slice(0, 200) } : {}),
     ...(input.date ? { d: input.date } : {}),
-    ...(input.kind === 'playing' ? { k: 'p' as const } : {}),
+    ...(playing ? { k: 'p' as const } : {}),
   };
   return toBase64Url(JSON.stringify(payload));
 }

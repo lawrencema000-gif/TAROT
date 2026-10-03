@@ -24,7 +24,9 @@
     "back": "Previous step",
     "appleCta": "Continue with Apple",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "passwordPlaceholderShort": "Password",
+    "passwordRule": "At least 8 characters, with letters and numbers."
   },
   "toast": {
     "invalidEmail": "That email doesn’t look right — check it and try again.",

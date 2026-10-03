@@ -13,10 +13,16 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import type { TarotCard } from '../types';
 
 /**
- * Tarot companion — draws a card, then opens a focused AI chat about that
- * specific card. Reuses the existing ai-companion-chat edge function with
- * the oracle persona; the first message is auto-seeded client-side so the
- * AI has the card context. Multi-turn: the user can ask follow-ups.
+ * Tarot companion — draws a card, then, when the reader asks, opens a
+ * focused AI chat about that card. Reuses the ai-companion-chat edge
+ * function with the oracle persona; the first message is seeded
+ * client-side so the AI has the card context. Multi-turn: the reader can
+ * ask follow-ups.
+ *
+ * Opening the page draws a card and costs nothing. The conversation — the
+ * one paid step (50 Moonstones, debited by the server) — starts only on
+ * "Read this card". It used to start on mount, so merely visiting the page
+ * (or coming back to it, or tapping "New card") charged the reader.
  */
 
 interface ChatMessage {
@@ -45,9 +51,6 @@ export function TarotCompanionPage() {
     await new Promise((r) => setTimeout(r, 600));
     setCard(drawn);
     setDrawing(false);
-    // Auto-send an initial "I drew X. Help me sit with it." turn so the
-    // AI leads with a reading rather than a prompt.
-    sendInitial(drawn);
   }, [user?.id]);
 
   useEffect(() => { draw(); }, [draw]);
@@ -76,9 +79,12 @@ export function TarotCompanionPage() {
   const sendInitial = async (drawn: { card: TarotCard; reversed: boolean }) => {
     // 50 ms charge for the session opener. Premium = no debit; soft cap
     // counts one slot. Follow-ups in the same conversation are free.
+    if (sending) return;
     const ok = await tryConsume();
     if (!ok) return;
-    const label = `${drawn.card.name}${drawn.reversed ? ' (reversed)' : ''}`;
+    const label = drawn.reversed
+      ? t('tarotCompanion.cardReversed', { name: drawn.card.name, defaultValue: '{{name}} (reversed)' })
+      : drawn.card.name;
     const seed: ChatMessage = {
       role: 'user',
       content: t('tarotCompanion.seedMessage', {
@@ -128,7 +134,6 @@ export function TarotCompanionPage() {
         }
       />
 
-      {messages.length === 0 && !drawing && <MoonstoneCostLine />}
 
       {drawing && (
         <div className="py-12 text-center">
@@ -202,16 +207,32 @@ export function TarotCompanionPage() {
         </Card>
       )}
 
-      {messages.length === 0 && !drawing && (
+      {/* Nothing is spent until the reader asks: the card is free, the conversation is the paid step. */}
+      {messages.length === 0 && !drawing && !sending && (
         <Card padding="lg" className="text-center">
-          <MessageCircle className="w-6 h-6 text-mystic-500 mx-auto mb-2" />
-          <p className="text-ui text-mystic-400">
-            {t('tarotCompanion.empty', { defaultValue: 'Pull a card to begin a conversation.' })}
-          </p>
-          <Button variant="gold" onClick={draw} className="mt-3">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {t('tarotCompanion.drawCta', { defaultValue: 'Draw a card' })}
-          </Button>
+          <MessageCircle className="w-6 h-6 text-mystic-500 mx-auto mb-2" aria-hidden />
+          {card ? (
+            <>
+              <p className="text-ui text-mystic-400">
+                {t('tarotCompanion.readPrompt', { defaultValue: 'Ask the oracle to read this card with you.' })}
+              </p>
+              <Button variant="gold" onClick={() => void sendInitial(card)} className="mt-3">
+                <Sparkles className="w-4 h-4 mr-2" aria-hidden />
+                {t('tarotCompanion.readCta', { defaultValue: 'Read this card' })}
+              </Button>
+              <MoonstoneCostLine wording="conversation" className="mt-3 justify-center" />
+            </>
+          ) : (
+            <>
+              <p className="text-ui text-mystic-400">
+                {t('tarotCompanion.empty', { defaultValue: 'Pull a card to begin a conversation.' })}
+              </p>
+              <Button variant="gold" onClick={draw} className="mt-3">
+                <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
+                {t('tarotCompanion.drawCta', { defaultValue: 'Draw a card' })}
+              </Button>
+            </>
+          )}
         </Card>
       )}
       {EarnSheet}

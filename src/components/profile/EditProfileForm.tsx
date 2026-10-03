@@ -46,7 +46,7 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [saving, setSaving] = useState(false);
   const [showGeoResults, setShowGeoResults] = useState(false);
-  const [form, setForm] = useState({
+  const seed = () => ({
     displayName: profile?.displayName || '',
     birthDate: profile?.birthDate || '',
     birthTime: profile?.birthTime || '',
@@ -55,18 +55,21 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
     birthLon: profile?.birthLon,
     goals: (profile?.goals || []) as Goal[],
   });
+  const [form, setFormState] = useState(seed);
+  // Once the user has typed or picked anything, the form is theirs. The
+  // profile object is replaced on every app resume, visibility change and
+  // realtime update; re-seeding on each of those wiped half-typed edits
+  // (P7 #8). Until the first edit, a fresher profile may still seed it.
+  const dirty = useRef(false);
+  const setForm: typeof setFormState = (next) => {
+    dirty.current = true;
+    setFormState(next);
+  };
 
   useEffect(() => {
-    if (!profile) return;
-    setForm({
-      displayName: profile.displayName || '',
-      birthDate: profile.birthDate || '',
-      birthTime: profile.birthTime || '',
-      birthPlace: profile.birthPlace || '',
-      birthLat: profile.birthLat,
-      birthLon: profile.birthLon,
-      goals: (profile.goals || []) as Goal[],
-    });
+    if (!profile || dirty.current) return;
+    setFormState(seed());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   const goalOptions = GOAL_VALUES.map((value) => ({ value, label: t(`app:profile.goals.${value}`) }));
@@ -88,24 +91,56 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
   };
 
   const handleSave = async () => {
+    const place = form.birthPlace.trim();
+    const placeChanged = place !== (profile?.birthPlace || '').trim();
+    const located = form.birthLat !== undefined && form.birthLon !== undefined;
+
+    // Required fields: a blank here used to be sent as `undefined`, which the
+    // profile mapper drops, so "saved" changed nothing.
+    if (!form.displayName.trim()) {
+      toast(t('app:profile.toasts.nameRequired', { defaultValue: 'Add a name so we know what to call you.' }), 'error');
+      return;
+    }
+    if (!form.birthDate) {
+      toast(t('app:profile.toasts.birthDateRequired', { defaultValue: 'Add your birth date — every chart is cast from it.' }), 'error');
+      return;
+    }
+    // A new place must come from the list: the text alone has no
+    // coordinates, and saving it kept the old city's lat/lon/timezone
+    // under the new name (P7 #9).
+    if (place && placeChanged && !located) {
+      toast(t('app:profile.toasts.pickCity', { defaultValue: 'Pick your birth city from the list so your charts use the right place.' }), 'error');
+      setShowGeoResults(true);
+      return;
+    }
+
     setSaving(true);
     try {
+      // Optional fields the user emptied are sent as null, so they are
+      // actually cleared (undefined is dropped by mapProfileToDb).
       const updates: Record<string, unknown> = {
-        displayName: form.displayName.trim() || undefined,
-        birthDate: form.birthDate || undefined,
-        birthTime: birthTimeValue || undefined,
-        birthPlace: form.birthPlace.trim() || undefined,
+        displayName: form.displayName.trim(),
+        birthDate: form.birthDate,
+        birthTime: birthTimeValue || null,
+        birthPlace: place || null,
         goals: form.goals,
       };
-      if (form.birthLat !== undefined && form.birthLon !== undefined) {
+      if (!place) {
+        updates.birthLat = null;
+        updates.birthLon = null;
+        updates.birthTz = null;
+      } else if (located) {
         updates.birthLat = form.birthLat;
         updates.birthLon = form.birthLon;
         // Resolve the birth-place IANA timezone from the coordinates so the
         // DB trigger computes birth_utc with the right offset (the device tz
-        // is wrong for anyone who has moved since birth).
+        // is wrong for anyone who has moved since birth). A new place whose
+        // zone cannot be resolved clears the old city's zone rather than
+        // keeping it.
         const { deriveBirthTz } = await import('../../utils/birthTz');
-        const birthTz = await deriveBirthTz(form.birthLat, form.birthLon);
+        const birthTz = await deriveBirthTz(form.birthLat!, form.birthLon!);
         if (birthTz) updates.birthTz = birthTz;
+        else if (placeChanged) updates.birthTz = null;
       }
 
       const { error } = await updateProfile(updates);
@@ -123,6 +158,10 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
   };
 
   const located = form.birthLat !== undefined && form.birthLon !== undefined;
+  const unpickedPlace =
+    form.birthPlace.trim().length > 0 &&
+    !located &&
+    form.birthPlace.trim() !== (profile?.birthPlace || '').trim();
 
   return (
     <div className="space-y-5">
@@ -192,6 +231,12 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
 
         {form.birthPlace.length > 0 && form.birthPlace.length < 2 && (
           <p className="text-caption text-mystic-500">{t('app:settings.typeMinChars')}</p>
+        )}
+
+        {unpickedPlace && form.birthPlace.length >= 2 && (
+          <p className="text-caption text-mystic-400">
+            {t('app:profile.pickCityHint', { defaultValue: 'Choose the city from the list to save it.' })}
+          </p>
         )}
 
         {!geoLoading && geoError && !located && (

@@ -110,8 +110,11 @@ export interface CombinationHit {
   rank?: PlayingRank;
   count?: number;
   suit?: PlayingSuit;
+  /** The one suit with the fewest cards ("what is being neglected"); absent when two or more tie for fewest. */
   minoritySuit?: PlayingSuit;
   color?: PlayingColor;
+  /** For a majority: the cards it was counted over (suited cards for a suit, every card for a colour). */
+  total?: number;
 }
 
 const RANK_WORD: Record<PlayingRank, string> = {
@@ -142,7 +145,19 @@ type NeighborHandler = (ctx: {
   layout: CartoSpreadLayout | undefined;
   meaning: string;
   id: string;
+  suitMajorityMin?: number;
 }) => CombinationHit[];
+
+/**
+ * The fewest cards of one suit that make it the reading's subject, on a
+ * table of `suited` suited cards: a third of the table, and never fewer
+ * than two (two of three, three of seven, seven of twenty-one). A spread
+ * whose method names its own threshold passes it (the Nine-Card Square:
+ * "four or more of one suit sets the subject").
+ */
+export function suitMajorityThreshold(suited: number, override?: number): number {
+  return override ?? Math.max(2, Math.ceil(suited / 3));
+}
 
 const pairHits = (
   ctx: { cards: PlayingCard[]; pairs: Adjacency; meaning: string; id: string },
@@ -207,14 +222,20 @@ const NEIGHBOR_HANDLERS: Record<string, NeighborHandler> = {
     }
     return hits;
   },
+  // The spreads read the suit count as a plurality ("count the suits: the
+  // majority is the season's subject"), not as more than half the table,
+  // which a 21-card Romany all but never reaches: one suit that outnumbers
+  // every other and holds at least `suitMajorityThreshold` cards.
   'suit-majority': (ctx) => {
     const suited = ctx.cards.filter((c) => c.suit !== 'joker');
     if (suited.length < 3) return [];
     const counts = PLAYING_SUITS.map((suit) => suited.filter((c) => c.suit === suit).length);
     const top = Math.max(...counts);
-    if (top * 2 <= suited.length) return [];
+    if (counts.filter((n) => n === top).length !== 1) return [];
+    if (top < suitMajorityThreshold(suited.length, ctx.suitMajorityMin)) return [];
     const suit = PLAYING_SUITS[counts.indexOf(top)];
-    const minoritySuit = PLAYING_SUITS[counts.indexOf(Math.min(...counts))];
+    const fewest = Math.min(...counts);
+    const minoritySuit = counts.filter((n) => n === fewest).length === 1 ? PLAYING_SUITS[counts.indexOf(fewest)] : undefined;
     return [
       {
         kind: 'majority',
@@ -223,8 +244,9 @@ const NEIGHBOR_HANDLERS: Record<string, NeighborHandler> = {
         meaning: ctx.meaning,
         label: `${top} of ${suited.length} are ${SUIT_WORD[suit]}`,
         suit,
-        minoritySuit,
+        ...(minoritySuit ? { minoritySuit } : {}),
         count: top,
+        total: suited.length,
       },
     ];
   },
@@ -243,6 +265,7 @@ const NEIGHBOR_HANDLERS: Record<string, NeighborHandler> = {
         label: `${group.length} of ${ctx.cards.length} are ${color}`,
         color,
         count: group.length,
+        total: ctx.cards.length,
       },
     ];
   },
@@ -252,12 +275,13 @@ const NEIGHBOR_HANDLERS: Record<string, NeighborHandler> = {
  * Everything the tables say about this set of cards: same-rank sets first,
  * then the neighbour rules in table order, then each card's own named
  * pairings, then the suit and colour majorities. `limit` trims the list
- * (the AI prompt takes six).
+ * (the AI prompt takes six); `suitMajorityMin` is the spread's own suit
+ * threshold, when its method names one.
  */
 export function findCombinations(
   cards: PlayingCard[],
   layout?: CartoSpreadLayout,
-  options: { limit?: number } = {},
+  options: { limit?: number; suitMajorityMin?: number } = {},
 ): CombinationHit[] {
   const hits: CombinationHit[] = [];
   const pairs = adjacencyFor(layout, cards.length);
@@ -290,7 +314,7 @@ export function findCombinations(
   for (const rule of NEIGHBOR_RULES) {
     const handler = NEIGHBOR_HANDLERS[rule.id];
     if (!handler) continue;
-    const found = handler({ cards, pairs, layout, meaning: rule.meaning, id: rule.id });
+    const found = handler({ cards, pairs, layout, meaning: rule.meaning, id: rule.id, suitMajorityMin: options.suitMajorityMin });
     for (const hit of found) (hit.kind === 'majority' ? majorities : hits).push(hit);
   }
 

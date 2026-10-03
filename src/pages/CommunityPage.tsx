@@ -4,6 +4,8 @@ import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, E
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { localizeSignName } from '../i18n/localizeNames';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
 import { SIGN_ZONES, type SignZone } from '../dal/community';
@@ -52,12 +54,10 @@ const TOPICS: { id: CommunityTopic | 'all'; labelKey: string }[] = [
   { id: 'wellness',  labelKey: 'community.topics.wellness' },
 ];
 
-/** Sign-zone chips, rendered as a second row with each sign's glyph. */
-const SIGN_LABEL: Record<string, string> = {
-  aries: 'Aries', taurus: 'Taurus', gemini: 'Gemini', cancer: 'Cancer',
-  leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
-  sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
-};
+/** Sign-zone chip label in the UI's language (zones are lowercase sign ids). */
+function signZoneLabel(sign: SignZone): string {
+  return localizeSignName((sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign);
+}
 /** The zone's sign, drawn: U+2648-2653 render as colour emoji on Android. */
 function SignZoneGlyph({ sign }: { sign: SignZone }) {
   const Glyph = ZODIAC_ICONS[(sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign];
@@ -79,17 +79,26 @@ const REACTION_ICONS: Record<ReactionType, React.ComponentType<{ className?: str
 
 const REACTION_ORDER: ReactionType[] = ['heart', 'sparkle', 'moon', 'eye', 'flame'];
 
-// Time formatter — relative for recent, date for older
+/**
+ * Relative for the last week, a date after that — in the UI's language
+ * (Intl), not hard-coded "3h" / "just now".
+ */
 function formatRelativeTime(iso: string): string {
+  const locale = getLocale();
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString();
+  try {
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
+    if (mins < 1) return rtf.format(0, 'second');
+    if (mins < 60) return rtf.format(-mins, 'minute');
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return rtf.format(-hrs, 'hour');
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return rtf.format(-days, 'day');
+  } catch {
+    /* very old WebView without RelativeTimeFormat: fall through to a date */
+  }
+  return new Date(iso).toLocaleDateString(locale);
 }
 
 export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
@@ -103,7 +112,6 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [feedError, setFeedError] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<CommunityTopic | 'all'>('all');
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
-  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
   const [crisisResources, setCrisisResources] = useState<CrisisResources | undefined>(undefined);
   const openCrisisBanner = useCallback((resources?: CrisisResources) => {
@@ -128,10 +136,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     [mySign],
   );
 
-  // Load feed. Blocked authors are filtered at render (visiblePosts), not
-  // here: with blockedIds in this callback's deps the feed fetched once on
-  // mount and again when the blocks resolved, and a failing feed toasted
-  // twice for it.
+  // Load feed. Blocked authors are left out server-side by the feed view
+  // (20261003000014) — the client cannot filter anonymous posts by author,
+  // because it is never told who wrote them.
   const loadFeed = useCallback(async () => {
     setLoading(true);
     const topic = isWhisperingWell ? 'whispering-well' as const : (selectedTopic === 'all' ? undefined : selectedTopic);
@@ -155,10 +162,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     loadFeed();
   }, [loadFeed]);
 
-  const visiblePosts = useMemo(
-    () => posts.filter((p) => !blockedIds.has(p.userId)),
-    [posts, blockedIds],
-  );
+  const visiblePosts = posts;
 
   // One banner for the whole page, whichever view is showing. It used to be
   // mounted inside the composer branch, and `onSuccess` swapped that branch
@@ -171,16 +175,6 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       resources={crisisResources}
     />
   );
-
-  // Load user's blocks once
-  useEffect(() => {
-    if (!user?.id) return;
-    let mounted = true;
-    community.fetchBlockedIds(user.id).then((res) => {
-      if (mounted && res.ok) setBlockedIds(new Set(res.data));
-    });
-    return () => { mounted = false; };
-  }, [user?.id]);
 
   const handleReact = async (post: CommunityPost, reaction: ReactionType) => {
     if (!user) {
@@ -212,11 +206,14 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
   const handleBlock = async (post: CommunityPost) => {
     if (!user) return;
-    const res = await community.blockUser(user.id, post.userId);
+    // By post: the server resolves the author, so blocking works on an
+    // anonymous post without revealing who wrote it.
+    const res = await community.blockAuthor({ postId: post.id }, { blockerId: user.id, blockedId: post.userId });
     if (res.ok) {
-      setBlockedIds((prev) => new Set([...prev, post.userId]));
-      setPosts((ps) => ps.filter((p) => p.userId !== post.userId));
+      setPosts((ps) => ps.filter((p) => p.id !== post.id && (post.userId === null || p.userId !== post.userId)));
       toast(t('community.blocked', { defaultValue: 'User blocked' }), 'success');
+      // The feed view now leaves out everything else by that author too.
+      void loadFeed();
     } else {
       toast(t('community.blockFailed', { defaultValue: 'Could not block' }), 'error');
     }
@@ -269,7 +266,6 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           onReport={handleReport}
           onBlock={handleBlock}
           onCrisisDetected={openCrisisBanner}
-          surface={isWhisperingWell ? 'whispering-well' : 'comment'}
         />
         {crisisBanner}
       </>
@@ -357,7 +353,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
               className="whitespace-nowrap"
             >
               <SignZoneGlyph sign={z} />
-              {SIGN_LABEL[z]}
+              {signZoneLabel(z)}
               {z === mySign && <EyebrowLabel>{t('community.youMarker', { defaultValue: 'You' })}</EyebrowLabel>}
             </Chip>
           ))}
@@ -420,7 +416,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           key={post.id}
           post={post}
           isWhisperingWell={isWhisperingWell}
-          isOwn={post.userId === user?.id}
+          isOwn={post.isMine}
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
@@ -456,7 +452,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
 
   const displayName = post.isAnonymous
     ? t('community.anonymous', { defaultValue: 'Anonymous' })
-    : post.authorDisplayName || 'User';
+    : post.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' });
 
   return (
     <Card padding="md" className={isWhisperingWell ? 'bg-cosmic-violet/5 border-cosmic-violet/15' : ''}>
@@ -501,7 +497,9 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                       <Flag className="w-3 h-3" aria-hidden /> {t('community.report', { defaultValue: 'Report' })}
                     </button>
                   )}
-                  {!post.isAnonymous && (
+                  {/* Blocking goes by post id (community_block_author), so an
+                      anonymous author can be blocked without being named. */}
+                  {(
                     <button
                       role="menuitem"
                       onClick={() => { setMenuOpen(false); onBlock(post); }}
@@ -538,7 +536,8 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                 className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all ${
                   isMine ? 'bg-gold/20 text-gold' : 'text-mystic-500 hover:text-mystic-300'
                 }`}
-                aria-label={r}
+                aria-label={t(`community.reactions.${r}`, { defaultValue: r })}
+                aria-pressed={isMine}
               >
                 <Icon className="w-4 h-4" />
               </button>
@@ -626,12 +625,16 @@ function Composer({
 
     if (moderation.verdict === 'block') {
       setSubmitting(false);
-      toast(
-        t('community.contentBlocked', {
-          defaultValue: 'This post conflicts with our community guidelines.',
-        }),
-        'error',
-      );
+      // With the helplines up they are the only message: a person in crisis
+      // is not told off about guidelines on top of it.
+      if (!crisis) {
+        toast(
+          t('community.contentBlocked', {
+            defaultValue: 'This post conflicts with our community guidelines.',
+          }),
+          'error',
+        );
+      }
       return;
     }
 
@@ -746,24 +749,25 @@ interface PostDetailProps {
   onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
   onCrisisDetected: (resources?: CrisisResources) => void;
-  surface: ModerationSurface;
 }
 
-function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected, surface }: PostDetailProps) {
+function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected }: PostDetailProps) {
   const { t } = useT('app');
   const { user } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
-  const [isAnonComment, setIsAnonComment] = useState(post.isAnonymous);
+  // A reply in the Whispering Well is anonymous like everything else there.
+  const inWell = post.topic === 'whispering-well';
+  const [isAnonComment, setIsAnonComment] = useState(post.isAnonymous || inWell);
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await community.fetchComments(post.id);
+    const res = await community.fetchComments(post.id, user?.id);
     if (res.ok) setComments(res.data);
     setLoading(false);
-  }, [post.id]);
+  }, [post.id, user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -776,20 +780,25 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
     }
     setSubmitting(true);
 
-    const moderation = await publishContent(newComment, surface, {
+    // Every reply is a comment on its post. The server decides comment vs.
+    // post by `surface === 'comment'`, so the old 'whispering-well' surface
+    // here published Well replies as new public posts in General (P7 #7).
+    const moderation = await publishContent(newComment, 'comment', {
       postId: post.id,
-      isAnonymous: isAnonComment,
+      isAnonymous: inWell ? true : isAnonComment,
     });
     const crisis = isCrisis(moderation);
     if (crisis) onCrisisDetected(moderation.crisisResources);
     if (moderation.verdict === 'block') {
       setSubmitting(false);
-      toast(
-        t('community.contentBlocked', {
-          defaultValue: 'This comment conflicts with our community guidelines.',
-        }),
-        'error',
-      );
+      if (!crisis) {
+        toast(
+          t('community.contentBlocked', {
+            defaultValue: 'This comment conflicts with our community guidelines.',
+          }),
+          'error',
+        );
+      }
       return;
     }
 
@@ -822,8 +831,8 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 
       <PostCard
         post={post}
-        isWhisperingWell={post.topic === 'whispering-well'}
-        isOwn={post.userId === user?.id}
+        isWhisperingWell={inWell}
+        isOwn={post.isMine}
         onReact={onReact}
         onReport={onReport}
         onBlock={onBlock}
@@ -850,7 +859,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
               <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
                 {c.isAnonymous
                   ? t('community.anonymous', { defaultValue: 'Anonymous' })
-                  : c.authorDisplayName || 'User'}
+                  : c.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' })}
               </span>
               <span>·</span>
               <span>{formatRelativeTime(c.createdAt)}</span>
@@ -871,17 +880,23 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
             placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response…' }) as string}
           />
           <div className="flex items-center justify-between mt-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isAnonComment}
-                onChange={(e) => setIsAnonComment(e.target.checked)}
-                className="rounded"
-              />
+            {inWell ? (
               <span className="text-meta text-mystic-400">
-                {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
+                {t('community.whisperingWell.replyAnonymous', { defaultValue: 'Replies here are anonymous' })}
               </span>
-            </label>
+            ) : (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isAnonComment}
+                  onChange={(e) => setIsAnonComment(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-meta text-mystic-400">
+                  {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
+                </span>
+              </label>
+            )}
             <Button variant="primary" size="sm" onClick={submitComment} disabled={submitting || !newComment.trim()} loading={submitting}>
               {t('community.send', { defaultValue: 'Post my comment' })}
             </Button>

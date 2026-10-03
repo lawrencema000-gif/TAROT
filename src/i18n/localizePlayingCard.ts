@@ -277,6 +277,34 @@ export function localizeCartoLesson(lesson: CartoLesson, locale: SupportedLocale
   return bundle ? overlayLesson(lesson, bundle) : lesson;
 }
 
+const SUIT_TITLE_EN: Record<string, string> = { hearts: 'Hearts', clubs: 'Clubs', diamonds: 'Diamonds', spades: 'Spades' };
+
+/**
+ * A suit or colour majority's label in `locale`, from a translated template
+ * ("4 of 7 are black" → "7枚中4枚が黒"), never the English phrase: every
+ * table of seven or more cards has a colour majority, so the English line
+ * used to head almost every big reading in ja/ko/zh. The counts come from
+ * the hit (`count` of `total`); the suit's name from the corpus, the
+ * colour's from the app strings.
+ */
+function majorityLabel(hit: CombinationHit, bundle: CartoBundle, locale: SupportedLocale): string {
+  const n = hit.count ?? hit.cardIds.length;
+  const total = hit.total ?? hit.cardIds.length;
+  if (hit.suit) {
+    const suit =
+      bundle.suits?.[hit.suit]?.name ??
+      String(i18n.t(`app:cartomancy.suits.${hit.suit}.title`, { lng: locale, defaultValue: SUIT_TITLE_EN[hit.suit] ?? hit.suit }));
+    return String(i18n.t('app:cartomancy.result.suitMajority', { lng: locale, n, total, suit, defaultValue: '{{n}} of {{total}} are {{suit}}' }));
+  }
+  if (hit.color) {
+    const color = String(
+      i18n.t(`app:cartomancy.result.colorNames.${hit.color}`, { lng: locale, defaultValue: hit.color === 'red' ? 'red' : 'black' }),
+    );
+    return String(i18n.t('app:cartomancy.result.colorMajority', { lng: locale, n, total, color, defaultValue: '{{n}} of {{total}} are {{color}}' }));
+  }
+  return hit.label;
+}
+
 /**
  * A combination the tables found, as the active locale reads it: the
  * meaning from the translated tables (same-rank sets by rank and count,
@@ -312,8 +340,7 @@ export function localizeCombinationHit(hit: CombinationHit, locale: SupportedLoc
     .map((c) => overlayCard(c, bundle).name);
   let label = hit.label;
   if (hit.kind === 'majority') {
-    const suitName = hit.suit ? bundle.suits?.[hit.suit]?.name : undefined;
-    label = suitName ? `${suitName} ×${hit.count ?? names.length}` : names.length <= 3 ? names.join(' · ') : hit.label;
+    label = majorityLabel(hit, bundle, locale);
   } else if (names.length > 0) {
     label = names.join(' · ');
   }

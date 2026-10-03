@@ -453,3 +453,22 @@ describe('localizeQuiz draws each Likert option by what it says, not by the valu
     }
   });
 });
+
+describe('localizeQuiz asks before it reads (R7 #155)', () => {
+  it('localizing every quiz on the list fires no missingKey event', async () => {
+    const { default: i18n } = await import('../../i18n/config');
+    const { localizeQuiz } = await import('../../i18n/localizeQuiz');
+    const { EXTRA_QUIZZES } = await import('../../data/extraQuizzes');
+    const { mbtiQuiz: mbti, loveLanguageQuiz: love, moodCheckQuiz } = await import('../../data/quizzes');
+    await i18n.changeLanguage('en');
+    const missing: string[] = [];
+    const onMissing = (_l: readonly string[], _ns: string, key: string) => missing.push(key);
+    i18n.on('missingKey', onMissing);
+    try {
+      for (const q of [mbti, love, moodCheckQuiz, bigFiveQuiz, attachmentQuiz, mbtiQuickQuiz, enneagramQuiz, shadowArchetypeQuiz, ...EXTRA_QUIZZES]) localizeQuiz(q);
+    } finally {
+      i18n.off('missingKey', onMissing);
+    }
+    expect(missing).toEqual([]);
+  });
+});

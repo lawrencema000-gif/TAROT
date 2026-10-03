@@ -85,6 +85,12 @@ interface TarotRevealViewProps {
   question?: string | null;
   allRevealed: boolean;
   isSaved: boolean;
+  /** The save is in flight: the bookmark is busy and ignores taps. */
+  saving?: boolean;
+  /** The share image is rendering: the share button is busy and ignores taps. */
+  sharing?: boolean;
+  /** Why this reading cannot have an AI interpretation (too many cards), when it cannot. */
+  aiUnavailable?: string;
   isPremium: boolean;
   cardBackUrl: string | null | undefined;
   showAIInterpretation: boolean;
@@ -120,6 +126,9 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     question,
     allRevealed,
     isSaved,
+    saving = false,
+    sharing = false,
+    aiUnavailable,
     isPremium,
     cardBackUrl,
     showAIInterpretation,
@@ -237,21 +246,34 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           <button
             type="button"
             onClick={onShare}
-            disabled={!allRevealed}
-            aria-label={t('readings.revealView.share', { defaultValue: 'Share this reading' })}
-            className={`${ICON_BUTTON} text-mystic-300`}
+            disabled={!allRevealed || sharing}
+            aria-busy={sharing || undefined}
+            aria-label={
+              sharing
+                ? t('readings.revealView.sharing', { defaultValue: 'Preparing the share image' })
+                : t('readings.revealView.share', { defaultValue: 'Share this reading' })
+            }
+            className={`${ICON_BUTTON} text-mystic-300 ${sharing ? 'disabled:opacity-100' : ''}`}
           >
-            <Share2 className="w-5 h-5" aria-hidden />
+            {sharing ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <Share2 className="w-5 h-5" aria-hidden />}
           </button>
+          {/* One reading, one saved row: the bookmark is spent once it is saved. */}
           <button
             type="button"
             onClick={onSave}
-            disabled={!allRevealed}
+            disabled={!allRevealed || saving || isSaved}
+            aria-busy={saving || undefined}
             aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
             aria-pressed={isSaved}
-            className={`${ICON_BUTTON} ${isSaved ? 'text-gold' : 'text-mystic-300'}`}
+            className={`${ICON_BUTTON} ${isSaved ? 'text-gold disabled:opacity-100' : 'text-mystic-300'} ${saving ? 'disabled:opacity-100' : ''}`}
           >
-            {isSaved ? <BookmarkCheck className="w-5 h-5" aria-hidden /> : <Bookmark className="w-5 h-5" aria-hidden />}
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden />
+            ) : isSaved ? (
+              <BookmarkCheck className="w-5 h-5" aria-hidden />
+            ) : (
+              <Bookmark className="w-5 h-5" aria-hidden />
+            )}
           </button>
         </div>
       </div>
@@ -404,6 +426,10 @@ export function TarotRevealView(props: TarotRevealViewProps) {
               >
                 {t('readings.revealView.showCardMeaningsPlain', { defaultValue: 'Show card meanings' })}
               </button>
+            ) : aiUnavailable && !aiInterpretation ? (
+              // generate-reading reads up to ten tarot cards; a longer custom
+              // spread is told why rather than charged for a refusal.
+              <p className="text-meta text-mystic-400 text-right">{aiUnavailable}</p>
             ) : (
               <Chip
                 variant="outline"
@@ -414,9 +440,12 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                 label={
                   loadingAI
                     ? t('readings.revealView.generating')
-                    : isPremium
-                      ? t('readings.revealView.getAIInsight')
-                      : t('readings.revealView.premiumAI')
+                    : aiInterpretation
+                      // Already generated for this reading: the chip shows it again, free.
+                      ? t('readings.revealView.showAIReading', { defaultValue: 'Show the AI reading' })
+                      : isPremium
+                        ? t('readings.revealView.getAIInsight')
+                        : t('readings.revealView.premiumAI')
                 }
               />
             )}

@@ -38,6 +38,8 @@ import { COURT_EMBLEM_PATHS, EMBLEM_BOX, type EmblemPaths } from '../components/
 // eslint-disable-next-line boundaries/element-types
 import { JOKER_EMBLEM_PATHS, JOKER_INDEX_STAR } from '../components/cartomancy/JokerEmblem';
 import { FACE_H, FACE_W, pipSizeFor, pipsFor } from '../data/cartomancy/pipLayout';
+import { getPlayingCardBySlug } from '../data/cartomancy/deck';
+import { TAB, titleTabLabel, titleTabLayout } from '../components/cartomancy/titleTab';
 import type { PlayingRank, PlayingSuit } from '../types/cartomancy';
 
 export type { ShareOutcome } from './nativeShare';
@@ -714,12 +716,18 @@ function drawPlayingFace(ctx: CanvasRenderingContext2D, opts: CartomancyShareOpt
     }
   }
 
-  // Title tab at the foot (turned back when reversed, so it reads at the top).
-  const label = (joker ? 'JOKER' : opts.cardName).toUpperCase();
-  ctx.font = cssFont(600, 10, BODY);
-  const textW = Math.min(136, ctx.measureText(label).width + label.length * 1.4);
-  const tabW = Math.min(150, Math.max(72, Math.round(textW + 14)));
-  const tabCy = 256 + 10;
+  // Title tab at the foot (turned back when reversed, so it reads at the
+  // top): the label and geometry of PlayingCardFace's tab (titleTab.ts),
+  // measured with the canvas's own metrics.
+  const tabCard = getPlayingCardBySlug(opts.cardSlug);
+  const label = tabCard ? titleTabLabel(tabCard.id) : (joker ? 'JOKER' : opts.cardName.toUpperCase());
+  const tab = titleTabLayout(label, (text, size) => {
+    ctx.font = cssFont(600, size, BODY);
+    return [...text].reduce((w, ch) => w + ctx.measureText(ch).width, 0);
+  });
+  ctx.font = cssFont(600, tab.fontSize, BODY);
+  const tabW = tab.w;
+  const tabCy = TAB.y + TAB.h / 2;
   ctx.save();
   if (reversed) {
     ctx.translate(FACE_W / 2, tabCy);
@@ -729,13 +737,13 @@ function drawPlayingFace(ctx: CanvasRenderingContext2D, opts: CartomancyShareOpt
   ctx.strokeStyle = C.gold;
   ctx.lineWidth = 0.9;
   ctx.globalAlpha = 0.8;
-  roundRectPath(ctx, FACE_W / 2 - tabW / 2, 256, tabW, 20, 4);
+  roundRectPath(ctx, FACE_W / 2 - tabW / 2, TAB.y, tabW, TAB.h, TAB.rx);
   ctx.stroke();
   ctx.globalAlpha = 1;
   ctx.fillStyle = C.gold;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  drawTracked(ctx, label, FACE_W / 2, tabCy, 1.4);
+  drawTracked(ctx, tab.text, FACE_W / 2, tabCy, tab.letterSpacing);
   ctx.restore();
 
   ctx.restore();
@@ -877,7 +885,11 @@ function sampleText(opts: ShareCardOpts): string {
   const parts: (string | undefined)[] = [opts.eyebrow, opts.deepLink, 'ARCANA', BRAND_URL];
   switch (opts.variant) {
     case 'tarot': parts.push(opts.cardName, opts.keyword); break;
-    case 'cartomancy': parts.push(opts.cardName, opts.keyword, opts.spreadName, 'AJQK0123456789'); break;
+    case 'cartomancy': {
+      const tabCard = getPlayingCardBySlug(opts.cardSlug);
+      parts.push(opts.cardName, opts.keyword, opts.spreadName, tabCard ? titleTabLabel(tabCard.id) : undefined, 'AJQK0123456789');
+      break;
+    }
     case 'soulmate': parts.push(opts.vibe, opts.vibeDescription, opts.partnerName, '0123456789'); break;
     case 'quiz': parts.push(opts.quizName, opts.resultName, opts.affirmation); break;
     case 'quote': parts.push(opts.headline, opts.body); break;

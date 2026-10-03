@@ -10,6 +10,7 @@ import { Card } from '../Card';
 // departure, so the presence layer is replaced with a plain pass-through.
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
+  LayoutGroup: ({ children }: { children: ReactNode }) => <>{children}</>,
   motion: {
     // Only the two props the stack reads; the motion props (layout, initial,
     // animate, exit, transition) are dropped on the floor.
@@ -120,7 +121,10 @@ describe('Tag variant="keyword", KeywordRow, Badge violet', () => {
     expect(pill.className).toMatch(/\bkeyword-pill\b/);
     expect(pill.className).toMatch(/\brounded-full\b/);
     expect(pill.className).toMatch(/\buppercase\b/);
-    expect(pill.className).toMatch(/\bh-7\b/);
+    // A floor, not a fixed height: a wrapping keyword grows the pill (P7 #75).
+    expect(pill.className).toMatch(/\bmin-h-7\b/);
+    expect(pill.className).not.toMatch(/(^|\s)h-7\b/);
+    expect(pill.className).toMatch(/\bmax-w-full\b/);
   });
   it('KeywordRow renders one pill per keyword, centred and wrapping', () => {
     const { container } = render(<KeywordRow keywords={['a', 'b', 'c', 'd']} />);

@@ -68,6 +68,43 @@ export async function listForUser(
   return { ok: true, data: (data as JournalEntryRow[]) ?? [] };
 }
 
+/**
+ * Every entry dated within [from, to] (inclusive YYYY-MM-DD). The journal's
+ * week strip reads this for the week on screen: the paged list only holds
+ * the newest 20, so an older week showed no dots and tapping a written day
+ * opened a blank editor that saved a duplicate (P7 #54).
+ */
+export async function listInRange(userId: string, from: string, to: string): Promise<Result<JournalEntryRow[]>> {
+  const { data, error } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('date', from)
+    .lte('date', to)
+    .order('date', { ascending: false });
+
+  if (error) {
+    captureException('dal.journalEntries.listInRange', error, { userId });
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, data: (data as JournalEntryRow[]) ?? [] };
+}
+
+/** Lean rows for the Insights tab: every entry, only the fields the stats read. */
+export async function listForInsights(userId: string): Promise<Result<JournalEntryRow[]>> {
+  const { data, error } = await supabase
+    .from('journal_entries')
+    .select('id, user_id, date, mood, tags, content, created_at, updated_at')
+    .eq('user_id', userId)
+    .order('date', { ascending: false });
+
+  if (error) {
+    captureException('dal.journalEntries.listForInsights', error, { userId });
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, data: (data as JournalEntryRow[]) ?? [] };
+}
+
 export async function listAllForUser(userId: string): Promise<Result<JournalEntryRow[]>> {
   const { data, error } = await supabase
     .from('journal_entries')

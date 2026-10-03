@@ -12,8 +12,11 @@ import {
   combinationLines,
   dealCards,
   DEFAULT_CARTO_SETTINGS,
+  cartoMainMeaning,
   firstParagraph,
   firstSentences,
+  joinSentences,
+  sentencesOf,
   loadCartoSettings,
   loadLessonsDone,
   REVERSED_CHANCE,
@@ -170,11 +173,76 @@ describe('the summary', () => {
     expect(firstParagraph('\n\n  lead  \n\nrest')).toBe('lead');
   });
 
-  it('falls back to two sentences of the reading method', () => {
-    const s = spread('carto-single');
+  it('without an AI reading, is built from the cards drawn, not the spread’s how-to text', () => {
+    const three = (...slugs: string[]) => slugs.map((slug) => ({ card: c(slug), reversed: false }));
+    const a = cartoSummary(null, three('two-of-hearts', 'ace-of-diamonds', 'king-of-diamonds'), 'general');
+    const b = cartoSummary(null, three('seven-of-spades', 'four-of-clubs', 'queen-of-hearts'), 'general');
+    expect(a).not.toBe(b);
+    for (const s of CARTO_SPREADS) expect(a.includes(firstSentences(s.readingMethod, 1))).toBe(false);
+    // one sentence per card for the first three, led by the card's name unless it already says it
+    const lead = (slug: string) => {
+      const first = firstSentences(c(slug).meaningUpright, 1);
+      return first.toLowerCase().includes(c(slug).name.toLowerCase()) ? first : `${c(slug).name}: ${first}`;
+    };
+    expect(a).toBe(`${lead('two-of-hearts')} ${lead('ace-of-diamonds')} ${lead('king-of-diamonds')}`);
+    // one card: its first two sentences
+    expect(cartoSummary(null, three('ace-of-hearts'), 'general')).toBe(firstSentences(c('ace-of-hearts').meaningUpright, 2));
+    // the focus picks the meaning, and the lead is the locale's
+    const love = cartoSummary(null, three('seven-of-clubs', 'two-of-hearts'), 'love', (n, s) => `${n}：${s}`);
+    expect(love).toContain(firstSentences(c('seven-of-clubs').loveMeaning, 1));
+    expect(cartoSummary('AI first.\n\nAI second.', three('ace-of-hearts'), 'general')).toBe('AI first.');
+    expect(cartoSummary(null, [], 'general')).toBe('');
+  });
+
+  it('reads the meaning the focus asks for, and the reversed one when there is no focus meaning', () => {
+    const card = c('ace-of-hearts');
+    expect(cartoMainMeaning(card, false, 'love')).toEqual({ text: card.loveMeaning, focused: true });
+    expect(cartoMainMeaning(card, false, 'career')).toEqual({ text: card.careerMeaning, focused: true });
+    expect(cartoMainMeaning(card, true, 'general').text).toBe(card.meaningReversed ?? card.meaningUpright);
+  });
+});
+
+describe('first sentences, in every locale', () => {
+  it('splits English and Korean on a stop before a space, and never inside a number', () => {
     expect(firstSentences('One. Two. Three.', 2)).toBe('One. Two.');
-    expect(cartoSummary(null, s)).toBe(firstSentences(s.readingMethod, 2));
-    expect(cartoSummary('AI first.\n\nAI second.', s)).toBe('AI first.');
+    expect(firstSentences('Pi is 3.5 today. Yes. No.', 1)).toBe('Pi is 3.5 today.');
+    expect(firstSentences('“Go.” Then stop. Then wait.', 2)).toBe('“Go.” Then stop.');
+    expect(firstSentences('카드를 하나씩 읽으세요. 그 다음 한 문장으로. 세 번째.', 2)).toBe('카드를 하나씩 읽으세요. 그 다음 한 문장으로.');
+  });
+
+  it('splits Japanese and Chinese on 。！？ and full-width stops, with no space between', () => {
+    expect(firstSentences('赤は安らぎ。黒は試練。3枚目は答え。', 2)).toBe('赤は安らぎ。黒は試練。');
+    expect(firstSentences('本当？はい！次へ。', 2)).toBe('本当？はい！');
+    expect(firstSentences('红心代表爱。黑桃代表挑战！方块代表钱。', 1)).toBe('红心代表爱。');
+    expect(firstSentences('数える．次に読む．最後に', 1)).toBe('数える．');
+    expect(firstSentences('「はい。」と言う。次。', 1)).toBe('「はい。」');
+    expect(firstSentences('赤は安らぎ。Aceは始まり。', 1)).toBe('赤は安らぎ。');
+    expect(sentencesOf('赤は安らぎ。黒は試練。tail')).toEqual(['赤は安らぎ。', '黒は試練。', 'tail']);
+    expect(joinSentences(['赤は安らぎ。', '黒は試練。'])).toBe('赤は安らぎ。黒は試練。');
+    expect(joinSentences(['One.', 'Two.'])).toBe('One. Two.');
+  });
+
+  it('returns a short text whole, and nothing for zero', () => {
+    expect(firstSentences('  Just one  ', 2)).toBe('Just one');
+    expect(firstSentences('One. Two.', 0)).toBe('');
+  });
+
+  it('shortens every translated spread method and card meaning (the ja/ko/zh corpora)', async () => {
+    for (const lng of ['ja', 'ko', 'zh'] as const) {
+      const corpus = (await import(`../../i18n/locales/${lng}/cartomancy.json`)).default as {
+        spreads: Record<string, { readingMethod?: string }>;
+        cards: Record<string, { meaningUpright?: string }>;
+      };
+      for (const [slug, tr] of Object.entries(corpus.spreads)) {
+        if (!tr.readingMethod || sentencesOf(tr.readingMethod).length <= 2) continue;
+        const two = firstSentences(tr.readingMethod, 2);
+        expect(two.length, `${lng} ${slug}`).toBeLessThan(tr.readingMethod.trim().length);
+        expect(sentencesOf(two), `${lng} ${slug}`).toHaveLength(2);
+      }
+      const multi = Object.values(corpus.cards).filter((card) => card.meaningUpright && sentencesOf(card.meaningUpright).length > 2);
+      expect(multi.length, lng).toBeGreaterThan(0);
+      for (const card of multi) expect(firstSentences(card.meaningUpright!, 2).length).toBeLessThan(card.meaningUpright!.trim().length);
+    }
   });
 });
 
@@ -325,7 +393,7 @@ describe('the AI reading, as the result prints it', () => {
     expect(lede).toBe('You are dealing with progress that feels heavier than it should.');
     expect(sections.map((s) => s.heading)).toEqual(['The situation — Seven of Clubs', 'Practical actions', 'Closing']);
     expect(sections[1].body).toBe('- Build a one-pager.\n- Choose timing.');
-    expect(cartoSummary(ai, getCartoSpread('carto-three-action')!)).toBe(lede);
+    expect(cartoSummary(ai, [{ card: c('seven-of-clubs'), reversed: false }], 'general')).toBe(lede);
   });
 
   it('keeps a plain paragraph whole and never mistakes a sentence for a heading', () => {

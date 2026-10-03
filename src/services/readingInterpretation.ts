@@ -2,6 +2,11 @@ import { supabase } from '../lib/supabase';
 import type { TarotCard, ZodiacSign, Goal } from '../types';
 import type { PlayingCard } from '../types/cartomancy';
 import type { CombinationHit } from '../data/cartomancy/combinations';
+import { getPlayingCard } from '../data/cartomancy/deck';
+// The folding rule lives with the reader's Combinations list; the AI must
+// receive the same lines, so it is shared rather than copied.
+// eslint-disable-next-line boundaries/element-types
+import { combinationLines } from '../components/cartomancy/cartoFlow';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
 import { tArray } from '../utils/tArray';
@@ -151,14 +156,48 @@ export function playingCardToReadingCard(card: PlayingCard, reversed: boolean): 
   };
 }
 
-/** `findCombinations()` hits → the short lines the server reads (≤ 6 are used). */
+/**
+ * `findCombinations()` hits → the short lines the server reads (≤ 6 are
+ * used), folded exactly as the reader's own Combinations list folds them
+ * (cartoFlow.combinationLines): one line per rule and meaning, its pairings
+ * joined. The raw hits repeat a neighbour rule once per neighbour — the Ace
+ * of Spades in a 3×3 grid can fire eight times — and six of those used to
+ * fill the whole budget, so the model never saw the pairs and the
+ * majorities the reader was looking at. English: the prompt's language is
+ * set separately.
+ */
 export function combinationHitsToLines(hits: CombinationHit[], limit = 6): string[] {
-  return hits
-    .slice(0, limit)
-    .map((h) => (h.meaning ? `${h.label} — ${h.meaning}` : h.label))
-    .map((line) => line.replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
+  return combinationLines(
+    hits,
+    (h) => ({ label: h.label, meaning: h.meaning }),
+    (id) => getPlayingCard(id)?.name ?? '',
+    'en',
+  )
+    .map((line) => fitCombinationLine(line.label.replace(/\s+/g, ' ').trim(), line.meaning.replace(/\s+/g, ' ').trim()))
+    .filter(Boolean)
+    .slice(0, limit);
 }
+
+/** generate-reading cuts each combination line at this many characters. */
+const MAX_COMBINATION_LENGTH = 200;
+
+/**
+ * "label — meaning" within the server's limit. A folded line can name eight
+ * neighbours; cut there, the server would have kept the names and dropped
+ * the meaning, which is the part the model needs. So the label gives way:
+ * it is cut at a word and marked with an ellipsis, and the meaning stays.
+ */
+function fitCombinationLine(label: string, meaning: string): string {
+  const whole = meaning ? `${label} — ${meaning}` : label;
+  if (whole.length <= MAX_COMBINATION_LENGTH || !meaning) return whole.slice(0, MAX_COMBINATION_LENGTH);
+  const room = MAX_COMBINATION_LENGTH - meaning.length - ' — '.length - 1;
+  if (room < 24) return whole.slice(0, MAX_COMBINATION_LENGTH);
+  const cut = label.slice(0, room).replace(/[\s,;]+\S*$/, '');
+  return `${cut}… — ${meaning}`;
+}
+
+/** generate-reading's MAX_CARDS_TAROT: a tarot spread with more cards cannot have an AI reading. */
+export const MAX_AI_TAROT_CARDS = 10;
 
 const spreadPositions: Record<string, string[]> = {
   single: ['Your Card'],

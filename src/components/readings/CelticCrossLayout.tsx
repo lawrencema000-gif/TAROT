@@ -5,6 +5,7 @@ import { useT } from '../../i18n/useT';
 import { TarotFace } from '../ui/TarotFace';
 import type { TarotCard } from '../../types';
 import { flipHaptics } from '../../utils/haptics';
+import { getBundledThumbPath } from '../../config/bundledImages';
 
 /*
  * The Celtic Cross, laid out as the reader would lay it: a cross of six —
@@ -37,18 +38,20 @@ interface DrawnCard { card: TarotCard; reversed: boolean; revealed: boolean }
 
 interface CelticCrossLayoutProps {
   drawnCards: DrawnCard[];
-  onRevealCard: (index: number) => void;
-  onCardClick: (card: TarotCard, reversed: boolean) => void;
+  /** Omitted with `onCardClick` for a read-only table (a saved reading): every card face up, nothing to tap. */
+  onRevealCard?: (index: number) => void;
+  onCardClick?: (card: TarotCard, reversed: boolean) => void;
   getPositionLabel: (index: number) => string;
   cardBackUrl?: string;
 }
 
 /*
- * Ten slots of 56×84 on a phone: TarotFace at `sm` takes the 150×225
- * `thumb` variant (135 KB decoded each, against 1.5 MB for the 512×768
- * face) and the quiet plate — rank and suit glyph, or the numeral — since
- * a name cannot be set at that width. Tapping a revealed card opens the
- * full-size art in the sheet.
+ * Ten slots of 56×84 on a phone: each face is the 150×225 `thumb` bitmap
+ * (135 KB decoded, against 960 KB for the 400×600 `full` one that
+ * TarotFace picks at size `fill`; ten of them were 9.6 MB on the low-end
+ * phones this layout is for) with the quiet plate — rank and suit glyph,
+ * or the numeral — since a name cannot be set at that width. Tapping a
+ * revealed card opens the full-size art in the sheet.
  */
 
 export function CelticCrossLayout({
@@ -68,8 +71,9 @@ export function CelticCrossLayout({
   const reveal = (index: number) => {
     cancelHaptic.current();
     cancelHaptic.current = flipHaptics(FLIP_MS, reduceMotion);
-    onRevealCard(index);
+    onRevealCard?.(index);
   };
+  const readOnly = !onRevealCard && !onCardClick;
 
   /*
    * Stagger per reveal event, ranked in reveal order — the same rule the
@@ -91,15 +95,22 @@ export function CelticCrossLayout({
     prevRevealed.current = drawnCards.map((d) => d.revealed);
   }
 
+  const thumb = (card: TarotCard) => getBundledThumbPath(card.id) ?? undefined;
+
   const renderCard = (index: number) => {
     const drawn = drawnCards[index];
     if (!drawn) return null;
+    if (readOnly) {
+      return (
+        <TarotFace card={drawn.card} size="fill" detail="quiet" src={thumb(drawn.card)} reversed={drawn.reversed} reversedTag={false} loading="lazy" />
+      );
+    }
     const delay = flipDelays.current[index] ?? 0;
     const position = getPositionLabel(index);
     return (
       <button
         type="button"
-        onClick={() => drawn.revealed ? onCardClick(drawn.card, drawn.reversed) : reveal(index)}
+        onClick={() => drawn.revealed ? onCardClick?.(drawn.card, drawn.reversed) : reveal(index)}
         aria-label={
           drawn.revealed
             ? t('readings.revealView.openCard', { name: drawn.card.name, defaultValue: 'Open {{name}}' })
@@ -140,7 +151,7 @@ export function CelticCrossLayout({
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!drawn.revealed}
           >
-            <TarotFace card={drawn.card} size="fill" detail="quiet" reversed={drawn.reversed} reversedTag={false} loading="eager" alt="" />
+            <TarotFace card={drawn.card} size="fill" detail="quiet" src={thumb(drawn.card)} reversed={drawn.reversed} reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
         {/* The affordance arrives as the card settles, not with it. */}

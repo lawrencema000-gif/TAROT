@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { scoreMoodScreener } from '../../data/extraQuizzesPart2';
-import { calculateMoodCheck } from '../../data/quizzes';
+import { calculateMoodCheck, moodNeedOf, MOOD_SUGGESTIONS } from '../../data/quizzes';
 import { scoreLoveTree } from '../../data/loveTree';
 
 /**
@@ -292,5 +292,25 @@ describe('scoreLoveTree — independent attachment classifications', () => {
       expect(r.avoidance).toBeGreaterThanOrEqual(1);
       expect(r.avoidance).toBeLessThanOrEqual(5);
     }
+  });
+});
+
+// ===========================================================================
+// R7 #105 — replaying a pre-Phase-7 mood check
+// ===========================================================================
+describe('moodNeedOf — a saved row without `need` keeps the suggestion it was given', () => {
+  it('REPRO: old row suggestion = the Rest text, no need → rest (not balance)', () => {
+    expect(moodNeedOf({ suggestion: 'Take a moment to breathe deeply. Consider a short nap or gentle stretching.' } as never)).toBe('rest');
+  });
+
+  it('every old suggestion text maps back to its need', () => {
+    for (const [need, text] of Object.entries(MOOD_SUGGESTIONS)) {
+      expect(moodNeedOf({ suggestion: text } as never)).toBe(need);
+    }
+  });
+
+  it('a new row keeps its need; an unknown text is null (the screen then shows the stored text)', () => {
+    expect(moodNeedOf(calculateMoodCheck({ mood5: 4 }))).toBe('action');
+    expect(moodNeedOf({ suggestion: 'Something else entirely.' } as never)).toBeNull();
   });
 });

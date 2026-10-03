@@ -32,7 +32,13 @@ export type ReportReason =
 
 export interface CommunityPost {
   id: string;
-  userId: string;
+  /**
+   * The author's id — null on an anonymous row the viewer did not write.
+   * The read views never reveal who wrote an anonymous post (20261003000014).
+   */
+  userId: string | null;
+  /** True when the viewer wrote it (anonymous or not). */
+  isMine: boolean;
   topic: CommunityTopic;
   content: string;
   isAnonymous: boolean;
@@ -41,7 +47,7 @@ export interface CommunityPost {
   isHidden: boolean;
   createdAt: string;
   updatedAt: string;
-  /** Joined from profile — only for non-anonymous posts */
+  /** The author's display name — only on named (non-anonymous) rows */
   authorDisplayName?: string;
   authorAvatarSeed?: string;
   /** The viewer's own reaction on this post (if any) — added by fetchFeed */
@@ -51,7 +57,9 @@ export interface CommunityPost {
 export interface CommunityComment {
   id: string;
   postId: string;
-  userId: string;
+  /** Null on an anonymous comment the viewer did not write. */
+  userId: string | null;
+  isMine: boolean;
   parentId: string | null;
   content: string;
   isAnonymous: boolean;
@@ -65,11 +73,14 @@ export interface CommunityComment {
 // Row mapping
 // ------------------------------------------------------------------
 
+// Rows come from the community_feed_posts / community_feed_comments views
+// (migration 20261003000014): author_id is null on anonymous rows, and the
+// author's name rides along only on named rows.
 function mapPost(row: Record<string, unknown>): CommunityPost {
-  const profile = row.profiles as { display_name?: string; avatar_seed?: string } | null;
   return {
     id: row.id as string,
-    userId: row.user_id as string,
+    userId: (row.author_id as string | null) ?? null,
+    isMine: row.is_mine === true,
     topic: row.topic as CommunityTopic,
     content: row.content as string,
     isAnonymous: (row.is_anonymous as boolean) ?? false,
@@ -78,34 +89,76 @@ function mapPost(row: Record<string, unknown>): CommunityPost {
     isHidden: (row.is_hidden as boolean) ?? false,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
-    authorDisplayName: row.is_anonymous ? undefined : profile?.display_name,
-    authorAvatarSeed: row.is_anonymous ? undefined : profile?.avatar_seed,
+    authorDisplayName: row.is_anonymous ? undefined : ((row.author_display_name as string | null) ?? undefined),
+    authorAvatarSeed: row.is_anonymous ? undefined : ((row.author_avatar_seed as string | null) ?? undefined),
   };
 }
 
 function mapComment(row: Record<string, unknown>): CommunityComment {
-  const profile = row.profiles as { display_name?: string; avatar_seed?: string } | null;
   return {
     id: row.id as string,
     postId: row.post_id as string,
-    userId: row.user_id as string,
+    userId: (row.author_id as string | null) ?? null,
+    isMine: row.is_mine === true,
     parentId: (row.parent_id as string) ?? null,
     content: row.content as string,
     isAnonymous: (row.is_anonymous as boolean) ?? false,
     isHidden: (row.is_hidden as boolean) ?? false,
     createdAt: row.created_at as string,
-    authorDisplayName: row.is_anonymous ? undefined : profile?.display_name,
-    authorAvatarSeed: row.is_anonymous ? undefined : profile?.avatar_seed,
+    authorDisplayName: row.is_anonymous ? undefined : ((row.author_display_name as string | null) ?? undefined),
+    authorAvatarSeed: row.is_anonymous ? undefined : ((row.author_avatar_seed as string | null) ?? undefined),
+  };
+}
+
+const POST_COLUMNS = `
+  id, topic, content, is_anonymous,
+  reaction_count, comment_count, is_hidden,
+  created_at, updated_at,
+  author_id, is_mine, author_display_name, author_avatar_seed
+`;
+
+const COMMENT_COLUMNS = `
+  id, post_id, parent_id, content,
+  is_anonymous, is_hidden, created_at,
+  author_id, is_mine, author_display_name, author_avatar_seed
+`;
+
+/**
+ * Deploy-order safety: until migration 20261003000014 is pushed the views do
+ * not exist (PGRST205) and members can still read user_id, so the feed falls
+ * back to the base tables and builds the same row shape client-side — never
+ * naming an anonymous author. Once the migration is in, this path is dead
+ * (the base user_id is no longer readable), and the view is the only read.
+ */
+function isMissingView(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  return error.code === 'PGRST205' || /schema cache|does not exist/i.test(error.message ?? '');
+}
+
+function legacyToViewRow(row: Record<string, unknown>, me: string | null | undefined): Record<string, unknown> {
+  const uid = row.user_id as string;
+  const mine = !!me && uid === me;
+  const profile = row.profiles as { display_name?: string; avatar_seed?: string } | null;
+  const anon = row.is_anonymous === true;
+  return {
+    ...row,
+    author_id: anon && !mine ? null : uid,
+    is_mine: mine,
+    author_display_name: anon ? null : profile?.display_name ?? null,
+    author_avatar_seed: anon ? null : profile?.avatar_seed ?? null,
   };
 }
 
 // ------------------------------------------------------------------
 // Feed fetching
 //
-// The author embed names its foreign key: community_posts.user_id also
-// references auth.users, which PostgREST cannot see, so a bare
-// `profiles:user_id` was PGRST200 on every feed load. The constraints come
-// from migration 20261003000002.
+// Reads go through the community_feed_posts / community_feed_comments
+// views (migration 20261003000014). Profiles RLS is own-row only, so the
+// old profiles embed signed every other member "User"; and members can no
+// longer read user_id from the base tables, because next to a name it
+// would let anyone attribute an anonymous post. The views carry the
+// author's name on named rows, nothing on anonymous ones, and leave out
+// authors the viewer has blocked.
 // ------------------------------------------------------------------
 
 export interface FetchFeedOpts {
@@ -119,13 +172,8 @@ export async function fetchFeed(opts: FetchFeedOpts = {}): Promise<Result<Commun
   const limit = opts.limit ?? 20;
 
   let query = supabase
-    .from('community_posts')
-    .select(`
-      id, user_id, topic, content, is_anonymous,
-      reaction_count, comment_count, is_hidden,
-      created_at, updated_at,
-      profiles!community_posts_user_id_profiles_fkey (display_name, avatar_seed)
-    `)
+    .from('community_feed_posts')
+    .select(POST_COLUMNS)
     .eq('is_hidden', false)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -137,7 +185,25 @@ export async function fetchFeed(opts: FetchFeedOpts = {}): Promise<Result<Commun
     query = query.lt('created_at', opts.before);
   }
 
-  const { data, error } = await query;
+  let { data, error } = await query;
+  if (isMissingView(error)) {
+    let legacy = supabase
+      .from('community_posts')
+      .select(`
+        id, user_id, topic, content, is_anonymous,
+        reaction_count, comment_count, is_hidden,
+        created_at, updated_at,
+        profiles!community_posts_user_id_profiles_fkey (display_name, avatar_seed)
+      `)
+      .eq('is_hidden', false)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (opts.topic && opts.topic !== 'all') legacy = legacy.eq('topic', opts.topic);
+    if (opts.before) legacy = legacy.lt('created_at', opts.before);
+    const res = await legacy;
+    error = res.error;
+    data = (res.data ?? []).map((r) => legacyToViewRow(r as Record<string, unknown>, opts.currentUserId)) as typeof data;
+  }
   if (error) {
     captureException('dal.community.fetchFeed', error, { topic: opts.topic });
     return { ok: false, error: error.message };
@@ -182,7 +248,7 @@ export async function createPost(input: CreatePostInput): Promise<Result<Communi
   if (trimmed.length < 1 || trimmed.length > 2000) {
     return { ok: false, error: 'Content must be 1-2000 characters.' };
   }
-  const { data, error } = await supabase
+  const { data: inserted, error: insErr } = await supabase
     .from('community_posts')
     .insert({
       user_id: input.userId,
@@ -190,16 +256,21 @@ export async function createPost(input: CreatePostInput): Promise<Result<Communi
       content: trimmed,
       is_anonymous: input.isAnonymous ?? false,
     })
-    .select(`
-      id, user_id, topic, content, is_anonymous,
-      reaction_count, comment_count, is_hidden,
-      created_at, updated_at,
-      profiles!community_posts_user_id_profiles_fkey (display_name, avatar_seed)
-    `)
+    .select('id')
     .single();
 
+  if (insErr || !inserted) {
+    if (insErr) captureException('dal.community.createPost', insErr, { topic: input.topic });
+    return { ok: false, error: insErr?.message ?? 'Insert returned no row' };
+  }
+  // Read it back through the view (base user_id is not member-readable).
+  const { data, error } = await supabase
+    .from('community_feed_posts')
+    .select(POST_COLUMNS)
+    .eq('id', (inserted as { id: string }).id)
+    .single();
   if (error) {
-    captureException('dal.community.createPost', error, { topic: input.topic });
+    captureException('dal.community.createPost.reselect', error, { topic: input.topic });
     return { ok: false, error: error.message };
   }
   return { ok: true, data: mapPost(data as Record<string, unknown>) };
@@ -218,17 +289,28 @@ export async function deletePost(postId: string): Promise<Result<void>> {
 // Comments
 // ------------------------------------------------------------------
 
-export async function fetchComments(postId: string): Promise<Result<CommunityComment[]>> {
-  const { data, error } = await supabase
-    .from('community_comments')
-    .select(`
-      id, post_id, user_id, parent_id, content,
-      is_anonymous, is_hidden, created_at,
-      profiles!community_comments_user_id_profiles_fkey (display_name, avatar_seed)
-    `)
+export async function fetchComments(postId: string, currentUserId?: string | null): Promise<Result<CommunityComment[]>> {
+  let { data, error } = await supabase
+    .from('community_feed_comments')
+    .select(COMMENT_COLUMNS)
     .eq('post_id', postId)
     .eq('is_hidden', false)
     .order('created_at', { ascending: true });
+
+  if (isMissingView(error)) {
+    const res = await supabase
+      .from('community_comments')
+      .select(`
+        id, post_id, user_id, parent_id, content,
+        is_anonymous, is_hidden, created_at,
+        profiles!community_comments_user_id_profiles_fkey (display_name, avatar_seed)
+      `)
+      .eq('post_id', postId)
+      .eq('is_hidden', false)
+      .order('created_at', { ascending: true });
+    error = res.error;
+    data = (res.data ?? []).map((r) => legacyToViewRow(r as Record<string, unknown>, currentUserId)) as typeof data;
+  }
 
   if (error) {
     captureException('dal.community.fetchComments', error, { postId });
@@ -253,7 +335,7 @@ export async function createComment(input: CreateCommentInput): Promise<Result<C
   if (trimmed.length < 1 || trimmed.length > 1000) {
     return { ok: false, error: 'Comment must be 1-1000 characters.' };
   }
-  const { data, error } = await supabase
+  const { data: inserted, error: insErr } = await supabase
     .from('community_comments')
     .insert({
       post_id: input.postId,
@@ -262,15 +344,20 @@ export async function createComment(input: CreateCommentInput): Promise<Result<C
       content: trimmed,
       is_anonymous: input.isAnonymous ?? false,
     })
-    .select(`
-      id, post_id, user_id, parent_id, content,
-      is_anonymous, is_hidden, created_at,
-      profiles!community_comments_user_id_profiles_fkey (display_name, avatar_seed)
-    `)
+    .select('id')
     .single();
 
+  if (insErr || !inserted) {
+    if (insErr) captureException('dal.community.createComment', insErr, { postId: input.postId });
+    return { ok: false, error: insErr?.message ?? 'Insert returned no row' };
+  }
+  const { data, error } = await supabase
+    .from('community_feed_comments')
+    .select(COMMENT_COLUMNS)
+    .eq('id', (inserted as { id: string }).id)
+    .single();
   if (error) {
-    captureException('dal.community.createComment', error, { postId: input.postId });
+    captureException('dal.community.createComment.reselect', error, { postId: input.postId });
     return { ok: false, error: error.message };
   }
   return { ok: true, data: mapComment(data as Record<string, unknown>) };
@@ -374,6 +461,32 @@ export async function blockUser(blockerId: string, blockedId: string): Promise<R
     return { ok: false, error: error.message };
   }
   return { ok: true, data: undefined };
+}
+
+/**
+ * Block whoever wrote a post or comment, without the client ever learning
+ * who that is (an anonymous author's id is not readable). Their posts and
+ * comments then drop out of the viewer's feed server-side. Resolves false
+ * when there was nobody to block (own row, or a row not visible).
+ */
+export async function blockAuthor(
+  target: { postId: string } | { commentId: string },
+  /** Pre-migration only: the direct insert the RPC replaces (needs a known author id). */
+  fallback?: { blockerId: string; blockedId: string | null },
+): Promise<Result<boolean>> {
+  const { data, error } = await supabase.rpc('community_block_author', {
+    p_post_id: 'postId' in target ? target.postId : null,
+    p_comment_id: 'commentId' in target ? target.commentId : null,
+  });
+  if (error && (error.code === 'PGRST202' || /could not find the function/i.test(error.message)) && fallback?.blockedId) {
+    const res = await blockUser(fallback.blockerId, fallback.blockedId);
+    return res.ok ? { ok: true, data: true } : res;
+  }
+  if (error) {
+    captureException('dal.community.blockAuthor', error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, data: data === true };
 }
 
 export async function unblockUser(blockerId: string, blockedId: string): Promise<Result<void>> {

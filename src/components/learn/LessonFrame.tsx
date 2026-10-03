@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Paper, Progress, SparkleFourPoint } from '../ui';
 
@@ -19,6 +19,14 @@ import { Paper, Progress, SparkleFourPoint } from '../ui';
  *
  * `above` is a slot between the chrome and the paper for a one-line Tag
  * (the quiz's mid-way "early reading"); it is never a Card.
+ *
+ * `focusKey` names the step on screen. When it changes, the answer the
+ * learner just pressed has usually been unmounted with the old step, and
+ * focus would fall to <body>; the frame moves it to the new concept
+ * heading instead (tabIndex -1, no ring), so a keyboard user keeps their
+ * place and a screen reader announces the next question. Focus that is
+ * somewhere else on the page (the back button, an open sheet) is left
+ * alone.
  */
 export interface LessonFrameProps {
   /** 1-based step and the total, drawn as the bar and the "n / N" meta. */
@@ -38,6 +46,8 @@ export interface LessonFrameProps {
   children: ReactNode;
   hint?: ReactNode;
   above?: ReactNode;
+  /** Identity of the step on screen; a change moves focus to the new concept. */
+  focusKey?: string | number;
   className?: string;
 }
 
@@ -53,15 +63,26 @@ export function LessonFrame({
   children,
   hint,
   above,
+  focusKey,
   className = '',
 }: LessonFrameProps) {
   const Heading = headingLevel;
+  const frameRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstKey = useRef(focusKey);
+  useEffect(() => {
+    if (focusKey === undefined || focusKey === firstKey.current) return;
+    firstKey.current = undefined;
+    const active = typeof document !== 'undefined' ? document.activeElement : null;
+    const lost = !active || active === document.body || !active.isConnected;
+    if (lost || frameRef.current?.contains(active)) headingRef.current?.focus({ preventScroll: true });
+  }, [focusKey]);
   // A short concept ("The Fool") carries the hero size; a full-sentence
   // question stem steps down one size so six lines of 32px serif do not
   // push the answers below the fold at 390px.
   const long = typeof concept === 'string' && concept.length > 90;
   return (
-    <div className={`space-y-4 ${className}`.trim()}>
+    <div ref={frameRef} className={`space-y-4 ${className}`.trim()}>
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -86,7 +107,11 @@ export function LessonFrame({
       <Paper as="section">
         <div className="mx-auto max-w-[66ch] space-y-6">
           {prompt && <p className="text-ui text-ink-muted text-center">{prompt}</p>}
-          <Heading className={`${long ? 'heading-display-lg' : 'heading-display-xl'} heading-strong text-ink text-center text-balance`}>
+          <Heading
+            ref={headingRef}
+            tabIndex={focusKey === undefined ? undefined : -1}
+            className={`${long ? 'heading-display-lg' : 'heading-display-xl'} heading-strong text-ink text-center text-balance focus:outline-none`}
+          >
             {concept}
           </Heading>
           <div className="space-y-3">{children}</div>
@@ -130,7 +155,7 @@ export function AnswerChoice({ selected = false, className = '', children, disab
         transition-[transform,background-color,border-color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
         select-none touch-manipulation [-webkit-tap-highlight-color:transparent]
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-paper
-        disabled:opacity-50 disabled:cursor-not-allowed
+        disabled:cursor-not-allowed ${disabled && !selected ? 'opacity-50' : ''}
         ${fill} ${disabled ? '' : 'motion-safe:active:scale-[0.98]'} ${className}
       `}
       {...rest}

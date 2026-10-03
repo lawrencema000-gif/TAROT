@@ -18,7 +18,7 @@ import {
   type QuizResultViewProps,
 } from '../shared';
 
-export function AttachmentResult({ quiz, result, onBack, onRetake, saving, onSaveToProfile }: QuizResultViewProps<AttachmentScore>) {
+export function AttachmentResult({ quiz, result, onBack, onRetake, saving, saved, onSaveToProfile }: QuizResultViewProps<AttachmentScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
   const info = attachmentDescriptions[result.style];
@@ -52,6 +52,7 @@ export function AttachmentResult({ quiz, result, onBack, onRetake, saving, onSav
       actions={
         <VerdictActions
           saving={saving}
+          saved={saved}
           onSave={onSaveToProfile ? () => onSaveToProfile('attachment', result.style) : undefined}
           onShare={() =>
             share({

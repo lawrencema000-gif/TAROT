@@ -1,9 +1,10 @@
 import { EyebrowLabel, ResultLayout } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { AskOracleButton } from '../../oracle/AskOracleButton';
-import { EXTRA_QUIZ_METADATA, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
+import { EXTRA_QUIZ_METADATA, EXTRA_QUIZ_SCORING, WELLBEING_SCREENERS, type DimensionalResult } from '../../../data/extraQuizzes';
 import { MOOD_SCREENER_CRISIS } from '../../../data/extraQuizzesPart2';
 import { QuizGlyph } from '../icons';
+import { dimensionScaleMax, extraResultName } from '../extraNames';
 import {
   AfterResult,
   Affirmation,
@@ -41,18 +42,25 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const name = localized('name', info.name);
   const tagline = localized('tagline', info.tagline);
   const summary = localized('summary', info.summary);
-  const strengths = t(`extraQuizzes.${quizKey}.results.${resultKey}.strengths`, { returnObjects: true, defaultValue: info.strengths }) as string[];
-  const shadow = t(`extraQuizzes.${quizKey}.results.${resultKey}.shadow`, { returnObjects: true, defaultValue: info.shadow }) as string[];
+  // A list from the locale only when it IS a list of strings: a half-merged
+  // block can arrive as an object keyed "0", "1"… and `.map` would throw.
+  const list = (field: 'strengths' | 'shadow') => {
+    const raw: unknown = t(`extraQuizzes.${quizKey}.results.${resultKey}.${field}`, { returnObjects: true, defaultValue: info[field] });
+    return Array.isArray(raw) && raw.every((x) => typeof x === 'string') ? (raw as string[]) : info[field];
+  };
+  const strengths = list('strengths');
+  const shadow = list('shadow');
   const affirmation = localized('affirmation', info.affirmation);
-  const dimName = (d: string) =>
-    t(`extraQuizzes.${quizKey}.results.${d}.name`, {
-      defaultValue: entry.info[d]?.name ?? t(`extraQuizzes.${quizKey}.dimensions.${d}`, { defaultValue: entry.dimensionLabels?.[d] ?? d }),
-    });
+  const dimName = (d: string) => extraResultName(quiz.id, d, t);
   const section = (k: string, fallback: string) => t(`quizzes.resultSections.${k}`, { defaultValue: fallback });
 
   const averages = result.averages;
   const rawMax = Math.max(1, ...entry.dimensions.map((d) => result.scores?.[d] ?? 0));
-  const weakest = typeof result.extra?.weakest === 'string' ? result.extra.weakest : null;
+  const scaleMax = dimensionScaleMax(quiz, entry.dimensions);
+  const mixedScales = new Set(entry.dimensions.map((d) => scaleMax[d])).size > 1;
+  const weakest = typeof result.extra?.weakest === 'string' && entry.dimensions.includes(result.extra.weakest) ? result.extra.weakest : null;
+  const weakestAlso =
+    weakest && typeof result.extra?.weakestAlso === 'string' && entry.dimensions.includes(result.extra.weakestAlso) ? result.extra.weakestAlso : null;
   const isScreener = quiz.id === 'mood-screener-v1';
   const showCrisis = isScreener && (resultKey === 'seek-support' || resultKey === 'moderate');
 
@@ -72,6 +80,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       }
       footer={
         <ResultBody
+          disclaimer={WELLBEING_SCREENERS.has(quiz.id) ? 'wellbeing' : 'quiz'}
           after={
             <AfterResult onRetake={onRetake} onBack={onBack}>
               <AskOracleButton
@@ -96,30 +105,46 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
           <ResultSection title={t('extraQuizzes.common.scoreDistribution', { defaultValue: 'Score distribution' })}>
             <div className="space-y-4">
               {entry.dimensions.map((d) => {
-                const avg = averages?.[d];
                 const raw = result.scores?.[d] ?? 0;
+                const max = scaleMax[d];
+                // A replayed answer recorded on an older, longer scale never draws past the end.
+                const avg = averages?.[d] !== undefined ? Math.min(averages[d], max) : undefined;
                 return (
                   <ScoreRow
                     key={d}
                     name={dimName(d)}
                     value={avg !== undefined ? avg : raw}
-                    max={avg !== undefined ? 5 : rawMax}
-                    display={avg !== undefined ? avg.toFixed(1) : raw}
-                    emphasis={d === resultKey || d === weakest}
+                    max={avg !== undefined ? max : rawMax}
+                    display={avg !== undefined ? (mixedScales ? `${avg.toFixed(1)} / ${max}` : avg.toFixed(1)) : raw}
+                    emphasis={d === resultKey || d === weakest || d === weakestAlso}
                   />
                 );
               })}
             </div>
-            {averages && <p className="reading-meta">{t('extraQuizzes.common.scoreScale', { defaultValue: 'Average agreement per dimension, out of 5.' })}</p>}
+            {averages && (
+              <p className="reading-meta">
+                {mixedScales
+                  ? t('extraQuizzes.common.scoreScaleMixed', {
+                      defaultValue: 'Average answer per group of questions. How-often questions are scored out of 4, agreement questions out of 5.',
+                    })
+                  : t('extraQuizzes.common.scoreScale', { defaultValue: 'Average agreement per dimension, out of 5.' })}
+              </p>
+            )}
           </ResultSection>
 
           {weakest && (
             <ResultSection title={t('extraQuizzes.self-compassion.whereToPractise', { defaultValue: 'Where to practise' })}>
               <Prose>
-                {t('extraQuizzes.self-compassion.weakestBody', {
-                  defaultValue: 'The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.',
-                  component: dimName(weakest),
-                })}
+                {weakestAlso
+                  ? t('extraQuizzes.self-compassion.weakestBodyTwo', {
+                      defaultValue: 'The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture.',
+                      a: dimName(weakest),
+                      b: dimName(weakestAlso),
+                    })
+                  : t('extraQuizzes.self-compassion.weakestBody', {
+                      defaultValue: 'The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.',
+                      component: dimName(weakest),
+                    })}
               </Prose>
             </ResultSection>
           )}

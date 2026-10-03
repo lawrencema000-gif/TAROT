@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState, Paper, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
+import { joinSentences } from '../components/reports/aiReading';
 import { isNative } from '../utils/platform';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -14,7 +17,8 @@ import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
-  HOUSE_THEMES,
+  PLANETS,
+  ZODIAC_SIGNS,
   type AspectType,
   type NatalChart,
   type Planet,
@@ -37,36 +41,55 @@ import {
 const NATAL_COST = 200;
 
 // The aspect list sits on paper, so its hues are the ink tier (gold is 1.82:1 on cream).
-const ASPECT_META: Record<AspectType, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  conjunction: { label: 'Conjunction',  color: 'text-ink-gold',   icon: Circle },
-  trine:       { label: 'Trine',        color: 'text-ink-teal',   icon: Triangle },
-  sextile:     { label: 'Sextile',      color: 'text-ink-blue',   icon: Triangle },
-  square:      { label: 'Square',       color: 'text-ink-coral',  icon: Square },
-  opposition:  { label: 'Opposition',   color: 'text-ink-violet', icon: Minus },
+const ASPECT_META: Record<AspectType, { color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  conjunction: { color: 'text-ink-gold',   icon: Circle },
+  trine:       { color: 'text-ink-teal',   icon: Triangle },
+  sextile:     { color: 'text-ink-blue',   icon: Triangle },
+  square:      { color: 'text-ink-coral',  icon: Square },
+  opposition:  { color: 'text-ink-violet', icon: Minus },
 };
 
-const PLANET_ONE_LINERS: Record<Planet, { sign: string; inSign: (s: ZodiacSign) => string }> = {
-  Sun:     { sign: 'Ego, vitality, the thing you came here to become.',
-             inSign: (s) => `You're here to express yourself through the lens of ${s}.` },
-  Moon:    { sign: 'Emotional blueprint — what safety and home feel like.',
-             inSign: (s) => `You regulate by way of ${s}'s instincts.` },
-  Mercury: { sign: 'Mind, speech, the pattern of your thinking.',
-             inSign: (s) => `Your mind runs in ${s}'s style — which shapes how you learn and persuade.` },
-  Venus:   { sign: 'Love, aesthetic, how you attract and what pleases you.',
-             inSign: (s) => `You love the ${s} way — it's the gravity field of your attractions.` },
-  Mars:    { sign: 'Drive, anger, how you take action and pursue what you want.',
-             inSign: (s) => `You fight and initiate in ${s}'s key.` },
-  Jupiter: { sign: 'Expansion, faith, where life overflows if you let it.',
-             inSign: (s) => `Your growth comes easily when it wears ${s}'s clothes.` },
-  Saturn:  { sign: 'Structure, discipline, the long work of your life.',
-             inSign: (s) => `Your discipline matures through ${s} lessons.` },
-  Uranus:  { sign: 'Disruption, originality, where you break free of the given.',
-             inSign: (s) => `Your revolution shows up in the ${s} theme of your generation.` },
-  Neptune: { sign: 'Dissolution, dreams, where ego softens into meaning.',
-             inSign: (s) => `Your imagination and spirituality take a ${s} shape.` },
-  Pluto:   { sign: 'Transformation, power, what you are compelled to alchemize.',
-             inSign: (s) => `You transform through ${s}'s territory.` },
+/**
+ * What each planet governs, and how a sign colours it — the report's line
+ * per placement, as `natalReport.planetLines.<Planet>.{theme,inSign}` with
+ * the English here as the fallback. `inSign` takes the localized sign name.
+ */
+const PLANET_LINES_EN: Record<Planet, { theme: string; inSign: string }> = {
+  Sun:     { theme: 'Ego, vitality, the thing you came here to become.',
+             inSign: 'You’re here to express yourself through the lens of {{sign}}.' },
+  Moon:    { theme: 'Emotional blueprint — what safety and home feel like.',
+             inSign: 'You regulate by way of {{sign}}’s instincts.' },
+  Mercury: { theme: 'Mind, speech, the pattern of your thinking.',
+             inSign: 'Your mind runs in {{sign}}’s style — which shapes how you learn and persuade.' },
+  Venus:   { theme: 'Love, aesthetic, how you attract and what pleases you.',
+             inSign: 'You love the {{sign}} way — it’s the gravity field of your attractions.' },
+  Mars:    { theme: 'Drive, anger, how you take action and pursue what you want.',
+             inSign: 'You fight and initiate in {{sign}}’s key.' },
+  Jupiter: { theme: 'Expansion, faith, where life overflows if you let it.',
+             inSign: 'Your growth comes easily when it wears {{sign}}’s clothes.' },
+  Saturn:  { theme: 'Structure, discipline, the long work of your life.',
+             inSign: 'Your discipline matures through {{sign}} lessons.' },
+  Uranus:  { theme: 'Disruption, originality, where you break free of the given.',
+             inSign: 'Your revolution shows up in the {{sign}} theme of your generation.' },
+  Neptune: { theme: 'Dissolution, dreams, where ego softens into meaning.',
+             inSign: 'Your imagination and spirituality take a {{sign}} shape.' },
+  Pluto:   { theme: 'Transformation, power, what you are compelled to alchemize.',
+             inSign: 'You transform through {{sign}}’s territory.' },
 };
+
+/** The English house themes, keyed by house number (`chartWheel.houseThemes.<n>`). */
+const HOUSE_THEMES_EN: Record<number, string> = {
+  1: 'Self and identity', 2: 'Values and possessions', 3: 'Communication and learning',
+  4: 'Home and family', 5: 'Creativity and romance', 6: 'Health and service',
+  7: 'Partnerships', 8: 'Transformation and shared resources', 9: 'Philosophy and travel',
+  10: 'Career and public image', 11: 'Community and aspirations', 12: 'Spirituality and the subconscious',
+};
+
+const isPlanetName = (p: string): p is Planet => (PLANETS as readonly string[]).includes(p);
+const isSignName = (s: string): s is ZodiacSign => (ZODIAC_SIGNS as readonly string[]).includes(s);
+const planetLabel = (p: string) => (isPlanetName(p) ? localizePlanetName(p) : p);
+const signLabel = (s: string) => (isSignName(s) ? localizeSignName(s) : s);
+const aspectLabel = (a: string) => (a in ASPECT_META ? localizeAspectName(a as AspectType) : a);
 
 export function NatalChartReportPage() {
   const { t } = useT('app');
@@ -233,11 +256,13 @@ export function NatalChartReportPage() {
     : null;
 
   const currentOverlayLabel =
-    variant === 'transits'     ? new Date().toLocaleDateString()
+    variant === 'transits'     ? new Date().toLocaleDateString(getLocale())
     : variant === 'progressions' ? progressedLabel
     : variant === 'solar-return' ? solarReturnLabel
-    : variant === 'synastry'   ? (partnerName || 'Partner')
+    : variant === 'synastry'   ? (partnerName || t('natalReport.partner', { defaultValue: 'Partner' }))
     : null;
+
+  const houseLabel = (n: number) => t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n });
 
   const handleUnlock = async () => {
     setUnlocking(true);
@@ -544,7 +569,7 @@ export function NatalChartReportPage() {
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
-                placeholder="optional"
+                placeholder={t('natalReport.optional', { defaultValue: 'optional' })}
                 className="bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
             </div>
@@ -588,12 +613,17 @@ export function NatalChartReportPage() {
             </p>
             {partnerAspects.slice(0, 8).map((a, i) => (
               <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
-                <span>
-                  <span className="text-cosmic-rose">{a.partnerPlanet}</span>
-                  {' '}{a.type}{' '}
-                  <span className="text-gold">{a.natalPlanet}</span>
+                <span className="min-w-0 break-words">
+                  {t('natalReport.crossAspectRow', {
+                    defaultValue: '{{partner}} {{type}} {{natal}}',
+                    partner: planetLabel(a.partnerPlanet),
+                    type: aspectLabel(a.type),
+                    natal: planetLabel(a.natalPlanet),
+                  })}
                 </span>
-                <span className="text-meta text-mystic-400">orb {a.orb.toFixed(1)}°</span>
+                <span className="text-meta text-mystic-400 shrink-0 tabular-nums">
+                  {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb.toFixed(1) })}
+                </span>
               </div>
             ))}
           </div>
@@ -608,32 +638,32 @@ export function NatalChartReportPage() {
         <div className="grid grid-cols-3 gap-3 relative">
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.sun.sign} size={36} className="text-gold mb-1.5" framed />
-            <p className="text-meta uppercase tracking-wider text-mystic-400">Sun</p>
-            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.sun', { defaultValue: 'Sun' })}</p>
+            <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.sun.sign)}</p>
             {natal.bigThree.sun.house && (
-              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">House {natal.bigThree.sun.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">{houseLabel(natal.bigThree.sun.house)}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.moon.sign} size={36} className="text-cosmic-blue mb-1.5" framed />
-            <p className="text-meta uppercase tracking-wider text-mystic-400">Moon</p>
-            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.moon', { defaultValue: 'Moon' })}</p>
+            <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.moon.sign)}</p>
             {natal.bigThree.moon.house && (
-              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">House {natal.bigThree.moon.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">{houseLabel(natal.bigThree.moon.house)}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             {natal.bigThree.rising ? (
               <>
                 <ZodiacGlyph sign={natal.bigThree.rising.sign} size={36} className="text-cosmic-rose mb-1.5" framed />
-                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
-                <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.rising.sign}</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.rising', { defaultValue: 'Rising' })}</p>
+                <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.rising.sign)}</p>
               </>
             ) : (
               <>
                 <div className="text-3xl mb-1 text-mystic-600">—</div>
-                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
-                <p className="text-meta text-mystic-400">needs birth time</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.rising', { defaultValue: 'Rising' })}</p>
+                <p className="text-meta text-mystic-400">{t('natalReport.needsBirthTime', { defaultValue: 'needs birth time' })}</p>
               </>
             )}
           </div>
@@ -648,31 +678,33 @@ export function NatalChartReportPage() {
       >
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Elements</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">{t('chartWheel.legendElements', { defaultValue: 'Elements' })}</p>
             {(['Fire', 'Earth', 'Air', 'Water'] as const).map((el) => {
               const total = (Object.values(natal.dominants.elements) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.elements[el] ?? 0) / total) * 100);
+              const label = t(`horoscope.birthChartView.elements.${el}`, { defaultValue: el });
               return (
                 <div key={el} className="mb-1.5">
                   <div className="flex justify-between text-ui text-mystic-200">
-                    <span>{el}</span><span>{pct}%</span>
+                    <span>{label}</span><span className="tabular-nums">{pct}%</span>
                   </div>
-                  <Progress value={pct} size="sm" tone="gold" label={el} />
+                  <Progress value={pct} size="sm" tone="gold" label={label} />
                 </div>
               );
             })}
           </div>
           <div>
-            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Modalities</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">{t('chartWheel.legendModalities', { defaultValue: 'Modalities' })}</p>
             {(['Cardinal', 'Fixed', 'Mutable'] as const).map((m) => {
               const total = (Object.values(natal.dominants.modalities) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.modalities[m] ?? 0) / total) * 100);
+              const label = t(`chartWheel.modalities.${m}`, { defaultValue: m });
               return (
                 <div key={m} className="mb-1.5">
                   <div className="flex justify-between text-ui text-mystic-200">
-                    <span>{m}</span><span>{pct}%</span>
+                    <span>{label}</span><span className="tabular-nums">{pct}%</span>
                   </div>
-                  <Progress value={pct} size="sm" tone="violet" label={m} />
+                  <Progress value={pct} size="sm" tone="violet" label={label} />
                 </div>
               );
             })}
@@ -680,13 +712,13 @@ export function NatalChartReportPage() {
         </div>
         {natal.dominants.dominantPlanets.length > 0 && (
           <p className="text-ui text-mystic-100 mt-4">
-            <span className="text-mystic-400">Dominant planets: </span>
-            {natal.dominants.dominantPlanets.join(', ')}
+            <span className="text-mystic-400">{t('natalReport.dominantPlanetsLabel', { defaultValue: 'Dominant planets:' })} </span>
+            {natal.dominants.dominantPlanets.map(planetLabel).join(t('natalReport.listJoin', { defaultValue: ', ' }))}
           </p>
         )}
         {natal.dominants.chartRuler && (
           <p className="text-ui text-mystic-100 mt-1">
-            <span className="text-mystic-400">Chart ruler: </span>{natal.dominants.chartRuler}
+            <span className="text-mystic-400">{t('natalReport.chartRulerLabel', { defaultValue: 'Chart ruler:' })} </span>{planetLabel(natal.dominants.chartRuler)}
           </p>
         )}
       </Section>
@@ -702,30 +734,44 @@ export function NatalChartReportPage() {
           </h3>
           <div className="space-y-4">
             {natal.planets.map((p) => {
-              const meta = PLANET_ONE_LINERS[p.planet];
-              const houseTheme = p.house ? HOUSE_THEMES[p.house - 1] : undefined;
+              const en = PLANET_LINES_EN[p.planet];
+              const sign = signLabel(p.sign);
+              // Theme, the sign's colouring, the house — each a sentence in
+              // the reader's language (review #110), joined the way the
+              // script joins them (no space after 。, a space after '.').
+              const sentences = [
+                en && t(`natalReport.planetLines.${p.planet}.theme`, { defaultValue: en.theme }),
+                en && t(`natalReport.planetLines.${p.planet}.inSign`, { defaultValue: en.inSign, sign }),
+                p.house && HOUSE_THEMES_EN[p.house]
+                  ? t('natalReport.inHouseOf', {
+                      defaultValue: 'In your house of {{theme}}.',
+                      theme: t(`chartWheel.houseThemes.${p.house}`, { defaultValue: HOUSE_THEMES_EN[p.house] }),
+                    })
+                  : null,
+              ].filter((x): x is string => Boolean(x));
               return (
                 <div key={p.planet} className="border-b border-paper-hairline pb-4 last:border-b-0 last:pb-0">
-                  {/* One line: the planet as a heading, its position as meta;
-                      the reading is one paragraph on the body tier. */}
+                  {/* The planet as a heading, its position as meta; the
+                      reading is one paragraph on the body tier. The heading
+                      wraps rather than truncating. */}
                   <div className="flex items-center gap-2 mb-1.5 min-w-0">
                     <PlanetGlyph planet={p.planet} size={20} className="text-ink-gold shrink-0" />
-                    <span className="text-ui font-medium text-ink truncate">
-                      {p.planet} in {p.sign}
+                    <span className="text-ui font-medium text-ink min-w-0 break-words">
+                      {t('horoscope.birthChartView.planetInSign', {
+                        defaultValue: '{{planet}} in {{sign}}',
+                        planet: planetLabel(p.planet),
+                        sign,
+                      })}
                     </span>
                     <ZodiacGlyph sign={p.sign} size={18} className="text-ink-muted shrink-0" />
                     <span className="text-meta text-ink-muted tabular-nums ml-auto shrink-0">
                       {p.degree.toFixed(1)}°
-                      {p.house ? ` · House ${p.house}` : ''}
+                      {p.house ? ` · ${houseLabel(p.house)}` : ''}
                     </span>
                   </div>
-                  {(meta || houseTheme) && (
+                  {sentences.length > 0 && (
                     <div className="reading-copy">
-                      <p>
-                        {meta && `${meta.sign} ${meta.inSign(p.sign)}`}
-                        {meta && houseTheme ? ' ' : ''}
-                        {houseTheme && `In your house of ${houseTheme}.`}
-                      </p>
+                      <p>{joinSentences(sentences)}</p>
                     </div>
                   )}
                 </div>
@@ -746,20 +792,31 @@ export function NatalChartReportPage() {
                 const meta = ASPECT_META[a.type];
                 const Icon = meta.icon;
                 return (
+                  // The name takes the row's full width beside the glyphs
+                  // and wraps; the orb sits on a meta line under it, so a
+                  // long pairing is never cut on a phone (review #111).
                   <div
                     key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                    className="flex items-center justify-between gap-3 py-2 border-b border-paper-hairline last:border-b-0"
+                    className="flex items-start gap-3 py-2 border-b border-paper-hairline last:border-b-0"
                   >
-                    <div className="flex items-center gap-2 text-ui text-ink min-w-0">
+                    <div className="flex items-center gap-2 shrink-0 pt-0.5" aria-hidden>
                       <PlanetGlyph planet={a.planet1} size={18} className="text-ink-gold shrink-0" />
                       <Icon className={`w-3 h-3 shrink-0 ${meta.color}`} />
                       <PlanetGlyph planet={a.planet2} size={18} className="text-ink-gold shrink-0" />
-                      <span className="ml-1 truncate">
-                        {a.planet1} {meta.label.toLowerCase()} {a.planet2}
-                      </span>
                     </div>
-                    <div className="text-meta text-ink-muted shrink-0 tabular-nums">
-                      {a.orb.toFixed(1)}°{a.applying ? ' · applying' : ''}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui text-ink break-words">
+                        {t('horoscope.birthChartView.aspectRow', {
+                          defaultValue: '{{p1}} {{type}} {{p2}}',
+                          p1: planetLabel(a.planet1),
+                          type: localizeAspectName(a.type),
+                          p2: planetLabel(a.planet2),
+                        })}
+                      </p>
+                      <p className="text-meta text-ink-muted tabular-nums">
+                        {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb.toFixed(1) })}
+                        {a.applying ? ` · ${t('horoscope.birthChartView.applying', { defaultValue: 'Applying' })}` : ''}
+                      </p>
                     </div>
                   </div>
                 );

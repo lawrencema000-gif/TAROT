@@ -11,6 +11,7 @@ import { allSpreads as tarotSpreads, getSpreadLayout, type SpreadCategory } from
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 
+/** The sections in order, with their English (the defaults of spreads.sections.<id>.*). */
 const CATEGORY_ORDER: { id: SpreadCategory; label: string; description: string }[] = [
   { id: 'general', label: 'General', description: 'Classic spreads for any question or open inquiry.' },
   { id: 'love', label: 'Love & relationships', description: 'Spreads tuned to romance, partnership, and connection.' },
@@ -122,7 +123,12 @@ export function SpreadsPage() {
       </div>
 
       {sections.map(({ id, label, description, spreads }) => (
-        <Section key={id} title={label} description={description} spacing="sm">
+        <Section
+          key={id}
+          title={t(`spreads.sections.${id}.title`, { defaultValue: label })}
+          description={t(`spreads.sections.${id}.description`, { defaultValue: description })}
+          spacing="sm"
+        >
           {/* Real anchors for the crawler; a plain click stays in the router. */}
           <ListRowGroup
             onClick={(e) => {

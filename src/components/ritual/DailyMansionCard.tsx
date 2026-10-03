@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { Card, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
-import { mansionForDate, PLANET7_INFO } from '../../data/lunarMansions';
+import { getLocale } from '../../i18n/config';
+import { useContentOverlay, ct } from '../../i18n/contentOverlay';
+import { mansionCaption } from './mansionCaption';
+import { mansionForDate } from '../../data/lunarMansions';
 import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansionsContent';
 
 /**
@@ -16,13 +19,17 @@ import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansions
 export function DailyMansionCard() {
   const { t } = useT('app');
   const navigate = useNavigate();
+  // Title and advice from the `mansions` content module (English until the
+  // overlay lands, never blank).
+  const { overlay } = useContentOverlay('mansions');
   // Recomputed per mount; the mansion turns over at CST midnight and the whole
   // calculation is a subtraction, so there is nothing to memoise across days.
   const mansion = useMemo(() => mansionForDate(new Date()), []);
   if (!mansion) return null;
 
-  const meaning = MANSION_MEANINGS[mansion.key];
-  const advice = MANSION_DAILY_ADVICE[mansion.key];
+  const title = ct(overlay, `mansions.${mansion.key}.title`, MANSION_MEANINGS[mansion.key]?.title ?? '');
+  const advice = ct(overlay, `mansions.${mansion.key}.advice`, MANSION_DAILY_ADVICE[mansion.key] ?? '');
+  const caption = mansionCaption(mansion, getLocale());
 
   return (
     <Card padding="md" interactive role="link" tabIndex={0} onClick={() => navigate('/mansions')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/mansions'); } }}>
@@ -34,11 +41,11 @@ export function DailyMansionCard() {
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2 min-w-0">
             <EyebrowLabel>{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
-            <span className="text-caption text-mystic-500 truncate">
-              {mansion.pinyin} · {PLANET7_INFO[mansion.planet].en}
+            <span className="text-caption text-mystic-500 truncate" lang={caption.lang}>
+              {caption.text}
             </span>
           </div>
-          <div className="text-ui text-mystic-100 mt-0.5">{meaning?.title}</div>
+          <div className="text-ui text-mystic-100 mt-0.5">{title}</div>
           <p className="text-meta text-mystic-400 leading-relaxed line-clamp-2 mt-0.5">{advice}</p>
         </div>
         <ChevronRight className="w-5 h-5 text-mystic-500 shrink-0" aria-hidden />

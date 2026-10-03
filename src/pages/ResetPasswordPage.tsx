@@ -26,7 +26,7 @@ import { setPageMeta } from '../utils/seo';
  * password.
  */
 export function ResetPasswordPage() {
-  const { t } = useT(['app', 'common']);
+  const { t } = useT(['app', 'common', 'onboarding']);
   const { passwordRecoveryMode, clearPasswordRecoveryMode, signOut, user } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -149,7 +149,7 @@ export function ResetPasswordPage() {
         setTimeout(() => { window.location.href = '/'; }, 1500);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
+      const msg = err instanceof Error ? err.message : t('auth.unknownError', { defaultValue: 'Unknown error' });
       toast(t('auth.resetFailed', { defaultValue: 'Could not update password: {{err}}', err: msg }), 'error');
       setSubmitting(false);
     }
@@ -170,7 +170,7 @@ export function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-mystic-850 border border-gold/30 flex items-center justify-center relative">
             <CheckCircle className="w-10 h-10 text-gold" />
           </div>
           <PageHeader
@@ -227,7 +227,9 @@ export function ResetPasswordPage() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-2"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword
+                ? t('onboarding:createAccount.hidePassword', { defaultValue: 'Hide password' })
+                : t('onboarding:createAccount.showPassword', { defaultValue: 'Show password' })}
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>

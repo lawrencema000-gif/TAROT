@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase';
 import { type NatalChart, computeSynastry, synastryScore, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
+import { useInterpretations } from '../hooks/useAstrology';
 
 type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
 const TABS: { key: CompareTab; label: string; blurb: string }[] = [
@@ -19,8 +20,6 @@ const TABS: { key: CompareTab; label: string; blurb: string }[] = [
   { key: 'davison', label: 'Davison', blurb: 'A real sky, halfway between your births in time and space' },
   { key: 'progressed-composite', label: 'Progressed', blurb: 'Where the relationship chart has evolved to now' },
 ];
-
-type Interp = typeof import('../data/interpretations');
 
 const planetName = (p: string) => (isPlanet(p) ? localizePlanetName(p) : p);
 const aspectName = (a: string) => (isAspectType(a) ? localizeAspectName(a) : a);
@@ -40,7 +39,8 @@ export function PersonComparePage() {
   const [name, setName] = useState('');
   const [mine, setMine] = useState<NatalChart | null>(null);
   const [theirs, setTheirs] = useState<NatalChart | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // Aspect essays and sign compatibility, in the reader's language (null until loaded).
+  const interp = useInterpretations();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [tab, setTab] = useState<CompareTab>('synastry');
@@ -81,7 +81,6 @@ export function PersonComparePage() {
     if (!own || !other) { setErr(t('people.compare.castFailed', { defaultValue: "Couldn't cast both charts — check your connection and try again." })); setLoading(false); return; }
     setMine(own); setTheirs(other);
     setLoading(false);
-    import('../data/interpretations').then(setInterp);
   }, [id, profile, t]);
 
   useEffect(() => { load(); }, [load]);
@@ -153,7 +152,16 @@ export function PersonComparePage() {
                       key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
                       variant="row"
                       lazy
-                      label={<span className="block truncate text-mystic-100">{planetName(a.planet1)} {aspectName(a.type)} {planetName(a.planet2)}</span>}
+                      label={
+                        <span className="block break-words text-mystic-100">
+                          {t('horoscope.birthChartView.aspectRow', {
+                            defaultValue: '{{p1}} {{type}} {{p2}}',
+                            p1: planetName(a.planet1),
+                            type: aspectName(a.type),
+                            p2: planetName(a.planet2),
+                          })}
+                        </span>
+                      }
                       meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
                       contentClassName="reading-copy"
                     >
@@ -188,7 +196,14 @@ export function PersonComparePage() {
 
       {/* Sun-sign compatibility */}
       {compat && (
-        <Section title={<>{mySun && isZodiacSign(mySun) ? localizeSignName(mySun) : mySun} &amp; {theirSun && isZodiacSign(theirSun) ? localizeSignName(theirSun) : theirSun}</>} headingLevel="h3">
+        <Section
+          title={t('people.compare.signPair', {
+            defaultValue: '{{a}} & {{b}}',
+            a: mySun && isZodiacSign(mySun) ? localizeSignName(mySun) : mySun,
+            b: theirSun && isZodiacSign(theirSun) ? localizeSignName(theirSun) : theirSun,
+          })}
+          headingLevel="h3"
+        >
           <div className="reading-copy">
             <p><span className="text-coral font-medium">{t('people.compare.love', { defaultValue: 'Love' })} · </span>{compat.love}</p>
             <p><span className="text-cosmic-blue-ink font-medium">{t('people.compare.friendship', { defaultValue: 'Friendship' })} · </span>{compat.friendship}</p>
@@ -210,7 +225,11 @@ export function PersonComparePage() {
               lazy
               icon={isPlanet(a.planet1) ? <PlanetGlyph planet={a.planet1} size={18} className="text-gold" /> : undefined}
               label={
-                <span className="block truncate text-mystic-100">
+                // Wraps rather than truncates: this label is the only place
+                // the row names the partner's planet and the aspect, and in
+                // ja/ko the aspect comes last — an ellipsis cut both off
+                // (review #30).
+                <span className="block break-words text-mystic-100">
                   {t('people.compare.crossRow', {
                     defaultValue: 'Your {{mine}} {{type}} {{name}}’s {{theirs}}',
                     mine: planetName(a.planet1),

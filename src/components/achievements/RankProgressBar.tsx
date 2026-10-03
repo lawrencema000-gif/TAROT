@@ -67,7 +67,9 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   isCurrent ? 'text-gold' : isActive ? 'text-mystic-400' : 'text-mystic-600'
                 }`}
               >
-                {t(`achievements.ranks.${rank.key}`).replace(/\s*(Seeker|探求者|탐구자|探索者)\s*$/u, '')}
+                {/* Its own short key: trimming "探求者" off the long name left
+                    「初心者の」 — a dangling particle — in ja. */}
+                {t(`achievements.ranksShort.${rank.key}`, { defaultValue: rank.name.replace(/ Seeker$/, '') })}
               </span>
             </li>
           );

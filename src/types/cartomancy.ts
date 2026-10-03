@@ -162,6 +162,12 @@ export interface CartoSpread extends TarotSpread {
   /** How a reader works through the cards once they are down. */
   readingMethod: string;
   verdict?: WishVerdict | YesNoVerdict;
+  /**
+   * The fewest cards of one suit that make it the reading's subject, when
+   * the reading method names a number ("four or more of one suit"). Absent:
+   * a third of the table (combinations.ts `suitMajorityThreshold`).
+   */
+  suitMajorityMin?: number;
 }
 
 export interface CartoLesson {

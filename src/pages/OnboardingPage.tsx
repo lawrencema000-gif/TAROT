@@ -347,9 +347,14 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder={t('createAccount.passwordPlaceholder')}
+                      // The rule lives in the helper line below, not the
+                      // placeholder: at 390 the ja placeholder was clipped
+                      // mid-rule (P7 #154), and a placeholder vanishes as
+                      // soon as typing starts anyway.
+                      placeholder={t('createAccount.passwordPlaceholderShort', { defaultValue: 'Password' })}
                       icon={<Lock className="w-5 h-5" />}
                       autoComplete="new-password"
+                      aria-describedby="onboarding-password-rule"
                       // Room for the eye: the placeholder used to run under it (R6 A26).
                       className="pr-14"
                     />
@@ -363,6 +368,9 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <p id="onboarding-password-rule" className="-mt-2 text-caption text-mystic-500">
+                    {t('createAccount.passwordRule', { defaultValue: 'At least 8 characters, with letters and numbers.' })}
+                  </p>
 
                   <button
                     type="button"

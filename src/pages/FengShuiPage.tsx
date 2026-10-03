@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, Wind, Target, Share2 } from 'lucide-react';
 import { Card, Button, Chip, Input, toast, Page, PageHeader, Section, Disclosure, Tag, EyebrowLabel, ResultSheet } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
 import { useAuth } from '../context/AuthContext';
 import {
   BAGUA_AREAS,
@@ -29,13 +30,29 @@ import {
 import { ROOM_GUIDANCE, type Room } from '../data/fengShuiRooms';
 import { FENG_SHUI_PROBLEMS } from '../data/fengShuiProblems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
-import { tArray } from '../utils/tArray';
+
+const ELEMENT_EN: Record<string, string> = { Water: 'Water', Earth: 'Earth', Wood: 'Wood', Metal: 'Metal', Fire: 'Fire' };
+const TRIGRAM_EN: Record<string, string> = { Kan: 'Kan', Kun: 'Kun', Zhen: 'Zhen', Xun: 'Xun', Qian: 'Qian', Dui: 'Dui', Gen: 'Gen', Li: 'Li' };
+const GROUP_EN: Record<string, string> = { East: 'East', West: 'West' };
+const SEVERITY_EN: Record<string, string> = { high: 'High', medium: 'Medium', low: 'Low' };
+const slugOf = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 type Stage = 'rate' | 'result';
 
 export function FengShuiPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  // Bagua, Kua, annual-star, room and problem prose from the `fengshui`
+  // content module (keyed by area / direction type / star / room / problem
+  // id); short labels (directions, elements, trigrams…) are app keys.
+  const { overlay } = useContentOverlay('fengshui');
+  const baguaText = (area: BaguaArea, field: 'meaning' | 'lowReading' | 'highReading' | 'element' | 'color' | 'direction') =>
+    ct(overlay, `bagua.${area}.${field}`, BAGUA_AREAS[area][field]);
+  const baguaAdjustments = (area: BaguaArea) => ctList(overlay, `bagua.${area}.adjustments`, BAGUA_AREAS[area].adjustments);
+  const dirLabel = (d: KuaDirection) => t(`fengshui.directions.${d}`, { defaultValue: DIRECTION_LABEL[d] }) as string;
+  const elementLabel = (e: string) => t(`fengshui.elements.${e}`, { defaultValue: ELEMENT_EN[e] ?? e }) as string;
+  const trigramLabel = (g: string) => t(`fengshui.trigrams.${g}`, { defaultValue: TRIGRAM_EN[g] ?? g }) as string;
+  const groupLabel = (g: string) => t(`fengshui.groups.${g}`, { defaultValue: GROUP_EN[g] ?? g }) as string;
   const [stage, setStage] = useState<Stage>('rate');
   const [scores, setScores] = useState<Record<BaguaArea, number>>({
     wealth: 3, fame: 3, relationships: 3, family: 3, health: 3,
@@ -103,7 +120,7 @@ export function FengShuiPage() {
                     {t(`fengshui.areas.${area}.name`, { defaultValue: info.name })}
                   </p>
                   <p className="text-meta text-mystic-400 mb-2">
-                    {t(`fengshui.areas.${area}.meaning`, { defaultValue: info.meaning })}
+                    {baguaText(area, 'meaning')}
                   </p>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((v) => (
@@ -175,7 +192,7 @@ export function FengShuiPage() {
               <p className="text-meta text-mystic-400">
                 {t('fengshui.kuaPreview', {
                   defaultValue: 'Kua {{n}} · {{trigram}} · {{group}} group',
-                  n: kua.kua, trigram: kua.trigram, group: kua.group,
+                  n: kua.kua, trigram: trigramLabel(kua.trigram), group: groupLabel(kua.group),
                 })}
               </p>
             </div>
@@ -195,8 +212,8 @@ export function FengShuiPage() {
     const strongInfo = BAGUA_AREAS[reading.strongestArea];
     const focusName = t(`fengshui.areas.${reading.focusArea}.name`, { defaultValue: focusInfo.name }) as string;
     const strongName = t(`fengshui.areas.${reading.strongestArea}.name`, { defaultValue: strongInfo.name }) as string;
-    const focusMeaning = t(`fengshui.areas.${reading.focusArea}.meaning`, { defaultValue: focusInfo.meaning }) as string;
-    const adjustments = tArray(t, `fengshui.areas.${reading.focusArea}.adjustments`, focusInfo.adjustments);
+    const focusMeaning = baguaText(reading.focusArea, 'meaning');
+    const adjustments = baguaAdjustments(reading.focusArea);
 
     const handleShare = async () => {
       try {
@@ -207,7 +224,11 @@ export function FengShuiPage() {
           affirmation: adjustments[0] ?? '',
           brand: t('share.brand.fengShui', { defaultValue: 'Feng Shui Bagua' }) as string,
         });
-        const out = await shareOrDownload(blob, 'arcana-fengshui.png', `Feng Shui reading: ${focusName}`);
+        const out = await shareOrDownload(
+          blob,
+          'arcana-fengshui.png',
+          t('fengshui.shareText', { defaultValue: 'Feng Shui reading: {{area}}', area: focusName }) as string,
+        );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
@@ -275,10 +296,10 @@ export function FengShuiPage() {
           <div className="space-y-7">
             <section>
               <p className="reading-copy">
-                {t(`fengshui.areas.${reading.focusArea}.lowReading`, { defaultValue: focusInfo.lowReading })}
+                {baguaText(reading.focusArea, 'lowReading')}
               </p>
               <p className="reading-meta mt-3">
-                {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {focusInfo.element} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {focusInfo.color}
+                {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {baguaText(reading.focusArea, 'element')} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {baguaText(reading.focusArea, 'color')}
               </p>
             </section>
 
@@ -294,7 +315,7 @@ export function FengShuiPage() {
               <p className="reading-meta mt-4">
                 {t('fengshui.placement', {
                   defaultValue: 'Place these adjustments in the {{dir}} of your room (oriented from the entry door).',
-                  dir: focusInfo.direction,
+                  dir: baguaText(reading.focusArea, 'direction'),
                 })}
               </p>
             </section>
@@ -305,7 +326,7 @@ export function FengShuiPage() {
               </EyebrowLabel>
               <h3 className="heading-display-md heading-strong text-ink mt-1 mb-2">{strongName}</h3>
               <p className="reading-copy">
-                {t(`fengshui.areas.${reading.strongestArea}.highReading`, { defaultValue: strongInfo.highReading })}
+                {baguaText(reading.strongestArea, 'highReading')}
               </p>
             </section>
           </div>
@@ -327,7 +348,7 @@ export function FengShuiPage() {
               {t('fengshui.kuaResultIntro', {
                 defaultValue:
                   'You are a {{trigram}} ({{element}}) of the {{group}} group. Place your bed, desk, and front door so they face one of your 4 favourable directions. Avoid your 4 unfavourable directions — especially Jue Ming.',
-                trigram: kua.trigram, element: kua.element, group: kua.group,
+                trigram: trigramLabel(kua.trigram), element: elementLabel(kua.element), group: groupLabel(kua.group),
               })}
             </p>
 
@@ -338,12 +359,12 @@ export function FengShuiPage() {
               {(['sheng-qi', 'tian-yi', 'yan-nian', 'fu-wei'] as FavorableType[]).map((key) => (
                 <div key={key} className="p-3 rounded-control bg-teal/10 border border-teal/15">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-ui font-medium text-teal">{FAVORABLE_LABEL[key]}</span>
+                    <span className="text-ui font-medium text-teal">{ct(overlay, `kua.favorable.${key}.label`, FAVORABLE_LABEL[key])}</span>
                     <Tag tone="teal">
-                      {DIRECTION_LABEL[kua.favorable[key]]}
+                      {dirLabel(kua.favorable[key])}
                     </Tag>
                   </div>
-                  <p className="reading-copy">{FAVORABLE_MEANING[key]}</p>
+                  <p className="reading-copy">{ct(overlay, `kua.favorable.${key}.meaning`, FAVORABLE_MEANING[key])}</p>
                 </div>
               ))}
             </div>
@@ -355,12 +376,12 @@ export function FengShuiPage() {
               {(['jue-ming', 'wu-gui', 'liu-sha', 'huo-hai'] as UnfavorableType[]).map((key) => (
                 <div key={key} className="p-3 rounded-control bg-coral/10 border border-coral/15">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-ui font-medium text-coral">{UNFAVORABLE_LABEL[key]}</span>
+                    <span className="text-ui font-medium text-coral">{ct(overlay, `kua.unfavorable.${key}.label`, UNFAVORABLE_LABEL[key])}</span>
                     <Tag tone="rose">
-                      {DIRECTION_LABEL[kua.unfavorable[key]]}
+                      {dirLabel(kua.unfavorable[key])}
                     </Tag>
                   </div>
-                  <p className="reading-copy">{UNFAVORABLE_MEANING[key]}</p>
+                  <p className="reading-copy">{ct(overlay, `kua.unfavorable.${key}.meaning`, UNFAVORABLE_MEANING[key])}</p>
                 </div>
               ))}
             </div>
@@ -396,12 +417,12 @@ export function FengShuiPage() {
                 <div key={dir} className={`p-3 rounded-control border ${tint}`}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className={`w-2 h-2 rounded-full ${dotColor}`} aria-hidden />
-                    <span className="text-ui font-medium text-mystic-100">{DIRECTION_LABEL[dir]}</span>
+                    <span className="text-ui font-medium text-mystic-100">{dirLabel(dir)}</span>
                     <span className="text-meta text-mystic-400 tabular-nums">· {t('fengshui.starN', { defaultValue: 'Star {{n}}', n: r.star })}</span>
                   </div>
                   <div className="reading-copy">
-                    <p>{r.meaning}</p>
-                    <p>{r.remedy}</p>
+                    <p>{ct(overlay, `annual.stars.${r.star}.meaning`, r.meaning)}</p>
+                    <p>{ct(overlay, `annual.stars.${r.star}.remedy`, r.remedy)}</p>
                   </div>
                 </div>
               );
@@ -436,7 +457,7 @@ export function FengShuiPage() {
                 open={isOpen}
                 onOpenChange={(next) => setOpenRoom(next ? room : null)}
                 icon={<Icon className="text-cosmic-blue-ink" />}
-                label={g.name}
+                label={ct(overlay, `rooms.${room}.name`, g.name)}
                 contentClassName="space-y-3"
               >
                 <div>
@@ -445,8 +466,8 @@ export function FengShuiPage() {
                   </p>
                   {g.rules.map((r, i) => (
                     <div key={i} className="mb-2">
-                      <p className="reading-copy font-medium text-mystic-100 mb-0.5">{r.rule}</p>
-                      <p className="reading-copy">{r.why}</p>
+                      <p className="reading-copy font-medium text-mystic-100 mb-0.5">{ct(overlay, `rooms.${room}.rules.${i}.rule`, r.rule)}</p>
+                      <p className="reading-copy">{ct(overlay, `rooms.${room}.rules.${i}.why`, r.why)}</p>
                     </div>
                   ))}
                 </div>
@@ -455,7 +476,7 @@ export function FengShuiPage() {
                     {t('fengshui.avoid', { defaultValue: 'Avoid' })}
                   </p>
                   <ul className="reading-copy space-y-1">
-                    {g.avoid.map((a, i) => (
+                    {ctList(overlay, `rooms.${room}.avoid`, g.avoid).map((a, i) => (
                       <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-coral">
                         {a}
                       </li>
@@ -503,24 +524,24 @@ export function FengShuiPage() {
                 // word there made it inaudible to screen readers.
                 meta={
                   <EyebrowLabel className={sevTint}>
-                    {p.severity}
+                    {t(`fengshui.severity.${p.severity}`, { defaultValue: SEVERITY_EN[p.severity] ?? p.severity })}
                   </EyebrowLabel>
                 }
-                label={<span className="leading-snug">{p.problem}</span>}
-                description={p.location}
+                label={<span className="leading-snug">{ct(overlay, `problems.${p.id}.problem`, p.problem)}</span>}
+                description={t(`fengshui.locations.${slugOf(p.location)}`, { defaultValue: p.location })}
                 contentClassName="space-y-2"
               >
                 <div>
                   <p className="font-display-eyebrow text-mystic-400 mb-0.5">
                     {t('fengshui.why', { defaultValue: 'Why it matters' })}
                   </p>
-                  <p className="reading-copy">{p.why}</p>
+                  <p className="reading-copy">{ct(overlay, `problems.${p.id}.why`, p.why)}</p>
                 </div>
                 <div>
                   <p className="font-display-eyebrow text-teal mb-0.5">
                     {t('fengshui.fix', { defaultValue: 'Remedy' })}
                   </p>
-                  <p className="reading-copy">{p.remedy}</p>
+                  <p className="reading-copy">{ct(overlay, `problems.${p.id}.remedy`, p.remedy)}</p>
                 </div>
               </Disclosure>
             );

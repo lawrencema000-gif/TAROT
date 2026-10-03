@@ -22,10 +22,15 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
   /**
    * The card is a target. With `onClick` it also becomes one for keyboards
-   * and screen readers: role="button", tabIndex 0, Enter/Space → onClick,
-   * a focus ring. It stays a div so a card may hold a nested button or
-   * link (a real <button> cannot). (R6 A4: quiz cards, journal entries and
-   * templates could not be opened without a pointer.)
+   * and screen readers: role="button" (unless the caller names another —
+   * a card that navigates passes role="link"), tabIndex 0 (unless given),
+   * Enter/Space → onClick, a focus ring. (R6 A4: quiz cards, journal
+   * entries and templates could not be opened without a pointer.)
+   *
+   * A button's children are presentational to assistive tech, so a card
+   * that holds its own nested button or link should be `interactive`
+   * without `onClick` (the hover and press styling only) and put the action
+   * on the nested control.
    */
   interactive?: boolean;
 }
@@ -111,12 +116,15 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     // focused: a nested <button> handles its own keys and the keydown
     // bubbles up through here, so without the target check one Enter would
     // fire twice.
-    const { onClick, onKeyDown } = props;
+    const { onClick, onKeyDown, role, tabIndex } = props;
     const acts = Boolean(interactive && onClick);
+    // The caller's role and tabIndex win: these props are spread after
+    // `...props`, and used to overwrite an explicit role="link" with
+    // "button" (P7 #166).
     const buttonProps = acts
       ? {
-          role: 'button' as const,
-          tabIndex: 0,
+          role: role ?? 'button',
+          tabIndex: tabIndex ?? 0,
           onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
             onKeyDown?.(e);
             if (e.defaultPrevented || e.target !== e.currentTarget) return;

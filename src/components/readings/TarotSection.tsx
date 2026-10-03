@@ -11,7 +11,11 @@ import { shareOrDownloadCard } from '../../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
 import { DeckLibrary } from './DeckLibrary';
-import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
+import { generatePremiumReading, tarotCardToReadingCard, MAX_AI_TAROT_CARDS } from '../../services/readingInterpretation';
+import { tarotPositionLabel } from './tarot/spreadLabels';
+import { takePendingSpread } from './tarot/pendingSpread';
+import { loadContentOverlay } from '../../i18n/contentOverlay';
+import { canonicalCardName, cardMeaningPath } from './tarot/cardSlug';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
@@ -250,6 +254,14 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     index: number;
   } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  /** A save is in flight: the bookmark ignores taps until it lands (one reading, one row). */
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  /** The row the reading on screen was saved as, so a later AI interpretation joins it. */
+  const savedIdRef = useRef<string | null>(null);
+  /** A share image is rendering: the share buttons wait (a second tap used to download a PNG). */
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
   const [showBrowse, setShowBrowse] = useState(false);
   const [tarotCards, setTarotCards] = useState<TarotCard[]>([]);
   const [, setLoading] = useState(true);
@@ -360,9 +372,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setSelectedFocus(null);
     setQuestion('');
     setIsSaved(false);
+    savedIdRef.current = null;
     setShowAIInterpretation(false);
     setAiInterpretation(null);
   };
+
+  // The affirmation at the end of the result reads the enrichment overlay;
+  // fetched now so it is in memory by the time the cards turn.
+  useEffect(() => {
+    void loadContentOverlay('enrichment');
+  }, []);
 
   /**
    * Everything between the reader and the shuffle, in one place and in one
@@ -452,7 +471,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    */
   const slugLaunchedRef = useRef<string | null>(null);
   useEffect(() => {
-    const slug = (location.state as { spreadSlug?: unknown } | null)?.spreadSlug;
+    // Or a spread chosen on its public page before the reader signed up,
+    // when they reach the Readings tab before Home took it (pendingSpread).
+    const fromState = (location.state as { spreadSlug?: unknown } | null)?.spreadSlug;
+    const slug = typeof fromState === 'string' ? fromState : slugLaunchedRef.current === null ? takePendingSpread() : null;
     if (typeof slug !== 'string' || slugLaunchedRef.current === slug) return;
     slugLaunchedRef.current = slug;
     navigate('.', { replace: true, state: null });
@@ -524,6 +546,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
 
     setIsShuffling(false);
     setView('select');
@@ -649,6 +672,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
     setView('reveal');
   };
 
@@ -678,8 +702,9 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     (async () => {
       if (user) {
+        // awardXP reports 'reading_complete' to the badges itself; a second
+        // report here counted every reading twice (Apprentice Reader at 5).
         awardXP(user.id, 'reading_complete').then(() => refreshProfile());
-        checkAchievementProgress(user.id, 'reading_complete');
         if (currentSpread === 'celtic-cross') {
           checkAchievementProgress(user.id, 'celtic_cross_complete');
         }
@@ -695,9 +720,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         const hour = now.getHours();
         if (hour >= 0 && hour < 3) checkAchievementProgress(user.id, 'witching_hour_reading');
 
-        // Specific card achievements
+        // Specific card achievements. The badge names its card in English
+        // ("The Tower"); the deck on screen is localized (塔), so the card is
+        // reported by its canonical name, looked up by id.
         for (const drawn of completed) {
-          checkSpecificCardAchievement(user.id, drawn.card.name);
+          checkSpecificCardAchievement(user.id, canonicalCardName(drawn.card.id));
         }
       }
     })();
@@ -725,91 +752,139 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     }
   };
 
+  /**
+   * Run one share at a time. The image takes a second or more to render
+   * before the OS sheet opens; a second tap used to start a second render,
+   * whose navigator.share was refused ("an earlier share has not yet
+   * completed") and fell back to downloading the PNG.
+   */
+  const shareOnce = async (run: () => Promise<void>) => {
+    if (sharingRef.current) return;
+    sharingRef.current = true;
+    setSharing(true);
+    try {
+      await run();
+    } finally {
+      sharingRef.current = false;
+      setSharing(false);
+    }
+  };
+
+  /** The spread's title as the reveal shows it (the daily draw is not "1-card daily"). */
+  const spreadTitleFor = (id: string): string =>
+    id === DAILY_SPREAD ? t('readings.dailyDraw.title') : getSpreadMeta(id)?.name ?? '';
+
   // Share the WHOLE reading as a deep link (opens in SharedReadingPage) plus
   // a branded image of the featured card. Reached from TarotRevealView via
-  // onShare.
-  const handleShareReading = async () => {
-    if (drawnCards.length === 0) return;
-    const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
-    const keyword = featured.card.keywords?.[0] ?? '';
-    const shareUrl = buildShareUrl(
-      encodeReading({
-        spreadSlug: currentSpread,
-        cards: drawnCards.map(d => ({ id: d.card.id, reversed: d.reversed })),
-        date: new Date().toISOString(),
-      }),
-    );
-    const shareText = `${t('readings.shareText', {
-      defaultValue: 'My {{spread}} tarot reading on Arcana',
-      spread: getSpreadMeta(currentSpread)?.name ?? '',
-    })}\n${shareUrl}`;
+  // onShare. The link carries the spread's stable id (a legacy id, a
+  // catalogue slug or `custom:<uuid>` — never a display name), the cards,
+  // the reader's question as cartomancy's links do, and the date; the token
+  // shape is shareableReadings' (v1 for tarot, which every app build opens).
+  const handleShareReading = () =>
+    shareOnce(async () => {
+      if (drawnCards.length === 0) return;
+      const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
+      const keyword = featured.card.keywords?.[0] ?? '';
+      const shareUrl = buildShareUrl(
+        encodeReading({
+          spreadSlug: currentSpread,
+          cards: drawnCards.map(d => ({ id: d.card.id, reversed: d.reversed })),
+          question: question.trim() || undefined,
+          date: new Date().toISOString(),
+        }),
+      );
+      const shareText = `${t('readings.shareText', {
+        defaultValue: 'My {{spread}} tarot reading on Arcana',
+        spread: spreadTitleFor(currentSpread),
+      })}\n${shareUrl}`;
 
-    const outcome = await shareOrDownloadCard(
-      {
-        variant: 'tarot',
-        cardName: featured.card.name,
-        orientation: featured.reversed ? 'reversed' : 'upright',
-        keyword,
-        cardImageUrl: getCardImage(featured.card),
-      },
-      `arcana-reading-${currentSpread}.png`,
-      shareText,
-    );
-    await reportShare(outcome, shareText);
-  };
-
-  /** Share one card from the detail sheet: its image, its first keyword. */
-  const handleShareCard = async (card: TarotCard, reversed: boolean) => {
-    const shareText = t('readings.shareCardText', {
-      defaultValue: '{{name}} — {{keyword}}. Read the card on Arcana: {{url}}',
-      name: card.name,
-      keyword: card.keywords?.[0] ?? '',
-      url: `https://tarotlife.app/tarot-meanings/${card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`,
+      const outcome = await shareOrDownloadCard(
+        {
+          variant: 'tarot',
+          cardName: featured.card.name,
+          orientation: featured.reversed ? 'reversed' : 'upright',
+          keyword,
+          cardImageUrl: getCardImage(featured.card),
+        },
+        `arcana-reading-${currentSpread.replace(/[^a-z0-9-]/gi, '-')}.png`,
+        shareText,
+      );
+      await reportShare(outcome, shareText);
     });
-    const outcome = await shareOrDownloadCard(
-      {
-        variant: 'tarot',
-        cardName: card.name,
-        orientation: reversed ? 'reversed' : 'upright',
-        keyword: card.keywords?.[0] ?? '',
-        cardImageUrl: getCardImage(card),
-      },
-      `arcana-${card.id}.png`,
-      shareText,
-    );
-    await reportShare(outcome, shareText);
-  };
 
+  /**
+   * Share one card from the detail sheet: its image, its first keyword, and
+   * its page — by id, so a localized name (ワンドの5, 太陽) still links to
+   * the card rather than to `/tarot-meanings/5` or the hub.
+   */
+  const handleShareCard = (card: TarotCard, reversed: boolean) =>
+    shareOnce(async () => {
+      const shareText = t('readings.shareCardText', {
+        defaultValue: '{{name}} — {{keyword}}. Read the card on Arcana: {{url}}',
+        name: card.name,
+        keyword: card.keywords?.[0] ?? '',
+        url: `https://tarotlife.app${cardMeaningPath(card.id)}`,
+      });
+      const outcome = await shareOrDownloadCard(
+        {
+          variant: 'tarot',
+          cardName: card.name,
+          orientation: reversed ? 'reversed' : 'upright',
+          keyword: card.keywords?.[0] ?? '',
+          cardImageUrl: getCardImage(card),
+        },
+        `arcana-${card.id}.png`,
+        shareText,
+      );
+      await reportShare(outcome, shareText);
+    });
+
+  /** The row a saved reading is written as. */
+  const savedRow = (interpretation: string | null) => ({
+    userId: user!.id,
+    date: today,
+    spreadType: currentSpread,
+    focusArea: selectedFocus,
+    cards: drawnCards.map((d, i) => ({
+      cardId: d.card.id,
+      // The canonical English name: the Library resolves rows by id, and by
+      // this name for rows that predate ids.
+      cardName: canonicalCardName(d.card.id) || d.card.name,
+      reversed: d.reversed,
+      position: getPositionLabel(i),
+    })),
+    // Persist the AI interpretation so a saved reading keeps it on reload
+    // (it's the expensive, non-reproducible part — local focus/traditional
+    // text is re-derived deterministically). Omitted when none was generated.
+    interpretation: interpretation ?? undefined,
+    question: question.trim() || undefined,
+    saved: true,
+  });
+
+  /**
+   * Save the reading on screen — once. The bookmark used to insert a row
+   * on every tap (and re-run the XP, the ad check and the rate prompt), so
+   * a second tap or a double tap during the insert left two copies in the
+   * Library. A save in flight or already made is a no-op.
+   */
   const handleSaveReading = async () => {
     if (!user || drawnCards.length === 0) return;
-
-    const res = await tarotReadings.insert({
-      userId: user.id,
-      date: today,
-      spreadType: currentSpread,
-      focusArea: selectedFocus,
-      cards: drawnCards.map((d, i) => ({
-        cardId: d.card.id,
-        cardName: d.card.name,
-        reversed: d.reversed,
-        position: getPositionLabel(i),
-      })),
-      // Persist the AI interpretation so a saved reading keeps it on reload
-      // (it's the expensive, non-reproducible part — local focus/traditional
-      // text is re-derived deterministically). Omitted when none was generated.
-      interpretation: aiInterpretation ?? undefined,
-      question: question.trim() || undefined,
-      saved: true,
-    });
+    if (isSaved || savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    const res = await tarotReadings.insertReturningId(savedRow(aiInterpretation));
+    savingRef.current = false;
+    setSaving(false);
 
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
     } else {
+      savedIdRef.current = res.data.id;
       setIsSaved(true);
       toast(t('readings.toasts.readingSaved'), 'success');
 
+      // awardXP reports 'reading_saved' to the badges itself (one report, not two).
       awardXP(user.id, 'reading_saved').then(() => refreshProfile());
-      checkAchievementProgress(user.id, 'reading_saved');
       await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
 
       await ratePromptService.incrementPositiveActions(user.id);
@@ -821,8 +896,36 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     }
   };
 
+  /**
+   * A saved reading that gets its AI interpretation afterwards: the row is
+   * written again with the interpretation and the old one removed, so the
+   * Library keeps one copy and it carries the text that was paid for. The
+   * new row lands first; if it fails, the old one stays.
+   */
+  const attachInterpretationToSaved = async (interpretation: string) => {
+    const oldId = savedIdRef.current;
+    if (!user || !oldId) return;
+    const res = await tarotReadings.insertReturningId(savedRow(interpretation));
+    if (!res.ok) return;
+    savedIdRef.current = res.data.id;
+    await tarotReadings.deleteById(oldId, user.id);
+  };
+
+  const aiTooManyCards = drawnCards.length > MAX_AI_TAROT_CARDS;
+
   const handleGetAIInterpretation = async () => {
-    if (!user || drawnCards.length === 0) return;
+    if (!user || drawnCards.length === 0 || loadingAI) return;
+
+    // The interpretation for this reading is already here (the reader had
+    // switched back to the card meanings): show it again. Asking the server
+    // a second time charged another 50 Moonstones for the same text.
+    if (aiInterpretation) {
+      setShowAIInterpretation(true);
+      return;
+    }
+    // generate-reading refuses more than ten tarot cards; never charge for
+    // a request that cannot succeed (the chip says so, see the reveal).
+    if (aiTooManyCards) return;
 
     // 50 ms per AI interpretation. Premium = no debit (soft cap server-side).
     // The hook opens the earn-Moonstones sheet on insufficient balance.
@@ -840,6 +943,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       const result = await generatePremiumReading({
         cards: readingCards,
         spreadType: currentSpread,
+        // The positions as the reader sees them. The server only knows the
+        // six legacy spreads; every catalogue and custom spread was read
+        // against "Position 1…n" without these.
+        positions: drawnCards.map((_, i) => getPositionLabel(i).slice(0, 40)),
         focusArea: focusForAI,
         question: question.trim() || undefined,
         zodiacSign: zodiacSign,
@@ -848,6 +955,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
+      void attachInterpretationToSaved(result.interpretation);
       toast(
         result.usedLlm ? t('readings.toasts.aiReady') : t('readings.toasts.interpretationReady'),
         'success',
@@ -866,6 +974,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           // "Daily reading limit reached" — the same mapping as CartomancySection.
           /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit/i.test(raw)
           ? t('readings.toasts.aiLimit', { defaultValue: 'You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.' })
+          : /TOO_MANY_CARDS|Maximum \d+ cards/i.test(raw)
+          ? t('readings.toasts.aiTooManyCards', {
+              n: MAX_AI_TAROT_CARDS,
+              defaultValue: 'AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.',
+            })
           : t('readings.toasts.aiFailed', { defaultValue: 'Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.' });
       toast(errorMessage, 'error');
     } finally {
@@ -878,26 +991,9 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     if (customSpread && currentSpread === customSpread.id) {
       return customSpread.positions[index] || t('readings.positions.generic', { index: index + 1 });
     }
-    if (currentSpread === 'single') return t('readings.positions.yourCard');
-    if (currentSpread === 'three-card') {
-      const keys = ['past', 'present', 'future'] as const;
-      const key = keys[index];
-      return key
-        ? t(`readings.positions.${key}`)
-        : t('readings.positions.generic', { index: index + 1 });
-    }
-    if (spreadConfigs.some((sc) => sc.id === currentSpread)) {
-      const positions = getSpreadPositions(currentSpread);
-      return positions[index] || t('readings.positions.generic', { index: index + 1 });
-    }
-    // A catalogue spread: its own position names, localized with the
-    // English as the default.
-    const catalogue = getSpreadBySlug(currentSpread);
-    const position = catalogue?.positions[index];
-    if (position) {
-      return t(`spreads.catalog.${catalogue!.slug}.positions.${index}`, { defaultValue: position.name });
-    }
-    return t('readings.positions.generic', { index: index + 1 });
+    // A legacy id or a catalogue slug: the same names a saved or shared
+    // reading of this spread shows (spreadLabels).
+    return tarotPositionLabel(t, currentSpread, index);
   };
 
   /** The home picker. The same entry as the hero and the custom-spread launch: every gate, in order. */
@@ -906,11 +1002,22 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     beginReading(spreadId);
   };
 
+  /**
+   * A card's detail was opened. "Explore 22 / 78 cards" counts DISTINCT
+   * cards (20261003000004 keeps the seen ids when a value is sent); a bare
+   * call fell to the counter path, and stepping through the deck with
+   * ↑ / ↓ was not counted at all.
+   */
+  const exploredCard = (card: TarotCard) => {
+    if (user) checkAchievementProgress(user.id, 'cards_explored', 1, String(card.id));
+  };
+
   /** A card on the table was tapped: open it, with the drawn cards as its neighbours. */
   const openDrawnCard = (card: TarotCard, reversed: boolean) => {
     const siblings = drawnCards.map((d) => ({ card: d.card, reversed: d.reversed }));
     const index = Math.max(0, siblings.findIndex((s) => s.card.id === card.id));
     setSelectedCard({ card, reversed, siblings, index });
+    exploredCard(card);
   };
 
   /** A card in the deck library was tapped: open it, with the deck as its neighbours. */
@@ -919,17 +1026,14 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     const index = Math.max(0, tarotCards.findIndex((c) => c.id === card.id));
     setSelectedCard({ card, reversed: false, siblings, index });
     setShowBrowse(false);
-    // Track card exploration for achievements
-    if (user) checkAchievementProgress(user.id, 'cards_explored');
+    exploredCard(card);
   };
 
   const navigateDetail = (index: number) => {
-    setSelectedCard((prev) => {
-      if (!prev) return prev;
-      const next = prev.siblings[index];
-      if (!next) return prev;
-      return { ...prev, card: next.card, reversed: next.reversed, index };
-    });
+    const next = selectedCard?.siblings[index];
+    if (!selectedCard || !next) return;
+    setSelectedCard({ ...selectedCard, card: next.card, reversed: next.reversed, index });
+    exploredCard(next.card);
   };
 
   /*
@@ -987,12 +1091,22 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         currentSpread={currentSpread}
         // The daily spread's catalogue name carries a numeral ("1-card daily"),
         // and a title is set in the display serif: name it as the hero does.
-        spreadTitle={currentSpread === DAILY_SPREAD ? t('readings.dailyDraw.title') : meta?.name ?? ''}
+        spreadTitle={spreadTitleFor(currentSpread)}
         spreadLayout={meta?.layout}
         selectedFocus={selectedFocus}
         question={question}
         allRevealed={allRevealed}
         isSaved={isSaved}
+        saving={saving}
+        sharing={sharing}
+        aiUnavailable={
+          aiTooManyCards
+            ? t('readings.revealView.aiTooManyCards', {
+                n: MAX_AI_TAROT_CARDS,
+                defaultValue: 'AI readings take spreads of up to {{n}} cards',
+              })
+            : undefined
+        }
         isPremium={!!profile?.isPremium}
         cardBackUrl={profile?.card_back_url}
         showAIInterpretation={showAIInterpretation}

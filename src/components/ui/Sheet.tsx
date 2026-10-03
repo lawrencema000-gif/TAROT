@@ -165,9 +165,11 @@ export function Sheet({ open, onClose, title, label, children, variant = 'defaul
   // between the two is the weight of the gold hairline along the top edge.
   //   default — slate panel with a soft gold hairline
   //   glow    — same panel, a firmer gold hairline for premium / paywall sheets
+  // One fill (surface-1), like every card; the 850→900 wash was a gradient
+  // as decoration (P7 #171).
   const sheetStyles = variant === 'glow'
-    ? 'bg-gradient-to-b from-mystic-850 to-mystic-900 border-t border-gold/25'
-    : 'bg-gradient-to-b from-mystic-850 to-mystic-900 border-t border-gold/10';
+    ? 'bg-mystic-850 border-t border-gold/25'
+    : 'bg-mystic-850 border-t border-gold/10';
 
   return (
     <div
@@ -182,7 +184,7 @@ export function Sheet({ open, onClose, title, label, children, variant = 'defaul
           one object arriving rather than a backdrop plus a card. */}
       <div
         className={`
-          absolute inset-0 bg-gradient-to-t from-mystic-950/95 via-mystic-950/80 to-mystic-900/55 backdrop-blur-md
+          absolute inset-0 bg-mystic-950/80 backdrop-blur-md
           transition-opacity
           ${shown
             ? 'opacity-100 duration-slow ease-[cubic-bezier(0.22,0.8,0.25,1)]'

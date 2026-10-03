@@ -198,6 +198,7 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
               <Gift className="w-3 h-3 text-gold" aria-hidden />
               {t('referral.invitesCount', {
                 defaultValue: '{{n}} friends joined with your code',
+                count: invitesCount,
                 n: invitesCount,
               })}
             </p>

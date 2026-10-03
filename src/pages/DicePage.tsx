@@ -6,8 +6,8 @@ import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
 import type { ZodiacSign, Planet } from '../types/astrology';
-
-type Interp = typeof import('../data/interpretations');
+import { useInterpretations } from '../hooks/useAstrology';
+import { localizePlanetName, localizeSignName } from '../i18n/localizeNames';
 
 const DICE_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
 const DICE_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -22,12 +22,12 @@ interface AstroRoll {
 // colour emoji on Android.
 function PlanetDieGlyph({ planet }: { planet: string }) {
   const Glyph = PLANET_ICONS[planet as Planet];
-  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={planet} /> : <>?</>;
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={localizePlanetName(planet as Planet)} /> : <>?</>;
 }
 
 function SignDieGlyph({ sign }: { sign: string }) {
   const Glyph = ZODIAC_ICONS[sign as ZodiacSign];
-  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={sign} /> : <>?</>;
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={localizeSignName(sign as ZodiacSign)} /> : <>?</>;
 }
 
 function rollAstro(): AstroRoll {
@@ -56,19 +56,16 @@ export function DicePage() {
   const [mode, setMode] = useState<'classic' | 'astro'>('astro');
   const [reading, setReading] = useState<DiceReading | null>(null);
   const [astro, setAstro] = useState<AstroRoll | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // The planet-in-sign / planet-in-house library in the reader's language.
+  const interp = useInterpretations();
   const [rolling, setRolling] = useState(false);
 
   const roll = async () => {
     setRolling(true);
     setReading(null);
     setAstro(null);
-    const [lib] = await Promise.all([
-      mode === 'astro' && !interp ? import('../data/interpretations') : Promise.resolve(interp),
-      new Promise((r) => setTimeout(r, 700)),
-    ]);
+    await new Promise((r) => setTimeout(r, 700));
     if (mode === 'astro') {
-      if (lib) setInterp(lib as Interp);
       setAstro(rollAstro());
     } else {
       setReading(rollDice());
@@ -119,15 +116,21 @@ export function DicePage() {
       </Section>
 
       {/* astro result */}
-      {mode === 'astro' && astro && (
+      {mode === 'astro' && astro && (() => {
+        const planet = localizePlanetName(astro.planet as Planet);
+        const sign = localizeSignName(astro.sign as ZodiacSign);
+        const house = interp?.houseMeaning(astro.house) ?? null;
+        return (
         <>
           <Card variant="glow" padding="lg" className="text-center">
             <div className="flex justify-center gap-4 mb-3">
-              {astroDie(<PlanetDieGlyph planet={astro.planet} />, astro.planet)}
-              {astroDie(<SignDieGlyph sign={astro.sign} />, astro.sign)}
-              {astroDie(String(astro.house), `House ${astro.house}`)}
+              {astroDie(<PlanetDieGlyph planet={astro.planet} />, planet)}
+              {astroDie(<SignDieGlyph sign={astro.sign} />, sign)}
+              {astroDie(String(astro.house), t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: astro.house }))}
             </div>
-            <h2 className="heading-display-md text-mystic-100">{astro.planet} in {astro.sign}, House {astro.house}</h2>
+            <h2 className="heading-display-md text-mystic-100">
+              {t('dice.astroTitle', { defaultValue: '{{planet}} in {{sign}}, House {{house}}', planet, sign, house: astro.house })}
+            </h2>
           </Card>
           {/* The reading is read for meaning, so it sits on paper. */}
           {interp && (
@@ -136,9 +139,14 @@ export function DicePage() {
                 <p className="reading-lede">{interp.planetInSignText(astro.planet, astro.sign)}</p>
                 <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
               </div>
-              {interp.houseMeaning(astro.house) && (
+              {house && (
                 <p className="reading-meta">
-                  House {astro.house} — {interp.houseMeaning(astro.house)!.title}: {interp.houseMeaning(astro.house)!.keywords.join(', ')}.
+                  {t('dice.houseLine', {
+                    defaultValue: 'House {{n}} — {{title}}: {{keywords}}.',
+                    n: astro.house,
+                    title: house.title,
+                    keywords: house.keywords.join(t('dice.keywordJoin', { defaultValue: ', ' })),
+                  })}
                 </p>
               )}
             </Paper>
@@ -153,8 +161,8 @@ export function DicePage() {
                 state: {
                   question: t('dice.oracleQuestion', {
                     defaultValue: 'The astro dice gave me {{planet}} in {{sign}} in House {{house}}. What is this pointing to for me right now?',
-                    planet: astro.planet,
-                    sign: astro.sign,
+                    planet,
+                    sign,
                     house: astro.house,
                   }),
                 },
@@ -165,7 +173,8 @@ export function DicePage() {
             {t('dice.askOracle', { defaultValue: 'Ask the Oracle about this' })}
           </Button>
         </>
-      )}
+        );
+      })()}
 
       {/* classic result */}
       {mode === 'classic' && reading && (

@@ -12,7 +12,7 @@ import { PlayingCardFace } from './PlayingCardFace';
 import { SuitGlyph } from './SuitGlyph';
 import { CartomancyLayout, tileFor } from './CartomancyLayout';
 import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS, DEFAULT_BACK } from './FlipTile';
-import { cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
+import { cartoMainMeaning, cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
 
 /**
  * The reveal: the table on navy, then the reading on paper.
@@ -216,12 +216,16 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     ? t('cartomancy.result.yourQuestion', { defaultValue: 'Your question' })
     : focusLabel || t('cartomancy.title', { defaultValue: 'Playing cards' });
   const title = question || spread.name;
-  const summary = cartoSummary(showAIInterpretation ? aiInterpretation : null, spread);
+  const summary = cartoSummary(
+    showAIInterpretation ? aiInterpretation : null,
+    drawnCards.map((d) => ({ card: localize(d.card), reversed: d.reversed })),
+    focus,
+    (name, sentence) => t('cartomancy.result.summaryLead', { name, sentence, defaultValue: '{{name}}: {{sentence}}' }),
+  );
   const summaryHeading = t('common:resultSheet.summaryHeading', { defaultValue: 'Reading summary' });
 
   const meaningFor = (card: PlayingCard, reversed: boolean): { short: string; full: string; extra: ReactNode[] } => {
-    const focused = focus === 'love' ? card.loveMeaning : focus === 'career' ? card.careerMeaning : undefined;
-    const main = focused || (reversed ? card.meaningReversed ?? card.meaningUpright : card.meaningUpright);
+    const { text: main, focused } = cartoMainMeaning(card, reversed, focus);
     const short = firstSentences(main, 2);
     const extra: ReactNode[] = [];
     if (focused && reversed && card.meaningReversed) {

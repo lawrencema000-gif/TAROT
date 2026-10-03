@@ -5,6 +5,9 @@ import { ZODIAC_ICONS } from '../icons';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 import { ELEMENT_COLOR, SIGN_ORDER } from '../../lib/chart';
 import type { Person } from '../../dal/people';
+import { useT } from '../../i18n/useT';
+import { localizeSignName } from '../../i18n/localizeNames';
+import type { ZodiacSign } from '../../types/astrology';
 
 const MODALITY: Record<string, 'Cardinal' | 'Fixed' | 'Mutable'> = {
   Aries: 'Cardinal', Cancer: 'Cardinal', Libra: 'Cardinal', Capricorn: 'Cardinal',
@@ -29,6 +32,12 @@ function signColor(sign: string): string {
  * stored; no extra fetch, no cost.
  */
 export function FriendCircleStats({ people }: { people: Person[] }) {
+  const { t } = useT('app');
+  /** Element / modality names (data keys stay English). */
+  const termLabel = (k: string) =>
+    k in MODALITY_COLOR
+      ? t(`chartWheel.modalities.${k}`, { defaultValue: k })
+      : t(`horoscope.birthChartView.elements.${k}`, { defaultValue: k });
   const stats = useMemo(() => {
     const elements: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
     const modalities: Record<string, number> = { Cardinal: 0, Fixed: 0, Mutable: 0 };
@@ -54,13 +63,13 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
       <EyebrowLabel align="left" className="block">{label}</EyebrowLabel>
       <div className="flex h-2 bg-mystic-800 rounded-full overflow-hidden">
         {Object.entries(data).map(([k, v]) => v > 0 && (
-          <div key={k} title={`${k}: ${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
+          <div key={k} title={`${termLabel(k)}: ${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {Object.entries(data).filter(([, v]) => v > 0).map(([k, v]) => (
           <span key={k} className="inline-flex items-center gap-1 text-caption text-mystic-400">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: colors[k] }} />{k} {v}
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: colors[k] }} />{termLabel(k)} <span className="tabular-nums">{v}</span>
           </span>
         ))}
       </div>
@@ -71,22 +80,24 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
     <Card className="p-4 space-y-4">
       <div className="flex items-center gap-2">
         <Users className="w-4 h-4 text-gold" />
-        <h3 className="heading-display-md text-mystic-100">Your circle</h3>
-        <span className="text-meta text-mystic-600 ml-auto">{total} people</span>
+        <h3 className="heading-display-md text-mystic-100">{t('people.circle.title', { defaultValue: 'Your circle' })}</h3>
+        <span className="text-meta text-mystic-600 ml-auto tabular-nums">
+          {t('people.circle.count', { defaultValue: '{{count}} people', count: total })}
+        </span>
       </div>
 
-      <Row data={stats.elements} colors={ELEMENT_COLOR} label="Elements" />
-      <Row data={stats.modalities} colors={MODALITY_COLOR} label="Modalities" />
+      <Row data={stats.elements} colors={ELEMENT_COLOR} label={t('chartWheel.legendElements', { defaultValue: 'Elements' })} />
+      <Row data={stats.modalities} colors={MODALITY_COLOR} label={t('chartWheel.legendModalities', { defaultValue: 'Modalities' })} />
 
       <div className="space-y-1.5">
-        <EyebrowLabel align="left" className="block">Signs</EyebrowLabel>
+        <EyebrowLabel align="left" className="block">{t('people.circle.signs', { defaultValue: 'Signs' })}</EyebrowLabel>
         <div className="grid grid-cols-6 gap-1.5">
           {SIGN_ORDER.map((sign) => {
             const count = stats.signs[sign] ?? 0;
             // Drawn, not typed: U+2648–2653 come out as colour emoji on Android.
             const Glyph = ZODIAC_ICONS[sign];
             return (
-              <div key={sign} title={`${sign}: ${count}`} className="flex flex-col items-center gap-0.5">
+              <div key={sign} title={`${localizeSignName(sign as ZodiacSign)}: ${count}`} className="flex flex-col items-center gap-0.5">
                 <div className="w-full h-10 flex items-end">
                   <div className="w-full rounded-t-full transition-[height]"
                     style={{
@@ -94,7 +105,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
                       background: count > 0 ? signColor(sign) : 'rgba(255,255,255,0.06)',
                     }} />
                 </div>
-                <Glyph size={14} strokeWidth={1.8} className={count > 0 ? 'text-mystic-200' : 'text-mystic-200 opacity-30'} aria-label={sign} />
+                <Glyph size={14} strokeWidth={1.8} className={count > 0 ? 'text-mystic-200' : 'text-mystic-200 opacity-30'} aria-label={localizeSignName(sign as ZodiacSign)} />
               </div>
             );
           })}

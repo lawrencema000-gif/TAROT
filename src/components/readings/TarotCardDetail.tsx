@@ -3,7 +3,8 @@ import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Sh
 import { Card, Tabs, KeywordRow, AffirmationPanel, Paper, TarotFace, EyebrowLabel, ReadingProse } from '../ui';
 import type { TarotCard } from '../../types';
 import { useT } from '../../i18n/useT';
-import { affirmationFor, orientedMeaning } from './tarot/readingText';
+import { useContentOverlay } from '../../i18n/contentOverlay';
+import { affirmationFor, focusSections } from './tarot/readingText';
 
 /**
  * The card detail sheet.
@@ -33,6 +34,29 @@ interface TarotCardDetailProps {
 
 type DetailTab = 'meaning' | 'love' | 'career' | 'reflect';
 
+const PARAGRAPH = '\n\n';
+
+/**
+ * A love / career meaning for the card as it lies. Cut by orientation
+ * (focusSections): a reversed card shows its reversed reading when one is
+ * written; when only the upright one is, it shows that under an "Upright"
+ * label rather than passing it off as the reading of a reversed card.
+ */
+function FocusText({ text, reversed }: { text: string; reversed: boolean }) {
+  const { t } = useT('app');
+  const { intro, upright, reversed: rev } = focusSections(text);
+  const own = reversed ? rev : upright;
+  if (own || !reversed) {
+    return <ReadingProse lede={false} text={[intro, own].filter(Boolean).join(PARAGRAPH)} />;
+  }
+  return (
+    <div>
+      <p className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted mb-1">{t('tarot.upright')}</p>
+      <ReadingProse lede={false} text={[intro, upright].filter(Boolean).join(PARAGRAPH)} />
+    </div>
+  );
+}
+
 const ICON_BUTTON =
   'w-11 h-11 inline-flex items-center justify-center rounded-full text-mystic-300 transition-[background-color,transform,color] duration-fast ' +
   '[@media(hover:hover)]:[&:hover:not(:active)]:bg-mystic-800 motion-safe:active:scale-90 disabled:opacity-30 ' +
@@ -57,12 +81,12 @@ export function TarotCardDetail({
     { id: 'reflect', label: t('tarot.detail.tabs.reflect'), icon: Feather },
   ];
 
+  // The suit by its localized name ("ペンタクル"), never the English enum.
   const suitLabel = card.suit
-    ? t('tarot.detail.minorArcanaLabel', {
-        suit: `${card.suit.charAt(0).toUpperCase()}${card.suit.slice(1)}`,
-      })
+    ? t('tarot.detail.minorArcanaLabel', { suit: t(`tarot.${card.suit}`) })
     : '';
-  const affirmation = affirmationFor(card.id);
+  const { overlay: enrichment } = useContentOverlay('enrichment');
+  const affirmation = affirmationFor(card.id, enrichment);
   const canNavigate = Boolean(siblings && siblings.length > 1 && onNavigate);
   const prev = canNavigate && index > 0 ? siblings![index - 1] : null;
   const next = canNavigate && index < siblings!.length - 1 ? siblings![index + 1] : null;
@@ -71,15 +95,18 @@ export function TarotCardDetail({
     <div className="space-y-6 pb-4">
       {/* Chrome: share · ↑ ↓ · close. One row, 44px targets. */}
       <div className="flex items-center justify-between -mt-2 -mx-2">
-        <button
-          type="button"
-          onClick={onShare}
-          disabled={!onShare}
-          aria-label={t('tarot.detail.share', { defaultValue: 'Share this card' })}
-          className={ICON_BUTTON}
-        >
-          <Share2 className="w-5 h-5" aria-hidden />
-        </button>
+        {onShare ? (
+          <button
+            type="button"
+            onClick={onShare}
+            aria-label={t('tarot.detail.share', { defaultValue: 'Share this card' })}
+            className={ICON_BUTTON}
+          >
+            <Share2 className="w-5 h-5" aria-hidden />
+          </button>
+        ) : (
+          <span className="w-11 h-11" aria-hidden />
+        )}
         {canNavigate && (
           <div className="flex items-center gap-1 text-meta text-mystic-400">
             <button
@@ -175,7 +202,7 @@ export function TarotCardDetail({
               <p className="reading-meta">{t('tarot.detail.loveSubtitle')}</p>
             </div>
             {card.loveMeaning ? (
-              <ReadingProse lede={false} text={orientedMeaning(card.loveMeaning, reversed)} />
+              <FocusText text={card.loveMeaning} reversed={reversed} />
             ) : (
               <p className="reading-copy">{t('tarot.detail.loveFallback')}</p>
             )}
@@ -192,7 +219,7 @@ export function TarotCardDetail({
               <p className="reading-meta">{t('tarot.detail.careerSubtitle')}</p>
             </div>
             {card.careerMeaning ? (
-              <ReadingProse lede={false} text={orientedMeaning(card.careerMeaning, reversed)} />
+              <FocusText text={card.careerMeaning} reversed={reversed} />
             ) : (
               <p className="reading-copy">{t('tarot.detail.careerFallback')}</p>
             )}

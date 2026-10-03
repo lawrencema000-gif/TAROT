@@ -1,14 +1,29 @@
 import type { QuizDefinition } from '../../types';
-import { EXTRA_QUIZ_SCORING } from '../../data/extraQuizzes';
+import { CLINICAL_SCREENERS, EXTRA_QUIZ_SCORING, calculateExtraQuiz, hasDedicatedScorer } from '../../data/extraQuizzes';
+import { extraResultName } from './extraNames';
 
 type T = (key: string, opts?: Record<string, unknown>) => string;
+
+/** A Likert mean that counts as endorsing a dimension ("Agree" on average, give or take). */
+const LEANING = 3.5;
 
 /**
  * Mid-quiz hint: at the 25 / 50 / 75 % crossings, a one-line reading of
  * where the answers so far are leaning. Fires once per quarter, never on
  * the five-question mood check, and only once at least two answers are in.
- * Extra-dimensional quizzes get a generic "leaning <dimension>" built from
- * the same Likert means the scorer uses.
+ *
+ * Extra-dimensional quizzes run THE SCORER the result screen will run, on
+ * the answers so far, so the early reading can only name a result the
+ * quiz can actually return:
+ *  - never on the PHQ-2 mood screener: its result is a validated cutoff on
+ *    two items, and a teaser built from anything else told a positive
+ *    screen "Moderate signal so far";
+ *  - a quiz with a derived result (boundaries, empath/HSP, self-compassion,
+ *    wellness) waits until every scored dimension has an answer — before
+ *    that its scorer would be reading zeros as answers;
+ *  - "highest mean wins" quizzes name the leader once it is endorsed
+ *    (mean ≥ 3.5) and not a tie;
+ *  - the name comes through extraResultName, the result screen's chain.
  */
 export function computeSneakPeek(
   quiz: QuizDefinition,
@@ -66,24 +81,23 @@ export function computeSneakPeek(
   }
 
   if (quiz.type === 'extra-dimensional') {
+    if (CLINICAL_SCREENERS.has(quiz.id)) return null;
     const entry = EXTRA_QUIZ_SCORING[quiz.id];
     if (!entry) return null;
-    const sums: Record<string, number> = {};
-    const counts: Record<string, number> = {};
+    const answeredDims = new Set<string>();
     for (const q of quiz.questions) {
-      const v = answers[q.id];
-      if (v === undefined || !q.dimension || !entry.dimensions.includes(q.dimension)) continue;
-      sums[q.dimension] = (sums[q.dimension] ?? 0) + v;
-      counts[q.dimension] = (counts[q.dimension] ?? 0) + 1;
+      if (answers[q.id] !== undefined && q.dimension && entry.dimensions.includes(q.dimension)) answeredDims.add(q.dimension);
     }
-    const ranked = Object.keys(sums).sort((a, b) => sums[b] / counts[b] - sums[a] / counts[a]);
-    if (ranked.length < 2) return null;
-    const lead = ranked[0];
-    if (sums[lead] / counts[lead] < 3.5) return null;
-    const quizKey = quiz.id.replace(/-v\d+$/, '');
-    const name = t(`extraQuizzes.${quizKey}.results.${lead}.name`, {
-      defaultValue: entry.info[lead]?.name ?? entry.dimensionLabels?.[lead] ?? lead,
-    });
+    const needed = hasDedicatedScorer(quiz.id) ? entry.dimensions.length : 2;
+    if (answeredDims.size < needed) return null;
+    const r = calculateExtraQuiz(quiz.id, answers);
+    if (!r || r.isTie || r.primary === entry.lowResult) return null;
+    // A dimension the scorer merely ranks first is named only once it is
+    // endorsed; a derived result (a band, "both", "healthy flex") is the
+    // scorer's own verdict and stands as it is.
+    const isDimension = entry.dimensions.includes(r.primary);
+    if (isDimension && !hasDedicatedScorer(quiz.id) && (r.averages[r.primary] ?? 0) < LEANING) return null;
+    const name = extraResultName(quiz.id, r.primary, t);
     return t('quizzes.sneakPeek.leaning', { defaultValue: 'Leaning {{name}} so far…', name });
   }
 
@@ -100,7 +114,7 @@ export function computeSneakPeek(
   return g ? t(g[0], { defaultValue: g[1] }) : null;
 }
 
-/** Ten lines, one per key, shown in the frame's hint slot every sixth question of a long quiz. */
+/** Ten lines, one per key. Two of them claim a position and are only drawn there. */
 export const ENCOURAGEMENT: { key: string; en: string }[] = [
   { key: 'e1', en: 'You are doing well. Keep going.' },
   { key: 'e2', en: 'Trust your instincts on these.' },
@@ -113,3 +127,25 @@ export const ENCOURAGEMENT: { key: string; en: string }[] = [
   { key: 'e9', en: 'Honesty here gives you a truer result.' },
   { key: 'e10', en: 'Keep the momentum.' },
 ];
+
+/** Lines that say where the person is; drawn only where they are true. */
+const ALMOST_HALFWAY = 'e4';
+const NEARLY_THERE = 'e8';
+
+/**
+ * The encouragement line for the question on screen (1-based `step` of
+ * `total`), or null. Shown every sixth question of a quiz of twelve or
+ * more, never on the last one. "Almost halfway there." only between 40 %
+ * and 50 % of the way, "Nearly there now." only from 80 %; everywhere else
+ * a line that claims no position, in rotation. (The old pick by
+ * `step / 6` drew "Almost halfway there." at question 18 of 20.)
+ */
+export function encouragementFor(step: number, total: number): { key: string; en: string } | null {
+  if (total < 12 || step % 6 !== 0 || step >= total) return null;
+  const progress = step / total;
+  const byKey = (k: string) => ENCOURAGEMENT.find((e) => e.key === k) ?? null;
+  if (progress >= 0.4 && progress < 0.5) return byKey(ALMOST_HALFWAY);
+  if (progress >= 0.8) return byKey(NEARLY_THERE);
+  const neutral = ENCOURAGEMENT.filter((e) => e.key !== ALMOST_HALFWAY && e.key !== NEARLY_THERE);
+  return neutral[(step / 6 - 1) % neutral.length];
+}

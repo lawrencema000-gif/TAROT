@@ -32,7 +32,8 @@
     "mansions": "Lunar Mansions",
     "goodDays": "Good days",
     "wishingSky": "Wishing Sky",
-    "cartomancy": "Playing cards"
+    "cartomancy": "Playing cards",
+    "mainNavigation": "Main navigation"
   },
   "actions": {
     "continue": "Continue",
@@ -46,7 +47,8 @@
     "loading": "Loading…",
     "send": "Send",
     "refresh": "Refresh",
-    "back": "Back"
+    "back": "Back",
+    "dismiss": "Dismiss"
   },
   "labels": {
     "email": "Email",
@@ -155,5 +157,8 @@
   },
   "resultSheet": {
     "summaryHeading": "Reading summary"
+  },
+  "resultLayout": {
+    "readFullReading": "Read the full reading"
   }
 }

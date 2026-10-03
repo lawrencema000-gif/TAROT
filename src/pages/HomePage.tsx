@@ -18,6 +18,7 @@ import {
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { TarotCardDetail } from '../components/readings/TarotCardDetail';
+import { takePendingSpread } from '../components/readings/tarot/pendingSpread';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { DailyCosmicScore } from '../components/ritual/DailyCosmicScore';
 import { DailyMansionCard } from '../components/ritual/DailyMansionCard';
@@ -182,6 +183,14 @@ export function HomePage() {
     setDailyPrompt(getDailyPrompt(today));
   }, [today]);
 
+  // A spread chosen on its public page before signing up (pendingSpread):
+  // the first signed-in Home opens it, once.
+  useEffect(() => {
+    if (!user) return;
+    const slug = takePendingSpread();
+    if (slug) navigate('/readings', { state: { spreadSlug: slug } });
+  }, [user, navigate]);
+
   useEffect(() => {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
@@ -332,7 +341,9 @@ export function HomePage() {
     if (navigator.share) {
       try {
         await navigator.share({ text });
-      } catch {
+      } catch (err) {
+        // The reader closed the sheet on purpose: nothing to copy, nothing to say.
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         await navigator.clipboard.writeText(text);
         toast(t('home.copiedToClipboard'), 'success');
       }
@@ -572,16 +583,19 @@ export function HomePage() {
         justCompleted={celebrationReason === 'complete'}
       />
 
+      {/* `label`, not `title`: TarotCardDetail draws the sheet's only chrome
+          (share · close) and names the card itself. */}
       <Sheet
         open={showCardDetail && !!drawnTarot}
         onClose={() => setShowCardDetail(false)}
-        title={drawnTarot?.card.name}
+        label={drawnTarot?.card.name}
       >
         {drawnTarot && (
           <TarotCardDetail
             card={drawnTarot.card}
             reversed={drawnTarot.reversed}
             onClose={() => setShowCardDetail(false)}
+            onShare={handleTarotShare}
           />
         )}
       </Sheet>

@@ -203,7 +203,7 @@ export function verdictLine(verdict: CartoVerdict | null): string | undefined {
 
 /** Everything the tables say about the cards on this spread. */
 export function cartoCombinations(spread: CartoSpread, cards: PlayingCard[]): CombinationHit[] {
-  return findCombinations(cards, spread.layout);
+  return findCombinations(cards, spread.layout, { suitMajorityMin: spread.suitMajorityMin });
 }
 
 export interface CombinationLine {
@@ -297,11 +297,62 @@ export function firstParagraph(text: string): string {
   return para ?? '';
 }
 
-/** The first `count` sentences of a text. */
+/** Closing quotes and brackets stay with the sentence they close: " ' ” ’ ) ] 」 』 】 ） 〉 》 */
+const SENTENCE_CLOSERS = '["\'\u201D\u2019)\\]\u300D\u300F\u3011\uFF09\u3009\u300B]*';
+/** Full-width scripts: CJK punctuation and ideographs, kana, Hangul, full-width forms. */
+const WIDE_CHARS = '\u3000-\u9FFF\uAC00-\uD7A3\uF900-\uFAFF\uFF00-\uFFEF';
+
+/**
+ * Where a sentence ends, in every locale the app speaks.
+ *
+ * - A Latin stop (. ! ? or an ellipsis) ends one only before whitespace,
+ *   the end of the text, or a full-width character, so "3.5" and "e.g.x"
+ *   never split, and Korean (which spaces after its full stop) splits as
+ *   English does.
+ * - A CJK stop (。 ． ｡ ！ ？) ends one wherever it stands: Japanese and
+ *   Chinese set no space after it, and the next sentence may open with a
+ *   digit or a Latin letter.
+ */
+const SENTENCE_END = new RegExp(
+  `[.!?\u2026]+${SENTENCE_CLOSERS}(?=\\s|$|[${WIDE_CHARS}])|[\u3002\uFF0E\uFF61\uFF01\uFF1F]+${SENTENCE_CLOSERS}`,
+  'g',
+);
+
+/** The text as sentences, each with its own punctuation. */
+export function sentencesOf(text: string): string[] {
+  const src = text.trim();
+  const out: string[] = [];
+  const re = new RegExp(SENTENCE_END.source, 'g');
+  let start = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const end = m.index + m[0].length;
+    const sentence = src.slice(start, end).trim();
+    if (sentence) out.push(sentence);
+    start = end;
+  }
+  const tail = src.slice(start).trim();
+  if (tail) out.push(tail);
+  return out;
+}
+
+/**
+ * The first `count` sentences of a text, cut from the source so its own
+ * spacing survives: none between Japanese or Chinese sentences, one space
+ * after an English or Korean full stop. The one sentence splitter for
+ * every playing-card surface (the result, the summary, a shared reading).
+ */
 export function firstSentences(text: string, count: number): string {
-  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g);
-  if (!sentences) return text.trim();
-  return sentences.slice(0, count).join('').trim();
+  const src = text.trim();
+  if (count <= 0) return '';
+  const re = new RegExp(SENTENCE_END.source, 'g');
+  let seen = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    seen += 1;
+    if (seen === count) return src.slice(0, m.index + m[0].length).trim();
+  }
+  return src;
 }
 
 export interface AiSection {
@@ -345,16 +396,70 @@ export function splitAiReading(text: string): { lede: string; sections: AiSectio
 }
 
 /**
- * The reading summary: the AI's opening paragraph when there is one (its
- * "Overview" heading dropped), else the opening of the spread's reading
- * method (two sentences, so the lede has a body rather than a single clause).
+ * The meaning a card is read by on this table: the focus's own meaning
+ * (love, career) when the card has one, else its upright or reversed
+ * meaning. `focused` says which, so the result can add the reversed
+ * meaning under a focused one.
  */
-export function cartoSummary(aiText: string | null, spread: CartoSpread): string {
+export function cartoMainMeaning(card: PlayingCard, reversed: boolean, focus: CartoFocus): { text: string; focused: boolean } {
+  const focused = focus === 'love' ? card.loveMeaning : focus === 'career' ? card.careerMeaning : undefined;
+  if (focused) return { text: focused, focused: true };
+  return { text: reversed ? card.meaningReversed ?? card.meaningUpright : card.meaningUpright, focused: false };
+}
+
+/** Sentences run together: no space after a CJK stop or closer, one after anything else. */
+export function joinSentences(parts: string[]): string {
+  let out = '';
+  for (const raw of parts) {
+    const s = raw.trim();
+    if (!s) continue;
+    if (!out) out = s;
+    else out += /[。．｡！？」』】）]$/.test(out) ? s : ` ${s}`;
+  }
+  return out;
+}
+
+/** "Four of Clubs: …" — how a summary sentence is led by its card's name; the result passes the locale's form. */
+const defaultLead = (name: string, sentence: string) => `${name}: ${sentence}`;
+
+/**
+ * The summary of the cards on the table, as the tarot result builds its
+ * own (readingText.synthesisFor): for one card its first two sentences; for
+ * more, one sentence per card for the first three, led by the card's name
+ * when the sentence does not already say it. Pass localized cards.
+ */
+export function cartoSynthesis(
+  cards: Array<{ card: PlayingCard; reversed: boolean }>,
+  focus: CartoFocus,
+  lead: (name: string, sentence: string) => string = defaultLead,
+): string {
+  if (cards.length === 0) return '';
+  if (cards.length === 1) return firstSentences(cartoMainMeaning(cards[0].card, cards[0].reversed, focus).text, 2);
+  return joinSentences(
+    cards.slice(0, 3).map(({ card, reversed }) => {
+      const first = firstSentences(cartoMainMeaning(card, reversed, focus).text, 1);
+      return first.toLowerCase().includes(card.name.toLowerCase()) ? first : lead(card.name, first);
+    }),
+  );
+}
+
+/**
+ * The reading summary: the AI's opening paragraph when there is one (its
+ * "Overview" heading dropped), else the synthesis of the cards drawn. It
+ * used to be the spread's reading method, which is the same how-to text
+ * whatever the cards say.
+ */
+export function cartoSummary(
+  aiText: string | null,
+  cards: Array<{ card: PlayingCard; reversed: boolean }>,
+  focus: CartoFocus,
+  lead?: (name: string, sentence: string) => string,
+): string {
   if (aiText) {
     const { lede } = splitAiReading(aiText);
     if (lede) return lede;
   }
-  return firstSentences(spread.readingMethod, 2);
+  return cartoSynthesis(cards, focus, lead);
 }
 
 // ---------------------------------------------------------------------------

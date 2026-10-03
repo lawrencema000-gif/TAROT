@@ -708,12 +708,22 @@
   }
 
   /* The bottom-nav labels, for the same reason: 12px kana and hangul
-     close up. Five tabs still fit one line each at 390px at 13px. */
+     close up. 13px only from 360px up: the five ja labels need ~307px at
+     13px and a 320px phone's row has 304, and every CJK character is a
+     break opportunity, so they wrapped to "ホー/ム" (P7 #165). At 12px they
+     fit (~292px). keep-all stops a label ever splitting mid-word. */
   html:lang(ja) .bottom-nav-label,
   html:lang(ko) .bottom-nav-label,
   html:lang(zh) .bottom-nav-label {
-    font-size: 0.8125rem;
-    letter-spacing: 0.02em;
+    word-break: keep-all;
+  }
+  @media (min-width: 360px) {
+    html:lang(ja) .bottom-nav-label,
+    html:lang(ko) .bottom-nav-label,
+    html:lang(zh) .bottom-nav-label {
+      font-size: 0.8125rem;
+      letter-spacing: 0.02em;
+    }
   }
 
   /* Drop cap — first letter of a paragraph rendered as a serif initial.
@@ -949,7 +959,9 @@
      `.text-gold*` rules at the end are the safety net: any stray text-gold
      inside paper becomes ink-gold (5.2:1). Gold FILLS with mystic-950 text
      (the Button) are untouched. The Disclaimer that closes a sheet is a
-     sibling of Paper, not a child, so its dark block is never remapped. */
+     sibling of Paper, not a child, so its dark block is never remapped;
+     a navy tile placed INSIDE the paper is handled by the island rules
+     after the keyword pill. */
   .paper-prose { color: rgb(var(--ink)); }
   .paper-prose h1, .paper-prose h2, .paper-prose h3, .paper-prose h4 { color: rgb(var(--ink)); }
   .paper-prose strong, .paper-prose b { color: rgb(var(--ink)); }
@@ -992,6 +1004,39 @@
     background-color: rgb(var(--ink-gold));
     color: rgb(var(--paper)) !important;
   }
+  /* Dark islands inside a sheet (P7 #119). A navy tile composed into the
+     paper — a playing card in a lesson's CardGrid, TarotFace's quiet plate
+     — is canvas again, and the remaps above must stop at its edge:
+     ink-gold #7a5f14 on mystic-850 is 2.9:1, ink on navy is invisible. An
+     island is a descendant whose class list holds one of the canvas fills
+     as a whole token (`~=`, so `hover:bg-mystic-800` on a paper row is not
+     one), or that is marked `.on-canvas`. It gets the canvas ink back, its
+     gold stays gold, and a link tile loses the paper underline. The island
+     has to be INSIDE the paper, so a Paper that itself sits in a navy card
+     keeps every remap. */
+  .paper-prose :where([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.mystic.100');
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) :is(h1, h2, h3, h4, strong, b, a):not([class*="text-"]),
+  .paper-prose a:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas):not([class*="text-"]) {
+    color: inherit;
+  }
+  .paper-prose a:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas),
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) a {
+    text-decoration: none;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold,
+  .paper-prose .text-gold:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.DEFAULT') !important;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold-light,
+  .paper-prose .text-gold-light:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.light') !important;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold-dark,
+  .paper-prose .text-gold-dark:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.dark') !important;
+  }
 
   /* ── Redesign 2026 — hairline borders ─────────────────────────
      Softer alternative to the existing border-glow utility. Uses
@@ -1017,9 +1062,10 @@
      image background. */
   .card-ritual {
     position: relative;
-    background-image:
-      linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(13, 13, 26, 0.92) 100%),
-      radial-gradient(ellipse at top right, rgba(var(--gold-primary), 0.05), transparent 60%);
+    /* One fill, surface-1, like every other card. The 135deg wash and the
+       gold radial bloom in the top-right corner were the last gradient
+       "glow" on Home (P7 #171; the design directive's "nothing glows"). */
+    background-color: rgb(var(--surface-card));
     border: 1px solid rgba(var(--gold-primary), 0.18);
     border-radius: var(--radius-card);
     /* Elevation by fill, like every other card: the black drop-shadow and
@@ -1390,7 +1436,8 @@
 /* ─── Hide bottom nav while the on-screen keyboard is up ───────────
  *
  * On Android, the soft keyboard slides up over the visual viewport.
- * The fixed-position bottom navbar (aria-label="Main navigation")
+ * The fixed-position bottom navbar (`nav[data-main-nav]`; not its
+ * aria-label, which is translated)
  * stays glued to viewport bottom + ends up sandwiched between the
  * form and the keyboard, blocking the input the user is typing into.
  *
@@ -1404,9 +1451,9 @@
  * — translate would still steal the input's tap target. Display:none
  * removes it entirely from the layout flow.
  */
-body.keyboard-open nav[aria-label="Main navigation"],
-body.sheet-open nav[aria-label="Main navigation"],
-body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-label="Main navigation"] {
+body.keyboard-open nav[data-main-nav],
+body.sheet-open nav[data-main-nav],
+body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[data-main-nav] {
   display: none;
 }
 

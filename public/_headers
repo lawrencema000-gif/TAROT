@@ -20,6 +20,18 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# The SPA fallback shell (every path without its own file).
+/app.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Appearance renditions (scripts/appearance-renditions.py). Named after the
+# timestamped Storage file they render, so a changed source gets a new name.
+/card-backs/r/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/backgrounds/full/*
+  Cache-Control: public, max-age=31536000, immutable
+
 # Long-cache hashed assets — filenames change on every build so it's safe.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

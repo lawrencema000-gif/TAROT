@@ -11,7 +11,7 @@ import type { PlayingCard, PlayingSuit } from '../types/cartomancy';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
-import { localizePlayingCard } from '../i18n/localizePlayingCard';
+import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
@@ -39,11 +39,23 @@ function CartomancyCardsPageBody() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const locale = getLocale();
-  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale]);
+  // re-read the corpus when it lands: the page stays mounted through a language change
+  const corpusReady = useCartomancyCorpus();
+  const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [needle, setNeedle] = useState('');
   const [detail, setDetail] = useState<PlayingCard | null>(null);
+
+  // Open at the top: the hub's rows sit far down its page, and the app has
+  // no route-level scroll reset, so this page arrived mid-list.
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0 });
+    } catch {
+      // jsdom and old WebViews
+    }
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setNeedle(query.trim().toLowerCase()), 120);
@@ -121,7 +133,7 @@ function CartomancyCardsPageBody() {
       />
 
       <Tabs<Filter>
-        fill
+        fill={false}
         size="sm"
         idPrefix="carto-cards"
         aria-label={t('cartomancy.cards.bySuit', { defaultValue: 'By suit' })}

@@ -1,5 +1,9 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useLayoutEffect, useRef, Suspense, Component, type ReactNode } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
+import { lazyWithReload } from './components/layout/staleChunk';
+import { isAuthPath, signInPathFor, authPathKeepingNext, rememberNextFrom, postAuthDestination, forgetNext } from './components/layout/authReturn';
+import { releasePrerenderedHero } from './components/layout/prerenderedHero';
+import { backgroundSrc } from './utils/imageUrl';
 import { ChevronLeft } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -20,7 +24,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
-import { ToastContainer, ListSkeleton, BrandMark, BrandWordmark } from './components/ui';
+import { ToastContainer, ListSkeleton, BrandMark, BrandWordmark, toast } from './components/ui';
 import { SearchSheet, SavedSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -40,89 +44,89 @@ import { NotFoundPage } from './pages/NotFoundPage';
 // The sign-up, sign-in and recovery screens are each one visit per account
 // (R8 §a3): a returning member never renders them, so they load on demand
 // behind the boot fallback rather than riding in the main chunk.
-const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
-const OAuthOnboardingPage = lazy(() => import('./pages/OAuthOnboardingPage').then(m => ({ default: m.OAuthOnboardingPage })));
-const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const OnboardingPage = lazyWithReload(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
+const OAuthOnboardingPage = lazyWithReload(() => import('./pages/OAuthOnboardingPage').then(m => ({ default: m.OAuthOnboardingPage })));
+const AuthPage = lazyWithReload(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
+const ResetPasswordPage = lazyWithReload(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 // Overlays that most sessions never open: mounted on first open (and kept,
 // so the Sheet's exit still plays), fetched then.
-const SettingsSheet = lazy(() => import('./components/overlays/SettingsSheet').then(m => ({ default: m.SettingsSheet })));
-const DiagnosticsSheet = lazy(() => import('./components/diagnostics/DiagnosticsPanel').then(m => ({ default: m.DiagnosticsSheet })));
-const TrialReminderModal = lazy(() => import('./components/premium/TrialReminderModal').then(m => ({ default: m.TrialReminderModal })));
+const SettingsSheet = lazyWithReload(() => import('./components/overlays/SettingsSheet').then(m => ({ default: m.SettingsSheet })));
+const DiagnosticsSheet = lazyWithReload(() => import('./components/diagnostics/DiagnosticsPanel').then(m => ({ default: m.DiagnosticsSheet })));
+const TrialReminderModal = lazyWithReload(() => import('./components/premium/TrialReminderModal').then(m => ({ default: m.TrialReminderModal })));
 // The marketing landing is a web-only cold-visitor screen; it and its
 // stylesheet load only when a signed-out browser lands on /.
-const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const LandingPage = lazyWithReload(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
 
 // Lazy imports — loaded on demand when user navigates
-const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
-const PeoplePage = lazy(() => import('./pages/PeoplePage').then(m => ({ default: m.PeoplePage })));
-const PersonDetailPage = lazy(() => import('./pages/PersonDetailPage').then(m => ({ default: m.PersonDetailPage })));
-const PersonComparePage = lazy(() => import('./pages/PersonComparePage').then(m => ({ default: m.PersonComparePage })));
-const ChartSuitePage = lazy(() => import('./pages/ChartSuitePage').then(m => ({ default: m.ChartSuitePage })));
-const ZiweiPage = lazy(() => import('./pages/ZiweiPage').then(m => ({ default: m.ZiweiPage })));
-const MansionsPage = lazy(() => import('./pages/MansionsPage').then(m => ({ default: m.MansionsPage })));
-const AuspiciousDatesPage = lazy(() => import('./pages/AuspiciousDatesPage').then(m => ({ default: m.AuspiciousDatesPage })));
-const WishingSkyPage = lazy(() => import('./pages/WishingSkyPage').then(m => ({ default: m.WishingSkyPage })));
-const QuizzesPage = lazy(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
-const HoroscopePage = lazy(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
-const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
-const JournalPage = lazy(() => import('./pages/JournalPage').then(m => ({ default: m.JournalPage })));
-const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
-const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
-const TarotMeaningsPage = lazy(() => import('./pages/TarotMeaningsPage').then(m => ({ default: m.TarotMeaningsPage })));
-const TarotCardMeaningPage = lazy(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
-const IChingPage = lazy(() => import('./pages/IChingPage').then(m => ({ default: m.IChingPage })));
-const MoodDiaryPage = lazy(() => import('./pages/MoodDiaryPage').then(m => ({ default: m.MoodDiaryPage })));
-const CommunityPage = lazy(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
-const AiCompanionPage = lazy(() => import('./pages/AiCompanionPage').then(m => ({ default: m.AiCompanionPage })));
-const AdvisorsPage = lazy(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
-const RunesPage = lazy(() => import('./pages/RunesPage').then(m => ({ default: m.RunesPage })));
-const DicePage = lazy(() => import('./pages/DicePage').then(m => ({ default: m.DicePage })));
-const CareerReportPage = lazy(() => import('./pages/CareerReportPage').then(m => ({ default: m.CareerReportPage })));
-const YearAheadReportPage = lazy(() => import('./pages/YearAheadReportPage').then(m => ({ default: m.YearAheadReportPage })));
-const NatalChartReportPage = lazy(() => import('./pages/NatalChartReportPage').then(m => ({ default: m.NatalChartReportPage })));
-const CompatInvitePage = lazy(() => import('./pages/CompatInvitePage').then(m => ({ default: m.CompatInvitePage })));
-const AdvisorBookingPage = lazy(() => import('./pages/AdvisorBookingPage').then(m => ({ default: m.AdvisorBookingPage })));
-const AdvisorSessionPage = lazy(() => import('./pages/AdvisorSessionPage').then(m => ({ default: m.AdvisorSessionPage })));
-const AdvisorDashboardPage = lazy(() => import('./pages/AdvisorDashboardPage').then(m => ({ default: m.AdvisorDashboardPage })));
-const AdvisorVerifyPage = lazy(() => import('./pages/AdvisorVerifyPage').then(m => ({ default: m.AdvisorVerifyPage })));
-const SandboxPage = lazy(() => import('./pages/SandboxPage').then(m => ({ default: m.SandboxPage })));
-const QuickReadingPage = lazy(() => import('./pages/QuickReadingPage').then(m => ({ default: m.QuickReadingPage })));
-const TarotCompanionPage = lazy(() => import('./pages/TarotCompanionPage').then(m => ({ default: m.TarotCompanionPage })));
-const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
-const LiveRoomPage = lazy(() => import('./pages/LiveRoomPage').then(m => ({ default: m.LiveRoomPage })));
-const PickACardPage = lazy(() => import('./pages/PickACardPage').then(m => ({ default: m.PickACardPage })));
-const CelestialMapPage = lazy(() => import('./pages/CelestialMapPage').then(m => ({ default: m.CelestialMapPage })));
-const SoulmateScorePage = lazy(() => import('./pages/SoulmateScorePage').then(m => ({ default: m.SoulmateScorePage })));
-const LoveTreePage = lazy(() => import('./pages/LoveTreePage').then(m => ({ default: m.LoveTreePage })));
-const MirrorPage = lazy(() => import('./pages/MirrorPage').then(m => ({ default: m.MirrorPage })));
-const SharedReadingPage = lazy(() => import('./pages/SharedReadingPage').then(m => ({ default: m.SharedReadingPage })));
-const SpreadsPage = lazy(() => import('./pages/SpreadsPage').then(m => ({ default: m.SpreadsPage })));
-const SpreadDetailPage = lazy(() => import('./pages/SpreadDetailPage').then(m => ({ default: m.SpreadDetailPage })));
-const AstrologyLearnPage = lazy(() => import('./pages/AstrologyLearnPage').then(m => ({ default: m.AstrologyLearnPage })));
-const AstrologyEntryPage = lazy(() => import('./pages/AstrologyEntryPage').then(m => ({ default: m.AstrologyEntryPage })));
-const SpreadBuilderPage = lazy(() => import('./pages/SpreadBuilderPage').then(m => ({ default: m.SpreadBuilderPage })));
-const FoolsJourneyPage = lazy(() => import('./pages/FoolsJourneyPage').then(m => ({ default: m.FoolsJourneyPage })));
-const NumerologyLearnPage = lazy(() => import('./pages/NumerologyLearnPage').then(m => ({ default: m.NumerologyLearnPage })));
-const NumerologyEntryPage = lazy(() => import('./pages/NumerologyEntryPage').then(m => ({ default: m.NumerologyEntryPage })));
-const GlossaryPage = lazy(() => import('./pages/GlossaryPage').then(m => ({ default: m.GlossaryPage })));
-const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m => ({ default: m.GlossaryEntryPage })));
-const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
-const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
-const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
+const ReadingsPage = lazyWithReload(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
+const PeoplePage = lazyWithReload(() => import('./pages/PeoplePage').then(m => ({ default: m.PeoplePage })));
+const PersonDetailPage = lazyWithReload(() => import('./pages/PersonDetailPage').then(m => ({ default: m.PersonDetailPage })));
+const PersonComparePage = lazyWithReload(() => import('./pages/PersonComparePage').then(m => ({ default: m.PersonComparePage })));
+const ChartSuitePage = lazyWithReload(() => import('./pages/ChartSuitePage').then(m => ({ default: m.ChartSuitePage })));
+const ZiweiPage = lazyWithReload(() => import('./pages/ZiweiPage').then(m => ({ default: m.ZiweiPage })));
+const MansionsPage = lazyWithReload(() => import('./pages/MansionsPage').then(m => ({ default: m.MansionsPage })));
+const AuspiciousDatesPage = lazyWithReload(() => import('./pages/AuspiciousDatesPage').then(m => ({ default: m.AuspiciousDatesPage })));
+const WishingSkyPage = lazyWithReload(() => import('./pages/WishingSkyPage').then(m => ({ default: m.WishingSkyPage })));
+const QuizzesPage = lazyWithReload(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
+const HoroscopePage = lazyWithReload(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
+const AchievementsPage = lazyWithReload(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
+const JournalPage = lazyWithReload(() => import('./pages/JournalPage').then(m => ({ default: m.JournalPage })));
+const ProfilePage = lazyWithReload(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const AdminPage = lazyWithReload(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
+const BlogPage = lazyWithReload(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
+const BlogPostPage = lazyWithReload(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
+const TarotMeaningsPage = lazyWithReload(() => import('./pages/TarotMeaningsPage').then(m => ({ default: m.TarotMeaningsPage })));
+const TarotCardMeaningPage = lazyWithReload(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
+const IChingPage = lazyWithReload(() => import('./pages/IChingPage').then(m => ({ default: m.IChingPage })));
+const MoodDiaryPage = lazyWithReload(() => import('./pages/MoodDiaryPage').then(m => ({ default: m.MoodDiaryPage })));
+const CommunityPage = lazyWithReload(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
+const AiCompanionPage = lazyWithReload(() => import('./pages/AiCompanionPage').then(m => ({ default: m.AiCompanionPage })));
+const AdvisorsPage = lazyWithReload(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
+const RunesPage = lazyWithReload(() => import('./pages/RunesPage').then(m => ({ default: m.RunesPage })));
+const DicePage = lazyWithReload(() => import('./pages/DicePage').then(m => ({ default: m.DicePage })));
+const CareerReportPage = lazyWithReload(() => import('./pages/CareerReportPage').then(m => ({ default: m.CareerReportPage })));
+const YearAheadReportPage = lazyWithReload(() => import('./pages/YearAheadReportPage').then(m => ({ default: m.YearAheadReportPage })));
+const NatalChartReportPage = lazyWithReload(() => import('./pages/NatalChartReportPage').then(m => ({ default: m.NatalChartReportPage })));
+const CompatInvitePage = lazyWithReload(() => import('./pages/CompatInvitePage').then(m => ({ default: m.CompatInvitePage })));
+const AdvisorBookingPage = lazyWithReload(() => import('./pages/AdvisorBookingPage').then(m => ({ default: m.AdvisorBookingPage })));
+const AdvisorSessionPage = lazyWithReload(() => import('./pages/AdvisorSessionPage').then(m => ({ default: m.AdvisorSessionPage })));
+const AdvisorDashboardPage = lazyWithReload(() => import('./pages/AdvisorDashboardPage').then(m => ({ default: m.AdvisorDashboardPage })));
+const AdvisorVerifyPage = lazyWithReload(() => import('./pages/AdvisorVerifyPage').then(m => ({ default: m.AdvisorVerifyPage })));
+const SandboxPage = lazyWithReload(() => import('./pages/SandboxPage').then(m => ({ default: m.SandboxPage })));
+const QuickReadingPage = lazyWithReload(() => import('./pages/QuickReadingPage').then(m => ({ default: m.QuickReadingPage })));
+const TarotCompanionPage = lazyWithReload(() => import('./pages/TarotCompanionPage').then(m => ({ default: m.TarotCompanionPage })));
+const LiveRoomsPage = lazyWithReload(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
+const LiveRoomPage = lazyWithReload(() => import('./pages/LiveRoomPage').then(m => ({ default: m.LiveRoomPage })));
+const PickACardPage = lazyWithReload(() => import('./pages/PickACardPage').then(m => ({ default: m.PickACardPage })));
+const CelestialMapPage = lazyWithReload(() => import('./pages/CelestialMapPage').then(m => ({ default: m.CelestialMapPage })));
+const SoulmateScorePage = lazyWithReload(() => import('./pages/SoulmateScorePage').then(m => ({ default: m.SoulmateScorePage })));
+const LoveTreePage = lazyWithReload(() => import('./pages/LoveTreePage').then(m => ({ default: m.LoveTreePage })));
+const MirrorPage = lazyWithReload(() => import('./pages/MirrorPage').then(m => ({ default: m.MirrorPage })));
+const SharedReadingPage = lazyWithReload(() => import('./pages/SharedReadingPage').then(m => ({ default: m.SharedReadingPage })));
+const SpreadsPage = lazyWithReload(() => import('./pages/SpreadsPage').then(m => ({ default: m.SpreadsPage })));
+const SpreadDetailPage = lazyWithReload(() => import('./pages/SpreadDetailPage').then(m => ({ default: m.SpreadDetailPage })));
+const AstrologyLearnPage = lazyWithReload(() => import('./pages/AstrologyLearnPage').then(m => ({ default: m.AstrologyLearnPage })));
+const AstrologyEntryPage = lazyWithReload(() => import('./pages/AstrologyEntryPage').then(m => ({ default: m.AstrologyEntryPage })));
+const SpreadBuilderPage = lazyWithReload(() => import('./pages/SpreadBuilderPage').then(m => ({ default: m.SpreadBuilderPage })));
+const FoolsJourneyPage = lazyWithReload(() => import('./pages/FoolsJourneyPage').then(m => ({ default: m.FoolsJourneyPage })));
+const NumerologyLearnPage = lazyWithReload(() => import('./pages/NumerologyLearnPage').then(m => ({ default: m.NumerologyLearnPage })));
+const NumerologyEntryPage = lazyWithReload(() => import('./pages/NumerologyEntryPage').then(m => ({ default: m.NumerologyEntryPage })));
+const GlossaryPage = lazyWithReload(() => import('./pages/GlossaryPage').then(m => ({ default: m.GlossaryPage })));
+const GlossaryEntryPage = lazyWithReload(() => import('./pages/GlossaryEntryPage').then(m => ({ default: m.GlossaryEntryPage })));
+const CrystalsPage = lazyWithReload(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
+const CrystalEntryPage = lazyWithReload(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
+const UnsubscribePage = lazyWithReload(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
 // The playing-card section (flag `cartomancy`): hub, reading, library, guide.
-const CartomancyPage = lazy(() => import('./pages/CartomancyPage').then(m => ({ default: m.CartomancyPage })));
-const CartomancyReadingPage = lazy(() => import('./pages/CartomancyReadingPage').then(m => ({ default: m.CartomancyReadingPage })));
-const CartomancyCardsPage = lazy(() => import('./pages/CartomancyCardsPage').then(m => ({ default: m.CartomancyCardsPage })));
-const CartomancyCardPage = lazy(() => import('./pages/CartomancyCardPage').then(m => ({ default: m.CartomancyCardPage })));
-const CartomancyGuidePage = lazy(() => import('./pages/CartomancyGuidePage').then(m => ({ default: m.CartomancyGuidePage })));
-const CartomancyLessonPage = lazy(() => import('./pages/CartomancyLessonPage').then(m => ({ default: m.CartomancyLessonPage })));
+const CartomancyPage = lazyWithReload(() => import('./pages/CartomancyPage').then(m => ({ default: m.CartomancyPage })));
+const CartomancyReadingPage = lazyWithReload(() => import('./pages/CartomancyReadingPage').then(m => ({ default: m.CartomancyReadingPage })));
+const CartomancyCardsPage = lazyWithReload(() => import('./pages/CartomancyCardsPage').then(m => ({ default: m.CartomancyCardsPage })));
+const CartomancyCardPage = lazyWithReload(() => import('./pages/CartomancyCardPage').then(m => ({ default: m.CartomancyCardPage })));
+const CartomancyGuidePage = lazyWithReload(() => import('./pages/CartomancyGuidePage').then(m => ({ default: m.CartomancyGuidePage })));
+const CartomancyLessonPage = lazyWithReload(() => import('./pages/CartomancyLessonPage').then(m => ({ default: m.CartomancyLessonPage })));
 // Hidden /dev/redesign-showcase route — Phase 1 preview surface.
 // Not in BottomNav, not in any in-app link. Reach via URL only. Lazy
 // so it doesn't enter the main bundle.
-const RedesignShowcasePage = lazy(() => import('./pages/RedesignShowcasePage').then(m => ({ default: m.RedesignShowcasePage })));
+const RedesignShowcasePage = lazyWithReload(() => import('./pages/RedesignShowcasePage').then(m => ({ default: m.RedesignShowcasePage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -141,12 +145,13 @@ const ONBOARDING_KEY = 'arcana_onboarding_complete';
 const isDev = import.meta.env.DEV;
 
 /** The boot screen, also the fallback while a lazily loaded entry screen arrives. */
-function BootFallback({ message }: { message: string }) {
+function BootFallback({ message, children }: { message: string; children?: ReactNode }) {
   return (
     <div className="min-h-screen flex items-center justify-center constellation-bg">
       <div className="text-center">
         <div className="loading-constellation mx-auto mb-4" />
         <p className="text-mystic-400">{message}</p>
+        {children}
       </div>
     </div>
   );
@@ -155,6 +160,54 @@ function BootFallback({ message }: { message: string }) {
 /** Public paths of the playing-card section; the reading itself needs an account. */
 function isPublicCartomancyPath(pathname: string): boolean {
   return pathname.startsWith('/cartomancy') && !pathname.startsWith('/cartomancy/reading');
+}
+
+/** Paths a signed-out visitor reads in the public shell (SEO content, shared links). */
+function isPublicPath(pathname: string): boolean {
+  return (
+    pathname.startsWith('/blog') ||
+    pathname.startsWith('/tarot-meanings') ||
+    pathname.startsWith('/reading/') ||
+    pathname.startsWith('/spreads') ||
+    pathname.startsWith('/astrology') ||
+    pathname.startsWith('/numerology') ||
+    pathname.startsWith('/glossary') ||
+    pathname.startsWith('/crystals') ||
+    pathname.startsWith('/unsubscribe') ||
+    pathname.startsWith('/dev/') ||
+    isPublicCartomancyPath(pathname)
+  );
+}
+
+/**
+ * The signed-in table's answer to /signin and /signup: those are signed-out
+ * screens, and the visitor standing on one has just signed in (password,
+ * sign-up, or an OAuth return to /signin). Go where they were headed.
+ */
+function PostAuthRedirect() {
+  const { search } = useLocation();
+  const [to] = useState(() => postAuthDestination(search));
+  useEffect(() => { forgetNext(); }, []);
+  return <Navigate to={to} replace />;
+}
+
+/**
+ * Around an overlay that loads on demand. A chunk that cannot load (after
+ * lazyWithReload's one reload) closes the overlay with a toast instead of
+ * taking down the whole app, which is what the outer boundary did.
+ */
+class OverlayBoundary extends Component<{ children: ReactNode; message: string }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.error('[overlay] failed to load', error);
+    toast(this.props.message, 'error');
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 async function initializeNativeFeatures() {
@@ -273,10 +326,23 @@ function AppContent() {
   const { ritualCompleted } = useRitual();
   const { openDiagnostics } = useDiagnostics();
   usePostCheckout();
+  // Native only: the Capacitor shell has no /signin or /signup in its
+  // address bar, so which entry screen shows is state. On the web it is the
+  // URL alone (below), so Back, a bookmark and a shared link all agree.
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);
-  const [showAuthForm, setShowAuthForm] = useState(false);
+  // Set when sign-up finishes without a session (a confirmation email is
+  // pending): /signup then shows the sign-in form, not step one again.
+  const [signupDone, setSignupDone] = useState(false);
+  const web = !isNative();
+  const path = location.pathname;
+  const onboardingOpen = web ? path === '/signup' && !signupDone : showOnboarding;
+  const authFormOpen = web ? path === '/signin' || (path === '/signup' && signupDone) : true;
+  // A visitor who signs out stays on whatever member URL they were reading;
+  // they go to `/`, not to a sign-in form that would bring the next person
+  // back to the last one's page.
+  const wasSignedIn = useRef(false);
 
 
   useEffect(() => {
@@ -300,13 +366,22 @@ function AppContent() {
   // lane: "arcana login", "arcana sign up", "tarotlife login", etc.
   useEffect(() => {
     if (location.pathname === '/signin') {
-      setShowAuthForm(true);
       setShowOnboarding(false);
     } else if (location.pathname === '/signup') {
       setShowOnboarding(true);
-      setShowAuthForm(false);
     }
   }, [location.pathname]);
+
+  // A `next` on an auth screen survives the trip through Google: the OAuth
+  // return strips the query string (AuthContext) before the redirect reads it.
+  useEffect(() => {
+    if (!user && isAuthPath(location.pathname)) rememberNextFrom(location.search);
+  }, [user, location.pathname, location.search]);
+
+  useEffect(() => {
+    if (user) wasSignedIn.current = true;
+    else if (!loading && location.pathname === '/') wasSignedIn.current = false;
+  }, [user, loading, location.pathname]);
 
   useEffect(() => {
     // Web: cold visitors land on the marketing LandingPage (social proof,
@@ -431,36 +506,129 @@ function AppContent() {
   const handleOnboardingComplete = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
+    // With a session this render is already the signed-in app (the profile
+    // step, then the /signup redirect); without one, the sign-in form.
+    setSignupDone(true);
   };
 
   const handleSwitchToSignIn = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
-    setShowAuthForm(true);
-    if (!isNative()) navigate('/signin', { replace: true });
+    if (web) navigate(authPathKeepingNext('/signin', location.search), { replace: true });
   };
 
-  if (loading || checkingOnboarding || isProcessingOAuth) {
+  const handleSwitchToOnboarding = () => {
+    setShowOnboarding(true);
+    setSignupDone(false);
+    if (web) navigate(authPathKeepingNext('/signup', location.search));
+  };
+
+  // The signed-in route table. One list, so the signed-out branch can tell a
+  // member page (send to sign-in, then back here) from an unknown path (404).
+  const memberRoutes: Array<{ path: string; element: JSX.Element }> = [
+    { path: '/', element: <HomePage /> },
+    { path: '/readings', element: <ReadingsPage /> },
+    { path: '/quizzes', element: <QuizzesPage /> },
+    { path: '/horoscope', element: <HoroscopePage /> },
+    { path: '/achievements', element: <AchievementsPage /> },
+    { path: '/journal', element: <JournalPage /> },
+    { path: '/profile', element: <ProfilePage /> },
+    { path: '/blog', element: <BlogPage /> },
+    { path: '/blog/:slug', element: <BlogPostPage /> },
+    { path: '/admin', element: <AdminPage /> },
+    { path: '/iching', element: gated(ichingEnabled, <IChingPage />, <Navigate to="/" replace />) },
+    { path: '/mood-diary', element: <MoodDiaryPage /> },
+    // The learn library. These were only in the public table, so a member
+    // following a footer link or "Back to glossary" bounced to Home.
+    { path: '/tarot-meanings', element: <TarotMeaningsPage /> },
+    { path: '/tarot-meanings/:slug', element: <TarotCardMeaningPage /> },
+    { path: '/glossary', element: <GlossaryPage /> },
+    { path: '/glossary/:slug', element: <GlossaryEntryPage /> },
+    { path: '/numerology', element: <NumerologyLearnPage /> },
+    { path: '/numerology/:slug', element: <NumerologyEntryPage /> },
+    { path: '/crystals', element: <CrystalsPage /> },
+    { path: '/crystals/:slug', element: <CrystalEntryPage /> },
+    { path: '/community', element: <CommunityPage mode="normal" /> },
+    { path: '/whispering-well', element: <CommunityPage mode="whispering-well" /> },
+    { path: '/companion', element: <AiCompanionPage /> },
+    { path: '/advisors', element: gated(advisorsEnabled, <AdvisorsPage />, <Navigate to="/" replace />) },
+    { path: '/runes', element: <RunesPage /> },
+    { path: '/dice', element: <DicePage /> },
+    { path: '/reports/career', element: <CareerReportPage /> },
+    { path: '/reports/year-ahead', element: <YearAheadReportPage /> },
+    { path: '/reports/natal-chart', element: <NatalChartReportPage /> },
+    { path: '/invite/:code', element: <CompatInvitePage /> },
+    { path: '/advisors/:slug/book', element: gated(advisorsEnabled, <AdvisorBookingPage />, <Navigate to="/" replace />) },
+    { path: '/advisors/session/:id', element: gated(advisorsEnabled, <AdvisorSessionPage />, <Navigate to="/" replace />) },
+    { path: '/ai/quick', element: <QuickReadingPage /> },
+    { path: '/ai/tarot', element: <TarotCompanionPage /> },
+    { path: '/live-rooms', element: gated(liveRoomsEnabled, <LiveRoomsPage />, <Navigate to="/" replace />) },
+    { path: '/live-rooms/:id', element: gated(liveRoomsEnabled, <LiveRoomPage />, <Navigate to="/" replace />) },
+    { path: '/advisors/verify', element: gated(advisorsEnabled, <AdvisorVerifyPage />, <Navigate to="/" replace />) },
+    { path: '/sandbox', element: gated(sandboxEnabled, <SandboxPage />, <Navigate to="/" replace />) },
+    { path: '/advisors/dashboard', element: gated(advisorsEnabled, <AdvisorDashboardPage />, <Navigate to="/" replace />) },
+    { path: '/pick-a-card', element: <PickACardPage /> },
+    { path: '/celestial-map', element: <CelestialMapPage /> },
+    { path: '/soulmate-score', element: <SoulmateScorePage /> },
+    { path: '/love-tree', element: <LoveTreePage /> },
+    { path: '/mirror', element: <MirrorPage /> },
+    { path: '/people', element: <PeoplePage /> },
+    { path: '/people/:id', element: <PersonDetailPage /> },
+    { path: '/people/:id/compare', element: <PersonComparePage /> },
+    { path: '/charts', element: <ChartSuitePage /> },
+    { path: '/ziwei', element: <ZiweiPage /> },
+    { path: '/mansions', element: <MansionsPage /> },
+    { path: '/good-days', element: <AuspiciousDatesPage /> },
+    { path: '/wishing-sky', element: <WishingSkyPage /> },
+    { path: '/reading/:token', element: <SharedReadingPage /> },
+    { path: '/spreads', element: <SpreadsPage /> },
+    { path: '/spreads/:slug', element: <SpreadDetailPage /> },
+    { path: '/astrology', element: <AstrologyLearnPage /> },
+    { path: '/astrology/:slug', element: <AstrologyEntryPage /> },
+    { path: '/spreads/builder', element: <SpreadBuilderPage /> },
+    { path: '/journey', element: <FoolsJourneyPage /> },
+    { path: '/unsubscribe', element: <UnsubscribePage /> },
+    { path: '/cartomancy', element: gated(cartomancyEnabled, <CartomancyPage />, <Navigate to="/" replace />) },
+    { path: '/cartomancy/reading', element: gated(cartomancyEnabled, <CartomancyReadingPage />, <Navigate to="/" replace />) },
+    { path: '/cartomancy/cards', element: gated(cartomancyEnabled, <CartomancyCardsPage />, <Navigate to="/" replace />) },
+    { path: '/cartomancy/cards/:slug', element: gated(cartomancyEnabled, <CartomancyCardPage />, <Navigate to="/" replace />) },
+    { path: '/cartomancy/guide', element: gated(cartomancyEnabled, <CartomancyGuidePage />, <Navigate to="/" replace />) },
+    { path: '/cartomancy/guide/:lesson', element: gated(cartomancyEnabled, <CartomancyLessonPage />, <Navigate to="/" replace />) },
+    ...(isDev ? [{ path: '/dev/redesign-showcase', element: <RedesignShowcasePage /> }] : []),
+    // Legacy: the Dice Oracle linked here before the AI hub moved under
+    // /ai; an installed shortcut or a bookmark may still.
+    { path: '/quick-reading', element: <Navigate to="/ai/quick" replace /> },
+  ];
+  const isMemberRoute = path !== '/' && !!matchRoutes(memberRoutes.map((r) => ({ path: r.path })), path);
+
+  // The prerendered landing hero stays up while the app boots, and goes the
+  // moment the app settles on anything other than the landing (LandingPage
+  // releases it itself, in the frame it paints).
+  const booting = loading || checkingOnboarding || isProcessingOAuth;
+  const landingAhead = !user && web && path === '/';
+  useLayoutEffect(() => {
+    if (!booting && !landingAhead) releasePrerenderedHero();
+  }, [booting, landingAhead]);
+
+  if (booting) {
     return (
-      <div className="min-h-screen flex items-center justify-center constellation-bg">
-        <div className="text-center">
-          <div className="loading-constellation mx-auto mb-4" />
-          <p className="text-mystic-400">
-            {isProcessingOAuth ? 'Completing sign in...' : 'Loading your daily ritual...'}
-          </p>
-          {isProcessingOAuth && showOAuthCancel && (
-            <div className="mt-6 space-y-2">
-              <p className="text-mystic-500 text-meta">Taking longer than expected?</p>
-              <button
-                onClick={cancelOAuth}
-                className="px-4 py-2 text-ui text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
-              >
-                {t('authBootstrap.backToSignIn', { defaultValue: 'Back to sign in' })}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <BootFallback
+        message={isProcessingOAuth
+          ? t('authBootstrap.completingSignIn', { defaultValue: 'Completing sign-in…' })
+          : t('authBootstrap.loadingRitual', { defaultValue: 'Loading your daily ritual…' })}
+      >
+        {isProcessingOAuth && showOAuthCancel && (
+          <div className="mt-6 space-y-2">
+            <p className="text-mystic-500 text-meta">{t('authBootstrap.takingLonger', { defaultValue: 'Taking longer than expected?' })}</p>
+            <button
+              onClick={cancelOAuth}
+              className="px-4 py-2 text-ui text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
+            >
+              {t('authBootstrap.backToSignIn', { defaultValue: 'Back to sign in' })}
+            </button>
+          </div>
+        )}
+      </BootFallback>
     );
   }
 
@@ -482,8 +650,18 @@ function AppContent() {
     );
   }
 
-  // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe') || location.pathname.startsWith('/dev/') || isPublicCartomancyPath(location.pathname))) {
+  // Signed out on a member page (a "Start a reading" tap, a bookmark, an
+  // invite link): sign in, then come back to it. After a sign-out the URL
+  // still names the last member's page; that visitor goes to `/` instead.
+  if (!user && isMemberRoute && !isPublicPath(path)) {
+    return <Navigate to={wasSignedIn.current ? '/' : signInPathFor(`${path}${location.search}${location.hash}`)} replace />;
+  }
+
+  // Public content pages (SEO) — render before auth guard. A web path that is
+  // neither public, a member page, `/` nor an auth screen is unknown, and gets
+  // the public shell's 404 rather than the marketing landing at a wrong URL.
+  const signedOutUnknown = web && path !== '/' && !isAuthPath(path) && !isMemberRoute;
+  if (!user && (isPublicPath(path) || signedOutUnknown)) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -491,7 +669,7 @@ function AppContent() {
               section links take a line of their own beneath, so four items
               never push the page wider than the screen. */}
           <nav className="flex flex-wrap items-center justify-between gap-x-4 px-4 sm:px-6 py-3 sm:py-4 max-w-5xl mx-auto">
-            <a href="/" className="no-underline flex items-center gap-2 min-h-[44px]" aria-label="Arcana home">
+            <a href="/" className="no-underline flex items-center gap-2 min-h-[44px]" aria-label={t('publicNav.home', { defaultValue: 'Arcana home' })}>
               <BrandMark size={22} className="text-gold" />
               <BrandWordmark size={20} sparkle={false} />
             </a>
@@ -549,7 +727,7 @@ function AppContent() {
     );
   }
 
-  if (showOnboarding && !user) {
+  if (onboardingOpen && !user) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
@@ -564,15 +742,12 @@ function AppContent() {
 
   if (!user) {
     // Native (Android): always show auth form directly
-    // Web: show marketing landing page, with option to switch to auth form
-    if (isNative() || showAuthForm) {
+    // Web: /signin shows it; `/` shows the marketing landing
+    if (authFormOpen) {
       return (
         <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
           <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
-            <AuthPage onSwitchToOnboarding={() => {
-              setShowOnboarding(true);
-              if (!isNative()) navigate('/signup');
-            }} />
+            <AuthPage onSwitchToOnboarding={handleSwitchToOnboarding} />
           </Suspense>
         </ErrorBoundary>
       );
@@ -581,8 +756,8 @@ function AppContent() {
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <Suspense fallback={<div className="min-h-screen bg-mystic-950" aria-busy="true" />}>
           <LandingPage
-            onSignIn={() => { setShowAuthForm(true); navigate('/signin'); }}
-            onGetStarted={() => { setShowOnboarding(true); navigate('/signup'); }}
+            onSignIn={() => navigate('/signin')}
+            onGetStarted={() => navigate('/signup')}
           />
         </Suspense>
       </ErrorBoundary>
@@ -605,7 +780,7 @@ function AppContent() {
       <div className="min-h-screen flex items-center justify-center constellation-bg">
         <div className="text-center">
           <div className="loading-constellation mx-auto mb-4" />
-          <p className="text-mystic-400">Loading your profile...</p>
+          <p className="text-mystic-400">{t('authBootstrap.loadingProfile', { defaultValue: 'Loading your profile…' })}</p>
         </div>
       </div>
     );
@@ -622,10 +797,12 @@ function AppContent() {
         ) : profile?.background_url ? (
           <div className="fixed inset-0 z-0">
             <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-ambient"
-              style={{ backgroundImage: `url(${profile.background_url})` }}
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-ambient"
+              style={{ backgroundImage: `url(${backgroundSrc(profile.background_url)})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
+            {/* One flat scrim: the painting is texture under the text, not a
+                picture to look at. */}
+            <div className="absolute inset-0 bg-mystic-950/85" />
           </div>
         ) : (
           <div className="fixed inset-0 z-0 opacity-60" />
@@ -658,79 +835,11 @@ function AppContent() {
                 transition={{ duration: 0.15 }}
               >
                 <Routes location={location}>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/readings" element={<ReadingsPage />} />
-                  <Route path="/quizzes" element={<QuizzesPage />} />
-                  <Route path="/horoscope" element={<HoroscopePage />} />
-                  <Route path="/achievements" element={<AchievementsPage />} />
-                  <Route path="/journal" element={<JournalPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:slug" element={<BlogPostPage />} />
-                  <Route path="/admin" element={<AdminPage />} />
-                  <Route path="/iching" element={gated(ichingEnabled, <IChingPage />, <Navigate to="/" replace />)} />
-                  <Route path="/mood-diary" element={<MoodDiaryPage />} />
-                  {/* The learn library. These were only in the public table, so
-                      a member following a footer link or "Back to glossary"
-                      bounced to Home. */}
-                  <Route path="/tarot-meanings" element={<TarotMeaningsPage />} />
-                  <Route path="/tarot-meanings/:slug" element={<TarotCardMeaningPage />} />
-                  <Route path="/glossary" element={<GlossaryPage />} />
-                  <Route path="/glossary/:slug" element={<GlossaryEntryPage />} />
-                  <Route path="/numerology" element={<NumerologyLearnPage />} />
-                  <Route path="/numerology/:slug" element={<NumerologyEntryPage />} />
-                  <Route path="/crystals" element={<CrystalsPage />} />
-                  <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
-                  <Route path="/community" element={<CommunityPage mode="normal" />} />
-                  <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
-                  <Route path="/companion" element={<AiCompanionPage />} />
-                  <Route path="/advisors" element={gated(advisorsEnabled, <AdvisorsPage />, <Navigate to="/" replace />)} />
-                  <Route path="/runes" element={<RunesPage />} />
-                  <Route path="/dice" element={<DicePage />} />
-                  <Route path="/reports/career" element={<CareerReportPage />} />
-                  <Route path="/reports/year-ahead" element={<YearAheadReportPage />} />
-                  <Route path="/reports/natal-chart" element={<NatalChartReportPage />} />
-                  <Route path="/invite/:code" element={<CompatInvitePage />} />
-                  <Route path="/advisors/:slug/book" element={gated(advisorsEnabled, <AdvisorBookingPage />, <Navigate to="/" replace />)} />
-                  <Route path="/advisors/session/:id" element={gated(advisorsEnabled, <AdvisorSessionPage />, <Navigate to="/" replace />)} />
-                  <Route path="/ai/quick" element={<QuickReadingPage />} />
-                  <Route path="/ai/tarot" element={<TarotCompanionPage />} />
-                  <Route path="/live-rooms" element={gated(liveRoomsEnabled, <LiveRoomsPage />, <Navigate to="/" replace />)} />
-                  <Route path="/live-rooms/:id" element={gated(liveRoomsEnabled, <LiveRoomPage />, <Navigate to="/" replace />)} />
-                  <Route path="/advisors/verify" element={gated(advisorsEnabled, <AdvisorVerifyPage />, <Navigate to="/" replace />)} />
-                  <Route path="/sandbox" element={gated(sandboxEnabled, <SandboxPage />, <Navigate to="/" replace />)} />
-                  <Route path="/advisors/dashboard" element={gated(advisorsEnabled, <AdvisorDashboardPage />, <Navigate to="/" replace />)} />
-                  <Route path="/pick-a-card" element={<PickACardPage />} />
-                  <Route path="/celestial-map" element={<CelestialMapPage />} />
-                  <Route path="/soulmate-score" element={<SoulmateScorePage />} />
-                  <Route path="/love-tree" element={<LoveTreePage />} />
-                  <Route path="/mirror" element={<MirrorPage />} />
-                  <Route path="/people" element={<PeoplePage />} />
-                  <Route path="/people/:id" element={<PersonDetailPage />} />
-                  <Route path="/people/:id/compare" element={<PersonComparePage />} />
-                  <Route path="/charts" element={<ChartSuitePage />} />
-                  <Route path="/ziwei" element={<ZiweiPage />} />
-                  <Route path="/mansions" element={<MansionsPage />} />
-                  <Route path="/good-days" element={<AuspiciousDatesPage />} />
-                  <Route path="/wishing-sky" element={<WishingSkyPage />} />
-                  <Route path="/reading/:token" element={<SharedReadingPage />} />
-                  <Route path="/spreads" element={<SpreadsPage />} />
-                  <Route path="/spreads/:slug" element={<SpreadDetailPage />} />
-                  <Route path="/astrology" element={<AstrologyLearnPage />} />
-                  <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
-                  <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
-                  <Route path="/journey" element={<FoolsJourneyPage />} />
-                  <Route path="/unsubscribe" element={<UnsubscribePage />} />
-                  <Route path="/cartomancy" element={gated(cartomancyEnabled, <CartomancyPage />, <Navigate to="/" replace />)} />
-                  <Route path="/cartomancy/reading" element={gated(cartomancyEnabled, <CartomancyReadingPage />, <Navigate to="/" replace />)} />
-                  <Route path="/cartomancy/cards" element={gated(cartomancyEnabled, <CartomancyCardsPage />, <Navigate to="/" replace />)} />
-                  <Route path="/cartomancy/cards/:slug" element={gated(cartomancyEnabled, <CartomancyCardPage />, <Navigate to="/" replace />)} />
-                  <Route path="/cartomancy/guide" element={gated(cartomancyEnabled, <CartomancyGuidePage />, <Navigate to="/" replace />)} />
-                  <Route path="/cartomancy/guide/:lesson" element={gated(cartomancyEnabled, <CartomancyLessonPage />, <Navigate to="/" replace />)} />
-                  {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
-                  {/* Legacy: the Dice Oracle linked here before the AI hub moved
-                      under /ai; an installed shortcut or a bookmark may still. */}
-                  <Route path="/quick-reading" element={<Navigate to="/ai/quick" replace />} />
+                  {memberRoutes.map((r) => <Route key={r.path} path={r.path} element={r.element} />)}
+                  {/* Signed-out screens. Standing on one signed in means the
+                      sign-in, the sign-up or the OAuth return just finished. */}
+                  <Route path="/signin" element={<PostAuthRedirect />} />
+                  <Route path="/signup" element={<PostAuthRedirect />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </motion.div>
@@ -763,12 +872,14 @@ function AppContent() {
           onClose={closeOverlay}
         />
         {settingsMounted && (
-          <Suspense fallback={null}>
-            <SettingsSheet
-              open={activeOverlay === 'settings'}
-              onClose={closeOverlay}
-            />
-          </Suspense>
+          <OverlayBoundary message={t('shell.overlayFailed', { defaultValue: 'This panel could not open. Reload the app and try again.' })}>
+            <Suspense fallback={null}>
+              <SettingsSheet
+                open={activeOverlay === 'settings'}
+                onClose={closeOverlay}
+              />
+            </Suspense>
+          </OverlayBoundary>
         )}
         {levelUpEvent && (
           <LevelUpCelebration
@@ -786,15 +897,18 @@ function AppContent() {
             userId={user.id}
           />
         )}
-        <Suspense fallback={null}>
-          <TrialReminderModal />
-        </Suspense>
+        <OverlayBoundary message={t('shell.overlayFailed', { defaultValue: 'This panel could not open. Reload the app and try again.' })}>
+          <Suspense fallback={null}>
+            <TrialReminderModal />
+          </Suspense>
+        </OverlayBoundary>
       </div>
     </ErrorBoundary>
   );
 }
 
 function GlobalDiagnosticsSheet() {
+  const { t } = useT('app');
   const { isOpen, closeDiagnostics } = useDiagnostics();
   // Fetched on the first open and kept mounted after, like the settings sheet.
   const [mounted, setMounted] = useState(false);
@@ -802,10 +916,14 @@ function GlobalDiagnosticsSheet() {
     if (isOpen) setMounted(true);
   }, [isOpen]);
   if (!mounted) return null;
+  // Mounted beside AppContent, under no boundary of its own: a chunk that
+  // failed here used to unmount the whole root.
   return (
-    <Suspense fallback={null}>
-      <DiagnosticsSheet open={isOpen} onClose={closeDiagnostics} />
-    </Suspense>
+    <OverlayBoundary message={t('shell.overlayFailed', { defaultValue: 'This panel could not open. Reload the app and try again.' })}>
+      <Suspense fallback={null}>
+        <DiagnosticsSheet open={isOpen} onClose={closeDiagnostics} />
+      </Suspense>
+    </OverlayBoundary>
   );
 }
 

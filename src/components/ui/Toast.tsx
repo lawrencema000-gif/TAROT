@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -39,6 +40,7 @@ const EASE_OUT: [number, number, number, number] = [0.22, 0.8, 0.25, 1];
 const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1];
 
 function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
+  const { t } = useT('common');
   const Icon = icons[type];
 
   useEffect(() => {
@@ -53,12 +55,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
   };
 
   return (
-    <div
-      // An error interrupts (assertive); everything else rides the
-      // container's polite status region.
-      role={type === 'error' ? 'alert' : undefined}
-      className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3"
-    >
+    <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3">
       <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-ui text-mystic-100">{message}</p>
@@ -81,7 +78,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
       </div>
       <button
         onClick={() => onDismiss(id)}
-        aria-label="Dismiss"
+        aria-label={t('actions.dismiss', { defaultValue: 'Dismiss' })}
         className="
           text-mystic-400 flex-shrink-0 rounded-lg min-h-[44px] min-w-[44px] -my-2 -mr-3 flex items-center justify-center
           transition-[transform,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
@@ -91,7 +88,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
         "
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4" aria-hidden />
       </button>
     </div>
   );
@@ -182,33 +179,48 @@ export function ToastContainer() {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  return (
-    // A live region, mounted empty from the start, so a screen reader hears
-    // each toast as it arrives ("Reading saved") instead of nothing at all.
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed bottom-24 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none md:left-auto md:right-6 md:max-w-sm"
+  const renderToast = (t: Toast) => (
+    <motion.div
+      key={t.id}
+      layout={!reduce}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={
+        reduce
+          ? { opacity: 0, transition: { duration: 0.12 } }
+          : { opacity: 0, scale: 0.96, transition: { duration: 0.16, ease: EASE_IN } }
+      }
+      transition={reduce ? { duration: 0.12 } : { duration: 0.2, ease: EASE_OUT }}
+      className="pointer-events-auto"
     >
-      <AnimatePresence initial={false}>
-        {toasts.map(t => (
-          <motion.div
-            key={t.id}
-            layout={!reduce}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={
-              reduce
-                ? { opacity: 0, transition: { duration: 0.12 } }
-                : { opacity: 0, scale: 0.96, transition: { duration: 0.16, ease: EASE_IN } }
-            }
-            transition={reduce ? { duration: 0.12 } : { duration: 0.2, ease: EASE_OUT }}
-            className="pointer-events-auto"
-          >
-            <ToastItem {...t} onDismiss={dismiss} />
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      <ToastItem {...t} onDismiss={dismiss} />
+    </motion.div>
+  );
+
+  // Two sibling live regions, both mounted empty from the start so a screen
+  // reader hears each toast as it arrives: a polite status for success and
+  // info, an assertive alert for errors. An error used to be a role="alert"
+  // inside the polite region, and nested live regions are announced twice
+  // (the alert, then the region's addition) by NVDA, JAWS and VoiceOver.
+  // The stack itself is one column; errors sit nearest the bottom edge.
+  // (Neither region is ever display:none: a live region has to be in the
+  // accessibility tree before its content changes, or nothing is announced.)
+  const polite = toasts.filter(t => t.type !== 'error');
+  const errors = toasts.filter(t => t.type === 'error');
+  return (
+    <div className="fixed bottom-24 left-4 right-4 z-50 flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm">
+      <LayoutGroup>
+        <div role="status" aria-live="polite" className="flex flex-col gap-2">
+          <AnimatePresence initial={false}>
+            {polite.map(renderToast)}
+          </AnimatePresence>
+        </div>
+        <div role="alert" aria-live="assertive" className={`flex flex-col gap-2 ${polite.length && errors.length ? 'mt-2' : ''}`}>
+          <AnimatePresence initial={false}>
+            {errors.map(renderToast)}
+          </AnimatePresence>
+        </div>
+      </LayoutGroup>
     </div>
   );
 }

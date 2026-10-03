@@ -7,15 +7,10 @@ import { fullDeck } from '../data/tarotDeck';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { localizeCards } from '../i18n/localizeCard';
+import { cardMeaningPath } from '../components/readings/tarot/cardSlug';
 import { getLocale } from '../i18n/config';
 import type { TarotCard } from '../types';
 
-// Slug lookup always uses English names so URLs stay stable across locales.
-const enNameById: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));
-function slugFromCardId(id: number): string {
-  const enName = enNameById.get(id) ?? '';
-  return enName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
 
 const SUITS: DeckFilter[] = ['major', 'wands', 'cups', 'swords', 'pentacles'];
 
@@ -39,7 +34,8 @@ export function TarotMeaningsPage() {
   const suitParam = params.get('suit');
   const initialFilter: DeckFilter = SUITS.includes(suitParam as DeckFilter) ? (suitParam as DeckFilter) : 'all';
 
-  const open = (card: TarotCard) => navigate(`/tarot-meanings/${slugFromCardId(card.id)}`);
+  // By id through the one canonical slug, so a localized name still opens its page.
+  const open = (card: TarotCard) => navigate(cardMeaningPath(card.id));
 
   return (
     <div className="tm-page py-6 sm:py-10 space-y-4">

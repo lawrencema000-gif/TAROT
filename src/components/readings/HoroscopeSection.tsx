@@ -22,7 +22,6 @@ import { fullDeck } from '../../data/tarotDeck';
 import { localizeCard } from '../../i18n/localizeCard';
 import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
-import { checkAchievementProgress } from '../../services/achievements';
 import { appStorage } from '../../lib/appStorage';
 import { useT } from '../../i18n/useT';
 import { localDateStr } from '../../utils/localDate';
@@ -118,9 +117,10 @@ function useHoroscopeXp(today: string) {
     appStorage.get(key).then((val) => {
       if (val) return;
       appStorage.set(key, '1');
+      // awardXP reports 'horoscope_viewed' to the badges itself — once a day,
+      // with the XP. A second report on every mount counted each visit again.
       awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
     });
-    checkAchievementProgress(user.id, 'horoscope_viewed');
   }, [user, today]);
 }
 

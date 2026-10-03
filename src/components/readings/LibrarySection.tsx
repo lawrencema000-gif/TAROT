@@ -21,7 +21,7 @@ import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
 import { tArray } from '../../utils/tArray';
 import { CARTO_LESSONS, getPlayingCard } from '../../data/cartomancy';
-import { localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
+import { localizeCartoLesson, localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 import {
   SavedReadingSheet,
@@ -82,11 +82,21 @@ const GUIDE_IDS = [
 /** Lessons 1–3 and 5: the deck, the suits, the numbers, red and black. */
 const CARTO_DIGEST_SLUGS = ['the-deck-in-your-hand', 'the-four-suits', 'numbers-ace-to-ten', 'red-and-black'];
 
+/**
+ * The digest in the reader's language: each lesson through the cartomancy
+ * corpus (localizeCartoLesson). Built when the sheet renders, never when
+ * the guide is tapped, so a corpus that lands after the tap still shows;
+ * the sheet waits for it (see `guideCorpusReady`).
+ */
 function cartomancyDigest(): GuideSection[] {
   return CARTO_DIGEST_SLUGS.map((slug) => {
-    const lesson = CARTO_LESSONS.find((l) => l.slug === slug);
-    if (!lesson) return { title: slug, content: '' };
-    return { title: lesson.title, content: `${lesson.lede}\n\n${lesson.points.slice(0, 3).join(' ')}` };
+    const english = CARTO_LESSONS.find((l) => l.slug === slug);
+    if (!english) return { title: slug, content: '' };
+    const lesson = localizeCartoLesson(english);
+    // Points are whole sentences: joined with a space in Latin and Korean,
+    // run on after a full-width stop in Japanese and Chinese.
+    const points = lesson.points.slice(0, 3).reduce((acc, p) => (!acc ? p : /[。！？」』]$/.test(acc) ? acc + p : `${acc} ${p}`), '');
+    return { title: lesson.title, content: `${lesson.lede}\n\n${points}` };
   });
 }
 
@@ -288,6 +298,13 @@ export function LibrarySection() {
   // Saved playing-card readings name their cards from the cartomancy
   // corpus, which ja/ko/zh fetch on demand: only when one is in the list.
   const cartoReady = useCartomancyCorpus(tarotReadings.some((r) => isPlayingReading(r)));
+  // The playing-card guide reads its lessons from the same corpus.
+  const guideCorpusReady = useCartomancyCorpus(selectedGuide?.id === 'cartomancy-basics');
+  const guideSections = selectedGuide
+    ? selectedGuide.id === 'cartomancy-basics'
+      ? cartomancyDigest()
+      : selectedGuide.sections
+    : [];
 
   /** A saved reading's card names for its row: localized tarot names, or the playing cards' names. */
   const savedCardNames = (reading: TarotReading): string[] => {
@@ -646,9 +663,14 @@ export function LibrarySection() {
           <div className="space-y-6">
             <p className="reading-lede">{selectedGuide.description}</p>
 
+            {selectedGuide.id === 'cartomancy-basics' && !guideCorpusReady ? (
+              <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+                <ListSkeleton count={3} />
+              </div>
+            ) : (
             <Paper>
               <div className="space-y-6">
-                {selectedGuide.sections.map((section, i) => (
+                {guideSections.map((section, i) => (
                   <section key={i}>
                     <h3 className="heading-display-md heading-strong text-ink flex items-baseline gap-2">
                       <span className="text-caption font-body font-semibold tabular-nums text-ink-muted">{i + 1}</span>
@@ -663,6 +685,7 @@ export function LibrarySection() {
                 ))}
               </div>
             </Paper>
+            )}
 
             {selectedGuide.id === 'cartomancy-basics' ? (
               <Link

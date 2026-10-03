@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, Section, Disclosure, ResultSheet, KeywordRow, EyebrowLabel } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { interpretDream, type DreamReading } from '../data/dreamSymbols';
@@ -100,7 +101,8 @@ export function DreamInterpreterPage() {
           userContext: {
             zodiacSign,
             mbtiType: profile?.mbtiType ?? undefined,
-            locale: navigator.language?.slice(0, 2) || undefined,
+            // The app's language, not the device's (P7 #49).
+            locale: getLocale(),
           },
         },
       });

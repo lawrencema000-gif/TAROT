@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { AffirmationPanel, Button, Disclaimer, EmptyState, Input, KeywordRow, PageGrid, PageHeader, Paper, ReadingProse, TarotFace, Disclosure } from '../components/ui';
-import { meaningSections } from '../components/readings/tarot/readingText';
+import { affirmationFor, enrichmentFor, firstSentences, focusSections } from '../components/readings/tarot/readingText';
+import { cardIdFromName, cardIdFromSlug, cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
 import { fullDeck } from '../data/tarotDeck';
-import { getEnrichment } from '../data/tarotEnrichment';
+import { useContentOverlay, ct, type ContentOverlay } from '../i18n/contentOverlay';
 import { getBundledFullPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -16,15 +17,16 @@ import { localizeCard } from '../i18n/localizeCard';
 import { getLocale } from '../i18n/config';
 import type { TarotCard } from '../types';
 
-function cardToSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
+/** Stable URL slugs by id (cardSlug.ts), so a localized name never becomes a link. */
+const slugFromId = cardMeaningSlug;
+const cardToSlug = (name: string) => {
+  const id = cardIdFromName(name);
+  return id === undefined ? '' : cardMeaningSlug(id);
+};
 
-// Map card id → English name, so we can generate stable URL slugs even when
-// the UI is rendering localized card names.
-const EN_NAME_BY_ID: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));
-function slugFromId(id: number): string {
-  return cardToSlug(EN_NAME_BY_ID.get(id) ?? '');
+/** "All speak to …" → "all speak to …" for a clause after a dash; a CJK sentence is left as it is. */
+function lowerFirst(text: string): string {
+  return text ? text.charAt(0).toLowerCase() + text.slice(1) : text;
 }
 
 // Yes/No determination based on card energy
@@ -81,16 +83,28 @@ const VERDICT_CLASS: Record<YesNoVerdict, string> = {
   maybe: 'bg-ink-gold/10 text-ink-gold',
 };
 
-/** A linked card name on paper: a quiet pill, ink-gold. */
+/**
+ * A linked card name on paper: a quiet pill, ink-gold. The enrichment
+ * names its cards in English ("Wheel of Fortune"); the pill shows the card
+ * in the reader's language and links by id to its canonical page.
+ */
 function CardLink({ name }: { name: string }) {
+  const id = cardIdFromName(name);
+  const en = id === undefined ? undefined : fullDeck.find((c) => c.id === id);
+  if (!en || id === undefined) return <span className="inline-flex items-center rounded-full px-3 h-7 bg-ink-gold/10 text-ink-gold text-caption font-semibold">{name}</span>;
   return (
     <Link
-      to={`/tarot-meanings/${cardToSlug(name)}`}
+      to={cardMeaningPath(id)}
       className="inline-flex items-center rounded-full px-3 h-7 bg-ink-gold/10 text-ink-gold text-caption font-semibold no-underline"
     >
-      {name}
+      {localizeCard(en).name}
     </Link>
   );
+}
+
+/** One enrichment field in the reader's language: the `enrichment` overlay (`<id>.<field>`) over the English. */
+function enrichText(overlay: ContentOverlay | null, id: number, field: string, en: string | undefined): string {
+  return en ? ct(overlay, `${id}.${field}`, en) : '';
 }
 
 /**
@@ -170,7 +184,8 @@ function CardPageCourseSignup() {
  */
 function FocusMeaning({ text }: { text: string }) {
   const { t } = useT('app');
-  const { intro, upright, reversed } = meaningSections(text);
+  // At the labels when the text has them, else at the turn to the reversed card.
+  const { intro, upright, reversed } = focusSections(text);
   const label = 'text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted mb-1';
   return (
     <div className="space-y-4">
@@ -211,7 +226,21 @@ export function TarotCardMeaningPage() {
 
   // `enCard` keeps the English content used for slug lookups, Yes/No classification,
   // and JSON-LD (which should stay English for search indexing).
-  const enCard = useMemo(() => fullDeck.find(c => cardToSlug(c.name) === slug), [slug]);
+  // Any slug a link has used for the card resolves (the image table's
+  // `wheel-of-fortune` as well as the canonical `the-wheel-of-fortune`).
+  const enCard = useMemo(() => {
+    const id = cardIdFromSlug(slug);
+    return id === undefined ? undefined : fullDeck.find((c) => c.id === id);
+  }, [slug]);
+  const { overlay: enrichOverlay } = useContentOverlay('enrichment');
+
+  // An older spelling of the slug moves to the canonical one, so the page
+  // has one address (the one the sitemap lists).
+  useEffect(() => {
+    if (enCard && slug !== cardMeaningSlug(enCard.id)) {
+      navigate(cardMeaningPath(enCard.id), { replace: true });
+    }
+  }, [enCard, slug, navigate]);
   const cardIndex = enCard ? fullDeck.indexOf(enCard) : -1;
   const enPrev = cardIndex > 0 ? fullDeck[cardIndex - 1] : null;
   const enNext = cardIndex < fullDeck.length - 1 ? fullDeck[cardIndex + 1] : null;
@@ -340,7 +369,19 @@ export function TarotCardMeaningPage() {
     ? t('tarot.suitMinorLabel', { suit: t(`tarot.${suitKeyMap[card.suit]}`) })
     : t('tarot.majorArcana');
   const elementKey = card.suit === 'wands' ? 'fire' : card.suit === 'cups' ? 'water' : card.suit === 'swords' ? 'air' : card.suit === 'pentacles' ? 'earth' : 'spirit';
-  const enrichment = getEnrichment(enCard.name);
+  const enrichment = enrichmentFor(enCard.id);
+  const ex = (field: string, en: string | undefined) => enrichText(enrichOverlay, card.id, field, en);
+  // In ja/ko/zh only once the overlay has it (affirmationFor).
+  const affirmation = affirmationFor(card.id, enrichOverlay);
+  const elementName = (el: string) => t(`tarot.elements.${el.toLowerCase()}`, { defaultValue: el });
+  const nameList = (names: string[]) =>
+    names
+      .map((n) => {
+        const id = cardIdFromName(n);
+        const en = id === undefined ? undefined : fullDeck.find((c) => c.id === id);
+        return en ? localizeCard(en).name : n;
+      })
+      .join(t('cardMeaning.listSeparator', { defaultValue: ', ' }));
 
   const relatedTitle = card.arcana === 'major'
     ? t('tarot.allMajorCards')
@@ -392,7 +433,7 @@ export function TarotCardMeaningPage() {
   return (
     <div className="tm-page">
       {/* Breadcrumb */}
-      <nav className="tm-breadcrumb" aria-label="Breadcrumb">
+      <nav className="tm-breadcrumb" aria-label={t('tarot.breadcrumb', { defaultValue: 'Breadcrumb' })}>
         <Link to="/tarot-meanings">{t('tarot.allCards')}</Link>
         <ChevronRight className="tm-breadcrumb-sep" aria-hidden />
         {card.suit && (
@@ -422,7 +463,7 @@ export function TarotCardMeaningPage() {
             {/* Under both on a phone, beside the face from sm up. */}
             <KeywordRow keywords={card.keywords.slice(0, 4)} align="start" className="col-span-2 sm:col-span-1 sm:col-start-2" />
           </div>
-          {enrichment?.affirmation && <AffirmationPanel text={enrichment.affirmation} />}
+          {affirmation && <AffirmationPanel text={affirmation} />}
         </div>
 
         {/* Quick reference — a table, on the canvas. */}
@@ -432,7 +473,7 @@ export function TarotCardMeaningPage() {
             <tbody>
               <tr>
                 <td className="tm-cs-label">{t('tarot.reversed')}</td>
-                <td className="tm-cs-value">{card.meaningReversed.split('.')[0]}.</td>
+                <td className="tm-cs-value">{firstSentences(card.meaningReversed, 1)}</td>
               </tr>
               {yesNo && (
                 <tr>
@@ -521,16 +562,16 @@ export function TarotCardMeaningPage() {
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
                       <ul className="reading-copy mt-1 list-disc pl-5 marker:text-ink-gold">
-                        <li><strong>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {enrichment.element}</li>
-                        {enrichment.planet && <li><strong>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {enrichment.planet}</li>}
-                        {enrichment.zodiac && <li><strong>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {enrichment.zodiac}</li>}
-                        {enrichment.decan && <li><strong>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {enrichment.decan}</li>}
-                        {enrichment.hebrewLetter && <li><strong>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {enrichment.hebrewLetter}</li>}
+                        <li><strong>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {elementName(enrichment.element)}</li>
+                        {enrichment.planet && <li><strong>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {ex('planet', enrichment.planet)}</li>}
+                        {enrichment.zodiac && <li><strong>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {ex('zodiac', enrichment.zodiac)}</li>}
+                        {enrichment.decan && <li><strong>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {ex('decan', enrichment.decan)}</li>}
+                        {enrichment.hebrewLetter && <li><strong>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {ex('hebrewLetter', enrichment.hebrewLetter)}</li>}
                       </ul>
                     </div>
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.numerology', { defaultValue: 'Numerology' })}</h3>
-                      <p className="reading-copy mt-1">{enrichment.numerology}</p>
+                      <p className="reading-copy mt-1">{ex('numerology', enrichment.numerology)}</p>
                     </div>
                   </div>
                 </Disclosure>
@@ -540,7 +581,7 @@ export function TarotCardMeaningPage() {
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.reinforcingCards', { defaultValue: 'Reinforcing cards' })}</h3>
                       <p className="reading-copy mt-1">
-                        {t('cardMeaning.reinforcingIntro', { name: card.name, reason: enrichment.reinforcingReason.toLowerCase(), defaultValue: 'When {{name}} appears alongside these cards, the reading’s energy intensifies — {{reason}}' })}
+                        {t('cardMeaning.reinforcingIntro', { name: card.name, reason: lowerFirst(ex('reinforcingReason', enrichment.reinforcingReason)), defaultValue: 'When {{name}} appears alongside these cards, the reading’s energy intensifies — {{reason}}' })}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {enrichment.reinforcingCards.map((c) => <CardLink key={c} name={c} />)}
@@ -549,7 +590,7 @@ export function TarotCardMeaningPage() {
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.opposingCards', { defaultValue: 'Opposing cards' })}</h3>
                       <p className="reading-copy mt-1">
-                        {t('cardMeaning.opposingIntro', { name: card.name, reason: enrichment.opposingReason.toLowerCase(), defaultValue: 'These cards create tension with {{name}} — {{reason}}' })}
+                        {t('cardMeaning.opposingIntro', { name: card.name, reason: lowerFirst(ex('opposingReason', enrichment.opposingReason)), defaultValue: 'These cards create tension with {{name}} — {{reason}}' })}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {enrichment.opposingCards.map((c) => <CardLink key={c} name={c} />)}
@@ -560,22 +601,54 @@ export function TarotCardMeaningPage() {
 
                 {/* Visible FAQ — mirrors the FAQPage JSON-LD so readers see the same Q&A Google does. */}
                 <Disclosure surface="paper" variant="row" lazy label={t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}>
+                  {/* The visible FAQ in the reader's language; the FAQPage JSON-LD above stays English for the index. */}
                   <dl className="space-y-4">
                     {[
-                      [`What does the ${enCard.name} tarot card mean?`, enCard.meaningUpright],
-                      [`What does the ${enCard.name} mean reversed?`, enCard.meaningReversed],
-                      [`Is the ${enCard.name} a yes or no card?`, `${enrichment.yesNo}. ${enrichment.yesNoReason}`],
                       [
-                        `What is the astrological correspondence of the ${enCard.name}?`,
-                        `${enCard.name} corresponds to the element of ${enrichment.element}` +
-                          (enrichment.planet ? `, the planet ${enrichment.planet}` : '') +
-                          (enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : '') +
-                          (enrichment.decan ? ` (decan: ${enrichment.decan})` : '') +
-                          (enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'),
+                        t('cardMeaning.faqItems.meaningQ', { name: card.name, defaultValue: 'What does the {{name}} tarot card mean?' }),
+                        card.meaningUpright,
                       ],
                       [
-                        `What cards reinforce or oppose the ${enCard.name}?`,
-                        `Reinforcing: ${enrichment.reinforcingCards.join(', ')}. Opposing: ${enrichment.opposingCards.join(', ')}.`,
+                        t('cardMeaning.faqItems.reversedQ', { name: card.name, defaultValue: 'What does the {{name}} mean reversed?' }),
+                        card.meaningReversed,
+                      ],
+                      [
+                        t('cardMeaning.faqItems.yesNoQ', { name: card.name, defaultValue: 'Is the {{name}} a yes or no card?' }),
+                        t('cardMeaning.faqItems.yesNoA', {
+                          answer: t(`cardMeaning.yesNo.answer.${enrichment.yesNo.toLowerCase()}`, { defaultValue: enrichment.yesNo }),
+                          reason: ex('yesNoReason', enrichment.yesNoReason),
+                          defaultValue: '{{answer}}. {{reason}}',
+                        }),
+                      ],
+                      [
+                        t('cardMeaning.faqItems.astrologyQ', { name: card.name, defaultValue: 'What is the astrological correspondence of the {{name}}?' }),
+                        [
+                          `${elementName(enrichment.element)}`,
+                          enrichment.planet ? ex('planet', enrichment.planet) : '',
+                          enrichment.zodiac ? ex('zodiac', enrichment.zodiac) : '',
+                          enrichment.decan ? ex('decan', enrichment.decan) : '',
+                          enrichment.hebrewLetter ? ex('hebrewLetter', enrichment.hebrewLetter) : '',
+                        ]
+                          .map((v, i) => {
+                            const label = [
+                              t('cardMeaning.element', { defaultValue: 'Element' }),
+                              t('cardMeaning.planet', { defaultValue: 'Planet' }),
+                              t('cardMeaning.zodiac', { defaultValue: 'Zodiac' }),
+                              t('cardMeaning.decan', { defaultValue: 'Decan' }),
+                              t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' }),
+                            ][i];
+                            return v ? t('cardMeaning.faqItems.pair', { label, value: v, defaultValue: '{{label}}: {{value}}' }) : '';
+                          })
+                          .filter(Boolean)
+                          .join(t('cardMeaning.faqItems.pairSeparator', { defaultValue: ' · ' })),
+                      ],
+                      [
+                        t('cardMeaning.faqItems.combinationsQ', { name: card.name, defaultValue: 'What cards reinforce or oppose the {{name}}?' }),
+                        t('cardMeaning.faqItems.combinationsA', {
+                          reinforcing: nameList(enrichment.reinforcingCards),
+                          opposing: nameList(enrichment.opposingCards),
+                          defaultValue: 'Reinforcing: {{reinforcing}}. Opposing: {{opposing}}.',
+                        }),
                       ],
                     ].map(([q, a]) => (
                       <div key={q}>

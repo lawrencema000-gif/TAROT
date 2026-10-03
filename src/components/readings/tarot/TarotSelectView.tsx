@@ -70,7 +70,13 @@ export function TarotSelectView({
             ? t('readings.selectView.chooseMore', { count: needsMore })
             : t('readings.selectView.readyReveal')}
         </h2>
-        <p className="text-ui text-mystic-400">{t('readings.selectView.trustIntuition')}</p>
+        {/* The deck on the table, counted: 78 tarot cards, or 52 / 54 playing cards when the cartomancy table reuses this view. */}
+        <p className="text-ui text-mystic-400">
+          {t('readings.selectView.trustIntuitionDeck', {
+            n: deckCards.length,
+            defaultValue: 'Trust your intuition • All {{n}} cards',
+          })}
+        </p>
       </div>
 
       {/* The spread's positions, waiting. */}

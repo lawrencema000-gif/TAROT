@@ -271,12 +271,20 @@ const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.arcana
  * measured against the live page at 390 and 1280 to the pixel, so nothing
  * jumps when React replaces it. The guard script after it decides,
  * during parse and before the first paint, whether this visitor should see it
- * at all: not in the Capacitor app (the native shell boots into auth or Home,
+ * at all: only at `/` (dist/index.html is also what a server without the
+ * app.html fallback answers for every unknown path — a shared reading or a
+ * reset link must never open on the sign-up hero), not on an auth return
+ * there (`?code=`, an email-confirm `#access_token=`: that visitor is being
+ * signed in, not landing), not in the Capacitor app
+ * (the native shell boots into auth or Home,
  * never the landing), not for a returning visitor with a Supabase session
  * (they get Home at `/`), and not for a ja/ko/zh visitor (`?lang` or the
  * stored choice — the hero is English). Otherwise it marks
  * `<html data-prerendered="landing">`, and LandingPage skips its one
  * entrance so the live hero lands on top of this one without a fade.
+ * main.tsx holds the hero on screen while the app boots behind it
+ * (src/components/layout/prerenderedHero.ts) instead of letting the first
+ * render replace it with the boot screen.
  */
 export function landingHeroBody(strings, playAlt = 'Get it on Google Play') {
   const h = strings || {};
@@ -284,7 +292,9 @@ export function landingHeroBody(strings, playAlt = 'Get it on Google Play') {
     .map(([x, y, r, z]) => `<span style="z-index:${z};transform:translate(-50%,-50%) translate(${x}px,${y}px) rotate(${r}deg)"><img src="/card-backs/default.svg" alt="" width="96" height="144"></span>`)
     .join('');
   const guard =
-    `<script>(function(){try{var keep=true;` +
+    `<script>(function(){try{var keep=location.pathname==='/';` +
+    // An auth return (OAuth code, email-confirm token, error) is signing in, not landing.
+    `if(/[?&#](code|access_token|error)=/.test(location.search+location.hash))keep=false;` +
     `if(window.Capacitor||(location.hostname==='localhost'&&!location.port))keep=false;` +
     `var q=new URLSearchParams(location.search).get('lang'),s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}` +
     `var l=String(q||s||'en').toLowerCase().split('-')[0];if(l==='ja'||l==='ko'||l==='zh')keep=false;` +

@@ -7,6 +7,8 @@ import { supabase } from '../lib/supabase';
 import { Button, Page, PageHeader, EyebrowLabel, Sheet, toast } from '../components/ui';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { MAX_AI_TAROT_CARDS } from '../services/readingInterpretation';
 
 interface Position {
   name: string;
@@ -21,7 +23,13 @@ interface SavedSpread {
   created_at: string;
 }
 
-const MAX_POSITIONS = 13;
+/**
+ * A custom spread is cast as a tarot reading, and generate-reading reads at
+ * most ten tarot cards: an eleven-card spread could never have its AI
+ * interpretation, however often the reader retried. The builder stops
+ * where the reading can follow.
+ */
+const MAX_POSITIONS = MAX_AI_TAROT_CARDS;
 
 export function SpreadBuilderPage() {
   const { t } = useT('app');
@@ -41,8 +49,15 @@ export function SpreadBuilderPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    setPageMeta('Custom Spread Builder', 'Design your own tarot spread with custom card positions and meanings.');
-  }, []);
+    setPageMeta(
+      t('spreadBuilder.metaTitle', { defaultValue: 'Custom Spread Builder' }),
+      t('spreadBuilder.metaDescription', { defaultValue: 'Design your own tarot spread with custom card positions and meanings.' }),
+    );
+  }, [t]);
+
+  /** The saved date in the app's language ("2026年10月2日"), not the browser's. */
+  const formatDate = (iso: string) =>
+    new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(new Date(iso));
 
   useEffect(() => {
     if (!user) return;
@@ -145,60 +160,68 @@ export function SpreadBuilderPage() {
     <Page className="py-6 sm:py-10">
       <PageHeader
         onBack={() => navigate('/spreads')}
-        backLabel="All spreads"
+        backLabel={t('spreadDetail.allSpreads', { defaultValue: 'All spreads' })}
         icon={<TarotCardIcon />}
-        title="Custom spread builder"
-        subtitle={<>Design your own spread with up to {MAX_POSITIONS} positions. Save unlimited custom spreads tied to your account.</>}
+        title={t('spreadBuilder.title', { defaultValue: 'Custom spread builder' })}
+        subtitle={t('spreadBuilder.subtitle', {
+          n: MAX_POSITIONS,
+          defaultValue: 'Design your own spread with up to {{n}} positions. Save unlimited custom spreads tied to your account.',
+        })}
       />
 
       <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
         <label className="block mb-3">
-          <EyebrowLabel className="block mb-1">Spread name</EyebrowLabel>
+          <EyebrowLabel className="block mb-1">{t('spreadBuilder.nameLabel', { defaultValue: 'Spread name' })}</EyebrowLabel>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Morning intention"
+            placeholder={t('spreadBuilder.namePlaceholder', { defaultValue: 'e.g. Morning intention' })}
             className="w-full px-3 py-2 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none"
             maxLength={80}
           />
         </label>
         <label className="block mb-3">
-          <EyebrowLabel className="block mb-1">Description (optional)</EyebrowLabel>
+          <EyebrowLabel className="block mb-1">{t('spreadBuilder.descriptionLabel', { defaultValue: 'Description (optional)' })}</EyebrowLabel>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="When to use this spread, what kind of question it answers…"
+            placeholder={t('spreadBuilder.descriptionPlaceholder', { defaultValue: 'When to use this spread, what kind of question it answers…' })}
             className="w-full px-3 py-2 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none min-h-[60px]"
             maxLength={500}
             rows={3}
           />
         </label>
 
-        <h2 className="text-ui font-medium text-mystic-300 mb-2 mt-5">Positions</h2>
+        <h2 className="text-ui font-medium text-mystic-300 mb-2 mt-5">{t('spreadBuilder.positions', { defaultValue: 'Positions' })}</h2>
         <div className="space-y-3">
           {positions.map((p, i) => (
             <div key={i} className="rounded-control border border-mystic-800/60 bg-mystic-950/40 p-3">
               <div className="flex items-center gap-2 mb-2">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gold/15 border border-gold/30 text-gold text-caption flex items-center justify-center font-display">{i + 1}</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gold/15 border border-gold/30 text-gold text-caption font-semibold tabular-nums flex items-center justify-center">{i + 1}</span>
                 <input
                   type="text"
                   value={p.name}
                   onChange={(e) => updatePosition(i, 'name', e.target.value)}
-                  placeholder="Position name (e.g. The challenge)"
+                  placeholder={t('spreadBuilder.positionNamePlaceholder', { defaultValue: 'Position name (e.g. The challenge)' })}
                   className="flex-1 px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-ui"
                   maxLength={60}
                 />
                 {positions.length > 1 && (
-                  <button onClick={() => removePosition(i)} className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 text-mystic-500 hover:text-mystic-200" aria-label="Remove">
-                    <Trash2 className="w-4 h-4" />
+                  <button
+                    type="button"
+                    onClick={() => removePosition(i)}
+                    className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 text-mystic-500 hover:text-mystic-200"
+                    aria-label={t('spreadBuilder.removePosition', { n: i + 1, defaultValue: 'Remove position {{n}}' })}
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden />
                   </button>
                 )}
               </div>
               <textarea
                 value={p.meaning}
                 onChange={(e) => updatePosition(i, 'meaning', e.target.value)}
-                placeholder="What this position represents…"
+                placeholder={t('spreadBuilder.positionMeaningPlaceholder', { defaultValue: 'What this position represents…' })}
                 className="w-full px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-300 focus:border-gold/50 outline-none text-ui"
                 rows={2}
                 maxLength={300}
@@ -212,7 +235,8 @@ export function SpreadBuilderPage() {
             onClick={addPosition}
             className="mt-3 w-full py-2 min-h-[44px] rounded-control border border-dashed border-mystic-700 text-mystic-400 hover:text-mystic-200 hover:border-gold/40 transition-colors flex items-center justify-center gap-1 text-ui"
           >
-            <Plus className="w-4 h-4" /> Add position ({positions.length}/{MAX_POSITIONS})
+            <Plus className="w-4 h-4" aria-hidden />
+            {t('spreadBuilder.addPosition', { n: positions.length, max: MAX_POSITIONS, defaultValue: 'Add position ({{n}}/{{max}})' })}
           </button>
         )}
 
@@ -222,13 +246,13 @@ export function SpreadBuilderPage() {
           className="mt-4 w-full py-3 min-h-[48px] rounded-control bg-gold text-mystic-950 font-semibold text-ui disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving…' : 'Save spread'}
+          {saving ? t('spreadBuilder.saving', { defaultValue: 'Saving…' }) : t('spreadBuilder.save', { defaultValue: 'Save spread' })}
         </button>
       </section>
 
       {savedSpreads.length > 0 && (
         <section>
-          <h2 className="font-display text-lg text-mystic-100 mb-3">Your saved spreads</h2>
+          <h2 className="heading-display-md text-mystic-100 mb-3">{t('spreadBuilder.savedTitle', { defaultValue: 'Your saved spreads' })}</h2>
           <div className="space-y-3">
             {savedSpreads.map((s) => (
               <div key={s.id} className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
@@ -244,8 +268,14 @@ export function SpreadBuilderPage() {
                   </button>
                 </div>
                 {s.description && <p className="text-meta text-mystic-400 mb-2">{s.description}</p>}
-                <div className="text-meta text-mystic-500 mb-3">
-                  {s.positions.length} position{s.positions.length === 1 ? '' : 's'} · {new Date(s.created_at).toLocaleDateString()}
+                <div className="text-meta text-mystic-500 mb-3 tabular-nums">
+                  {t('spreadBuilder.positionCount', {
+                    count: s.positions.length,
+                    defaultValue_one: '{{count}} position',
+                    defaultValue: '{{count}} positions',
+                  })}
+                  {' · '}
+                  {formatDate(s.created_at)}
                 </div>
                 <button
                   onClick={() =>

@@ -289,7 +289,7 @@ export const SELF_COMPASSION_COMPONENT_LABELS: Record<SelfCompassionComponent, s
 export const selfCompassionQuiz: QuizDefinition = {
   id: 'self-compassion-v1',
   type: 'extra-dimensional',
-  title: 'Self-Compassion',
+  title: 'Self-compassion',
   description: 'Based on Kristin Neff\'s model of self-compassion. Sixteen questions on how you actually treat yourself when you are struggling — and which part of that is the place to practise.',
   questions: [
     { id: 'sk1', text: 'When I fall short, I speak to myself the way I would to someone I love.', dimension: 'self-kind', options: likert },
@@ -341,9 +341,16 @@ export const SELF_COMPASSION_INFO: Record<SelfCompassionType, DimensionalResultI
 /**
  * Total = mean of the three positive component means and the three
  * reversed negative component means (6 − mean), banded low (< 2.5),
- * moderate, high (> 3.5). `extra.weakest` is the component with the lowest
- * compassion-coded mean — the "where to practise" card; `extra.total` is
- * the banded number to one decimal.
+ * moderate, high (> 3.5). `extra.total` is the banded number to one
+ * decimal.
+ *
+ * `extra.weakest` is the component with the lowest compassion-coded mean —
+ * the "where to practise" card — and `extra.weakestAlso` a second component
+ * exactly level with it. Neither is set when the components are level
+ * (highest minus lowest within TIE_MARGIN) or when three or more share the
+ * lowest mean: a flat profile, the maximum score included, has no
+ * component "pulling the total down", and the card used to name
+ * Self-kindness, the first declared, for every one of them.
  */
 export function scoreSelfCompassion(answers: Record<string, number>): DimensionalResult<SelfCompassionType> {
   const { scores, averages } = likertMeans(selfCompassionQuiz, answers, SELF_COMPASSION_COMPONENTS);
@@ -356,14 +363,25 @@ export function scoreSelfCompassion(answers: Record<string, number>): Dimensiona
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const total = (mean(positives) + mean(negatives)) / 2;
   const primary: SelfCompassionType = total < 2.5 ? 'low' : total > 3.5 ? 'high' : 'moderate';
-  const weakest = SELF_COMPASSION_COMPONENTS.reduce((w, c) => (coded[c] < coded[w] ? c : w), SELF_COMPASSION_COMPONENTS[0]);
+  const codedValues = SELF_COMPASSION_COMPONENTS.map((c) => coded[c]);
+  const lowest = Math.min(...codedValues);
+  const level = Math.max(...codedValues) - lowest <= TIE_MARGIN;
+  const atLowest = SELF_COMPASSION_COMPONENTS.filter((c) => Math.abs(coded[c] - lowest) < 1e-9);
+  const extra: Record<string, string | number> = { total: Math.round(total * 10) / 10 };
+  // One or two components at the bottom are a place to practise; three or
+  // more level there are not "the" component (they would be named by
+  // declaration order, which is what the card used to do).
+  if (!level && atLowest.length <= 2) {
+    extra.weakest = atLowest[0];
+    if (atLowest.length === 2) extra.weakestAlso = atLowest[1];
+  }
   return {
     primary,
     scores,
     averages,
     isTie: false,
     margin: 0,
-    extra: { weakest, total: Math.round(total * 10) / 10 },
+    extra,
   };
 }
 

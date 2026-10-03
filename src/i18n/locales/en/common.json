@@ -31,7 +31,8 @@
     "ziwei": "Zi Wei",
     "mansions": "Lunar Mansions",
     "goodDays": "Good days",
-    "wishingSky": "Wishing Sky"
+    "wishingSky": "Wishing Sky",
+    "cartomancy": "Playing cards"
   },
   "actions": {
     "continue": "Continue",
@@ -44,7 +45,8 @@
     "shareFailed": "Couldn’t share. Try again.",
     "loading": "Loading…",
     "send": "Send",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "back": "Back"
   },
   "labels": {
     "email": "Email",
@@ -112,7 +114,8 @@
     "fieldRequired": "This field is required.",
     "tooShort": "This is too short.",
     "tooLong": "This is too long.",
-    "invalidValue": "This value isn’t valid."
+    "invalidValue": "This value isn’t valid.",
+    "sessionExpired": "Session expired — sign in again"
   },
   "toast": {
     "languageChanged": "Language changed."

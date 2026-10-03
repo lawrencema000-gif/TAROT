@@ -59,7 +59,8 @@ const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z-]
 // /crystals in that language should download the one that page reads. The
 // playing-card corpus (cartomancy.json, 40–60 KB gz) is the same: the
 // cartomancy screens fetch it (ensureCartomancyCorpus), the boot does not.
-const ON_DEMAND_BUNDLE_RE = /^(?:learn-|cartomancy$)/;
+// So are the content overlays (content-*.json, src/i18n/contentOverlay.ts).
+const ON_DEMAND_BUNDLE_RE = /^(?:learn-|content-|cartomancy$)/;
 
 // Starts the locale chunks downloading before the main bundle has parsed.
 //

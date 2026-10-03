@@ -126,6 +126,20 @@ function AspectRow({ aspect, tone, t }: { aspect: CrossAspect; tone: 'teal' | 'c
   );
 }
 
+/** The `error.code` a function answered with, read from the invoke error's
+ *  Response (FunctionsHttpError keeps it on `context`). Null when unreadable. */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } | string; code?: unknown };
+    const code = typeof body.error === 'object' && body.error ? body.error.code : body.code;
+    return typeof code === 'string' ? code : null;
+  } catch {
+    return null;
+  }
+}
+
 export function SoulmateScorePage() {
   const { t } = useT('app');
   const { profile } = useAuth();
@@ -143,6 +157,12 @@ export function SoulmateScorePage() {
     hasTime: boolean;
   } | null>(null);
 
+  // Set when the synastry function says this account has no stored natal
+  // chart and none could be cast from the profile (no birth place yet). The
+  // page then points at the one screen that sets the chart up, instead of
+  // "Check your connection" — which is what a new account saw (2026-10-03).
+  const [needsChart, setNeedsChart] = useState(false);
+
   const hasBirthData = !!profile?.birthDate;
 
   const canSubmit = useMemo(() => {
@@ -158,19 +178,48 @@ export function SoulmateScorePage() {
     const ok = await tryConsume();
     if (!ok) return;
     setLoading(true);
+    setNeedsChart(false);
     try {
-      const { data, error } = await supabase.functions.invoke('astrology-synastry', {
-        body: {
-          partnerBirthDate,
-          partnerBirthTime: partnerBirthTime || undefined,
-          // Use the user's own timezone as a proxy for the partner's
-          // timezone — same convention as PartnerCompatPage. Without
-          // this the edge function treats the partner's birth time as
-          // UTC, which drifts Moon ~5° (sometimes a sign over).
-          partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-          partnerName: partnerName || undefined,
-        },
-      });
+      const synastry = () =>
+        supabase.functions.invoke('astrology-synastry', {
+          body: {
+            partnerBirthDate,
+            partnerBirthTime: partnerBirthTime || undefined,
+            // Use the user's own timezone as a proxy for the partner's
+            // timezone — same convention as PartnerCompatPage. Without
+            // this the edge function treats the partner's birth time as
+            // UTC, which drifts Moon ~5° (sometimes a sign over).
+            partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            partnerName: partnerName || undefined,
+          },
+        });
+      let { data, error } = await synastry();
+      // The comparison needs the user's stored natal chart, which is only
+      // written once the chart has been cast. A member who has never opened
+      // their chart gets it cast here from the profile, then one retry.
+      if (error && (await functionErrorCode(error)) === 'NATAL_CHART_MISSING') {
+        if (!profile?.birthDate || profile.birthLat == null || profile.birthLon == null) {
+          setNeedsChart(true);
+          return;
+        }
+        const timezone = profile.birthTz || profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        const chartMode = profile.birthTime ? 'exact' : 'unknown';
+        const cast = await supabase.functions.invoke('astrology-compute-natal', {
+          body: {
+            birthDate: profile.birthDate,
+            birthTime: chartMode === 'unknown' ? null : profile.birthTime,
+            lat: profile.birthLat,
+            lon: profile.birthLon,
+            timezone,
+            chartMode,
+          },
+        });
+        if (cast.error) {
+          setNeedsChart(true);
+          return;
+        }
+        ({ data, error } = await synastry());
+      }
       if (error) {
         await refund();
         toast(
@@ -340,6 +389,18 @@ export function SoulmateScorePage() {
                     : t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
                 </Button>
                 <MoonstoneCostLine className="justify-center" />
+                {needsChart && (
+                  <div className="rounded-control bg-mystic-800/50 p-4 space-y-3" role="alert">
+                    <p className="text-ui text-mystic-200">
+                      {t('soulmate.needsChart', {
+                        defaultValue: 'The score compares your birth chart with theirs, and yours isn’t set up yet. Add your birth place to cast it — nothing was spent.',
+                      })}
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/horoscope')}>
+                      {t('soulmate.setUpChart', { defaultValue: 'Set up my chart' })}
+                    </Button>
+                  </div>
+                )}
                 {gateError && (
                   <p className="text-meta text-coral text-center" role="alert">{gateError}</p>
                 )}
@@ -396,7 +457,7 @@ export function SoulmateScorePage() {
               actions={
                 <>
                   <Button variant="outline" onClick={reset} className="flex-1">
-                    {t('soulmate.tryAnother', { defaultValue: 'Score another person' })}
+                    {t('soulmate.tryAnother', { defaultValue: 'Score another' })}
                   </Button>
                   <Button variant="gold" onClick={handleShare} className="flex-1">
                     <Share2 className="w-4 h-4" aria-hidden />

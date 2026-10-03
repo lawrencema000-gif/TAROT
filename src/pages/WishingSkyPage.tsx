@@ -178,10 +178,13 @@ export function WishingSkyPage() {
         )}
 
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-          <Tag tone="neutral" className="tabular-nums">
-            {t('wishingSky.wishCount', { defaultValue: '{{count}} wishes', count: sky.length })}
-            {links.length > 0 && <> · {t('wishingSky.linkedCount', { defaultValue: '{{count}} linked', count: links.length })}</>}
-          </Tag>
+          {/* An empty sky says so above; "0 wishes" would say it twice. */}
+          {sky.length > 0 ? (
+            <Tag tone="neutral" className="tabular-nums">
+              {t('wishingSky.wishCount', { defaultValue: '{{count}} wishes', count: sky.length })}
+              {links.length > 0 && <> · {t('wishingSky.linkedCount', { defaultValue: '{{count}} linked', count: links.length })}</>}
+            </Tag>
+          ) : <span />}
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
@@ -200,7 +203,9 @@ export function WishingSkyPage() {
       )}
 
       {/* The readable sky. A canvas is invisible to a screen reader, and some
-          people simply prefer a list — so the wishes exist twice, in full. */}
+          people simply prefer a list — so the wishes exist twice, in full.
+          An empty sky already says so above; the list waits for a wish. */}
+      {sky.length > 0 && (
       <Card className="p-4 space-y-1">
         <h2 className="heading-display-md text-mystic-100 mb-2">{t('wishingSky.recent', { defaultValue: 'Recent wishes' })}</h2>
         {sky.slice(0, 30).map((w) => (
@@ -218,10 +223,8 @@ export function WishingSkyPage() {
             </div>
           </button>
         ))}
-        {sky.length === 0 && !loading && (
-          <EmptyState variant="inline" size="sm" icon={<Moon />} title={t('wishingSky.noWishes', { defaultValue: 'No wishes yet.' })} />
-        )}
       </Card>
+      )}
 
       {/* ── compose ── */}
       <Sheet open={composing} onClose={() => setComposing(false)} title={t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}>

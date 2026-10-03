@@ -94,7 +94,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
           )}
 
           <ResultSection title={t('extraQuizzes.common.scoreDistribution', { defaultValue: 'Score distribution' })}>
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {entry.dimensions.map((d) => {
                 const avg = averages?.[d];
                 const raw = result.scores?.[d] ?? 0;

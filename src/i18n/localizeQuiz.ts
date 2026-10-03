@@ -12,7 +12,8 @@ import i18n from './config';
  *   extra quizzes     extraQuizzes.<key>.{title,description}
  *                     extraQuizzes.<key>.questions.<qid>.text
  *                     extraQuizzes.<key>.questions.<qid>.options.<value>
- *   shared Likert     quizzes.likert.<value>   (every five-point agreement item)
+ *   shared Likert     quizzes.likert.<1..5>    (every five-point agreement item,
+ *                     keyed by the option's English label, not its value)
  *
  * Likert detection is PER QUESTION, not per quiz: the mood check's bespoke
  * five-option items ("Exhausted" … "Energized") used to be overwritten with
@@ -47,14 +48,20 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
           return { ...opt, label: translated };
         }
       }
-      // Shared Likert 1–5 labels (only for a real agreement item)
-      if (likert && opt.value >= 1 && opt.value <= 5) {
-        return { ...opt, label: t(`quizzes.likert.${opt.value}`, opt.label) };
+      // Shared Likert labels (only for a real agreement item). The label is
+      // chosen by what the option SAYS, never by the value it records: a
+      // reverse-keyed item declares value 5 on "Strongly Disagree", and
+      // reading quizzes.likert.5 for it drew "Strongly agree" on the option
+      // that scores as disagreement, so every reverse-keyed item since
+      // April 2026 was scored backwards.
+      const scalePoint = likert ? LIKERT_SCALE.indexOf(opt.label.toLowerCase()) : -1;
+      if (scalePoint >= 0) {
+        return { ...opt, label: t(`quizzes.likert.${scalePoint + 1}`, opt.label) };
       }
       return opt;
     });
 
-    return { ...q, text: questionText, options };
+    return { ...q, text: questionText, options, likert };
   });
 
   return {
@@ -65,7 +72,9 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   };
 }
 
-const LIKERT_LABELS = new Set(['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree']);
+/** The agreement scale in drawing order; position + 1 is the quizzes.likert.<n> key. */
+const LIKERT_SCALE = ['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree'];
+const LIKERT_LABELS = new Set(LIKERT_SCALE);
 
 /** Five options whose English labels are the agreement scale, in either keying direction. */
 export function isLikertQuestion(q: QuizQuestion): boolean {

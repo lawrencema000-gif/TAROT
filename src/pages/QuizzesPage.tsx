@@ -192,9 +192,12 @@ export function QuizzesPage() {
 
       const xpResult = await awardXP(user.id, 'quiz_complete');
       if (xpResult) {
-        toast(tApp('quizzes.xpEarned', { defaultValue: '+{{xp}} XP earned', xp: xpResult.xp_earned }), 'success');
+        // The level-up sheet already says "+N XP earned"; a toast on top of
+        // it repeated the line and covered the sheet's button at 390px.
         if (xpResult.level_up) {
           triggerLevelUp({ newLevel: xpResult.new_level, seekerRank: xpResult.seeker_rank, xpEarned: xpResult.xp_earned });
+        } else {
+          toast(tApp('quizzes.xpEarned', { defaultValue: '+{{xp}} XP earned', xp: xpResult.xp_earned }), 'success');
         }
       }
       await refreshProfile();

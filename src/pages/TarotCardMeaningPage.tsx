@@ -1,20 +1,24 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUp, ArrowDown, Check, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import {
   AffirmationPanel,
   Button,
   Disclaimer,
   EmptyState,
+  Input,
   KeywordRow,
   PageGrid,
   PageHeader,
   Paper,
+  ReadingProse,
   TarotFace,
 } from '../components/ui';
 import { PaperDisclosure } from '../components/readings/tarot/PaperDisclosure';
+import { meaningSections } from '../components/readings/tarot/readingText';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getBundledFullPath } from '../config/bundledImages';
@@ -103,14 +107,112 @@ function CardLink({ name }: { name: string }) {
 }
 
 /**
+ * The free email course, offered to a visitor under the reading. Inserts
+ * into newsletter_signups (anon INSERT under RLS); a duplicate address is
+ * already subscribed and reads as success.
+ */
+function CardPageCourseSignup() {
+  const { t } = useT('app');
+  const [email, setEmail] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const address = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(address)) {
+      setError(t('tarot.emailInvalid', { defaultValue: 'Enter a valid email address.' }));
+      return;
+    }
+    setState('sending');
+    const { error: insertError } = await supabase.from('newsletter_signups').insert({
+      email: address,
+      source: 'tarot_card_page',
+      course_lead_magnet: 'tarot-fundamentals-3-part',
+    });
+    if (insertError && insertError.code !== '23505') {
+      setState('idle');
+      setError(t('tarot.emailFailed', { defaultValue: 'Couldn’t sign you up. Try again in a moment.' }));
+      return;
+    }
+    setState('done');
+  };
+
+  return (
+    <section className="rounded-card bg-mystic-900 border border-mystic-700/60 p-5 space-y-3" aria-labelledby="card-course-title">
+      <h2 id="card-course-title" className="heading-display-md heading-strong text-mystic-100">{t('tarot.freeTarotGuide')}</h2>
+      {state === 'done' ? (
+        <p className="inline-flex items-center gap-2 text-ui text-teal" role="status">
+          <Check className="w-4 h-4" aria-hidden />
+          {t('tarot.youreIn')}
+        </p>
+      ) : (
+        <>
+          <p className="text-ui text-mystic-300">{t('tarot.freeTarotGuideDesc')}</p>
+          <form onSubmit={submit} className="flex flex-col sm:flex-row gap-2 sm:items-start" noValidate>
+            <div className="flex-1">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('tarot.yourEmail')}
+                aria-label={t('tarot.yourEmail')}
+                icon={<Mail className="w-4 h-4" aria-hidden />}
+                error={error ?? undefined}
+                autoComplete="email"
+                name="newsletter_email"
+                disabled={state === 'sending'}
+              />
+            </div>
+            <Button type="submit" variant="gold" loading={state === 'sending'} className="whitespace-nowrap">
+              {t('tarot.getFreeGuide')}
+            </Button>
+          </form>
+          <p className="text-caption text-mystic-500">{t('tarot.noSpam')}</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+/**
+ * A love or career meaning on the sheet. Some are written with both
+ * orientations inside one string ("UPRIGHT LOVE MEANING: …"); those are cut
+ * at the labels and each part gets a quiet sentence-case label instead.
+ */
+function FocusMeaning({ text }: { text: string }) {
+  const { t } = useT('app');
+  const { intro, upright, reversed } = meaningSections(text);
+  const label = 'text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted mb-1';
+  return (
+    <div className="space-y-4">
+      {intro && <ReadingProse lede={false} text={intro} />}
+      {upright && (
+        <div>
+          <p className={label}>{t('tarot.upright')}</p>
+          <ReadingProse lede={false} text={upright} />
+        </div>
+      )}
+      {reversed && (
+        <div>
+          <p className={label}>{t('tarot.reversed')}</p>
+          <ReadingProse lede={false} text={reversed} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * /tarot-meanings/:slug — one card's meaning.
  *
  * The face, the name, the keyword pills and the affirmation, then
  * everything that is READ on ONE Paper: description, upright, reversed,
- * love, career, yes or no, the reflection prompt, and — behind two
- * disclosures — the esoteric correspondences and the card combinations.
- * The FAQ (mirroring the FAQPage JSON-LD), the disclaimer and the email
- * capture follow on the canvas. It used to be six stacked navy boxes,
+ * yes or no and the reflection prompt; love and career open on demand
+ * beside the correspondences, the
+ * combinations and the FAQ (mirroring the FAQPage JSON-LD); the disclaimer
+ * and, for a visitor, the free course follow on the canvas. It used to be six stacked navy boxes,
  * 6,486px tall, with the colours written as hex in `style`.
  */
 export function TarotCardMeaningPage() {
@@ -118,8 +220,6 @@ export function TarotCardMeaningPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
   const locale = getLocale();
 
   // `enCard` keeps the English content used for slug lookups, Yes/No classification,
@@ -307,11 +407,11 @@ export function TarotCardMeaningPage() {
       {/* Breadcrumb */}
       <nav className="tm-breadcrumb" aria-label="Breadcrumb">
         <Link to="/tarot-meanings">{t('tarot.allCards')}</Link>
-        <span className="tm-breadcrumb-sep">›</span>
+        <ChevronRight className="tm-breadcrumb-sep" aria-hidden />
         {card.suit && (
           <>
             <Link to={`/tarot-meanings?suit=${card.suit}`}>{t(`tarot.${suitKeyMap[card.suit]}`)}</Link>
-            <span className="tm-breadcrumb-sep">›</span>
+            <ChevronRight className="tm-breadcrumb-sep" aria-hidden />
           </>
         )}
         <span className="tm-breadcrumb-current">{card.name}</span>
@@ -324,13 +424,18 @@ export function TarotCardMeaningPage() {
       >
       <div className="space-y-6 pb-8">
         {/* The card: face, name, keywords, affirmation. */}
-        <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-6">
-          <TarotFace card={card} size="xl" radius="card" loading="eager" alt="" />
-          <div className="flex-1 min-w-0 space-y-4">
-            <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-0" />
-            <KeywordRow keywords={card.keywords.slice(0, 4)} className="sm:justify-start" />
-            {enrichment?.affirmation && <AffirmationPanel text={enrichment.affirmation} />}
+        <div className="space-y-5">
+          {/* Face beside the name at every width: on a phone the face used
+              to stand alone above the fold, 336 px of it. */}
+          <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] sm:grid-cols-[14rem_minmax(0,1fr)] gap-x-4 sm:gap-x-6 gap-y-4 items-start">
+            <div className="sm:row-span-2">
+              <TarotFace card={card} size="fill" radius="card" loading="eager" alt="" />
+            </div>
+            <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-0 pt-1 min-w-0" />
+            {/* Under both on a phone, beside the face from sm up. */}
+            <KeywordRow keywords={card.keywords.slice(0, 4)} className="col-span-2 sm:col-span-1 sm:col-start-2 !justify-start" />
           </div>
+          {enrichment?.affirmation && <AffirmationPanel text={enrichment.affirmation} />}
         </div>
 
         {/* Quick reference — a table, on the canvas. */}
@@ -390,20 +495,6 @@ export function TarotCardMeaningPage() {
               <p className="reading-copy mt-2">{card.meaningReversed}</p>
             </section>
 
-            {card.loveMeaning && (
-              <section>
-                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.loveAndRelationships')}</h2>
-                <p className="reading-copy mt-2">{card.loveMeaning}</p>
-              </section>
-            )}
-
-            {card.careerMeaning && (
-              <section>
-                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.careerAndFinances')}</h2>
-                <p className="reading-copy mt-2">{card.careerMeaning}</p>
-              </section>
-            )}
-
             {yesNo && (
               <section>
                 <h2 className="heading-display-md heading-strong text-ink">{t('tarot.yesOrNoReading')}</h2>
@@ -423,6 +514,19 @@ export function TarotCardMeaningPage() {
               </section>
             )}
 
+            {/* The situational readings and the reference material open on
+                demand; the crawler copy carries all of it (scripts/seo-body.mjs). */}
+            <div>
+              {card.loveMeaning && (
+                <PaperDisclosure label={t('tarot.loveAndRelationships')}>
+                  <FocusMeaning text={card.loveMeaning} />
+                </PaperDisclosure>
+              )}
+              {card.careerMeaning && (
+                <PaperDisclosure label={t('tarot.careerAndFinances')}>
+                  <FocusMeaning text={card.careerMeaning} />
+                </PaperDisclosure>
+              )}
             {enrichment && (
               <div>
                 <PaperDisclosure label={t('cardMeaning.correspondences', { defaultValue: 'Astrology and numerology' })}>
@@ -496,49 +600,25 @@ export function TarotCardMeaningPage() {
                 </PaperDisclosure>
               </div>
             )}
+            </div>
           </div>
         </Paper>
         <Disclaimer kind="tarot" tail />
 
-        {/* Email capture */}
-        <div className="tm-email-capture">
-          {subscribed ? (
-            <div className="tm-email-success">
-              <span aria-hidden>✓</span> {t('tarot.youreIn')}
-            </div>
-          ) : (
-            <>
-              <h2 className="tm-email-title heading-display-md text-mystic-100">{t('tarot.freeTarotGuide')}</h2>
-              <p className="tm-email-desc">{t('tarot.freeTarotGuideDesc')}</p>
-              <form className="tm-email-form" onSubmit={(e) => {
-                e.preventDefault();
-                if (email.includes('@')) setSubscribed(true);
-              }}>
-                <input
-                  type="email"
-                  placeholder={t('tarot.yourEmail')}
-                  aria-label={t('tarot.yourEmail')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="tm-email-input"
-                  required
-                  name="newsletter_email"
-                  autoComplete="off"
-                />
-                <button type="submit" className="tm-email-btn">{t('tarot.getFreeGuide')}</button>
-              </form>
-              <p className="tm-email-note">{t('tarot.noSpam')}</p>
-            </>
-          )}
-        </div>
+        {/* The free course, for a visitor: the same signup as the landing page
+            (newsletter_signups, delivered by send-newsletter-course). It used
+            to say "You're in" without sending the address anywhere. */}
+        {!user && <CardPageCourseSignup />}
       </div>
       </PageGrid>
 
-      {/* Bottom CTA */}
-      <div className="tm-bottom-cta">
-        <p className="tm-bottom-text">{t('tarot.experienceInReading', { name: card.name })}</p>
-        <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
-      </div>
+      {/* Bottom CTA — for a visitor; a signed-in reader has the tab bar. */}
+      {!user && (
+        <div className="tm-bottom-cta">
+          <p className="tm-bottom-text">{t('tarot.experienceInReading', { name: card.name })}</p>
+          <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
+        </div>
+      )}
     </div>
   );
 }

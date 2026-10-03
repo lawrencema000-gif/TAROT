@@ -83,7 +83,7 @@ export function MansionsPage() {
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
-          <div className="font-display-eyebrow text-teal mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
+          <p className="text-meta font-medium text-teal mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</p>
           {acts.favourable.length === 0 ? (
             <p className="text-ui text-mystic-300 italic">
               {t('mansions.nothingFavoured', { defaultValue: 'The almanacs record nothing favoured here — a day to keep small rather than start.' })}
@@ -97,7 +97,7 @@ export function MansionsPage() {
           )}
         </div>
         <div>
-          <div className="font-display-eyebrow text-coral mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
+          <p className="text-meta font-medium text-coral mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</p>
           {acts.unfavourable.length === 0 ? (
             <p className="text-ui text-mystic-300 italic">{t('mansions.nothingAvoided', { defaultValue: 'Nothing particular to avoid.' })}</p>
           ) : (
@@ -194,7 +194,7 @@ export function MansionsPage() {
           </Card>
 
           {sukuyo && sukuyo.key !== birth.key && (
-            <Section eyebrow={t('mansions.sukuyoEyebrow', { defaultValue: '宿曜 · the Japanese reading' })} spacing="sm">
+            <Section eyebrow={t('mansions.sukuyoEyebrow', { defaultValue: 'Sukuyō · the Japanese reading' })} spacing="sm">
               <p className="reading-copy">
                 {t('mansions.sukuyoBefore', {
                   defaultValue: 'The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in',
@@ -259,7 +259,7 @@ export function MansionsPage() {
         ))}
       </Section>
 
-      <p className="reading-caption max-w-prose">
+      <p className="text-meta text-mystic-400 max-w-prose">
         {t('mansions.countNote', {
           defaultValue: 'The 值日 cycle is a calendrical count that has run unbroken for centuries — not a live measurement of where the Moon is tonight.',
         })}

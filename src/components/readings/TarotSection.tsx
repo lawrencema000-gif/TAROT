@@ -982,7 +982,9 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       <TarotRevealView
         drawnCards={drawnCards}
         currentSpread={currentSpread}
-        spreadTitle={meta?.name ?? ''}
+        // The daily spread's catalogue name carries a numeral ("1-card daily"),
+        // and a title is set in the display serif: name it as the hero does.
+        spreadTitle={currentSpread === DAILY_SPREAD ? t('readings.dailyDraw.title') : meta?.name ?? ''}
         spreadLayout={meta?.layout}
         selectedFocus={selectedFocus}
         question={question}

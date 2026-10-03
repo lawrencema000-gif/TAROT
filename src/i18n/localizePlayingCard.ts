@@ -1,5 +1,7 @@
 import type { CartoLesson, CartoSpread, PlayingCard, PlayingCardCombination } from '../types/cartomancy';
-import { getPlayingCardBySlug } from '../data/cartomancy/deck';
+import { getPlayingCard, getPlayingCardBySlug } from '../data/cartomancy/deck';
+import { SAME_RANK_COMBINATIONS } from '../data/cartomancy/tables.en';
+import type { CombinationHit } from '../data/cartomancy/combinations';
 import i18n, { CARTO_CORPUS_NS, getLocale, type SupportedLocale } from './config';
 
 /**
@@ -62,6 +64,11 @@ interface CartoBundle {
   cards?: Record<string, LocalizedCardFields>;
   spreads?: Record<string, LocalizedSpreadFields>;
   lessons?: Record<string, LocalizedLessonFields>;
+  suits?: Record<string, { name?: string }>;
+  /** In SAME_RANK_COMBINATIONS order. */
+  sameRankCombinations?: { rank?: string; count?: number; meaning?: string }[];
+  /** Keyed by the rule's `id`, which is never localized. */
+  neighborRules?: { id?: string; meaning?: string }[];
 }
 
 function corpusFor(locale: SupportedLocale): CartoBundle | null {
@@ -195,4 +202,47 @@ export function localizeCartoLesson(lesson: CartoLesson, locale: SupportedLocale
   if (locale === 'en') return lesson;
   const bundle = corpusFor(locale);
   return bundle ? overlayLesson(lesson, bundle) : lesson;
+}
+
+/**
+ * A combination the tables found, as the active locale reads it: the
+ * meaning from the translated tables (same-rank sets by rank and count,
+ * neighbour rules by id, a card's own pairings by position in its list),
+ * and a label built from the localized card names — the English labels
+ * ("Three Queens", "Nine of Clubs with the Ace of Diamonds") are phrases,
+ * not data, so a translation names the cards instead. English, or a
+ * corpus that does not carry the line yet, returns the hit's own text.
+ */
+export function localizeCombinationHit(hit: CombinationHit, locale: SupportedLocale = getLocale()): { label: string; meaning: string } {
+  if (locale === 'en') return { label: hit.label, meaning: hit.meaning };
+  const bundle = corpusFor(locale);
+  if (!bundle) return { label: hit.label, meaning: hit.meaning };
+
+  let meaning: string | undefined;
+  if (hit.kind === 'same-rank') {
+    const [, rank, count] = hit.id.split(':');
+    const at = SAME_RANK_COMBINATIONS.findIndex((e) => e.rank === rank && String(e.count) === count);
+    meaning = at >= 0 ? bundle.sameRankCombinations?.[at]?.meaning : undefined;
+  } else if (hit.kind === 'pair') {
+    const [, a, b] = hit.id.split(':');
+    const card = a ? getPlayingCardBySlug(a) : undefined;
+    const at = card ? card.combinations.findIndex((c) => c.with === b) : -1;
+    const tr = card ? bundle.cards?.[String(card.id)]?.combinations : undefined;
+    meaning = card && at >= 0 && Array.isArray(tr) && tr.length === card.combinations.length ? tr[at] : undefined;
+  } else {
+    meaning = bundle.neighborRules?.find((r) => r.id === hit.id)?.meaning;
+  }
+
+  const names = hit.cardIds
+    .map((id) => getPlayingCard(id))
+    .filter((c): c is PlayingCard => !!c)
+    .map((c) => overlayCard(c, bundle).name);
+  let label = hit.label;
+  if (hit.kind === 'majority') {
+    const suitName = hit.suit ? bundle.suits?.[hit.suit]?.name : undefined;
+    label = suitName ? `${suitName} ×${hit.count ?? names.length}` : names.length <= 3 ? names.join(' · ') : hit.label;
+  } else if (names.length > 0) {
+    label = names.join(' · ');
+  }
+  return { label, meaning: meaning ?? hit.meaning };
 }

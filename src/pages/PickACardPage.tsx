@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
-import { Button, Page, ResultLayout, Tag, TarotFace, toast } from '../components/ui';
+import { Button, KeywordRow, Page, ResultLayout, TarotFace, toast } from '../components/ui';
 import { firstSentences } from '../components/readings/tarot/readingText';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
-import { getBundledCardPath } from '../config/bundledImages';
+import { ALL_CARDS, getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../services/shareableReadings';
@@ -41,11 +41,10 @@ const STREAK_STORAGE_KEY = 'arcana_pick_streak';
 const LAST_PICK_DATE_KEY = 'arcana_pick_last_date';
 
 /*
- * The flip. Same numbers as the reading flow's reveal: 520ms, a long
- * ease-out tail, and a reversed card turning INTO its reversal (a
- * half-turn on Z rides along with the flip). framer writes transforms in
- * a fixed order — rotateY before rotateZ — which is the order the face,
- * pre-turned 180° on Y, needs to land upright-or-inverted and facing out.
+ * The flip. Same numbers as the reading flow's reveal: 520ms and a long
+ * ease-out tail. The plane only turns on Y: a reversed card's art is drawn
+ * inverted on its face (TarotFace `reversed`) and the plate stays upright
+ * and legible (§6.6).
  */
 const FLIP_MS = 520;
 const FLIP_EASE: [number, number, number, number] = [0.22, 0.68, 0.24, 1];
@@ -339,7 +338,7 @@ export function PickACardPage() {
                 className="relative w-full h-full"
                 style={{ transformStyle: 'preserve-3d' }}
                 initial={false}
-                animate={{ rotateY: up ? 180 : 0, rotateZ: up && opt.reversed ? 180 : 0 }}
+                animate={{ rotateY: up ? 180 : 0 }}
                 transition={{ duration: reduceMotion ? 0 : FLIP_MS / 1000, ease: FLIP_EASE }}
               >
                 {/* Back — the Arcana back. */}
@@ -353,14 +352,14 @@ export function PickACardPage() {
                   />
                 </div>
                 {/* Face — pre-turned and mounted from the start so the art is
-                    decoded before the hinge moves. The plane carries the
-                    reversal, so the face is drawn upright. */}
+                    decoded before the hinge moves. A reversed card's art is
+                    inverted; the plate stays upright. */}
                 <div
                   className="absolute inset-0"
                   style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                   aria-hidden={!up}
                 >
-                  <TarotFace card={opt.card} size="fill" reversedTag={false} loading="eager" alt="" />
+                  <TarotFace card={opt.card} size="fill" detail="quiet" reversed={opt.reversed} reversedTag={false} loading="eager" alt="" />
                 </div>
               </motion.div>
             </motion.button>
@@ -386,33 +385,29 @@ export function PickACardPage() {
             verdict={pickedCard.name}
             summary={firstSentences(picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright, 2)}
             subtitle={
-              pickedCard.keywords?.length > 0 ? (
-                <span className="inline-flex flex-wrap justify-center gap-1.5">
-                  {pickedCard.keywords.slice(0, 3).map((kw) => (
-                    <Tag key={kw} tone="neutral">{kw}</Tag>
-                  ))}
-                </span>
-              ) : undefined
+              pickedCard.keywords?.length > 0 ? <KeywordRow keywords={pickedCard.keywords.slice(0, 3)} /> : undefined
             }
             actions={
-              <>
-                <Button variant="outline" onClick={handleShare} className="flex-1">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  {t('pickACard.share', { defaultValue: 'Share my card' })}
-                </Button>
+              // Stacked, the primary first: side by side at 390 both labels broke onto three lines.
+              <div className="w-full flex flex-col gap-3">
                 <Button
                   variant="gold"
-                  onClick={() => navigate(`/tarot-meanings/${pickedCard ? pickedCard.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''}`)}
-                  className="flex-1"
+                  fullWidth
+                  // By id, so a localized name still opens the (English-slugged) page.
+                  onClick={() => navigate(`/tarot-meanings/${ALL_CARDS.find((c) => c.id === pickedCard.id)?.slug ?? ''}`)}
                 >
-                  <BookOpen className="w-4 h-4 mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2" aria-hidden />
                   {t('pickACard.learnMore', { defaultValue: "Read this card's meaning" })}
                 </Button>
-              </>
+                <Button variant="outline" fullWidth onClick={handleShare}>
+                  <Share2 className="w-4 h-4 mr-2" aria-hidden />
+                  {t('pickACard.share', { defaultValue: 'Share my card' })}
+                </Button>
+              </div>
             }
             footer={
               <p className="text-ui text-mystic-400 flex items-center justify-center gap-1.5">
-                <RotateCcw className="w-3 h-3" />
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden />
                 {t('pickACard.comeBack', { defaultValue: 'New cards arrive at midnight.' })}
               </p>
             }

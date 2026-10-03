@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton, PageGrid, TarotCardIcon, HoroscopeWheelIcon } from '../components/ui';
+import { Card, Button, Sheet, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton, PageGrid, TarotCardIcon, HoroscopeWheelIcon, type ListRowTone } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -146,7 +146,7 @@ export function ProfilePage() {
     t(`profile.savedTypes.${type}`, { defaultValue: type.charAt(0).toUpperCase() + type.slice(1) });
   const SavedIcon = ({ type }: { type: string }) =>
     type === 'tarot' ? <TarotCardIcon /> : type === 'horoscope' ? <HoroscopeWheelIcon /> : <Sparkles />;
-  const savedTone = (type: string) => (type === 'tarot' ? 'blue' : type === 'horoscope' ? 'gold' : 'violet') as const;
+  const savedTone = (type: string): ListRowTone => (type === 'tarot' ? 'blue' : type === 'horoscope' ? 'gold' : 'violet');
 
   const identity = (
     <Card padding="lg">

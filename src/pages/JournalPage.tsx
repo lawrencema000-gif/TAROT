@@ -15,11 +15,11 @@ import {
   BookOpen,
   Lightbulb,
   FileText,
-  Clock,
   Sun,
   Heart,
   Users,
   Moon,
+  PenLine,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -113,6 +113,12 @@ function spreadAbbr(type: string | undefined): string {
 
 /** The gate for the generated insight: enough entries, and some variety to speak of. */
 const INSIGHT_MIN_ENTRIES = 5;
+/** A bar chart of one or two data points is a 100% bar, not a pattern. */
+const BARS_MIN = 3;
+
+/** Right-edge fade on a horizontally scrolling chip strip. */
+const CHIP_FADE =
+  '[mask-image:linear-gradient(to_right,black_calc(100%-40px),transparent)] [-webkit-mask-image:linear-gradient(to_right,black_calc(100%-40px),transparent)]';
 
 interface JournalEntry {
   id: string;
@@ -286,10 +292,17 @@ export function JournalPage() {
     },
     [t],
   );
-  const tagTone = (value: string): Tone => TAGS.find(x => x.value === value)?.tone ?? 'neutral';
 
   const dateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }), [locale]);
   const monthFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }), [locale]);
+  /** "Sep – Oct 2026" when the week straddles two months, else "Sep 2026". */
+  const weekLabel = (from: Date, to: Date) => {
+    // formatRange is ES2021; the app's TS lib predates it, every target browser has it.
+    const range = (monthFmt as Intl.DateTimeFormat & { formatRange?: (a: Date, b: Date) => string }).formatRange;
+    return from.getMonth() === to.getMonth() || typeof range !== 'function'
+      ? monthFmt.format(from)
+      : range.call(monthFmt, from, to);
+  };
   const narrowDayFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'narrow' }), [locale]);
   const longDayFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'long' }), [locale]);
   const shortDateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }), [locale]);
@@ -501,7 +514,6 @@ export function JournalPage() {
     const tagCounts: Record<string, number> = {};
     const writingDays: Record<number, number> = {};
     const positiveByDay: Record<number, number> = {};
-    const weeklyActivity: boolean[] = [];
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -513,12 +525,6 @@ export function JournalPage() {
       const day = parseLocalDate(entry.date).getDay();
       writingDays[day] = (writingDays[day] || 0) + 1;
       if (entry.mood && POSITIVE_MOODS.includes(entry.mood)) positiveByDay[day] = (positiveByDay[day] || 0) + 1;
-    }
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      weeklyActivity.push(entries.some(e => e.date === localDateStr(date)));
     }
 
     const last7DaysMoods: { date: string; mood: string | null }[] = [];
@@ -564,7 +570,6 @@ export function JournalPage() {
         percentage: totalMoods > 0 ? Math.round((count / totalMoods) * 100) : 0,
       })),
       topTags: sortedTags.slice(0, 5),
-      weeklyActivity,
       last7DaysMoods,
       currentStreak: profile?.streak || currentStreak,
       averageWordsPerEntry: entries.length > 0 ? Math.round(totalWords / entries.length) : 0,
@@ -574,6 +579,7 @@ export function JournalPage() {
       topMood: sortedMoods[0] ?? null,
       topTag: sortedTags[0] ?? null,
       totalMoods,
+      totalTagged: entries.filter(e => (e.tags ?? []).length > 0).length,
     };
   }, [entries, profile?.streak]);
 
@@ -684,7 +690,7 @@ export function JournalPage() {
             <ChevronLeft className="w-4 h-4" aria-hidden />
           </button>
           <span className="text-meta tracking-[0.08em] uppercase text-mystic-300 tabular-nums">
-            {monthFmt.format(calendarDays[0].date)}
+            {weekLabel(calendarDays[0].date, calendarDays[6].date)}
           </span>
           <button
             type="button"
@@ -732,7 +738,7 @@ export function JournalPage() {
       />
 
       <Button variant="gold" fullWidth onClick={todayEntry ? () => openEditEntry(todayEntry) : openNewEntry}>
-        <Plus className="w-4 h-4" aria-hidden />
+        {todayEntry ? <PenLine className="w-4 h-4" aria-hidden /> : <Plus className="w-4 h-4" aria-hidden />}
         {writeTodayLabel}
       </Button>
 
@@ -747,7 +753,8 @@ export function JournalPage() {
         />
       </ListRowGroup>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label={t('journal.editSheet.tags')}>
+      {/* The strip scrolls; the right edge fades so a cut chip reads as "more". */}
+      <div className={`flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 ${CHIP_FADE}`} role="group" aria-label={t('journal.editSheet.tags')}>
         <Chip
           label={t('journal.filterAll', { defaultValue: 'All' })}
           selected={!selectedTagFilter}
@@ -815,7 +822,7 @@ export function JournalPage() {
                   label={entry.title || body}
                   meta={
                     <>
-                      <span className="tracking-[0.08em] uppercase text-caption text-mystic-500">{formatDate(entry.date)}</span>
+                      <span className="block tracking-[0.08em] uppercase text-meta text-mystic-500 tabular-nums">{formatDate(entry.date)}</span>
                       {entry.title && <span className="block">{body}</span>}
                     </>
                   }
@@ -880,7 +887,9 @@ export function JournalPage() {
       <PageHeader
         title={t('journal.title')}
         action={
-          <Button variant="primary" size="sm" onClick={openNewEntry} aria-label={newEntryLabel}>
+          // Quiet: "Write today" under the search is the one gold call on the
+          // Entries tab; this one stays reachable from Templates and Insights.
+          <Button variant="secondary" size="sm" onClick={openNewEntry} aria-label={newEntryLabel}>
             <Plus className="w-4 h-4" aria-hidden />
             <span className="hidden min-[400px]:inline">{newEntryLabel}</span>
           </Button>
@@ -919,7 +928,7 @@ export function JournalPage() {
             </Section>
           )}
 
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label={t('journal.tabs.templates')}>
+          <div className={`flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 ${CHIP_FADE}`} role="group" aria-label={t('journal.tabs.templates')}>
             <Chip
               label={t('journal.filterAll', { defaultValue: 'All' })}
               selected={!selectedTemplateCategory}
@@ -995,7 +1004,7 @@ export function JournalPage() {
             </div>
           </Section>
 
-          {insights.moodDistribution.length > 0 && (
+          {insights.totalMoods >= BARS_MIN && (
             <Section headingLevel="h3" title={t('journal.commonMoods', { defaultValue: 'Common moods' })}>
               <Card padding="md">
                 <ul className="space-y-3">
@@ -1020,7 +1029,7 @@ export function JournalPage() {
             </Section>
           )}
 
-          {insights.topTags.length > 0 && (
+          {insights.totalTagged >= BARS_MIN && (
             <Section headingLevel="h3" title={t('journal.commonTags', { defaultValue: 'Common tags' })}>
               <Card padding="md">
                 <ul className="space-y-3">
@@ -1045,33 +1054,6 @@ export function JournalPage() {
               </Card>
             </Section>
           )}
-
-          <Section headingLevel="h3" title={t('journal.thisWeek')}>
-            <div className="grid grid-cols-7 gap-1">
-              {insights.weeklyActivity.map((active, i) => {
-                const d = new Date();
-                d.setDate(d.getDate() - (6 - i));
-                return (
-                  <div key={i} className="flex flex-col items-center gap-2">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        active ? 'bg-gold text-mystic-950' : 'bg-mystic-800 text-mystic-500'
-                      }`}
-                      aria-label={`${formatDate(localDateStr(d))}${active ? ` · ${t('journal.hasEntry', { defaultValue: 'has an entry' })}` : ''}`}
-                      role="img"
-                    >
-                      {active && (
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                          <polyline points="20,6 9,17 4,12" />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-caption text-mystic-500">{narrowDayFmt.format(d)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </Section>
 
           <Section title={t('journal.writingStats')} headingLevel="h3">
             <Card padding="md">
@@ -1171,7 +1153,7 @@ export function JournalPage() {
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <EyebrowLabel tone="ink" align="left">
                     {editingEntry
-                      ? t('journal.editSheet.editEntry')
+                      ? editorDateLabel
                       : selectedTemplate
                         ? t('journal.editSheet.promptOf', { defaultValue: 'Prompt {{n}} of {{total}}', n: currentPromptIndex + 1, total: selectedTemplate.prompts.length })
                         : draftDate === today
@@ -1179,7 +1161,7 @@ export function JournalPage() {
                           : t('journal.entryFor', { defaultValue: 'Entry for {{date}}', date: editorDateLabel })}
                   </EyebrowLabel>
                   {/* The eyebrow already names the day for a past-day entry; say it once. */}
-                  {(editingEntry || selectedTemplate || draftDate === today) && (
+                  {!editingEntry && (selectedTemplate || draftDate === today) && (
                     <span className="reading-caption tabular-nums shrink-0">{editorDateLabel}</span>
                   )}
                 </div>
@@ -1276,7 +1258,7 @@ export function JournalPage() {
 
               <div>
                 <p className="text-meta text-mystic-400 mb-3" id="journal-mood-label">{t('journal.editSheet.howFeeling')}</p>
-                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="journal-mood-label">
+                <div className="grid grid-cols-5 gap-2" role="group" aria-labelledby="journal-mood-label">
                   {MOODS.map(mood => {
                     const active = selectedMood === mood.value;
                     return (
@@ -1287,7 +1269,7 @@ export function JournalPage() {
                         aria-pressed={active}
                         aria-label={moodLabel(mood.value)}
                         title={moodLabel(mood.value)}
-                        className={`w-12 h-12 rounded-control border flex items-center justify-center transition-[border-color,background-color,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ${
+                        className={`h-12 w-full rounded-control border flex items-center justify-center transition-[border-color,background-color,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ${
                           active
                             ? 'bg-gold/10 border-gold text-gold'
                             : 'bg-mystic-800 border-mystic-700 text-mystic-300 [@media(hover:hover)]:hover:border-mystic-500'

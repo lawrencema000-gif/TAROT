@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, memo } from 'react';
-import { Calendar, Clock, Lock, Crown, Compass, Palette, Share2, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Lock, Crown, Compass, Palette, Share2 } from 'lucide-react';
 import { Card, Button, Input, toast, Page, PageHeader, Progress, Section, ResultSheet, AffirmationPanel } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
@@ -253,14 +253,8 @@ export function BaziPage() {
     return (
       <>
       <Page spacing="sm">
-        <button
-          type="button"
-          onClick={reset}
-          className="flex items-center gap-2 min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden />
-          {t('bazi.back', { defaultValue: 'Recalculate' })}
-        </button>
+        {/* No back link of its own: Readings' "All systems" sits above, and
+            the result closes with its own "another chart" action. */}
 
         {/* The Day Master reading, on paper: name → archetype → summary →
             strengths, challenges, when you thrive / struggle, affirmation.

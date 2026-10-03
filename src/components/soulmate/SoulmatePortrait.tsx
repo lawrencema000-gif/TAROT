@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
+import { Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
 import { Card, Button, Chip, toast, ReadingProse } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
@@ -112,12 +112,14 @@ export function SoulmatePortrait() {
     toast(t('soulmatePortrait.saved', { defaultValue: 'Saved' }), 'success');
   };
 
-  const waitingLabel =
+  // The button keeps one short label; the wait speaks in the line under it,
+  // stepping up at 10 s and 30 s (a portrait takes about a minute).
+  const waitLine =
     waitStep === 2
       ? t('soulmatePortrait.waitNearly', { defaultValue: 'Nearly there — portraits take up to 90 seconds' })
       : waitStep === 1
         ? t('soulmatePortrait.waitStill', { defaultValue: 'Still painting — this usually takes about a minute' })
-        : t('soulmatePortrait.painting', { defaultValue: 'Painting your portrait…' });
+        : null;
 
   return (
     <Card padding="lg" className="space-y-3">
@@ -136,17 +138,19 @@ export function SoulmatePortrait() {
               <Chip key={v.key} label={t(`soulmatePortrait.vibe.${v.key}`, { defaultValue: v.label })} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" disabled={loading} />
             ))}
           </div>
-          <Button variant="gold" fullWidth onClick={paint} disabled={loading} aria-live="polite">
+          <Button variant="gold" fullWidth onClick={paint} disabled={loading}>
             {loading
-              ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {waitingLabel}</>
+              ? t('soulmatePortrait.painting', { defaultValue: 'Painting your portrait…' })
               : <><Sparkles className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.paint', { defaultValue: 'Paint the portrait' })}</>}
           </Button>
-          {loading && (
-            <p className="text-meta text-mystic-400 text-center" role="status">
+          {loading ? (
+            <p className="text-meta text-mystic-300 text-center" role="status" aria-live="polite">
+              {waitLine && <span className="block text-mystic-100">{waitLine}</span>}
               {t('soulmatePortrait.waitNote', { defaultValue: 'You can keep reading — the portrait appears here when it is done.' })}
             </p>
+          ) : (
+            <MoonstoneCostLine cost={PORTRAIT_COST} wording="portrait" />
           )}
-          <MoonstoneCostLine cost={PORTRAIT_COST} />
           {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         </>
       )}

@@ -8,14 +8,14 @@ import { z } from "npm:zod@3.24.1";
  *
  * Per-turn flow:
  *   1. Persist the user's new message into ai_conversation_turns.
- *   2. Embed the user message via Gemini text-embedding-004.
+ *   2. Embed the user message (embedText: gemini-embedding-001, 768 dims).
  *   3. Cosine-similarity search ai_conversation_memories for the top 3 most
  *      relevant prior summaries (scoped to this user + persona).
  *   4. Build the prompt with persona + natal context + retrieved memories.
- *   5. Call Gemini 2.0 Flash for the reply.
+ *   5. Call the shared provider chain (OpenAI primary, Gemini fallback).
  *   6. Persist the assistant reply.
  *   7. If ≥10 unsummarized user turns exist for this (user, persona), kick
- *      off a best-effort summarization: ask Gemini to condense into 1-3
+ *      off a best-effort summarization: ask the model to condense into 1-3
  *      sentences, embed that summary, insert into ai_conversation_memories,
  *      and mark the source turns summarized = true.
  *

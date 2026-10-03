@@ -249,6 +249,9 @@ export function wrapBody(inner) {
   return `<div class="seo-prerender"><main><article>${inner}</article></main></div>`;
 }
 
+/** The live hero's Play badge target (LandingPage.tsx PLAY_STORE_URL). */
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.arcana.app';
+
 /**
  * The landing hero, as static HTML for `/`.
  *
@@ -259,23 +262,52 @@ export function wrapBody(inner) {
  * sees — the eyebrow, the two-line headline, the lede and the primary CTA,
  * in English (the shells are English-only), with the same type the live
  * hero uses so hydration repaints the same picture in place. `strings` is
- * the `hero` object of src/i18n/locales/en/landing.json.
+ * the `hero` object of src/i18n/locales/en/landing.json, `playAlt` its
+ * `play.alt`.
+ *
+ * The geometry is the live hero's (`.lp-hero` paddings, the 240×176 deck fan
+ * at its final frame — DeckFan `lg`, the default back — the ruled eyebrow,
+ * the gold `lg` Button with its chevron beside the Play badge, the caption),
+ * measured against the live page at 390 and 1280 to the pixel, so nothing
+ * jumps when React replaces it. The guard script after it decides,
+ * during parse and before the first paint, whether this visitor should see it
+ * at all: not in the Capacitor app (the native shell boots into auth or Home,
+ * never the landing), not for a returning visitor with a Supabase session
+ * (they get Home at `/`), and not for a ja/ko/zh visitor (`?lang` or the
+ * stored choice — the hero is English). Otherwise it marks
+ * `<html data-prerendered="landing">`, and LandingPage skips its one
+ * entrance so the live hero lands on top of this one without a fade.
  */
-export function landingHeroBody(strings) {
+export function landingHeroBody(strings, playAlt = 'Get it on Google Play') {
   const h = strings || {};
+  const fan = [[-44, 6, -14, 1], [0, 0, 0, 2], [44, 6, 14, 1]]
+    .map(([x, y, r, z]) => `<span style="z-index:${z};transform:translate(-50%,-50%) translate(${x}px,${y}px) rotate(${r}deg)"><img src="/card-backs/default.svg" alt="" width="96" height="144"></span>`)
+    .join('');
+  const guard =
+    `<script>(function(){try{var keep=true;` +
+    `if(window.Capacitor||(location.hostname==='localhost'&&!location.port))keep=false;` +
+    `var q=new URLSearchParams(location.search).get('lang'),s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}` +
+    `var l=String(q||s||'en').toLowerCase().split('-')[0];if(l==='ja'||l==='ko'||l==='zh')keep=false;` +
+    `try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('sb-')===0&&k.slice(-11)==='-auth-token'){keep=false;break}}}catch(e){}` +
+    `var el=document.querySelector('.seo-landing');` +
+    `if(!keep){if(el)el.parentNode.removeChild(el)}else{document.documentElement.setAttribute('data-prerendered','landing')}` +
+    `}catch(e){}})();</script>`;
   return (
     `<div class="seo-prerender seo-landing"><main><section class="seo-hero">` +
-    `<p class="seo-eyebrow">${esc(h.badge)}</p>` +
+    `<div class="seo-fan" aria-hidden="true">${fan}</div>` +
+    `<p class="seo-eyebrow"><span class="seo-rule" aria-hidden="true"></span><span class="seo-badge">${esc(h.badge)}</span><span class="seo-rule seo-rule-r" aria-hidden="true"></span></p>` +
     `<h1>${esc(h.headlineTop)}<br><span class="seo-gold">${esc(h.headlineBottom)}</span></h1>` +
     `<p class="seo-lede">${esc(h.sub)}</p>` +
-    `<a class="seo-cta" href="/signup">${esc(h.cta)}</a>` +
+    `<div class="seo-ctas"><a class="seo-cta" href="/signup">${esc(h.cta)}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>` +
+    `<a class="seo-play" href="${PLAY_STORE_URL}" target="_blank" rel="noopener noreferrer"><span><img src="/google-play-badge.png" alt="${esc(playAlt)}" width="900" height="554"></span></a></div>` +
     `<p class="seo-note">${esc(h.note)}</p>` +
-    `</section></main></div>`
+    `</section></main></div>` +
+    guard
   );
 }
 
 /** Inline styling for the prerendered landing hero: the live hero's measure, type and inks, no motion. */
-export const LANDING_STYLE = `<style>.seo-landing{min-height:70vh;display:flex;justify-content:center;padding:112px 16px 64px;color:#e8e6f0;font-family:Inter,'Inter Fallback',system-ui,sans-serif;-webkit-font-smoothing:antialiased}.seo-hero{width:100%;max-width:640px;text-align:center}.seo-eyebrow{margin:0 0 12px;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:#d4af37}.seo-landing h1{margin:12px 0 16px;font-family:'Cormorant Garamond','Cormorant Fallback','Cormorant Fallback Android',Georgia,serif;font-weight:500;font-size:clamp(2.25rem,5.5vw,3.25rem);line-height:1.08;letter-spacing:-.005em}.seo-gold{color:#d4af37}.seo-lede{margin:0 auto;max-width:28rem;font-size:1.1875rem;line-height:1.55;color:#c9c4d8}.seo-cta{display:inline-block;margin-top:28px;padding:14px 24px;border-radius:12px;background:#d4af37;color:#07070f;font-weight:600;font-size:.9375rem;text-decoration:none}.seo-note{margin:12px 0 0;font-size:.75rem;color:#7d7a99}</style>`;
+export const LANDING_STYLE = `<style>.seo-landing{min-height:70vh;display:flex;justify-content:center;padding:96px 16px 64px;color:#e8e6f0;font-family:Inter,'Inter Fallback',system-ui,sans-serif;-webkit-font-smoothing:antialiased}@media (min-width:640px){.seo-landing{padding:128px 28px 88px}}.seo-hero{width:100%;max-width:640px;text-align:center}.seo-fan{position:relative;width:240px;height:176px;margin:0 auto}.seo-fan span{position:absolute;left:50%;top:50%;width:96px;height:144px;border-radius:8px;border:1px solid rgba(212,175,55,.3);overflow:hidden;background:#16162e}.seo-fan img{display:block;width:100%;height:100%;object-fit:cover}.seo-eyebrow{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 0;font-size:.6875rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#d4af37}.seo-badge{white-space:nowrap}.seo-rule{flex:1;max-width:3rem;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,.5))}.seo-rule-r{background:linear-gradient(to right,rgba(212,175,55,.5),transparent)}.seo-landing h1{margin:12px 0 16px;font-family:'Cormorant Garamond','Cormorant Fallback','Cormorant Fallback Android',Georgia,serif;font-weight:500;font-size:clamp(2.25rem,5.5vw,3.25rem);line-height:1.08;letter-spacing:-.005em}.seo-gold{color:#d4af37}.seo-lede{margin:0 auto;max-width:28rem;font-size:1.1875rem;line-height:1.55;color:#c9c4d8}.seo-ctas{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:center;margin-top:28px}.seo-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;min-height:56px;padding:0 28px;border-radius:12px;background:linear-gradient(to right,#b8960f,#d4af37,#f4d668);color:#07070f;font-weight:500;font-size:1.0625rem;line-height:1.65;text-decoration:none}.seo-play{display:inline-flex;padding:12px;border-radius:12px}.seo-play span{display:block;position:relative;overflow:hidden;width:168px;height:48px;border-radius:5px}.seo-play img{position:absolute;left:-55.1px;top:-61.6px;width:278.7px;height:171.6px;max-width:none}.seo-note{margin:8px 0 0;font-size:.75rem;line-height:1.45;color:#7d7a99}</style>`;
 
 /** Minimal inline styling so the pre-hydration content isn't unstyled flash. */
 export const SEO_STYLE = `<style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>`;

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Share2, ChevronUp, ChevronDown } from 'lucide-react';
-import { Card, Tabs, KeywordRow, AffirmationPanel, Paper, TarotFace, EyebrowLabel } from '../ui';
+import { Card, Tabs, KeywordRow, AffirmationPanel, Paper, TarotFace, EyebrowLabel, ReadingProse } from '../ui';
 import type { TarotCard } from '../../types';
 import { useT } from '../../i18n/useT';
-import { affirmationFor } from './tarot/readingText';
+import { affirmationFor, orientedMeaning } from './tarot/readingText';
 
 /**
  * The card detail sheet.
@@ -174,7 +174,11 @@ export function TarotCardDetail({
               <h3 className="heading-display-md heading-strong text-ink">{t('tarot.detail.loveTitle')}</h3>
               <p className="reading-meta">{t('tarot.detail.loveSubtitle')}</p>
             </div>
-            <p className="reading-copy">{card.loveMeaning || t('tarot.detail.loveFallback')}</p>
+            {card.loveMeaning ? (
+              <ReadingProse lede={false} text={orientedMeaning(card.loveMeaning, reversed)} />
+            ) : (
+              <p className="reading-copy">{t('tarot.detail.loveFallback')}</p>
+            )}
             <p className="reading-copy border-l-2 border-ink-rose pl-4">
               {reversed ? t('tarot.detail.loveInsightReversed') : t('tarot.detail.loveInsightUpright')}
             </p>
@@ -187,7 +191,11 @@ export function TarotCardDetail({
               <h3 className="heading-display-md heading-strong text-ink">{t('tarot.detail.careerTitle')}</h3>
               <p className="reading-meta">{t('tarot.detail.careerSubtitle')}</p>
             </div>
-            <p className="reading-copy">{card.careerMeaning || t('tarot.detail.careerFallback')}</p>
+            {card.careerMeaning ? (
+              <ReadingProse lede={false} text={orientedMeaning(card.careerMeaning, reversed)} />
+            ) : (
+              <p className="reading-copy">{t('tarot.detail.careerFallback')}</p>
+            )}
             <p className="reading-copy border-l-2 border-ink-blue pl-4">
               {reversed ? t('tarot.detail.careerInsightReversed') : t('tarot.detail.careerInsightUpright')}
             </p>

@@ -42,6 +42,11 @@ export interface FlipTileProps {
   style?: CSSProperties;
   /** The "there is more here" mark that arrives as the card settles. Off for small tiles. */
   infoBadge?: boolean;
+  /**
+   * Where the mark sits. A reversed face carries its name tab at the top,
+   * where a top-right mark would cover the name: it goes bottom-left there.
+   */
+  badgeCorner?: 'top-right' | 'bottom-left';
   /** A numbered badge at the top-left corner, for tiles too small to carry a label. */
   number?: number;
 }
@@ -57,6 +62,7 @@ export function FlipTile({
   className = '',
   style,
   infoBadge = false,
+  badgeCorner = 'top-right',
   number,
 }: FlipTileProps) {
   return (
@@ -104,7 +110,7 @@ export function FlipTile({
       )}
       {infoBadge && (
         <div
-          className="absolute top-1.5 right-1.5 w-6 h-6 bg-mystic-900/80 rounded-full flex items-center justify-center pointer-events-none transition-opacity duration-base ease-out"
+          className={`absolute ${badgeCorner === 'bottom-left' ? 'bottom-1.5 left-1.5' : 'top-1.5 right-1.5'} w-6 h-6 bg-mystic-900/80 rounded-full flex items-center justify-center pointer-events-none transition-opacity duration-base ease-out`}
           style={{ opacity: revealed ? 1 : 0, transitionDelay: `${delayMs + FLIP_MS - 140}ms` }}
           aria-hidden
         >

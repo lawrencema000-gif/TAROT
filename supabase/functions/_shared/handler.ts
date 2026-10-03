@@ -116,11 +116,11 @@ export interface HandlerOptions<TBody, TResp> {
    * refund capability.
    *
    * Only authenticated users are charged — anonymous callers of optional-auth
-   * functions pass through free (matching the daily-ceiling behaviour). The
-   * debit is idempotent on the request correlation id; when the body carries
-   * a UUID `requestId` that id BECOMES the correlation id, so a client retry
-   * after a dropped connection (same requestId) is not charged twice and
-   * finds the same cached result. `cost` defaults to 50.
+   * functions pass through free (matching the daily-ceiling behaviour).
+   * When the body carries a UUID `requestId`, a client retry after a dropped
+   * connection (same requestId, same body) is not charged twice and finds
+   * the same cached result; a different body under the same id is charged
+   * as a new request (see spendIdempotencyKey). `cost` defaults to 50.
    */
   spend?: { actionKey: string; cost?: number };
   /**
@@ -296,10 +296,10 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
 
       // ── Client request id → correlation id ──
       // A client that retries after a dropped connection sends the same
-      // `requestId` (uuid). Adopting it as the correlation id makes the
-      // Moonstone debit below idempotent across the retry (the spend RPC
-      // keys on this id) and lets the logs of both attempts be found
-      // together. Anything that is not a UUID is ignored.
+      // `requestId` (uuid). It becomes the correlation id so the logs of
+      // both attempts are found together, and it feeds the spend
+      // idempotency key below (bound to the body, never used alone).
+      // Anything that is not a UUID is ignored.
       const requestId = extractRequestId(body);
       if (requestId && requestId !== correlationId) {
         correlationId = requestId;
@@ -341,10 +341,20 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       // ── Server-authoritative Moonstone spend ──
       // Debit AFTER the AI gate (don't charge if AI is paused/over-ceiling)
       // and BEFORE run. We refund below if run throws. Only authenticated
-      // users are charged; the debit is idempotent on the correlation id.
+      // users are charged. The idempotency key is NOT the correlation id:
+      // that comes from the client (X-Correlation-Id header or the body's
+      // requestId), and a constant one would make every later debit a
+      // "duplicate" — i.e. free. See spendIdempotencyKey().
       let spendIdem: string | null = null;
       if (opts.spend && ctx.userId) {
-        spendIdem = correlationId;
+        spendIdem = await spendIdempotencyKey(supabase, {
+          userId: ctx.userId,
+          fn: opts.fn,
+          actionKey: opts.spend.actionKey,
+          requestId,
+          body,
+          log,
+        });
         const { data: spendRows, error: spendErr } = await supabase.rpc(
           "spend_moonstones_for_action_srv",
           {
@@ -518,6 +528,60 @@ function extractRequestId(body: unknown): string | null {
   if (!body || typeof body !== "object") return null;
   const v = (body as Record<string, unknown>).requestId;
   return typeof v === "string" && UUID_RE.test(v) ? v.toLowerCase() : null;
+}
+
+/** JSON with object keys sorted, so the same request always hashes the same. */
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  const obj = value as Record<string, unknown>;
+  return `{${Object.keys(obj).sort()
+    .filter((k) => obj[k] !== undefined)
+    .map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`)
+    .join(",")}}`;
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * The key the Moonstone debit is idempotent on.
+ *
+ *  - No `requestId` → a fresh server-side UUID: every request is charged.
+ *    (The client-supplied X-Correlation-Id is deliberately not used — a
+ *    constant header would otherwise make every later debit a free
+ *    "duplicate".)
+ *  - `requestId` → requestId + a hash of (function, action, request body).
+ *    A genuine retry (same id, same body) maps to the same key, so it is
+ *    not charged twice and the function's response cache returns the same
+ *    result. Re-using the id for a different request (another question,
+ *    other cards) changes the hash, so that request is charged normally.
+ *  - If an earlier attempt under that key was refunded (the run failed),
+ *    the retry gets a fresh suffix and is charged again — otherwise the
+ *    refunded debit would wave the retry through for free.
+ */
+async function spendIdempotencyKey(
+  supabase: SupabaseClient,
+  p: { userId: string; fn: string; actionKey: string; requestId: string | null; body: unknown; log: Logger },
+): Promise<string> {
+  if (!p.requestId) return crypto.randomUUID();
+  const digest = await sha256Hex(`${p.fn}\n${p.actionKey}\n${stableStringify(p.body)}`);
+  const base = `rq:${p.requestId}:${digest.slice(0, 32)}`;
+  const { count, error } = await supabase
+    .from("moonstone_transactions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", p.userId)
+    .eq("kind", "refund")
+    .like("reference", `${base}%`);
+  if (error) {
+    // Can't tell whether an earlier attempt was refunded — charge as a new
+    // request rather than risk a free retry.
+    p.log.warn("spend.refund_lookup_failed", { err: error.message });
+    return crypto.randomUUID();
+  }
+  return count ? `${base}:${count}` : base;
 }
 
 /** Timing-safe string comparison. Avoids short-circuit leak. */

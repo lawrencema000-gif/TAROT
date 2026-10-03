@@ -155,6 +155,12 @@ export interface QuizQuestion {
   text: string;
   options: { value: number; label: string }[];
   dimension?: string;
+  /**
+   * Set by localizeQuiz on a five-point agreement item. Detection reads the
+   * English labels, so the renderer cannot re-detect once they are
+   * translated; it reads this flag instead.
+   */
+  likert?: boolean;
 }
 
 export interface QuizDefinition {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import i18n from './i18n/config';
@@ -441,10 +442,10 @@ function AppContent() {
           </p>
           {isProcessingOAuth && showOAuthCancel && (
             <div className="mt-6 space-y-2">
-              <p className="text-mystic-500 text-sm">Taking longer than expected?</p>
+              <p className="text-mystic-500 text-meta">Taking longer than expected?</p>
               <button
                 onClick={cancelOAuth}
-                className="px-4 py-2 text-sm text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
+                className="px-4 py-2 text-ui text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
               >
                 {t('authBootstrap.backToSignIn', { defaultValue: 'Back to sign in' })}
               </button>
@@ -478,21 +479,24 @@ function AppContent() {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
-          <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-            <a href="/" className="no-underline flex items-center gap-2" aria-label="Arcana home">
+          {/* Brand and Sign in share the first line; at phone width the
+              section links take a line of their own beneath, so four items
+              never push the page wider than the screen. */}
+          <nav className="flex flex-wrap items-center justify-between gap-x-4 px-4 sm:px-6 py-3 sm:py-4 max-w-5xl mx-auto">
+            <a href="/" className="no-underline flex items-center gap-2 min-h-[44px]" aria-label="Arcana home">
               <BrandMark size={22} className="text-gold" />
               <BrandWordmark size={20} sparkle={false} />
             </a>
-            <div className="flex items-center gap-4">
-              <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cardMeanings', { defaultValue: 'Card meanings' })}</a>
+            <div className="order-3 sm:order-2 w-full sm:w-auto sm:ml-auto flex items-center gap-5 sm:gap-4">
+              <a href="/tarot-meanings" className="inline-flex items-center min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cardMeanings', { defaultValue: 'Card meanings' })}</a>
               {cartomancyEnabled && (
-                <a href="/cartomancy" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cartomancy', { defaultValue: 'Playing cards' })}</a>
+                <a href="/cartomancy" className="inline-flex items-center min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cartomancy', { defaultValue: 'Playing cards' })}</a>
               )}
-              <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.blog', { defaultValue: 'Blog' })}</a>
-              <button onClick={() => navigate('/signin')} className="px-5 py-2 min-h-[44px] text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-control transition-all">
-                {t('publicNav.signIn', { defaultValue: 'Sign in' })}
-              </button>
+              <a href="/blog" className="inline-flex items-center min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.blog', { defaultValue: 'Blog' })}</a>
             </div>
+            <button onClick={() => navigate('/signin')} className="order-2 sm:order-3 px-5 py-2 min-h-[44px] text-ui font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-control transition-all">
+              {t('publicNav.signIn', { defaultValue: 'Sign in' })}
+            </button>
           </nav>
           <main className="max-w-3xl lg:max-w-5xl mx-auto px-4 pb-16">
             <Suspense fallback={<ListSkeleton count={3} />}>
@@ -527,7 +531,10 @@ function AppContent() {
           <WebAdSidebar side="left" />
           <WebAdSidebar side="right" />
           <footer className="border-t border-mystic-800/50 py-8 text-center">
-            <a href="/" className="text-sm text-gold hover:underline">← Back to Arcana</a>
+            <a href="/" className="inline-flex items-center gap-1 min-h-[44px] text-ui text-gold hover:underline">
+              <ChevronLeft className="w-4 h-4" aria-hidden />
+              {t('publicNav.backToArcana', { defaultValue: 'Back to Arcana' })}
+            </a>
           </footer>
         </div>
       </ErrorBoundary>

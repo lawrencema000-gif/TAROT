@@ -8,10 +8,11 @@ import type { FocusArea } from './types';
 import { PaperDisclosure } from './PaperDisclosure';
 import {
   affirmationFor,
-  firstSentences,
   focusMeaningFor,
   hasMoreThan,
+  sentencesOf,
   splitLede,
+  summarySentencesFrom,
   synthesisFor,
 } from './readingText';
 
@@ -24,7 +25,8 @@ import {
  *   → actions → Disclaimer
  *
  * Each card section is SHORT by default: position, name, orientation, the
- * keyword pills, the first two sentences, and "Read the full meaning"
+ * keyword pills, the next two sentences after the ones the summary
+ * already quoted (never the same sentence twice), and "Read the full meaning"
  * opening the rest (the focus meaning, the traditional meaning when the
  * focus one led, and the reflection prompt). With an AI interpretation on
  * screen the summary is its first paragraph and the body the rest.
@@ -82,16 +84,18 @@ export function TarotReadingResult({
       ) : (
         <div className="space-y-8">
           {cards.map(({ card, reversed }, i) => {
-            const focusText = focusMeaningFor(card, selectedFocus);
+            const focusText = focusMeaningFor(card, selectedFocus, reversed);
             const traditional = reversed ? card.meaningReversed : card.meaningUpright;
             const lead = focusText ?? traditional;
-            const short = firstSentences(lead, 2);
-            const more = hasMoreThan(lead, 2) || Boolean(focusText) || Boolean(card.reflectionPrompt);
+            // The section continues where the summary stopped, so no sentence is printed twice.
+            const taken = summarySentencesFrom(i, cards.length);
+            const short = sentencesOf(lead).slice(taken, taken + 2).join(' ');
+            const more = hasMoreThan(lead, taken + 2) || Boolean(focusText) || Boolean(card.reflectionPrompt);
             return (
               <section key={i} aria-label={`${getPositionLabel(i)}: ${card.name}`}>
                 <div className="text-center">
                   <Tag tone="neutral" size="md">{getPositionLabel(i)}</Tag>
-                  <h3 className="heading-display-md heading-strong text-ink mt-3">{card.name}</h3>
+                  <h3 className="heading-display-md heading-strong text-title text-ink mt-3">{card.name}</h3>
                   <p
                     className={`mt-1 inline-flex items-center gap-1 text-meta font-medium ${
                       reversed ? 'text-ink-gold' : 'text-ink-teal'
@@ -102,7 +106,7 @@ export function TarotReadingResult({
                   </p>
                   {card.keywords?.length > 0 && <KeywordRow keywords={card.keywords.slice(0, 4)} className="mt-3" />}
                 </div>
-                <ReadingProse lede={false} text={short} className="mt-4" />
+                {short && <ReadingProse lede={false} text={short} className="mt-4" />}
                 {more && (
                   <PaperDisclosure
                     className="mt-4"

@@ -144,11 +144,10 @@ export function cartoPositionLabel(spread: CartoSpread | null, index: number, fa
 
 /**
  * The premium feature a spread sits behind, or null when it is free.
- * `spreadTypeToFeature` is the product's table (services/premium.ts); until
- * it carries the carto-* slugs, a non-free spread is `deep_interpretations`
- * — the same tier as the relationship, career and shadow spreads, so the
- * existing ad unlock and paywall work unchanged.
- * TODO(B1a): drop the fallback once premium.ts lists the carto-* cases.
+ * `spreadTypeToFeature` is the product's table (services/premium.ts) and
+ * lists the nine carto-* slugs; a spread added to the data before it is
+ * added there still lands behind `deep_interpretations` when it is not free
+ * (the tier of the relationship, career and shadow spreads), never open.
  */
 export function cartoSpreadFeature(spread: CartoSpread): PremiumFeature | null {
   const known = spreadTypeToFeature(spread.slug);
@@ -207,6 +206,82 @@ export function cartoCombinations(spread: CartoSpread, cards: PlayingCard[]): Co
   return findCombinations(cards, spread.layout);
 }
 
+export interface CombinationLine {
+  key: string;
+  label: string;
+  meaning: string;
+}
+
+/**
+ * The combination list as the result prints it: one line per finding, with
+ * a neighbour rule that fires for one card against several others (the Ace
+ * of Spades touching three cards) folded into a single line that names the
+ * others once, instead of the same meaning three times. `localize` gives a
+ * hit's label and meaning in the active locale; `nameOf` a card's name in
+ * it. An English label that ends with the partner's name keeps its phrase
+ * ("Ace of Spades touching the Eight of Spades, the Seven of Diamonds and
+ * the Two of Diamonds"); a translated label (the names joined by " · ")
+ * gains the other names the same way.
+ */
+export function combinationLines(
+  hits: CombinationHit[],
+  localize: (hit: CombinationHit) => { label: string; meaning: string },
+  nameOf: (id: number) => string,
+  locale = 'en',
+): CombinationLine[] {
+  const lines: CombinationLine[] = [];
+  const groups = new Map<string, { line: CombinationLine; partners: number[]; first: { label: string } }>();
+  for (const hit of hits) {
+    const own = localize(hit);
+    const key = `${hit.id}:${hit.cardIds.join('-')}`;
+    if (hit.kind !== 'neighbor' || hit.cardIds.length !== 2) {
+      lines.push({ key, ...own });
+      continue;
+    }
+    const groupKey = `${hit.id}:${hit.cardIds[0]}`;
+    const group = groups.get(groupKey);
+    if (!group) {
+      const line = { key, ...own };
+      groups.set(groupKey, { line, partners: [hit.cardIds[1]], first: { label: own.label } });
+      lines.push(line);
+      continue;
+    }
+    group.partners.push(hit.cardIds[1]);
+  }
+  for (const { line, partners, first } of groups.values()) {
+    if (partners.length < 2) continue;
+    line.key = `${line.key}+${partners.length}`;
+    const names = partners.map(nameOf);
+    if (locale === 'en' && first.label.endsWith(names[0])) {
+      const head = first.label.slice(0, first.label.length - names[0].length);
+      const rest = names.slice(1).map((n) => `the ${n}`);
+      line.label = `${head}${[names[0], ...rest.slice(0, -1)].join(', ')} and ${rest[rest.length - 1]}`;
+    } else {
+      line.label = `${first.label} · ${names.slice(1).join(' · ')}`;
+    }
+  }
+  // One rule firing for several anchors ("the difficulty is softened by
+  // care" for two Hearts beside a Spade) reads once, its pairings joined.
+  const neighbourLines = new Set([...groups.values()].map((g) => g.line));
+  const byMeaning = new Map<string, CombinationLine>();
+  const merged: CombinationLine[] = [];
+  for (const line of lines) {
+    if (!neighbourLines.has(line)) {
+      merged.push(line);
+      continue;
+    }
+    const same = byMeaning.get(line.meaning);
+    if (same) {
+      same.label = `${same.label}; ${line.label}`;
+      same.key = `${same.key}|${line.key}`;
+      continue;
+    }
+    byMeaning.set(line.meaning, line);
+    merged.push(line);
+  }
+  return merged;
+}
+
 // ---------------------------------------------------------------------------
 // The summary paragraph
 // ---------------------------------------------------------------------------
@@ -229,15 +304,55 @@ export function firstSentences(text: string, count: number): string {
   return sentences.slice(0, count).join('').trim();
 }
 
+export interface AiSection {
+  /** The block's own heading, numbering and markdown removed ("The situation — Seven of Clubs"). */
+  heading?: string;
+  body: string;
+}
+
+const HEADING_NUMBER = /^\s*(?:#{1,6}\s*)?(?:\d{1,2}\s*[.)]\s*)?/;
+
+/** A line the model wrote as a heading: short, unpunctuated, alone on its line. */
+function headingOf(line: string): string | null {
+  const bare = line.replace(MARKDOWN_MARKS, '').trim();
+  if (!bare || bare.length > 64) return null;
+  if (/[.!?;,]$/.test(bare) || /^[-•]/.test(bare)) return null;
+  const cleaned = bare.replace(HEADING_NUMBER, '').replace(/:$/, '').trim();
+  return cleaned || null;
+}
+
 /**
- * The reading summary: the AI's first paragraph when there is one, else the
- * opening of the spread's reading method (two sentences, so the lede has a
- * body rather than a single clause).
+ * An AI reading as blocks: the generators write "1) Overview" then the
+ * paragraph, "2) The situation — Seven of Clubs" then its paragraph,
+ * "Practical actions" then bullets. Each blank-line block whose first line
+ * reads as a heading (and has a body under it) becomes {heading, body};
+ * any other block is body alone. Markdown marks are dropped from the body.
+ */
+export function splitAiReading(text: string): { lede: string; sections: AiSection[] } {
+  const blocks = text
+    .split(/\n\s*\n/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  const sections: AiSection[] = blocks.map((block) => {
+    const lines = block.split('\n');
+    const heading = lines.length > 1 ? headingOf(lines[0]) : null;
+    const body = (heading ? lines.slice(1) : lines).join('\n').replace(MARKDOWN_MARKS, '').trim();
+    return heading ? { heading, body } : { body };
+  });
+  const first = sections.find((s) => s.body.length > 0);
+  if (!first) return { lede: '', sections: [] };
+  return { lede: first.body, sections: sections.filter((s) => s !== first && (s.body || s.heading)) };
+}
+
+/**
+ * The reading summary: the AI's opening paragraph when there is one (its
+ * "Overview" heading dropped), else the opening of the spread's reading
+ * method (two sentences, so the lede has a body rather than a single clause).
  */
 export function cartoSummary(aiText: string | null, spread: CartoSpread): string {
   if (aiText) {
-    const para = firstParagraph(aiText);
-    if (para) return para;
+    const { lede } = splitAiReading(aiText);
+    if (lede) return lede;
   }
   return firstSentences(spread.readingMethod, 2);
 }

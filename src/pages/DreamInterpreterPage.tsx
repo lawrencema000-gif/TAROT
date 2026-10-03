@@ -240,15 +240,11 @@ function AiResultView({
     }
   };
 
-  const keywords = [reading.emotionalTone, ...reading.archetypes].filter(Boolean);
-
   return (
     <Page spacing="sm">
       <PageHeader
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
-        onBack={onReset}
-        backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
       />
 
       <ResultSheet
@@ -261,14 +257,19 @@ function AiResultView({
         disclaimer="ai"
       >
         <div className="space-y-7">
-          {/* Tone and archetypes as keyword pills: the surface decides their ink. */}
-          {keywords.length > 0 && (
+          {/* The tone is a phrase, so it reads as one; the archetypes are
+              names, so they are the keyword pills (a sentence in a pill
+              wrapped to two shouted lines). */}
+          {reading.emotionalTone && (
+            <div className="text-center space-y-1">
+              <EyebrowLabel tone="ink">{t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}</EyebrowLabel>
+              <p className="reading-copy italic">{reading.emotionalTone}</p>
+            </div>
+          )}
+          {reading.archetypes.length > 0 && (
             <div className="text-center space-y-2">
-              <EyebrowLabel tone="ink">
-                {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
-                {reading.archetypes.length > 0 && <> · {t('dream.archetypesLabel', { defaultValue: 'Archetypes at work' })}</>}
-              </EyebrowLabel>
-              <KeywordRow keywords={keywords} />
+              <EyebrowLabel tone="ink">{t('dream.archetypesLabel', { defaultValue: 'Archetypes at work' })}</EyebrowLabel>
+              <KeywordRow keywords={reading.archetypes} />
             </div>
           )}
 
@@ -547,8 +548,6 @@ function LocalResultView({ reading, onReset, dreamText }: { reading: DreamReadin
       <PageHeader
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
-        onBack={onReset}
-        backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
       />
 
       <ResultSheet

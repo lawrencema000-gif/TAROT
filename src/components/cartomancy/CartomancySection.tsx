@@ -162,6 +162,21 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
     checkTemporaryAccess();
   }, [profile?.isPremium, adRequest]);
 
+  // Each stage starts at its top: the select stage of a 21-card spread is
+  // scrolled to its Reveal button, and the table must not open mid-legend.
+  const firstViewRef = useRef(true);
+  useEffect(() => {
+    if (firstViewRef.current) {
+      firstViewRef.current = false;
+      return;
+    }
+    try {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } catch {
+      // jsdom and old WebViews: nothing to scroll
+    }
+  }, [view]);
+
   const updateSettings = (next: CartoSettings) => {
     setSettings(next);
     saveCartoSettings(next);
@@ -440,7 +455,9 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
       const raw = error instanceof Error ? error.message : '';
       const message = raw.includes('INSUFFICIENT_BALANCE')
         ? t('readings.toasts.aiInsufficient')
-        : raw.includes('AI_SOFT_CAP') || raw.includes('AI_DAILY_LIMIT')
+        : // generate-reading answers 429 DAILY_LIMIT_REACHED with the message
+          // "Daily reading limit reached" (readingInterpretation throws the message)
+          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit/i.test(raw)
           ? t('readings.toasts.aiLimit')
           : t('readings.toasts.aiFailed');
       toast(message, 'error');
@@ -511,6 +528,7 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
         onRevealAll={revealAll}
         onCardClick={setSelectedIndex}
         onGetAIInterpretation={handleGetAIInterpretation}
+        onToggleAI={setShowAIInterpretation}
         onNewReading={goHome}
       />
     );
@@ -536,7 +554,7 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
         </div>
 
         <div className="text-center space-y-2">
-          <p className="font-display-eyebrow">{t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })}</p>
+          {/* The page header above already says "Cartomancy"; no second eyebrow. */}
           <h2 className="heading-display-lg text-mystic-100">{t('cartomancy.reading.chooseSpread', { defaultValue: 'Choose a spread' })}</h2>
           <p className="text-ui text-mystic-400">
             {[
@@ -558,18 +576,21 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
                 size="lg"
                 icon={<SpreadGlyph layout={glyphLayout(s)} />}
                 tone="gold"
-                label={s.name}
-                meta={
-                  <>
+                label={
+                  <span className="whitespace-normal">
+                    {s.name}
                     {locked && (
-                      <Badge tone="violet" className="mr-2 align-middle">
-                        <Lock className="w-3 h-3" aria-hidden />
-                        {t('cartomancy.reading.premium', { defaultValue: 'Premium' })}
-                      </Badge>
+                      <>
+                        {' '}
+                        <Badge tone="violet" className="align-middle">
+                          <Lock className="w-3 h-3" aria-hidden />
+                          {t('cartomancy.reading.premium', { defaultValue: 'Premium' })}
+                        </Badge>
+                      </>
                     )}
-                    {t('cartomancy.reading.cardsAndMinutes', { defaultValue: '{{count}} cards · {{minutes}} min', count: s.cardCount, minutes: s.durationMin })}
-                  </>
+                  </span>
                 }
+                meta={t('cartomancy.reading.cardsAndMinutes', { defaultValue: '{{count}} cards · {{minutes}} min', defaultValue_one: '{{count}} card · {{minutes}} min', count: s.cardCount, minutes: s.durationMin })}
                 onClick={() => beginReading(s.slug)}
               />
             );

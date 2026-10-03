@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Phone, MessageSquare, Globe, X } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
@@ -71,7 +72,10 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
   const internationalHost = internationalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const titleId = 'crisis-banner-title';
 
-  return (
+  // Portalled to <body>: the page's own stacking context (its entrance
+  // animation) kept the banner under the bottom nav at 390, with the last
+  // rows and "I'm okay for now" hidden behind it.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-mystic-950/80" onClick={onClose}>
       <div
         ref={panelRef}
@@ -79,7 +83,7 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="bg-mystic-950 border border-coral/40 rounded-card max-w-md w-full p-5 relative outline-none"
+        className="bg-mystic-950 border border-coral/40 rounded-card max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto p-5 relative outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -113,7 +117,7 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
             <Phone className="w-4 h-4 text-gold flex-shrink-0" aria-hidden />
             <div className="flex-1 min-w-0">
               <p className="text-ui text-mystic-100 font-medium">{phoneTitle}</p>
-              <p className="text-meta text-mystic-400 truncate">{phoneBody}</p>
+              <p className="text-meta text-mystic-400">{phoneBody}</p>
             </div>
             <a
               href={`tel:${phoneNumber}`}
@@ -129,7 +133,7 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
               : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" aria-hidden />}
             <div className="flex-1 min-w-0">
               <p className="text-ui text-mystic-100 font-medium">{textTitle}</p>
-              <p className="text-meta text-mystic-400 truncate">{textBody}</p>
+              <p className="text-meta text-mystic-400">{textBody}</p>
             </div>
             <a
               href={`${textScheme}:${textNumber}${textKeyword ? `?body=${textKeyword}` : ''}`}
@@ -170,6 +174,7 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
           {t('crisis.closeButton', { defaultValue: 'I’m okay for now' })}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

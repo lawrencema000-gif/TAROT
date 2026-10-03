@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { ArrowLeft, BookOpen, Coins, RotateCcw, Share2 } from 'lucide-react';
+import { BookOpen, Coins, RotateCcw, Share2 } from 'lucide-react';
 import { Card, Button, toast, SectionDivider, Page, PageHeader, Section, ResultSheet, EyebrowLabel, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
@@ -218,15 +218,9 @@ export function IChingPage() {
 
     return (
       <Page spacing="sm">
-        <button
-          type="button"
-          onClick={reset}
-          className="flex items-center gap-2 min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden />
-          {t('iching.backToStart', { defaultValue: 'Cast again' })}
-        </button>
-
+        {/* No back link of its own: the Readings tab above already offers
+            "All systems", and "Cast again" closes the reading below. Two
+            stacked back links read as a broken header. */}
         {/* The reading, on paper: glyph → "Hexagram 23" → the name → ✦✦✦ →
             pinyin · 漢字 over the tagline → judgement, interpretation,
             strengths, cautions, the changing hexagram, the journal prompt. */}

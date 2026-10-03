@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
@@ -107,6 +107,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
   const [crisisResources, setCrisisResources] = useState<CrisisResources | undefined>(undefined);
   const openCrisisBanner = useCallback((resources?: CrisisResources) => {
+    // Nothing else talks while the helplines are up: a "Posted" toast sat
+    // over the banner's last rows at 390.
+    dismissToasts();
     setCrisisResources(resources);
     setCrisisBannerOpen(true);
   }, []);
@@ -141,11 +144,12 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       setPosts(res.data);
       setFeedError(false);
     } else {
+      // The empty state below says so and carries "Try again"; a toast on
+      // top of it said the same thing twice.
       setFeedError(true);
-      toast(t('community.loadFailed', { defaultValue: 'Couldn’t load the feed — check your connection and try again.' }), 'error');
     }
     setLoading(false);
-  }, [selectedTopic, user?.id, isWhisperingWell, t]);
+  }, [selectedTopic, user?.id, isWhisperingWell]);
 
   useEffect(() => {
     loadFeed();
@@ -411,7 +415,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         />
       )}
 
-      {visiblePosts.map((post) => (
+      {!feedError && visiblePosts.map((post) => (
         <PostCard
           key={post.id}
           post={post}
@@ -617,7 +621,8 @@ function Composer({
       isAnonymous: mode === 'whispering-well' ? true : isAnon,
     });
 
-    if (isCrisis(moderation)) onCrisisDetected(moderation.crisisResources);
+    const crisis = isCrisis(moderation);
+    if (crisis) onCrisisDetected(moderation.crisisResources);
 
     if (moderation.verdict === 'block') {
       setSubmitting(false);
@@ -634,7 +639,10 @@ function Composer({
     if (moderation.publishedId) {
       // Reward participation (fire-and-forget; XP must never block posting).
       void awardXP(user.id, 'community_post');
-      if (moderation.publishedStatus === 'flagged') {
+      // With the helplines open, the banner is the only message.
+      if (crisis) {
+        // The banner is already open.
+      } else if (moderation.publishedStatus === 'flagged') {
         toast(
           t('community.postedUnderReview', {
             defaultValue: 'Posted — our team will review shortly.',
@@ -772,7 +780,8 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       postId: post.id,
       isAnonymous: isAnonComment,
     });
-    if (isCrisis(moderation)) onCrisisDetected(moderation.crisisResources);
+    const crisis = isCrisis(moderation);
+    if (crisis) onCrisisDetected(moderation.crisisResources);
     if (moderation.verdict === 'block') {
       setSubmitting(false);
       toast(
@@ -791,7 +800,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       // Re-read from the server so we render exactly what RLS exposes
       // (a 'flagged' comment is author-visible only).
       load();
-      if (moderation.publishedStatus === 'flagged') {
+      if (!crisis && moderation.publishedStatus === 'flagged') {
         toast(
           t('community.commentUnderReview', {
             defaultValue: 'Comment posted — our team will review shortly.',

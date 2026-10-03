@@ -220,8 +220,6 @@ export function FengShuiPage() {
         <PageHeader
           icon={<Home />}
           title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
-          onBack={() => setStage('rate')}
-          backLabel={t('fengshui.backToRate', { defaultValue: 'Re-rate' }) as string}
         />
 
         {/* 3x3 Bagua grid — the instrument stays on the canvas. */}

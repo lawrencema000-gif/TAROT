@@ -52,8 +52,15 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   };
 
   // Only block for onboarding (no chart at all) — not for loading
+  // The page keeps its title (and the document title) while the chart is
+  // set up; the onboarding's own heading sits under it.
   if (needsOnboarding && !chartLoading) {
-    return <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />;
+    return (
+      <div>
+        <PageHeader title={t('pageTitles.horoscope.title')} className="mb-2" />
+        <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />
+      </div>
+    );
   }
 
   const handleTabChange = (tab: HoroscopeSubTab) => {

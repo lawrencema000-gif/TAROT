@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Compass, Target, Share2, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Compass, Target, Share2 } from 'lucide-react';
 import {
   Card, Button, Input, toast, Page, PageHeader, Section, Disclosure, Tag,
   ResultSheet, AffirmationPanel, EyebrowLabel, SparkleFourPoint,
@@ -215,14 +215,8 @@ export function HumanDesignPage() {
 
     return (
       <Page spacing="sm">
-        <button
-          type="button"
-          onClick={reset}
-          className="flex items-center gap-2 min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden />
-          {t('humanDesign.backToInput', { defaultValue: 'Recalculate' })}
-        </button>
+        {/* No back link of its own: Readings' "All systems" sits above, and
+            the result closes with its own "another chart" action. */}
 
         {/* The reading, on paper. */}
         <ResultSheet
@@ -246,7 +240,7 @@ export function HumanDesignPage() {
               <span className="text-ink font-medium">{chart.authority}</span>
             </p>
 
-            {typeContent.summary && <p className="reading-copy">{typeContent.summary}</p>}
+            {typeContent.summary && <p className="reading-copy">{withEmphasis(typeContent.summary)}</p>}
 
             {/* Signature / Not-self */}
             <div className="grid grid-cols-2 gap-4 border-t border-paper-hairline pt-6">
@@ -464,6 +458,16 @@ export function HumanDesignPage() {
   }
 
   return null;
+}
+
+/** The type copy marks a stressed word as *word*; render it as emphasis
+ *  instead of printing the asterisks. */
+function withEmphasis(text: string): React.ReactNode[] {
+  return text.split(/(\*[^*\n]+\*)/g).map((part, i) =>
+    part.length > 2 && part.startsWith('*') && part.endsWith('*')
+      ? <em key={i}>{part.slice(1, -1)}</em>
+      : part,
+  );
 }
 
 // Map the edge fn's display-cased type string back to the type-info

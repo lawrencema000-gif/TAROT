@@ -667,9 +667,9 @@ export function LibrarySection() {
       <Sheet
         open={!!selectedTarot}
         onClose={() => setSelectedTarot(null)}
-        title={selectedTarot ? formatDate(selectedTarot.date) : undefined}
+        title={selectedTarot ? savedSpreadName(t, selectedTarot.spread_type) : undefined}
       >
-        {selectedTarot && <SavedReadingSheet reading={selectedTarot} />}
+        {selectedTarot && <SavedReadingSheet reading={selectedTarot} dateLabel={formatDate(selectedTarot.date)} />}
       </Sheet>
 
       <Sheet

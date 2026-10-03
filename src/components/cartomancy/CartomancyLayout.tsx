@@ -39,8 +39,12 @@ export interface CartomancyLayoutProps {
   count: number;
   /** The tile for cell `index`: a FlipTile, a static face, or a placeholder. */
   renderTile: (index: number, opts: { tile: CartoTile; number?: number }) => ReactNode;
-  /** Text under a hero or md tile (position name, reversed line). Not called for small tiles. */
-  captionFor?: (index: number) => ReactNode;
+  /**
+   * Text under a hero or md tile (position name, reversed line). Not called
+   * for small tiles. `named` is false when the grid already names the cell
+   * by its row and column captions, so the caption need not repeat it.
+   */
+  captionFor?: (index: number, opts: { named: boolean }) => ReactNode;
   /** The list under a table of small tiles. Omit to render the table alone. */
   legend?: CartomancyLegend;
   className?: string;
@@ -67,7 +71,9 @@ function Legend({ count, legend }: { count: number; legend: CartomancyLegend }) 
             </span>
             <span className="min-w-0 flex-1 text-meta text-mystic-200">{legend.label(i)}</span>
             {trailing !== undefined && trailing !== null && (
-              <span className="max-w-[45%] shrink-0 truncate text-right text-meta text-mystic-400">{trailing}</span>
+              <span className="max-w-[45%] min-w-0 shrink-0 flex flex-col items-end text-right text-meta text-mystic-400 [&>span]:max-w-full [&>span]:truncate">
+                {typeof trailing === 'string' ? <span>{trailing}</span> : trailing}
+              </span>
             )}
           </>
         );
@@ -96,11 +102,13 @@ export function CartomancyLayout({ spread, count, renderTile, captionFor, legend
   const { layout } = spread;
   const tile = tileFor(spread, count);
   const small = tile === 'sm' || tile === 'xs';
+  // A grid with both row and column captions names every cell itself.
+  const gridNamesCells = layout.kind === 'grid' && !!layout.rowLabels?.length && !!layout.colLabels?.length;
 
   const captioned = (index: number, body: ReactNode, widthClass: string) => (
     <div key={index} className={`flex flex-col items-center gap-2 ${widthClass}`}>
       {body}
-      {captionFor && <div className="text-center">{captionFor(index)}</div>}
+      {captionFor && <div className="text-center">{captionFor(index, { named: !gridNamesCells })}</div>}
     </div>
   );
 
@@ -197,7 +205,9 @@ export function CartomancyLayout({ spread, count, renderTile, captionFor, legend
         {rows.map((cells, r) =>
           cells.length === 0 ? null : (
             <div key={r}>
-              {layout.rowLabels?.[r] && <p className={`${CAPTION} mb-1.5`}>{layout.rowLabels[r]}</p>}
+              {/* Pillars name each cell under its tile ("What they need"); a row
+                  caption would name the left pillar only. */}
+              {layout.kind === 'grid' && layout.rowLabels?.[r] && <p className={`${CAPTION} mb-1.5`}>{layout.rowLabels[r]}</p>}
               <div className={`grid ${gridCols} ${gap} ${xs ? '' : 'gap-y-4'}`}>{cells.map(cellNode)}</div>
             </div>
           ),

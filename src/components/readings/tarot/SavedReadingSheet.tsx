@@ -62,6 +62,8 @@ export function savedSpreadName(
   t: (key: string, opts?: Record<string, unknown>) => string,
   spreadType: string,
 ): string {
+  // The daily draw is titled as the hero names it (its spread name carries a numeral).
+  if (spreadType === 'single') return t('readings.dailyDraw.title');
   const legacy = LEGACY_NAME_KEY[spreadType];
   if (legacy) return t(`readings.spreads.${legacy}.name`);
   if (spreadType.startsWith('custom:')) return t('readings.customSpread', { defaultValue: 'Custom spread' });
@@ -83,12 +85,16 @@ export function savedSpreadLayout(spreadType: string, count: number): SpreadLayo
 
 /** The reveal's table rule: the layout on a grid, doubled for half-cells. */
 function Table({
-  layout,
+  layout: raw,
   children,
 }: {
   layout: SpreadLayoutPosition[];
   children: (cell: React.CSSProperties, i: number) => React.ReactNode;
 }) {
+  // Glyph layouts sit on a centred field (a lone card at x 1, y 1): pull to the corner.
+  const minX = Math.min(...raw.map((p) => p.x));
+  const minY = Math.min(...raw.map((p) => p.y));
+  const layout = raw.map((p) => ({ x: p.x - minX, y: p.y - minY }));
   const fractional = layout.some((p) => !Number.isInteger(p.x) || !Number.isInteger(p.y));
   const scale = fractional ? 2 : 1;
   const across = Math.max(...layout.map((p) => p.x)) + 1;
@@ -109,7 +115,12 @@ function Table({
   );
 }
 
-export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
+/**
+ * A saved reading, read-only. The Sheet's title is the spread's name (the
+ * caller sets it); the first line here is the focus and the date, in the
+ * sans, and the ResultSheet below carries the eyebrow and title.
+ */
+export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadingRow; dateLabel?: string }) {
   const { t } = useT('app');
   const playing = isPlayingReading(reading);
   const rows = reading.cards ?? [];
@@ -117,6 +128,9 @@ export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
   const spreadName = savedSpreadName(t, reading.spread_type);
   const focus = (reading.focus_area as FocusArea | null) ?? null;
   const focusLabel = focus ? t(`readings.focusAreas.${focus.toLowerCase()}`, { defaultValue: focus }) : '';
+  const metaLine = [focusLabel, dateLabel].filter(Boolean).join(' · ');
+  // More than three cards across: faces too narrow for a name on the plate (as in the reveal).
+  const dense = layout.length > 0 && Math.max(...layout.map((p) => p.x)) - Math.min(...layout.map((p) => p.x)) + 1 > 3;
 
   // The tarot deck, for the faces and the meanings: by id when the row
   // carries one, by (English) name for rows saved before ids were kept.
@@ -136,10 +150,7 @@ export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
     const ai = reading.interpretation ? splitLede(reading.interpretation) : null;
     return (
       <div className="space-y-6">
-        <div className="text-center">
-          {focusLabel && <p className="font-display-eyebrow text-mystic-300">{focusLabel}</p>}
-          <h3 className="heading-display-md text-mystic-100">{spreadName}</h3>
-        </div>
+        {metaLine && <p className="text-meta text-mystic-400 text-center">{metaLine}</p>}
         <Table layout={layout}>
           {(cell, i) => {
             const { card, row } = cards[i];
@@ -147,7 +158,7 @@ export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
               <div key={i} className="flex flex-col items-center gap-2 min-w-0" style={cell}>
                 <div className="w-full aspect-[2/3] rounded-inset overflow-hidden bg-mystic-850 border border-gold/30 text-gold">
                   {card ? (
-                    <PlayingCardFace card={card} detail={rows.length > 3 ? 'quiet' : 'full'} reversed={row.reversed} className="w-full h-full" />
+                    <PlayingCardFace card={card} detail={dense ? 'quiet' : 'full'} reversed={row.reversed} className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center p-2 text-center">
                       <span className="text-caption text-mystic-300 line-clamp-3">{row.cardName}</span>
@@ -194,10 +205,7 @@ export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        {focusLabel && <p className="font-display-eyebrow text-mystic-300">{focusLabel}</p>}
-        <h3 className="heading-display-md text-mystic-100">{spreadName}</h3>
-      </div>
+      {metaLine && <p className="text-meta text-mystic-400 text-center">{metaLine}</p>}
 
       <Table layout={layout}>
         {(cell, i) => {
@@ -208,7 +216,7 @@ export function SavedReadingSheet({ reading }: { reading: SavedReadingRow }) {
                 <TarotFace
                   card={card}
                   size="fill"
-                  detail={rows.length > 7 ? 'quiet' : 'full'}
+                  detail={dense ? 'quiet' : 'full'}
                   reversed={row.reversed}
                   reversedTag={false}
                   radius={rows.length === 1 ? 'card' : 'inset'}

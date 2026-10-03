@@ -167,7 +167,7 @@ export function AuspiciousDatesPage() {
         }
       >
         {best.map((d) => <DayRow key={d.date} d={d} tone="good" />)}
-        <p className="text-caption text-mystic-600 pt-2">
+        <p className="text-meta text-mystic-500 pt-2">
           <CalendarDays className="w-3 h-3 inline mr-1" />
           {t('dates.windowNote', { defaultValue: 'Looking at the next {{days}} days. Tap a day to see exactly why it scored the way it did.', days: WINDOW_DAYS })}
         </p>
@@ -179,7 +179,7 @@ export function AuspiciousDatesPage() {
         </Section>
       )}
 
-      <p className="text-center text-caption text-mystic-500 max-w-sm mx-auto">
+      <p className="text-center text-meta text-mystic-500 max-w-sm mx-auto">
         {t('dates.disclaimer', {
           defaultValue:
             'A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.',

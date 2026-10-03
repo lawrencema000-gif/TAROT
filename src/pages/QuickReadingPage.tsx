@@ -10,8 +10,7 @@ import {
   ResultSheet,
   Tag,
   AffirmationPanel,
-  Paper,
-  Skeleton,
+  TarotFace,
   toast,
 } from '../components/ui';
 import { TarotCardIcon, PlayingCardIcon } from '../components/ui/NavIcons';
@@ -25,7 +24,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { ORACLE_SUGGESTIONS, type OracleContext } from '../data/oracleSuggestions';
 import { localDateStr } from '../utils/localDate';
-import { ALL_CARDS, getBundledCardPath } from '../config/bundledImages';
+import { ALL_CARDS } from '../config/bundledImages';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getPlayingCard, getPlayingCardBySlug, PLAYING_CARDS_ALL } from '../data/cartomancy';
@@ -82,18 +81,15 @@ interface QuickReadingResponse {
 /*
  * The tarot face is in the bundle: resolve it by id when the server gives
  * one, else by name — the server's deck uses the same names as the bundled
- * majors — else by any URL it sent.
- *
- * TODO(B1a): render <TarotFace> from src/components/ui once it ships; the
- * bundled image path is the interim face.
+ * cards — and draw it with <TarotFace>.
  */
 /** "Wheel of Fortune" and "The Wheel of Fortune" are the same card: the server's deck drops the article. */
 const cardKey = (name: string) => name.trim().toLowerCase().replace(/^the\s+/, '');
 
-function tarotFaceFor(card: QuickReadingCard): string | null {
+function tarotIdFor(card: QuickReadingCard): number | null {
+  if (typeof card.id === 'number' && card.id >= 0 && card.id <= 77) return card.id;
   const wanted = cardKey(card.name);
-  const id = typeof card.id === 'number' ? card.id : ALL_CARDS.find((c) => cardKey(c.name) === wanted)?.id;
-  return (id !== undefined ? getBundledCardPath(id) : null) ?? card.imageUrl ?? null;
+  return ALL_CARDS.find((c) => cardKey(c.name) === wanted)?.id ?? null;
 }
 
 function tarotKeywordsFor(name: string): string[] {
@@ -131,6 +127,22 @@ function splitReading(text: string): { summary: string; rest: string } {
   const tail = sentences.slice(2).join(' ');
   const rest = [tail, ...parts.slice(1)].filter(Boolean).join('\n\n');
   return { summary, rest };
+}
+
+/**
+ * A placeholder block for the paper sheet. The shared Skeleton is a navy
+ * sweep for the navy canvas; on cream it reads as a row of dark bars, so
+ * the loading sheet uses the paper hairline tone instead, still (nothing
+ * on a reading surface loops).
+ */
+function PaperBlock({ w, h, className = '' }: { w: number | string; h: number; className?: string }) {
+  return (
+    <div
+      aria-hidden
+      className={`bg-paper-hairline rounded-inset ${className}`.trim()}
+      style={{ width: typeof w === 'number' ? `${w}px` : w, height: `${h}px` }}
+    />
+  );
 }
 
 export function QuickReadingPage() {
@@ -240,32 +252,29 @@ export function QuickReadingPage() {
   const yourQuestion = t('quickReading.yourQuestion', { defaultValue: 'Your question' });
 
   if (loading) {
+    // The sheet the result will fill, with what is already known (the
+    // question) set and quiet paper blocks where the card and prose land.
     return (
       <Page spacing="md">
         <PageHeader title={title} />
         <div role="status" aria-live="polite" aria-busy="true">
-          <Paper as="article">
-            <p className="sr-only">{t('quickReading.drawing', { defaultValue: 'Drawing…' })}</p>
-            <div className="mx-auto flex flex-col items-center gap-3">
-              <Skeleton variant="circular" width={28} height={28} />
-              <Skeleton width={96} height={12} />
-              <Skeleton width="80%" height={28} />
-            </div>
-            <div className="mt-8 flex items-center gap-4">
-              <Skeleton width={80} height={120} className="rounded-inset shrink-0" />
+          <ResultSheet headingLevel="h2" glyph={<KeyRound strokeWidth={1.5} />} eyebrow={yourQuestion} title={question.trim()}>
+            <p className="reading-meta text-center">{t('quickReading.drawing', { defaultValue: 'Drawing…' })}</p>
+            <div className="mt-6 flex items-center gap-4">
+              <PaperBlock w={80} h={120} className="shrink-0" />
               <div className="flex-1 space-y-2.5">
-                <Skeleton width="60%" height={20} />
-                <Skeleton width="40%" height={12} />
-                <Skeleton width="90%" height={12} />
+                <PaperBlock w="60%" h={20} />
+                <PaperBlock w="40%" h={12} />
+                <PaperBlock w="90%" h={12} />
               </div>
             </div>
             <div className="mt-8 space-y-2.5">
-              <Skeleton width="100%" height={14} />
-              <Skeleton width="96%" height={14} />
-              <Skeleton width="88%" height={14} />
-              <Skeleton width="70%" height={14} />
+              <PaperBlock w="100%" h={14} />
+              <PaperBlock w="96%" h={14} />
+              <PaperBlock w="88%" h={14} />
+              <PaperBlock w="70%" h={14} />
             </div>
-          </Paper>
+          </ResultSheet>
         </div>
       </Page>
     );
@@ -276,13 +285,14 @@ export function QuickReadingPage() {
     const card = result.card;
     const cardDeck: Deck = card?.deck ?? (card && typeof card.id === 'number' && card.id >= 100 ? 'playing' : 'tarot');
     const playing = card && cardDeck === 'playing' ? playingCardFor(card) : undefined;
-    const tarotFace = card && !playing ? tarotFaceFor(card) : null;
+    const tarotId = card && !playing ? tarotIdFor(card) : null;
     const keywords = card ? (playing ? playing.keywords.slice(0, 4) : tarotKeywordsFor(card.name)) : [];
     const affirmation = card && !playing ? getEnrichment(card.name)?.affirmation : undefined;
     return (
       <Page spacing="md">
         <PageHeader title={title} />
         <ResultSheet
+          headingLevel="h2"
           glyph={<KeyRound strokeWidth={1.5} />}
           eyebrow={yourQuestion}
           title={question.trim()}
@@ -292,23 +302,26 @@ export function QuickReadingPage() {
           <div className="space-y-7">
             {card && (
               <section
-                className={`flex items-center gap-4 ${playing || tarotFace ? 'text-left' : 'justify-center text-center'}`}
+                className={`flex items-center gap-4 ${playing || tarotId !== null ? 'text-left' : 'justify-center text-center'}`}
                 aria-label={t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
               >
                 {playing ? (
                   <div className="w-20 shrink-0 text-gold">
                     <PlayingCardFace card={playing} detail="quiet" surface="paper" reversed={card.reversed} />
                   </div>
-                ) : tarotFace ? (
-                  <img
-                    src={tarotFace}
-                    alt={card.name}
-                    decoding="async"
-                    draggable={false}
-                    className={`w-20 shrink-0 aspect-[2/3] object-cover rounded-inset select-none ${
-                      card.reversed ? 'rotate-180' : ''
-                    }`}
-                  />
+                ) : tarotId !== null ? (
+                  <div className="w-20 shrink-0">
+                    {/* The name sits beside the face, so the plate stays quiet
+                        and the heading names the orientation. */}
+                    <TarotFace
+                      card={{ id: tarotId, name: card.name }}
+                      size="fill"
+                      detail="quiet"
+                      reversed={card.reversed}
+                      reversedTag={false}
+                      alt=""
+                    />
+                  </div>
                 ) : null}
                 <div className="min-w-0 flex-1 space-y-2">
                   <p className="reading-meta">{t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}</p>

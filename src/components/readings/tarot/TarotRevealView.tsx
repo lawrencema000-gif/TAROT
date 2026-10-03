@@ -36,13 +36,13 @@ import { TarotReadingResult } from './TarotReadingResult';
  * — not a fade between two states. 520ms is above the UI-feedback budget
  * on purpose: the user is watching this one, deliberately.
  *
- * A reversed card turns INTO its reversal: the plane's end state adds a
- * half-turn on Z, so the card lands upside down as part of the same
- * motion rather than arriving already inverted (the plate turns with it,
- * as a real card's would; the label beneath names the orientation). Both
- * transforms are always written out, at rest and turned, so the browser
- * interpolates them function by function instead of falling back to a
- * matrix.
+ * A reversed card is drawn reversed: the art on its face is already
+ * upside down (TarotFace `reversed`), as a reversed card in a real deck
+ * is before it is turned, while the app-drawn plate stays upright and
+ * legible (§6.6) and the label beneath names the orientation. The plane
+ * only turns on Y; both transforms are still written out, at rest and
+ * turned, so the browser interpolates them function by function instead
+ * of falling back to a matrix.
  *
  * Only `transform` and `opacity` move. The easing is a plain ease-out
  * with a long tail so the card decelerates into place instead of
@@ -68,7 +68,7 @@ const BACKFACE: CSSProperties = {
 };
 
 const AT_REST = 'rotateY(0deg) rotateZ(0deg)';
-const turned = (reversed: boolean) => `rotateY(180deg) rotateZ(${reversed ? 180 : 0}deg)`;
+const TURNED = 'rotateY(180deg) rotateZ(0deg)';
 
 const ICON_BUTTON =
   'w-11 h-11 inline-flex items-center justify-center rounded-full transition-[background-color,transform] duration-fast ' +
@@ -204,7 +204,12 @@ export function TarotRevealView(props: TarotRevealViewProps) {
    * halves land on whole tracks. The container narrows with the number of
    * cards across, so two cards do not become two slabs.
    */
-  const layout = spreadLayout && spreadLayout.length === count ? spreadLayout : rowsOfThree(count);
+  // Glyph layouts sit on a centred 3×3 field (a lone card at x 1, y 1), so
+  // the table pulls every layout to its own top-left corner first.
+  const rawLayout = spreadLayout && spreadLayout.length === count ? spreadLayout : rowsOfThree(count);
+  const minX = Math.min(...rawLayout.map((p) => p.x));
+  const minY = Math.min(...rawLayout.map((p) => p.y));
+  const layout = rawLayout.map((p) => ({ x: p.x - minX, y: p.y - minY }));
   const fractional = layout.some((p) => !Number.isInteger(p.x) || !Number.isInteger(p.y));
   const scale = fractional ? 2 : 1;
   const across = Math.max(...layout.map((p) => p.x)) + 1;
@@ -212,6 +217,11 @@ export function TarotRevealView(props: TarotRevealViewProps) {
   const tableWidth =
     across <= 1 ? 'max-w-[10rem]' : across <= 2 ? 'max-w-[15.75rem]' : across <= 3 ? 'max-w-sm' : 'max-w-md';
   const radius: 'inset' | 'card' = single ? 'card' : 'inset';
+  // More than three cards across leaves a face about 60 px wide at 390:
+  // too narrow for a name on the plate, so it carries the rank and suit
+  // glyph (or the numeral), as the Celtic Cross does.
+  const dense = across > 3;
+  const faceDetail: 'full' | 'quiet' = dense ? 'quiet' : 'full';
 
   return (
     <div className="space-y-6">
@@ -296,7 +306,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     className="relative w-full h-full"
                     style={{
                       transformStyle: 'preserve-3d',
-                      transform: drawn.revealed ? turned(drawn.reversed) : AT_REST,
+                      transform: drawn.revealed ? TURNED : AT_REST,
                       transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
                       transitionDelay: `${delay}ms`,
                     }}
@@ -318,15 +328,15 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     {/*
                       Face — mounted from the start, pre-turned 180° and
                       hidden by backface-visibility, so the bitmap is decoded
-                      before the hinge moves. The plane carries the reversal,
-                      so the face itself is drawn upright.
+                      before the hinge moves. A reversed card's art is drawn
+                      inverted; its plate stays upright.
                     */}
                     <div
                       className="absolute inset-0"
                       style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                       aria-hidden={!drawn.revealed}
                     >
-                      <TarotFace card={drawn.card} size="fill" radius={radius} reversedTag={false} loading="eager" alt="" />
+                      <TarotFace card={drawn.card} size="fill" detail={faceDetail} radius={radius} reversed={drawn.reversed} reversedTag={false} loading="eager" alt="" />
                     </div>
                   </div>
                   {/*
@@ -335,14 +345,16 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     now it has an affordance.
                   */}
                   <div
-                    className="absolute top-1.5 right-1.5 w-6 h-6 bg-mystic-900/80 rounded-full flex items-center justify-center pointer-events-none transition-opacity duration-base ease-out"
+                    className={`absolute rounded-full bg-mystic-900/80 flex items-center justify-center pointer-events-none transition-opacity duration-base ease-out ${
+                      dense ? 'top-1 right-1 w-4 h-4' : 'top-1.5 right-1.5 w-6 h-6'
+                    }`}
                     style={{
                       opacity: drawn.revealed ? 1 : 0,
                       transitionDelay: `${delay + FLIP_MS - 140}ms`,
                     }}
                     aria-hidden
                   >
-                    <Info className="w-3.5 h-3.5 text-gold" />
+                    <Info className={`${dense ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-gold`} />
                   </div>
                 </button>
                 <div className="text-center min-w-0 w-full">
@@ -390,7 +402,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                 onClick={onHideAIInterpretation}
                 className="inline-flex items-center min-h-[44px] text-meta text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
               >
-                {t('readings.revealView.showCardMeanings')}
+                {t('readings.revealView.showCardMeaningsPlain', { defaultValue: 'Show card meanings' })}
               </button>
             ) : (
               <Chip

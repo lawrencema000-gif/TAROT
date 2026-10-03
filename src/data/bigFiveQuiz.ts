@@ -382,7 +382,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
   },
   neuroticism: {
     name: 'N',
-    fullName: 'Neuroticism (Emotional Stability)',
+    fullName: 'Neuroticism (Emotional Sensitivity)',
     description: 'Reflects emotional reactivity, tendency toward negative emotions, and vulnerability to stress.',
     highDescription: 'You experience emotions intensely and may be more prone to stress, anxiety, and mood fluctuations. You are emotionally sensitive.',
     lowDescription: 'You are emotionally stable and resilient. You remain calm under pressure and bounce back quickly from setbacks.',

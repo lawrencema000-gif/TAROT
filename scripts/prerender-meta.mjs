@@ -366,9 +366,13 @@ function cartomancyCardsHubMeta(cards) {
 
 function cartomancyCardMeta(card) {
   const url = `${SITE_URL}/cartomancy/cards/${card.slug}`;
+  // quickMeaning is one or two short sentences (~60 characters); the search
+  // snippet gets it plus what the page covers, so it reads as an answer
+  // and still says why to click.
+  const description = `${card.quickMeaning} The ${card.name} in playing-card reading: upright and reversed, love, career, timing and combinations.`;
   return {
     title: `${card.name} Meaning in Cartomancy — Playing Card Reading | Arcana`,
-    description: card.quickMeaning,
+    description,
     canonical: url,
     jsonLd: [
       {
@@ -678,12 +682,17 @@ async function main() {
 
   // The landing hero as static HTML (LCP element); see landingHeroBody.
   let heroStrings = null;
-  try { heroStrings = JSON.parse(readFileSync(resolve('src/i18n/locales/en/landing.json'), 'utf8')).hero; }
+  let playAlt;
+  try {
+    const landing = JSON.parse(readFileSync(resolve('src/i18n/locales/en/landing.json'), 'utf8'));
+    heroStrings = landing.hero;
+    playAlt = landing.play?.alt;
+  }
   catch (e) { console.warn('[prerender-meta] landing.json unreadable — root gets a head-only page:', e.message); }
 
   // Public root + auth pages + main hubs. Hubs get crawlable link lists so
   // Googlebot can reach every leaf page from raw HTML.
-  writeRoute('/', homeMeta(), template, heroStrings ? landingHeroBody(heroStrings) : undefined, { raw: true, style: LANDING_STYLE }); count++;
+  writeRoute('/', homeMeta(), template, heroStrings ? landingHeroBody(heroStrings, playAlt) : undefined, { raw: true, style: LANDING_STYLE }); count++;
   writeRoute('/signin', signinMeta(), template); count++;
   writeRoute('/signup', signupMeta(), template); count++;
   writeRoute('/tarot-meanings', tarotMeaningsHubMeta(), template,

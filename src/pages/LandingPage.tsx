@@ -438,11 +438,26 @@ function FooterLink({ href, children, external = false }: { href: string; childr
   );
 }
 
+// The build prerenders the hero into #root for `/` (scripts/seo-body.mjs
+// landingHeroBody) and its guard script marks <html data-prerendered=
+// "landing"> when this visitor was shown it. Then the live hero replaces a
+// hero already on screen in the same place, and fading it in from nothing
+// would blink it out and back; the entrance runs only when nothing was
+// there. The mark is cleared after the first mount, so a later visit to `/`
+// in the session animates as usual.
+const PRERENDER_MARK = 'data-prerendered';
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════════════════
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   const { t } = useT(['landing', 'common']);
+  const [heroInPlace] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.getAttribute(PRERENDER_MARK) === 'landing',
+  );
+  useEffect(() => {
+    document.documentElement.removeAttribute(PRERENDER_MARK);
+  }, []);
   const [navSolid, setNavSolid] = useState(false);
   // The nav's links below 900px: a sheet, opened from a Menu button.
   const [menuOpen, setMenuOpen] = useState(false);
@@ -503,11 +518,13 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               <a key={l.href} href={l.href} className={navLink} {...external(l.external)}>{t(l.key)}</a>
             ))}
             <LanguageDropdown />
-            <Button variant="ghost" onClick={onSignIn}>{t('common:nav.signIn')}</Button>
-            <Button variant="gold" onClick={onGetStarted}>{t('nav.cta')}</Button>
+            {/* Below 420px Sign in moves into the menu sheet: the mark, the
+                language picker, the CTA and Menu fill a phone's bar, and two
+                labels squeezed onto it wrapped to two lines each. */}
+            <Button variant="ghost" onClick={onSignIn} className="lp-nav-signin whitespace-nowrap">{t('common:nav.signIn')}</Button>
+            <Button variant="gold" onClick={onGetStarted} className="whitespace-nowrap">{t('nav.cta')}</Button>
             {/* Below 900px the links above are display:none; this is how a
-                phone reaches them. Icon only — at 360px the mark, the
-                language picker, Sign in and the CTA already fill the bar. */}
+                phone reaches them. Icon only — the bar has no room for a label. */}
             <button
               type="button"
               className="lp-nav-menu text-mystic-300 [@media(hover:hover)]:hover:text-mystic-100"
@@ -525,9 +542,11 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <main>
         {/* ── Hero: the deck, the thesis, the draw ── */}
         <section className="lp-hero">
-          <div className="lp-hero-in lp-enter">
-            <DeckFan size="lg" />
-            <EyebrowLabel rules className="mt-4">{t('hero.badge')}</EyebrowLabel>
+          <div className={heroInPlace ? 'lp-hero-in' : 'lp-hero-in lp-enter'}>
+            <DeckFan size="lg" animate={!heroInPlace} />
+            {/* self-stretch: in this centred column the eyebrow shrinks to its
+                text and the flex-1 rules beside it collapse to nothing. */}
+            <EyebrowLabel rules className="mt-4 self-stretch">{t('hero.badge')}</EyebrowLabel>
             <h1 className="lp-hero-h1 heading-display-xl text-mystic-100">
               {t('hero.headlineTop')}
               <br />
@@ -718,6 +737,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
                 </a>
               </li>
             ))}
+            <li className="lp-menu-signin">
+              <button
+                type="button"
+                className="flex items-center w-full min-h-[48px] px-3 rounded-control text-body text-mystic-100 text-left [@media(hover:hover)]:hover:bg-mystic-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+                onClick={() => { setMenuOpen(false); onSignIn(); }}
+              >
+                {t('common:nav.signIn')}
+              </button>
+            </li>
           </ul>
         </nav>
       </Sheet>

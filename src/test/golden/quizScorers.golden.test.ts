@@ -401,3 +401,55 @@ describe('Likert items keep Strongly Disagree first in every curated quiz', () =
     expect(seen).toBe(48 + 12 + 15 + 50 + 45 + 30 + 21);
   });
 });
+
+// ===========================================================================
+// What the user READS must be what the item scores. localizeQuiz used to
+// label every Likert option by its recorded value (quizzes.likert.<value>),
+// so a reverse-keyed item (value 5 declared on "Strongly Disagree") drew
+// "Strongly agree" on the option that scores as disagreement: every
+// reverse-keyed item since April 2026 was scored backwards. Labels are now
+// chosen by the option's declared English meaning.
+// ===========================================================================
+describe('localizeQuiz draws each Likert option by what it says, not by the value it records', () => {
+  const curated = [mbtiQuiz, mbtiQuickQuiz, loveLanguageQuiz, bigFiveQuiz, enneagramQuiz, attachmentQuiz, shadowArchetypeQuiz];
+
+  it('en: every Likert option of every quiz keeps its declared meaning, reverse-keyed items included', async () => {
+    const { default: i18n } = await import('../../i18n/config');
+    const { localizeQuiz, isLikertQuestion } = await import('../../i18n/localizeQuiz');
+    const { EXTRA_QUIZZES } = await import('../../data/extraQuizzes');
+    await i18n.changeLanguage('en');
+    let reversed = 0;
+    for (const quiz of [...curated, ...EXTRA_QUIZZES]) {
+      const localized = localizeQuiz(quiz);
+      quiz.questions.forEach((q, qi) => {
+        if (!isLikertQuestion(q)) return;
+        if (q.options[0].value === 5) reversed++;
+        q.options.forEach((o, oi) => {
+          const shown = localized.questions[qi].options[oi];
+          expect(shown.value, `${quiz.id}/${q.id}`).toBe(o.value);
+          expect(shown.label.toLowerCase(), `${quiz.id}/${q.id} value ${o.value}`).toBe(o.label.toLowerCase());
+        });
+      });
+    }
+    // Big Five, attachment and the empath / extra reverse-keyed items.
+    expect(reversed).toBeGreaterThan(20);
+  });
+
+  it('another locale: a reverse-keyed item shows that locale’s label for the scale point it declares', async () => {
+    const { default: i18n } = await import('../../i18n/config');
+    const { localizeQuiz } = await import('../../i18n/localizeQuiz');
+    i18n.addResourceBundle('ja', 'app', { quizzes: { likert: { 1: 'JA-SD', 2: 'JA-D', 3: 'JA-N', 4: 'JA-A', 5: 'JA-SA' } } }, true, true);
+    await i18n.changeLanguage('ja');
+    try {
+      const o3 = bigFiveQuiz.questions.findIndex((q) => q.id === 'o3');
+      expect(bigFiveQuiz.questions[o3].options[0]).toEqual({ value: 5, label: 'Strongly Disagree' });
+      const shown = localizeQuiz(bigFiveQuiz).questions[o3].options;
+      expect(shown.map((o) => o.label)).toEqual(['JA-SD', 'JA-D', 'JA-N', 'JA-A', 'JA-SA']);
+      expect(shown.map((o) => o.value)).toEqual([5, 4, 3, 2, 1]);
+      // The labels are no longer English, so the renderer reads the flag to pick its "How much do you agree?" prompt.
+      expect(localizeQuiz(bigFiveQuiz).questions[o3].likert).toBe(true);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+});

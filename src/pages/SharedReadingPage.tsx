@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
-import { Button, Page, PageHeader } from '../components/ui';
+import { Button, Disclaimer, Page, PageHeader, Paper } from '../components/ui';
 import { decodeReading, sharedDeck } from '../services/shareableReadings';
 import { fullDeck } from '../data/tarotDeck';
 import { getSpreadBySlug } from '../data/tarotSpreads';
@@ -15,6 +15,7 @@ import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { localizeCard } from '../i18n/localizeCard';
 import { localizeCartoSpread, localizePlayingCard } from '../i18n/localizePlayingCard';
+import { cartoPositionLabel, firstSentences } from '../components/cartomancy/cartoFlow';
 
 /**
  * /reading/:token — a reading someone shared.
@@ -63,6 +64,19 @@ export function SharedReadingPage() {
     return out;
   }, [payload, deck, locale]);
 
+  /** What each position is called: the spread's own names, else "Position n". */
+  const positionLabel = useMemo(() => {
+    const generic = (n: number) => t('readings.positions.generic', { index: n });
+    if (!payload) return generic;
+    if (deck === 'playing') {
+      const spread = getCartoSpread(payload.s);
+      const localized = spread ? localizeCartoSpread(spread, locale) : null;
+      return (n: number) => cartoPositionLabel(localized, n - 1, generic);
+    }
+    const catalogue = getSpreadBySlug(payload.s);
+    return (n: number) => catalogue?.positions[n - 1]?.name || generic(n);
+  }, [payload, deck, locale, t]);
+
   const spreadName = useMemo(() => {
     if (!payload) return '';
     if (deck === 'playing') {
@@ -79,7 +93,7 @@ export function SharedReadingPage() {
   useEffect(() => {
     const title = payload
       ? deck === 'playing'
-        ? t('cartomancy.shared.title', { defaultValue: 'Shared playing-card reading — {{count}} cards', count: cards.length })
+        ? t('cartomancy.shared.title', { defaultValue: 'Shared playing-card reading — {{count}} cards', defaultValue_one: 'Shared playing-card reading — one card', count: cards.length })
         : `Shared tarot reading — ${cards.length} cards`
       : 'Shared tarot reading';
     setPageMeta(title, 'A reading shared with you on Arcana. Open the link to see the cards drawn.');
@@ -121,18 +135,23 @@ export function SharedReadingPage() {
           payload.q || payload.d ? (
             <>
               {payload.q && <span className="block italic text-mystic-200">“{payload.q}”</span>}
-              {payload.d && <span className="block text-meta mt-1">Drawn {new Date(payload.d).toLocaleDateString()}</span>}
+              {payload.d && (
+                <span className="block text-meta mt-1">
+                  {t('sharedReading.drawn', { defaultValue: 'Drawn {{date}}', date: new Date(payload.d).toLocaleDateString(locale, { dateStyle: 'medium' }) })}
+                </span>
+              )}
             </>
           ) : undefined
         }
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {/* The table on navy; three cards lie as a row, the way they were dealt. */}
+      <div className={`grid ${cards.length === 3 ? 'grid-cols-3 gap-2 sm:gap-3' : 'grid-cols-2 sm:grid-cols-3 gap-3'}`}>
         {cards.map((item, idx) => (
-          <div key={`${item.card.id}-${idx}`} className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-3">
-            <div className="aspect-[2/3] rounded-control bg-mystic-950 overflow-hidden mb-2 text-gold [&>svg]:w-full [&>svg]:h-full [&>svg]:block">
+          <div key={`${item.card.id}-${idx}`} className="text-center">
+            <div className="aspect-[2/3] rounded-inset bg-mystic-900 overflow-hidden text-gold [&>svg]:w-full [&>svg]:h-full [&>svg]:block">
               {item.kind === 'playing' ? (
-                <PlayingCardFace card={item.card} reversed={item.reversed} />
+                <PlayingCardFace card={item.card} reversed={item.reversed} detail={cards.length === 3 ? 'quiet' : 'full'} />
               ) : getBundledFullPath(item.card.id) ? (
                 <img
                   src={getBundledFullPath(item.card.id) ?? undefined}
@@ -144,32 +163,41 @@ export function SharedReadingPage() {
                 <div className="w-full h-full flex items-center justify-center text-caption text-mystic-500">{item.card.name}</div>
               )}
             </div>
-            <div className="text-meta text-center text-mystic-400 mb-0.5">{t('readings.positions.generic', { index: idx + 1 })}</div>
-            <div className="text-ui text-center font-medium text-mystic-100">{item.card.name}</div>
-            {item.reversed && <div className="text-meta text-center uppercase tracking-wider text-gold mt-0.5">{reversedLabel}</div>}
+            <p className="mt-2 text-caption text-mystic-400 leading-tight">{positionLabel(idx + 1)}</p>
+            <p className="mt-0.5 text-meta font-medium text-mystic-100 leading-snug">{item.card.name}</p>
+            {item.reversed && <p className="text-caption text-gold">{reversedLabel}</p>}
           </div>
         ))}
       </div>
 
-      <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
-        <h2 className="heading-display-md text-mystic-100 mb-2">What this reading suggests</h2>
-        <div className="reading-copy">
-          {cards.map((item, idx) => {
-            const meaning = item.reversed ? item.card.meaningReversed ?? item.card.meaningUpright : item.card.meaningUpright;
-            return (
-              <p key={idx}>
-                <span className="font-medium text-mystic-100">{item.card.name}{item.reversed ? ` (${reversedLabel.toLowerCase()})` : ''}:</span>{' '}
-                {meaning.split('.')[0]}.
-              </p>
-            );
-          })}
-        </div>
+      <div>
+        <Paper tail>
+          <h2 className="heading-display-md heading-strong text-ink">
+            {t('sharedReading.suggests', { defaultValue: 'What this reading suggests' })}
+          </h2>
+          <div className="mt-4 divide-y divide-paper-hairline">
+            {cards.map((item, idx) => {
+              const meaning = item.reversed ? item.card.meaningReversed ?? item.card.meaningUpright : item.card.meaningUpright;
+              return (
+                <section key={idx} className="py-4 first:pt-0 last:pb-0">
+                  <p className="font-display-eyebrow">{positionLabel(idx + 1)}</p>
+                  <h3 className="mt-1 text-ui font-semibold text-ink">
+                    {item.card.name}
+                    {item.reversed && <span className="ml-2 text-meta font-medium text-ink-coral">{reversedLabel}</span>}
+                  </h3>
+                  <p className="reading-copy mt-1">{firstSentences(meaning, 2)}</p>
+                </section>
+              );
+            })}
+          </div>
+        </Paper>
+        <Disclaimer kind={deck === 'playing' ? 'cartomancy' : 'tarot'} tail />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
         <Button variant="outline" className="flex-1" onClick={handleCopy}>
           <Link2 className="w-4 h-4" aria-hidden />
-          {shareCopied ? t('common:actions.copied', { defaultValue: 'Copied.' }) : 'Copy share link'}
+          {shareCopied ? t('common:actions.copied', { defaultValue: 'Copied.' }) : t('sharedReading.copyLink', { defaultValue: 'Copy share link' })}
         </Button>
         <Button variant="gold" className="flex-1" onClick={() => navigate(deck === 'playing' ? '/cartomancy' : '/')}>
           {deck === 'playing' ? t('cartomancy.shared.cta', { defaultValue: 'Read the deck yourself on Arcana' }) : 'Get your own reading on Arcana'}

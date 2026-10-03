@@ -586,8 +586,18 @@ class WebBillingService implements BillingService {
         try {
           const raw = await response.text();
           try {
+            // The functions answer `{ error: { code, message } }` (the shared
+            // handler envelope) or a flat `{ error: "..." }`; String() of the
+            // first read "[object Object]" in the log.
             const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown; code?: unknown };
-            detail = String(parsed.error ?? parsed.message ?? parsed.code ?? '').trim();
+            const err = parsed.error;
+            const nested =
+              err && typeof err === 'object'
+                ? [(err as { code?: unknown }).code, (err as { message?: unknown }).message]
+                    .filter((v) => typeof v === 'string' && v)
+                    .join(': ')
+                : '';
+            detail = String(nested || (typeof err === 'string' ? err : '') || parsed.message || parsed.code || '').trim();
           } catch {
             detail = raw.slice(0, 200).trim();
           }

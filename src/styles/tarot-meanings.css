@@ -79,8 +79,11 @@
 /* ── Breadcrumb ── */
 .tm-breadcrumb {
   padding: 24px 0 16px;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   color: var(--tm-ink-400);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .tm-breadcrumb a {
@@ -94,8 +97,11 @@
 }
 
 .tm-breadcrumb-sep {
-  margin: 0 8px;
+  margin: 0 6px;
+  width: 14px;
+  height: 14px;
   color: var(--tm-ink-600);
+  flex: none;
 }
 
 .tm-breadcrumb-current {
@@ -145,17 +151,16 @@
   display: inline-block;
   padding: 14px 36px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgb(var(--gold-primary)), rgb(var(--gold-light)));
+  background: rgb(var(--gold-primary));
   color: rgb(var(--canvas));
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: opacity 0.15s ease-out;
 }
 
-.tm-bottom-btn:hover {
-  transform: translateY(-2px);
-}
+/* Elevation by fill, never by lift: a hover dims a touch, nothing moves. */
+.tm-bottom-btn:hover { opacity: 0.9; }
 
 /* ── Cheat Sheet ── */
 .tm-cheatsheet {
@@ -204,92 +209,6 @@
 .tm-yesno.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); }
 .tm-yesno.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); }
 
-
-/* ── Email Capture ── */
-.tm-email-capture {
-  background: rgba(var(--gold-primary), 0.03);
-  border: 1px solid rgba(var(--gold-primary), 0.1);
-  border-radius: 16px;
-  padding: 32px;
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.tm-email-title {
-  margin-bottom: 8px;
-}
-
-.tm-email-desc {
-  font-size: 0.92rem;
-  color: var(--tm-ink-200);
-  max-width: 66ch;
-  margin: 0 auto 20px;
-}
-
-.tm-email-form {
-  display: flex;
-  gap: 8px;
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-.tm-email-input {
-  flex: 1;
-  padding: 12px 18px;
-  background: rgb(var(--surface-raised));
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 12px;
-  color: var(--tm-ink-100);
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.tm-email-input:focus { border-color: rgba(var(--gold-primary), 0.3); }
-.tm-email-input::placeholder { color: var(--tm-ink-500); }
-
-.tm-email-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, rgb(var(--gold-primary)), rgb(var(--gold-light)));
-  color: rgb(var(--canvas));
-  font-weight: 600;
-  font-size: 0.88rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.3s;
-}
-
-.tm-email-btn:hover { transform: translateY(-1px); }
-
-.tm-email-note {
-  font-size: 0.72rem;
-  color: var(--tm-ink-500);
-  margin-top: 10px;
-}
-
-.tm-email-success {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 1rem;
-  color: rgb(var(--tm-yes-ink));
-  font-weight: 500;
-  padding: 16px;
-}
-
-.tm-email-success span {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(var(--tm-yes), 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-}
 
 /* ── Related Cards Grid ── */
 .tm-related {
@@ -367,13 +286,6 @@
    (8px) is right here. */
 .tm-related-face { width: 56px; }
 .tm-related-face > div { width: 100%; }
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .tm-email-form {
-    flex-direction: column;
-  }
-}
 
 /* ── The deck rail (PageGrid aside, desktop) ──────────────────────
    Beside the reading the deck sits in a 320px column: four thumbnails a

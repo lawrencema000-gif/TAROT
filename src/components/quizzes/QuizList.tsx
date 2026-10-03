@@ -5,6 +5,7 @@ import type { QuizDefinition } from '../../types';
 import type { QuizCategory, QuizMetadataEntry } from '../../data/quizzes';
 import { CATEGORY_ORDER, CATEGORY_LABEL_EN, TILE_INK } from './shared';
 import { QuizGlyph } from './icons';
+import { resultChipLabel } from './chipLabel';
 
 export interface QuizListEntry {
   quiz: QuizDefinition;
@@ -83,11 +84,11 @@ export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult
           className="
             overflow-hidden rounded-card border border-mystic-700 bg-mystic-850 divide-y divide-mystic-700
             lg:grid lg:grid-cols-2 lg:gap-3 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:divide-y-0
-            xl:grid-cols-3
           "
         >
           {rows.map(({ quiz, metadata }) => {
             const last = lastResultFor(quiz.id);
+            const chip = last ? resultChipLabel(quiz, last.label, t) : undefined;
             const tile = TILE_INK[metadata.color] ?? 'text-gold';
             const meta = `${metadata.timeEstimate} · ${typeLabel(quiz.questions.length)}`;
             return (
@@ -99,10 +100,9 @@ export function QuizList({ entries, loading, lastResultFor, onStart, onSeeResult
                       label={quiz.title}
                       meta={`${meta} · ${relativeDay(last.completed_at, locale)}`}
                       value={
-                        last.label ? (
+                        chip ? (
                           <Tag tone="gold" size="sm">
-                            {/* Older rows carry the English "Type N" prefix from before the enneagramType key existed. */}
-                            {last.label.replace(/^Type\s+(\d+)/, (_m, n) => t('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n }))}
+                            {chip}
                           </Tag>
                         ) : undefined
                       }

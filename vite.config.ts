@@ -80,7 +80,7 @@ function localePreloadPlugin(): Plugin {
     },
     transformIndexHtml: {
       order: 'post',
-      handler(_html, ctx) {
+      handler(html, ctx) {
         if (!ctx.bundle) return;
         const byLocale: Record<string, string[]> = {};
         for (const [fileName, output] of Object.entries(ctx.bundle)) {
@@ -98,7 +98,18 @@ function localePreloadPlugin(): Plugin {
           `var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;` +
           `for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';` +
           `e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();`;
-        return [{ tag: 'script', children: script, injectTo: 'head-prepend' }];
+        // `<meta charset>` has to sit in the first 1024 bytes of the document
+        // (the encoding prescan; Lighthouse fails `charset` otherwise), and
+        // this map grows with every namespace — so the meta is lifted out of
+        // the template and prepended ahead of the script.
+        const CHARSET_RE = /<meta charset="UTF-8"\s*\/?>\s*/i;
+        return {
+          html: html.replace(CHARSET_RE, ''),
+          tags: [
+            { tag: 'meta', attrs: { charset: 'UTF-8' }, injectTo: 'head-prepend' },
+            { tag: 'script', children: script, injectTo: 'head-prepend' },
+          ],
+        };
       },
     },
   };

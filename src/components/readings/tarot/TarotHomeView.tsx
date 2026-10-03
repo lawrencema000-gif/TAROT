@@ -121,8 +121,13 @@ export function TarotHomeView({
                 key={spread.id}
                 icon={<SpreadGlyph layout={spread.layout} className="text-gold" />}
                 label={spread.name}
-                meta={<span className="line-clamp-1">{spread.description}</span>}
-                value={t('readings.cardCount', { count: spread.count, defaultValue: '{{count}} cards' })}
+                meta={
+                  <span className="line-clamp-2">
+                    <span className="tabular-nums">{t('readings.cardCount', { count: spread.count, defaultValue: '{{count}} cards' })}</span>
+                    {' · '}
+                    {spread.description}
+                  </span>
+                }
                 trailing={trailing}
                 onClick={() => onSpreadSelect(spread.id)}
               />

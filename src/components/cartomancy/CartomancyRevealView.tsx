@@ -3,16 +3,17 @@ import { useReducedMotion } from 'framer-motion';
 import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Brain, Loader2 } from 'lucide-react';
 import { Button, Chip, EyebrowLabel, KeywordRow, ReadingProse, ResultSheet, Tag } from '../ui';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { flipHaptics } from '../../utils/haptics';
 import type { CartoSpread, PlayingCard, PlayingSuit } from '../../types/cartomancy';
-import type { CombinationHit } from '../../data/cartomancy';
-import { localizedYesNoLabel } from '../../i18n/localizePlayingCard';
+import { getPlayingCard, type CombinationHit } from '../../data/cartomancy';
+import { localizeCombinationHit, localizedYesNoLabel } from '../../i18n/localizePlayingCard';
 import { PlayingCardFace } from './PlayingCardFace';
 import { SuitGlyph } from './SuitGlyph';
 import { CartomancyLayout, tileFor } from './CartomancyLayout';
 import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS, DEFAULT_BACK } from './FlipTile';
 import { PaperDisclosure } from './PaperDisclosure';
-import { cartoSummary, firstSentences, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
+import { cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
 
 /**
  * The reveal: the table on navy, then the reading on paper.
@@ -54,8 +55,15 @@ export interface CartomancyRevealViewProps {
   onRevealAll: () => void;
   onCardClick: (index: number) => void;
   onGetAIInterpretation: () => void;
+  /** Show or hide an AI reading already paid for (never spends again). */
+  onToggleAI: (show: boolean) => void;
   onNewReading: () => void;
 }
+
+const ICON_BUTTON =
+  'w-11 h-11 inline-flex items-center justify-center rounded-full transition-[background-color,transform] duration-fast ' +
+  '[@media(hover:hover)]:[&:hover:not(:active)]:bg-mystic-800 motion-safe:active:scale-90 disabled:opacity-40 ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50';
 
 const VERDICT_FILL = {
   yes: 'bg-ink-teal text-paper',
@@ -90,6 +98,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     onRevealAll,
     onCardClick,
     onGetAIInterpretation,
+    onToggleAI,
     onNewReading,
   } = props;
 
@@ -147,6 +156,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
         className="w-full"
         number={opts.number}
         infoBadge={!quiet}
+        badgeCorner={drawn.reversed ? 'bottom-left' : 'top-right'}
         aria-label={
           drawn.revealed
             ? t('readings.revealView.openCard', { name: drawn.reversed ? `${card.name}, ${reversedLabel}` : card.name, defaultValue: 'Open {{name}}' })
@@ -158,12 +168,12 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     );
   };
 
-  const captionFor = (index: number) => {
+  const captionFor = (index: number, { named }: { named: boolean }) => {
     const drawn = drawnCards[index];
     const delay = flipDelays.current[index] ?? 0;
     return (
       <>
-        <p className="text-caption text-mystic-400 leading-tight">{getPositionLabel(index)}</p>
+        {named && <p className="text-caption text-mystic-400 leading-tight">{getPositionLabel(index)}</p>}
         <p
           className="text-caption text-gold leading-tight transition-opacity duration-base ease-out"
           style={{ opacity: drawn?.revealed && drawn.reversed ? 1 : 0, transitionDelay: `${delay + FLIP_MS - 140}ms` }}
@@ -181,9 +191,11 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
       const drawn = drawnCards[index];
       if (!drawn?.revealed) return null;
       const name = localize(drawn.card).name;
+      // Two lines, so a long name never truncates the word that changes its reading.
       return drawn.reversed ? (
         <>
-          {name} <span className="text-gold">· {reversedLabel}</span>
+          <span>{name}</span>
+          <span className="text-caption text-gold">{reversedLabel}</span>
         </>
       ) : (
         name
@@ -267,26 +279,40 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     </div>
   );
 
-  const aiRest = showAIInterpretation && aiInterpretation ? aiInterpretation.split(/\n\s*\n/).slice(1).join('\n\n').trim() : '';
+  const aiOn = showAIInterpretation && !!aiInterpretation;
+  const aiSections = aiOn ? splitAiReading(aiInterpretation!).sections : [];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px]"
+          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px] -ml-1 pr-2"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
-        <button
-          onClick={onSave}
-          disabled={!allRevealed}
-          aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
-          className="p-3 rounded-full hover:bg-mystic-800 transition-[background-color,transform] duration-fast active:scale-90 disabled:opacity-50"
-        >
-          {isSaved ? <BookmarkCheck className="w-5 h-5 text-gold" /> : <Bookmark className="w-5 h-5 text-mystic-400" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onShare}
+            disabled={!allRevealed}
+            aria-label={t('readings.revealView.share', { defaultValue: 'Share this reading' })}
+            className={`${ICON_BUTTON} text-mystic-300`}
+          >
+            <Share2 className="w-5 h-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={!allRevealed}
+            aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
+            aria-pressed={isSaved}
+            className={`${ICON_BUTTON} ${isSaved ? 'text-gold' : 'text-mystic-300'}`}
+          >
+            {isSaved ? <BookmarkCheck className="w-5 h-5" aria-hidden /> : <Bookmark className="w-5 h-5" aria-hidden />}
+          </button>
+        </div>
       </div>
 
       <div className="text-center space-y-2">
@@ -314,30 +340,37 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
           className="space-y-4 animate-fade-in"
           style={{ animationDuration: '320ms', animationDelay: `${revealTailMs}ms`, animationFillMode: 'both' }}
         >
-          {!showAIInterpretation && (
-            <div className="flex justify-end">
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <h3 className="text-ui font-medium text-mystic-200">{t('readings.interpretation')}</h3>
+            {aiOn ? (
+              <button
+                type="button"
+                onClick={() => onToggleAI(false)}
+                className="inline-flex items-center min-h-[44px] text-meta text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
+              >
+                {t('cartomancy.result.showCardMeanings', { defaultValue: 'Show card meanings' })}
+              </button>
+            ) : aiInterpretation ? (
+              <Chip variant="outline" size="sm" onClick={() => onToggleAI(true)} icon={<Brain />} label={t('readings.revealView.aiInterpretation')} />
+            ) : (
               <Chip
                 variant="outline"
                 size="sm"
                 onClick={() => {
                   if (!loadingAI) onGetAIInterpretation();
                 }}
-                className={loadingAI ? 'opacity-50 pointer-events-none' : ''}
-              >
-                {loadingAI ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    {t('readings.revealView.generating')}
-                  </>
-                ) : (
-                  <>
-                    <Brain className="w-3.5 h-3.5" />
-                    {isPremium ? t('readings.revealView.getAIInsight') : t('readings.revealView.premiumAI')}
-                  </>
-                )}
-              </Chip>
-            </div>
-          )}
+                disabled={loadingAI}
+                icon={loadingAI ? <Loader2 className="animate-spin" /> : <Brain />}
+                label={
+                  loadingAI
+                    ? t('readings.revealView.generating')
+                    : isPremium
+                      ? t('readings.revealView.getAIInsight')
+                      : t('readings.revealView.premiumAI')
+                }
+              />
+            )}
+          </div>
 
           <ResultSheet
             glyph={glyph}
@@ -345,7 +378,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
             title={title}
             summary={verdict ? undefined : summary}
             summaryHeading={summaryHeading}
-            disclaimer="cartomancy"
+            disclaimer={aiOn ? 'ai' : 'cartomancy'}
             headingLevel="h2"
           >
             <div className="space-y-7">
@@ -359,6 +392,21 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
                 </section>
               )}
 
+              {/* With an AI reading on screen its body takes the place of the
+                  card sections, as on the tarot result; the cards stay one
+                  tap away ("Show card meanings" or the faces above). */}
+              {aiOn ? (
+                aiSections.length > 0 && (
+                  <div className="space-y-5">
+                    {aiSections.map((section, i) => (
+                      <div key={i}>
+                        {section.heading && <h3 className="text-ui font-semibold text-ink">{section.heading}</h3>}
+                        {section.body && <ReadingProse text={section.body} lede={false} className={section.heading ? 'mt-1' : ''} />}
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
               <div className="divide-y divide-paper-hairline">
                 {drawnCards.map((drawn, i) => {
                   const card = localize(drawn.card);
@@ -400,30 +448,28 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
                   );
                 })}
               </div>
+              )}
 
               {combinations.length > 0 && (
                 <section className="border-t border-paper-hairline pt-6">
                   <h3 className="heading-display-md heading-strong text-ink">{t('cartomancy.result.combinations', { defaultValue: 'Combinations' })}</h3>
                   <p className="reading-meta mt-1">{t('cartomancy.result.combinationsLede', { defaultValue: 'What the tables say about these cards together.' })}</p>
                   <ul className="mt-4 space-y-4">
-                    {combinations.map((hit) => (
-                      <li key={`${hit.id}:${hit.cardIds.join('-')}`}>
-                        <p className="text-ui font-semibold text-ink">{hit.label}</p>
-                        <p className="reading-copy mt-0.5">{hit.meaning}</p>
+                    {combinationLines(
+                      combinations,
+                      (hit) => localizeCombinationHit(hit),
+                      (id) => {
+                        const card = getPlayingCard(id);
+                        return card ? localize(card).name : '';
+                      },
+                      getLocale(),
+                    ).map((line) => (
+                      <li key={line.key}>
+                        <p className="text-ui font-semibold text-ink">{line.label}</p>
+                        <p className="reading-copy mt-0.5">{line.meaning}</p>
                       </li>
                     ))}
                   </ul>
-                </section>
-              )}
-
-              {aiRest && (
-                <section className="border-t border-paper-hairline pt-6">
-                  <EyebrowLabel tone="ink" align="left" className="block">
-                    {t('readings.revealView.aiInterpretation')}
-                  </EyebrowLabel>
-                  <div className="mt-3">
-                    <ReadingProse text={aiRest} lede={false} />
-                  </div>
                 </section>
               )}
 
@@ -436,19 +482,9 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
                 </aside>
               )}
 
-              <div className="grid grid-cols-3 gap-2">
-                <Button variant="secondary" onClick={onSave}>
-                  {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                  <span className="text-caption">{isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}</span>
-                </Button>
-                <Button variant="secondary" onClick={onShare}>
-                  <Share2 className="w-4 h-4" />
-                  <span className="text-caption">{t('readings.revealView.share', { defaultValue: 'Share this reading' })}</span>
-                </Button>
-                <Button variant="gold" onClick={onNewReading}>
-                  <span className="text-caption">{t('readings.revealView.newReading')}</span>
-                </Button>
-              </div>
+              <Button variant="gold" size="lg" fullWidth onClick={onNewReading}>
+                {t('readings.revealView.newReading')}
+              </Button>
             </div>
           </ResultSheet>
         </div>

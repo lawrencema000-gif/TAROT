@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle, Loader2 } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge, TarotFace } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -138,26 +138,19 @@ export function TarotCompanionPage() {
       )}
 
       {card && !drawing && (
-        <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-cosmic-violet/5">
+        <Card padding="lg">
           <div className="flex items-center gap-4">
-            {card.card.imageUrl ? (
-              <img
-                src={card.card.imageUrl}
-                alt={card.card.name}
-                className={`w-20 h-32 rounded-lg object-cover ${card.reversed ? 'rotate-180' : ''}`}
-              />
-            ) : (
-              <div className="w-20 h-32 bg-mystic-800 rounded-lg flex items-center justify-center text-4xl">
-                {card.card.suit === 'cups' ? '🍷' : card.card.suit === 'wands' ? '🕯' : card.card.suit === 'swords' ? '⚔' : card.card.suit === 'pentacles' ? '🪙' : '✨'}
-              </div>
-            )}
+            {/* The face as the rest of the app draws it; the badge names the orientation. */}
+            <div className="w-20 shrink-0">
+              <TarotFace card={card.card} size="fill" detail="quiet" reversed={card.reversed} reversedTag={false} alt="" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="mb-1">
                 <Badge tone={card.reversed ? 'coral' : 'gold'}>
                   {card.reversed ? t('tarotCompanion.reversed', { defaultValue: 'Reversed' }) : t('tarotCompanion.upright', { defaultValue: 'Upright' })}
                 </Badge>
               </div>
-              <h2 className="heading-display-md text-mystic-100">{card.card.name}</h2>
+              <h2 className="heading-display-md heading-strong text-mystic-100">{card.card.name}</h2>
               <p className="text-ui text-mystic-300 mt-1 line-clamp-3">
                 {card.reversed ? card.card.meaningReversed : card.card.meaningUpright}
               </p>
@@ -200,7 +193,7 @@ export function TarotCompanionPage() {
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               placeholder={t('tarotCompanion.composerPlaceholder', { defaultValue: 'Ask a follow-up…' })}
               maxLength={2000}
-              className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+              className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 min-h-[44px] text-mystic-100 text-ui placeholder-mystic-500 focus:outline-none focus:border-gold/40"
             />
             <Button variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
               <Send className="w-4 h-4" aria-hidden />

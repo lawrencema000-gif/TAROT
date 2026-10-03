@@ -30,9 +30,10 @@ import type { TarotCard } from '../../types';
  *
  * `reversed` turns the IMAGE only; the plate stays upright and a
  * "Reversed" Tag sits under the card (`reversedTag={false}` when the
- * caller names the orientation itself). Inside a flipping plane (the reveal,
- * the Home card) the plane carries the reversal as part of the turn, so
- * those callers render TarotFace upright and let the turn invert it.
+ * caller names the orientation itself). Flipping callers (the reveal, the
+ * Celtic Cross, the Home card, Pick a card) turn their plane on Y only and
+ * pass `reversed` here, so a reversed plate is never upside down; a change
+ * of `reversed` turns the art in place (500 ms, once).
  *
  * Sizes: thumb 114 (library grid) · sm 64 (small slots; `detail` becomes
  * `quiet`: rank + suit glyph, or the numeral) · md 125 · lg 160 · xl 224
@@ -135,10 +136,13 @@ export const TarotFace = memo(function TarotFace({
   const rounded = radius === 'card' ? 'rounded-card' : 'rounded-inset';
   const { head, tail } = splitName(name);
   const SuitGlyph = SUIT_GLYPHS[suitOf(card)];
+  // The Fool's numeral is the digit 0, and digits are set in Inter: in the
+  // display serif an old-style 0 reads as a lowercase o.
+  const numeralFont = card.id === 0 ? 'font-body tabular-nums' : 'font-display';
 
   const plate = quiet ? (
     major ? (
-      <span className="font-display font-semibold text-caption tracking-[0.08em] text-gold">{ROMAN[card.id] ?? ''}</span>
+      <span className={`${numeralFont} font-semibold text-caption tracking-[0.08em] text-gold`}>{ROMAN[card.id] ?? ''}</span>
     ) : (
       <span className="inline-flex items-center gap-1 text-gold">
         <span className="font-body text-caption font-semibold tabular-nums">{RANK_SHORT[minorRank(card.id) - 1]}</span>
@@ -171,7 +175,7 @@ export const TarotFace = memo(function TarotFace({
         aria-hidden={label ? undefined : true}
       >
         {/* The art: the top 452 rows, the baked plate cropped away. */}
-        <div className={`absolute inset-x-0 top-0 h-[84%] overflow-hidden ${reversed ? 'rotate-180' : ''}`}>
+        <div className={`absolute inset-x-0 top-0 h-[84%] overflow-hidden transition-transform duration-deliberate ease-out ${reversed ? 'rotate-180' : ''}`}>
           {face ? (
             <img
               src={face}
@@ -198,7 +202,7 @@ export const TarotFace = memo(function TarotFace({
         {/* The numeral tab at the head — the Major Arcana's convention. */}
         {major && !quiet && (
           <span
-            className="absolute top-0 left-1/2 -translate-x-1/2 inline-flex h-4 min-w-[22px] items-center justify-center rounded-b-mark border border-t-0 border-gold/25 bg-mystic-900 px-1 font-display font-semibold text-caption leading-none tracking-[0.06em] text-gold"
+            className={`absolute top-0 left-1/2 -translate-x-1/2 inline-flex h-4 min-w-[22px] items-center justify-center rounded-b-mark border border-t-0 border-gold/25 bg-mystic-900 px-1 ${numeralFont} font-semibold text-caption leading-none tracking-[0.06em] text-gold`}
             aria-hidden
           >
             {ROMAN[card.id] ?? ''}

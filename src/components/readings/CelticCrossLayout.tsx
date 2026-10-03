@@ -26,11 +26,12 @@ const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
 };
-/* A reversed card turns into its reversal: a half-turn on Z rides along
-   with the flip. Both functions are always present so the two states
-   interpolate function by function rather than through a matrix. */
+/* The plane only turns on Y: a reversed card's art is drawn inverted on
+   its face (TarotFace `reversed`) and its plate stays upright. Both
+   functions are always present so the two states interpolate function by
+   function rather than through a matrix. */
 const AT_REST = 'rotateY(0deg) rotateZ(0deg)';
-const turned = (reversed: boolean) => `rotateY(180deg) rotateZ(${reversed ? 180 : 0}deg)`;
+const TURNED = 'rotateY(180deg) rotateZ(0deg)';
 
 interface DrawnCard { card: TarotCard; reversed: boolean; revealed: boolean }
 
@@ -115,7 +116,7 @@ export function CelticCrossLayout({
           className="relative w-full h-full"
           style={{
             transformStyle: 'preserve-3d',
-            transform: drawn.revealed ? turned(drawn.reversed) : AT_REST,
+            transform: drawn.revealed ? TURNED : AT_REST,
             transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
             transitionDelay: `${delay}ms`,
           }}
@@ -132,14 +133,14 @@ export function CelticCrossLayout({
           </div>
 
           {/* Face — mounted from the start and pre-turned, so the image is
-              already decoded when the turn begins. The plane carries the
-              reversal, so the face is drawn upright. */}
+              already decoded when the turn begins. A reversed card's art is
+              inverted; the plate stays upright. */}
           <div
             className="absolute inset-0"
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!drawn.revealed}
           >
-            <TarotFace card={drawn.card} size="fill" detail="quiet" reversedTag={false} loading="eager" alt="" />
+            <TarotFace card={drawn.card} size="fill" detail="quiet" reversed={drawn.reversed} reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
         {/* The affordance arrives as the card settles, not with it. */}

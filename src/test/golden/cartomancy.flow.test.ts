@@ -9,6 +9,7 @@ import {
   cartoSpreadOrDefault,
   cartoSummary,
   cartoVerdict,
+  combinationLines,
   dealCards,
   DEFAULT_CARTO_SETTINGS,
   firstParagraph,
@@ -19,6 +20,7 @@ import {
   saveCartoSettings,
   setLessonDone,
   shuffleIds,
+  splitAiReading,
   toSavedCards,
   verdictLine,
   verdictTone,
@@ -27,6 +29,7 @@ import { tileFor } from '../../components/cartomancy/CartomancyLayout';
 import { decodeReading, encodeReading, sharedDeck } from '../../services/shareableReadings';
 import { CARTO_SPREADS, getCartoSpread, getPlayingCardBySlug, PLAYING_DECK, PLAYING_CARDS_ALL, RED_JOKER_ID, WISH_CARD_ID } from '../../data/cartomancy';
 import type { PlayingCard } from '../../types/cartomancy';
+import type { CombinationHit } from '../../data/cartomancy';
 
 /**
  * The reading flow's decisions, held: how the deck is composed from the
@@ -259,5 +262,76 @@ describe('share tokens', () => {
 
   it('every playing-card id a token can carry resolves to a card', () => {
     expect(PLAYING_CARDS_ALL.every((card) => card.id >= 100 && card.id <= 153)).toBe(true);
+  });
+});
+
+describe('the combination list', () => {
+  const card = (slug: string) => getPlayingCardBySlug(slug)!;
+  const ace = card('ace-of-spades');
+  const others = [card('eight-of-spades'), card('seven-of-diamonds'), card('two-of-diamonds')];
+  const touching: CombinationHit[] = others.map((o) => ({
+    kind: 'neighbor',
+    id: 'ace-of-spades-touching',
+    cardIds: [ace.id, o.id],
+    meaning: 'That card’s matter is ending.',
+    label: `${ace.name} touching the ${o.name}`,
+  }));
+  const pair: CombinationHit = { kind: 'same-rank', id: 'same-rank:7:2', cardIds: [others[1].id, card('seven-of-hearts').id], meaning: 'A disagreement.', label: 'Two Sevens' };
+  const nameOf = (id: number) => PLAYING_CARDS_ALL.find((c) => c.id === id)!.name;
+  const own = (hit: CombinationHit) => ({ label: hit.label, meaning: hit.meaning });
+
+  it('folds one rule firing for one card against several into a single line', () => {
+    const lines = combinationLines([pair, ...touching], own, nameOf, 'en');
+    expect(lines).toHaveLength(2);
+    expect(lines[0].label).toBe('Two Sevens');
+    expect(lines[1].label).toBe('Ace of Spades touching the Eight of Spades, the Seven of Diamonds and the Two of Diamonds');
+    expect(lines[1].meaning).toBe('That card’s matter is ending.');
+    expect(new Set(lines.map((l) => l.key)).size).toBe(lines.length);
+  });
+
+  it('reads one rule once when it fires for several anchors', () => {
+    const queen = card('queen-of-spades');
+    const softens = (anchor: PlayingCard): CombinationHit => ({ kind: 'neighbor', id: 'heart-softens-spade', cardIds: [anchor.id, queen.id], meaning: 'Softened by care.', label: `${anchor.name} beside the ${queen.name}` });
+    const lines = combinationLines([softens(card('eight-of-hearts')), pair, softens(card('nine-of-hearts'))], own, nameOf, 'en');
+    expect(lines.map((l) => l.label)).toEqual(['Eight of Hearts beside the Queen of Spades; Nine of Hearts beside the Queen of Spades', 'Two Sevens']);
+  });
+
+  it('leaves a single hit alone and joins translated names with a dot', () => {
+    expect(combinationLines([touching[0]], own, nameOf, 'en')[0].label).toBe('Ace of Spades touching the Eight of Spades');
+    const ja = combinationLines(touching, (hit) => ({ label: hit.cardIds.map(nameOf).join(' · '), meaning: 'JA' }), nameOf, 'ja');
+    expect(ja).toHaveLength(1);
+    expect(ja[0].label).toBe('Ace of Spades · Eight of Spades · Seven of Diamonds · Two of Diamonds');
+  });
+});
+
+describe('the AI reading, as the result prints it', () => {
+  const ai = [
+    '1) Overview',
+    'You are dealing with progress that feels heavier than it should.',
+    '',
+    '2) The situation — Seven of Clubs',
+    'You have been working hard.',
+    '',
+    '**Practical actions**',
+    '- Build a one-pager.',
+    '- Choose timing.',
+    '',
+    'Closing',
+    'Yes, raise it.',
+  ].join('\n');
+
+  it('takes the overview body as the summary, without its heading', () => {
+    const { lede, sections } = splitAiReading(ai);
+    expect(lede).toBe('You are dealing with progress that feels heavier than it should.');
+    expect(sections.map((s) => s.heading)).toEqual(['The situation — Seven of Clubs', 'Practical actions', 'Closing']);
+    expect(sections[1].body).toBe('- Build a one-pager.\n- Choose timing.');
+    expect(cartoSummary(ai, getCartoSpread('carto-three-action')!)).toBe(lede);
+  });
+
+  it('keeps a plain paragraph whole and never mistakes a sentence for a heading', () => {
+    expect(splitAiReading('First paragraph.\n\nSecond one.')).toEqual({ lede: 'First paragraph.', sections: [{ body: 'Second one.' }] });
+    const { lede } = splitAiReading('This is a sentence.\nAnd another.');
+    expect(lede).toBe('This is a sentence.\nAnd another.');
+    expect(splitAiReading('')).toEqual({ lede: '', sections: [] });
   });
 });

@@ -115,7 +115,7 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, onSave
 
           {Array.isArray(result.tritype) && result.tritype.length === 3 && (
             <p className="reading-meta tabular-nums">
-              {t('quizzes.resultSections.tritype', { defaultValue: 'Tritype {{a}}-{{b}}-{{c}}: your leading type in each centre (body, heart, head).', a: result.tritype[0], b: result.tritype[1], c: result.tritype[2] })}
+              {t('quizzes.resultSections.tritype', { defaultValue: 'Tritype {{a}}-{{b}}-{{c}}: your leading type in each of the three centres, your own first.', a: result.tritype[0], b: result.tritype[1], c: result.tritype[2] })}
             </p>
           )}
         </ResultBody>

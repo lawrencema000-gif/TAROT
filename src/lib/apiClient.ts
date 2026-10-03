@@ -37,9 +37,13 @@ import i18n from '../i18n/config';
  * say why once (the Toast stack dedupes identical messages), and let the
  * auth gate show sign-in. Module-level guard so a burst of parallel calls
  * that all 401 produces one sign-out and one toast.
+ *
+ * Exported for callers that still talk to edge functions without apiCall
+ * (useAstrology's raw fetch path): call it when a request is still 401 after
+ * the refresh retry.
  */
 let sessionExpiredHandling = false;
-async function handleSessionExpired(): Promise<void> {
+export async function handleSessionExpired(): Promise<void> {
   if (sessionExpiredHandling) return;
   sessionExpiredHandling = true;
   try {

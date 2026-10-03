@@ -67,7 +67,7 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, onS
           {result.isTie && secondaryKey && <CloseCall a={name(primary)} b={name(secondaryKey)} />}
 
           <ResultSection title={section('yourScores', 'Your scores')}>
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {sorted.map(([lang, score]) => (
                 <ScoreRow key={lang} name={name(lang)} value={score} max={15} emphasis={lang === primary} />
               ))}

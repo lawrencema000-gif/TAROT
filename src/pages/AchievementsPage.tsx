@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Trophy, Award, Crown } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import {
@@ -8,6 +8,7 @@ import {
   AchievementStats,
   AchievementUnlockModal,
 } from '../components/achievements';
+import { achievementIcon } from '../components/achievements/achievementIcons';
 import type {
   AchievementWithProgress,
   AchievementCategory,
@@ -20,7 +21,7 @@ import {
   getUnnotifiedAchievements,
   getCategoryDisplayName,
 } from '../services/achievements';
-import { Skeleton, EmptyState, PageHeader, Page, ProgressRing, Chip, Card, Section } from '../components/ui';
+import { Skeleton, EmptyState, PageHeader, Page, ProgressRing, Chip, Card, Section, ListRow, ListRowGroup } from '../components/ui';
 import { quizResults } from '../dal';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -54,6 +55,7 @@ export function AchievementsPage() {
   const [unnotifiedQueue, setUnnotifiedQueue] = useState<AchievementWithProgress[]>([]);
   const [quizzesCompleted, setQuizzesCompleted] = useState(0);
   const fmt = useMemo(() => new Intl.NumberFormat(getLocale()), []);
+  const dayFmt = useMemo(() => new Intl.DateTimeFormat(getLocale(), { month: 'short', day: 'numeric' }), []);
 
   /** The DB row with its name and description read through the locale. */
   const localize = useCallback(
@@ -207,7 +209,7 @@ export function AchievementsPage() {
                 {localizeSeekerRank(profile?.seekerRank)}
               </span>
             </div>
-            <h2 className="heading-display-md heading-strong text-mystic-100 tabular-nums">
+            <h2 className="text-display font-semibold tabular-nums text-mystic-100 leading-tight">
               {t('achievements.unlockedOf', {
                 defaultValue: '{{n}} of {{total}}',
                 n: fmt.format(stats?.unlocked_achievements || 0),
@@ -238,21 +240,25 @@ export function AchievementsPage() {
 
       {recentUnlocks.length > 0 && (
         <Section headingLevel="h3" spacing="sm" title={t('achievements.recentUnlocks')}>
-          <div className="grid grid-cols-3 gap-2">
-            {recentUnlocks.map((achievement) => (
-              <div
-                key={achievement.id}
-                className="flex flex-col items-center gap-2 p-3 rounded-control bg-gold/10"
-              >
-                <div className="w-10 h-10 rounded-control bg-gold/15 text-gold flex items-center justify-center" aria-hidden>
-                  <Award className="w-5 h-5" />
-                </div>
-                <span className="text-caption text-mystic-200 text-center line-clamp-2 leading-tight">
-                  {achievement.name}
-                </span>
-              </div>
-            ))}
-          </div>
+          <ListRowGroup>
+            {recentUnlocks.map((achievement) => {
+              const Icon = achievementIcon(achievement.icon_name);
+              return (
+                <ListRow
+                  key={achievement.id}
+                  icon={<Icon />}
+                  tone="gold"
+                  label={achievement.name}
+                  meta={achievement.description}
+                  value={
+                    <span className="tabular-nums">
+                      {dayFmt.format(new Date(achievement.unlocked_at!))}
+                    </span>
+                  }
+                />
+              );
+            })}
+          </ListRowGroup>
         </Section>
       )}
 

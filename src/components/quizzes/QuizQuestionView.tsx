@@ -30,7 +30,8 @@ export function QuizQuestionView({ quiz, index, answers, onAnswer, onBack }: Qui
   const showEncouragement = !sneakPeek && total >= 12 && step % 6 === 0 && step < total;
   const encouragement = ENCOURAGEMENT[Math.floor(step / 6) % ENCOURAGEMENT.length];
 
-  const likert = isLikertQuestion(question);
+  // The localized question carries the flag (its labels may no longer be English).
+  const likert = question.likert ?? isLikertQuestion(question);
   const prompt = likert
     ? t('quizzes.lesson.promptAgree', { defaultValue: 'How much do you agree?' })
     : t('quizzes.lesson.promptChoose', { defaultValue: 'Choose the answer that fits you best.' });

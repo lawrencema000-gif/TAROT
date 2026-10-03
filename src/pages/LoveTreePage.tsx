@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sprout, Share2, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse, AffirmationPanel, Disclaimer } from '../components/ui';
@@ -48,6 +49,7 @@ const LIKERT: Array<{ value: number; label: string }> = [
 
 export function LoveTreePage() {
   const { t } = useT('app');
+  const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const [stage, setStage] = useState<Stage>('intro');
   const [index, setIndex] = useState(0);
@@ -189,6 +191,7 @@ export function LoveTreePage() {
       <AttachmentResult
         attachment={savedAttachment}
         eyebrow={t('loveTree.yourTree', { defaultValue: 'Your tree' })}
+        onBack={() => navigate(-1)}
         onRetake={handleRestart}
         onShare={() => shareAttachment(savedAttachment)}
         t={t}
@@ -315,6 +318,7 @@ export function LoveTreePage() {
         attachment={result.attachment}
         scores={{ anxiety: result.anxiety, avoidance: result.avoidance }}
         eyebrow={t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
+        onBack={() => navigate(-1)}
         onRetake={handleRestart}
         onShare={() => shareAttachment(result.attachment)}
         t={t}
@@ -332,6 +336,7 @@ function AttachmentResult({
   attachment,
   scores,
   eyebrow,
+  onBack,
   onRetake,
   onShare,
   t,
@@ -339,6 +344,8 @@ function AttachmentResult({
   attachment: Attachment;
   scores?: { anxiety: number; avoidance: number };
   eyebrow: string;
+  /** The header's back arrow leaves the page; Retake is the button below. */
+  onBack: () => void;
   onRetake: () => void;
   onShare: () => void;
   t: (key: string, opts?: Record<string, unknown>) => unknown;
@@ -347,8 +354,8 @@ function AttachmentResult({
   const tx = (key: string, opts?: Record<string, unknown>) => t(key, opts) as string;
   return (
     <ResultLayout
-      onBack={onRetake}
-      backLabel={tx('loveTree.retake', { defaultValue: 'Retake' })}
+      onBack={onBack}
+      backLabel={tx('common:actions.back', { defaultValue: 'Back' })}
       eyebrow={eyebrow}
       verdict={tx(`loveTree.attachment.${attachment}.title`, { defaultValue: info.title })}
       subtitle={

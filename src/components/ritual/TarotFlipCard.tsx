@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
-import { Tag, KeywordRow, Disclosure, TarotFace } from '../ui';
+import { KeywordRow, Disclosure, TarotFace } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
@@ -15,10 +15,12 @@ import { firstSentences, hasMoreThan } from '../readings/tarot/readingText';
  * moment the user is watching on purpose, so it may run past the
  * UI-feedback budget, but 700ms (what this was) reads as sluggish.
  *
- * A reversed card turns INTO its reversal — a half-turn on Z rides along
- * with the flip — and the upright/reversed toggle turns the same plane
- * afterwards, so a change of meaning is a turn, not a repaint. Both
- * functions are always written so the states interpolate one by one.
+ * A reversed card is drawn reversed: its art is inverted on the face
+ * (TarotFace `reversed`, which turns the art in place when the
+ * upright/reversed toggle changes it, so a change of meaning is a turn,
+ * not a repaint) while the plate stays upright and legible (§6.6). The
+ * plane only turns on Y; both functions are always written so the states
+ * interpolate one by one.
  *
  * The global reduced-motion block in index.css pins transition-duration
  * with `!important`, which outranks these inline values, so the card
@@ -36,7 +38,7 @@ const BACKFACE: CSSProperties = {
 };
 
 const AT_REST = 'rotateY(0deg) rotateZ(0deg)';
-const turned = (reversed: boolean) => `rotateY(180deg) rotateZ(${reversed ? 180 : 0}deg)`;
+const TURNED = 'rotateY(180deg) rotateZ(0deg)';
 
 interface TarotFlipCardProps {
   card: TarotCard;
@@ -90,8 +92,8 @@ export function TarotFlipCard({
   };
 
   const cardDescription = isFlipped
-    ? `${card.name}, ${showReversed ? 'reversed' : 'upright'}`
-    : 'Tarot card face down. Tap to reveal';
+    ? `${card.name}, ${showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright')}`
+    : t('home.ritualCards.faceDownLabel', { defaultValue: 'Your card, face down. Tap to turn it over.' });
 
   return (
     <div className="space-y-4">
@@ -107,14 +109,19 @@ export function TarotFlipCard({
         {isFlipped && (
           <button
             onClick={toggleReversed}
-            aria-label={`Switch to ${showReversed ? 'upright' : 'reversed'} orientation`}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-caption transition-colors duration-fast ${
+            aria-label={
+              showReversed
+                ? t('home.ritualCards.switchToUpright', { defaultValue: 'Show the upright meaning' })
+                : t('home.ritualCards.switchToReversed', { defaultValue: 'Show the reversed meaning' })
+            }
+            aria-pressed={showReversed}
+            className={`flex shrink-0 items-center gap-1.5 px-3 min-h-[44px] rounded-full text-meta transition-colors duration-fast ${
               showReversed
                 ? 'bg-mystic-700 text-mystic-200'
                 : 'bg-mystic-800/50 text-mystic-400 hover:bg-mystic-800'
             }`}
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-3.5 h-3.5" aria-hidden />
             {showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright')}
           </button>
         )}
@@ -138,7 +145,7 @@ export function TarotFlipCard({
           className="relative w-full h-full"
           style={{
             transformStyle: 'preserve-3d',
-            transform: isFlipped ? turned(showReversed) : AT_REST,
+            transform: isFlipped ? TURNED : AT_REST,
             transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
           }}
         >
@@ -154,34 +161,29 @@ export function TarotFlipCard({
           </div>
 
           {/* Face — pre-turned 180° and mounted from the start, so the art
-              is decoded before the hinge moves. The plane carries the
-              reversal, so the face is drawn upright and the Tag below
-              names the orientation. */}
+              is decoded before the hinge moves. A reversed card's art is
+              inverted, its plate upright; the toggle above names the
+              orientation. */}
           <div
             className="absolute inset-0"
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!isFlipped}
           >
-            <TarotFace card={card} size="fill" radius="card" src={cardImageUrl || undefined} reversedTag={false} loading="eager" alt="" />
+            <TarotFace card={card} size="fill" radius="card" src={cardImageUrl || undefined} reversed={showReversed} reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
-
-        {/* Named as well as shown: an upside-down plate is not a label.
-            Outside the turning plane so it stays upright and legible. */}
-        <div
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none transition-opacity duration-base ease-out"
-          style={{ opacity: isFlipped && showReversed ? 1 : 0, transitionDelay: isFlipped ? `${FLIP_MS - 140}ms` : '0ms' }}
-          aria-hidden={!(isFlipped && showReversed)}
-        >
-          <Tag tone="neutral" size="sm">
-            {t('home.ritualCards.reversed')}
-          </Tag>
-        </div>
+        {/* The orientation is named by the toggle above the card; the
+            plate stays upright, so nothing sits over it. */}
       </div>
 
       {/* Screen reader announcement for card reveal */}
       <div className="sr-only" aria-live="assertive" role="status">
-        {isFlipped && `Card revealed: ${card.name}, ${showReversed ? 'reversed' : 'upright'}. ${showReversed ? card.meaningReversed : card.meaningUpright}`}
+        {isFlipped &&
+          t('home.ritualCards.revealedAnnounce', {
+            defaultValue: 'Card revealed: {{name}}, {{orientation}}.',
+            name: card.name,
+            orientation: showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright'),
+          })}
       </div>
 
       {isFlipped && (
@@ -206,30 +208,35 @@ export function TarotFlipCard({
           <div className="flex items-center justify-center gap-2 pt-2">
             <button
               onClick={(e) => { e.stopPropagation(); onSave(); }}
-              aria-label={saved ? `Unsave ${card.name}` : `Save ${card.name}`}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-ui transition-[background-color,transform] duration-fast active:scale-95 ${
+              aria-label={
+                saved
+                  ? t('home.ritualCards.unsaveCard', { defaultValue: 'Remove {{name}} from saved', name: card.name })
+                  : t('home.ritualCards.saveCard', { defaultValue: 'Save {{name}}', name: card.name })
+              }
+              aria-pressed={saved}
+              className={`flex items-center gap-1.5 px-4 min-h-[44px] rounded-full text-ui transition-[background-color,transform] duration-fast active:scale-95 ${
                 saved
                   ? 'bg-gold/20 text-gold'
                   : 'bg-mystic-800 text-mystic-300 hover:bg-mystic-700'
               }`}
             >
-              {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+              {saved ? <BookmarkCheck className="w-4 h-4" aria-hidden /> : <Bookmark className="w-4 h-4" aria-hidden />}
               {t('home.ritualCards.save')}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onShare(); }}
-              aria-label={`Share ${card.name}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-ui bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-[background-color,transform] duration-fast active:scale-95"
+              aria-label={t('home.ritualCards.shareCard', { defaultValue: 'Share {{name}}', name: card.name })}
+              className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full text-ui bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-[background-color,transform] duration-fast active:scale-95"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4" aria-hidden />
               {t('home.ritualCards.share')}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onMeaning(); }}
-              aria-label={`View meaning of ${card.name}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-ui bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-[background-color,transform] duration-fast active:scale-95"
+              aria-label={t('home.ritualCards.meaningOf', { defaultValue: 'Read the meaning of {{name}}', name: card.name })}
+              className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full text-ui bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-[background-color,transform] duration-fast active:scale-95"
             >
-              <HelpCircle className="w-4 h-4" />
+              <HelpCircle className="w-4 h-4" aria-hidden />
               {t('home.ritualCards.meaning')}
             </button>
           </div>

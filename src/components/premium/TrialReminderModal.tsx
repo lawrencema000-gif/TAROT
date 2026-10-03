@@ -83,9 +83,14 @@ export function TrialReminderModal() {
   // close button, the CTA and "Not now" in turn, and nothing behind.
   const { isTop } = useFocusTrap(panelRef, open && !showPaywall, { initialFocus: panelRef });
 
+  // The timer keys on primitives, not on the profile object: the profile is
+  // re-read during a session (balance, XP, streak), and every new object
+  // restarted the thirty seconds, so on a busy screen the reminder kept
+  // slipping instead of waiting for the surface to be free.
+  const signedIn = Boolean(user && profile);
+  const isPremium = profile?.isPremium === true;
   useEffect(() => {
-    if (!user || !profile) return;
-    if (profile.isPremium) return;
+    if (!signedIn || isPremium) return;
     try {
       if (sessionStorage.getItem(SESSION_KEY) === '1') return;
     } catch {
@@ -109,7 +114,7 @@ export function TrialReminderModal() {
     timer = window.setTimeout(attempt, SHOW_AFTER_MS);
 
     return () => window.clearTimeout(timer);
-  }, [user, profile]);
+  }, [signedIn, isPremium]);
 
   // Read the yearly plan so the copy can quote the live price and the real
   // trial length. Starts with the timer above, so it has 30s to land.

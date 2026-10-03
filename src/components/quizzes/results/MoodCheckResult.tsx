@@ -29,7 +29,7 @@ export function MoodCheckResult({ quiz, result, onBack, onRetake }: QuizResultVi
   const info = moodDescriptions[result.overallMood];
   if (!info) return <StaleResult quiz={quiz} onBack={onBack} onRetake={onRetake} />;
 
-  const verdictKey = result.overallMood;
+  const verdictKey = result.overallMood.toLowerCase();
   const label = t(`quizzes.mood.${verdictKey}.label`, { defaultValue: result.overallMood });
   const copy = (field: keyof typeof info, fallback: string) => t(`quizzes.mood.${verdictKey}.${field}`, { defaultValue: fallback });
   const need = result.need ?? 'balance';
@@ -64,7 +64,7 @@ export function MoodCheckResult({ quiz, result, onBack, onRetake }: QuizResultVi
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
           <ResultSection title={section('yourDimensions', 'Your dimensions')}>
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {MOOD_DIMENSIONS.map((dim) => (
                 <ScoreRow
                   key={dim}

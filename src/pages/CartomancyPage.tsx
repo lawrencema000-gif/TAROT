@@ -122,20 +122,21 @@ export function CartomancyPage() {
               size="lg"
               icon={<SpreadGlyph layout={glyphLayout(s)} />}
               tone="gold"
-              label={s.name}
-              meta={
-                !s.free && !profile?.isPremium ? (
-                  <>
-                    <Badge tone="violet" className="mr-2 align-middle">
+              // The name may take two lines ("Three Cards: Past, Present,
+              // Future" does at 390); the description is held to two.
+              label={
+                <span className="whitespace-normal">
+                  {s.name}
+                  {!s.free && !profile?.isPremium && (
+                    // A plain space, not a margin: when the badge wraps it starts the line flush.
+                    <>{' '}<Badge tone="violet" className="align-middle">
                       <Lock className="w-3 h-3" aria-hidden />
                       {t('cartomancy.reading.premium', { defaultValue: 'Premium' })}
-                    </Badge>
-                    {s.shortDescription}
-                  </>
-                ) : (
-                  s.shortDescription
-                )
+                    </Badge></>
+                  )}
+                </span>
               }
+              meta={<span className="line-clamp-2">{s.shortDescription}</span>}
               onClick={() => navigate(`/cartomancy/reading?spread=${s.slug}`)}
             />
           ))}
@@ -158,7 +159,7 @@ export function CartomancyPage() {
               icon={<span className="text-ui font-semibold tabular-nums">{lesson.order}</span>}
               tone={done.has(lesson.slug) ? 'teal' : 'neutral'}
               label={lesson.title}
-              meta={lesson.lede}
+              meta={<span className="line-clamp-2">{lesson.lede}</span>}
               trailing={done.has(lesson.slug) ? <Check className="w-5 h-5 text-teal" aria-label={t('cartomancy.guide.done', { defaultValue: 'Done' })} /> : 'chevron'}
               onClick={() => navigate(`/cartomancy/guide/${lesson.slug}`)}
             />

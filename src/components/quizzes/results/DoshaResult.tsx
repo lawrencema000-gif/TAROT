@@ -65,7 +65,7 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
           <ResultSection title={t('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}>
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {DOSHAS.map((d) => (
                 <ScoreRow
                   key={d}

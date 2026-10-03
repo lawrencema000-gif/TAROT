@@ -35,12 +35,12 @@ export function BigFiveResult({ quiz, result, onBack, onRetake }: QuizResultView
   const share = useQuizShare();
   const section = (key: string, fallback: string) => t(`quizzes.resultSections.${key}`, { defaultValue: fallback });
 
-  const traitName = (trait: string) =>
-    trait === 'neuroticism'
-      ? section('emotionalStability', 'Emotional stability')
-      : tResultCopy(`bigFive.${trait}.fullName`, bigFiveDescriptions[trait].fullName);
+  // The neuroticism score runs toward sensitivity, so it is named for that
+  // pole. (It used to be headed "Emotional stability", which read a high
+  // neuroticism score as high stability.)
+  const traitName = (trait: string) => tResultCopy(`bigFive.${trait}.fullName`, bigFiveDescriptions[trait].fullName);
   const letters = TRAITS.map((k) => `${bigFiveDescriptions[k].name} ${result[k] ?? 50}`).join(' · ');
-  const title = section('bigFiveProfile', 'Your Big Five profile');
+  const title = section('bigFiveProfile', 'Big Five profile');
 
   return (
     <ResultLayout

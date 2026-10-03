@@ -143,7 +143,12 @@ export function PaperBar({
   );
 }
 
-/** name · bar · number, one dimension of a score distribution. */
+/**
+ * One dimension of a score distribution: name and number on one line, the
+ * bar under them. Stacked rather than side by side so a long result name
+ * ("Machiavellian Shadow") wraps instead of truncating at 390px, and so the
+ * rows read the same as the attachment axes.
+ */
 export function ScoreRow({
   name,
   value,
@@ -161,11 +166,13 @@ export function ScoreRow({
   icon?: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      {icon && <span className="inline-flex w-5 shrink-0 justify-center text-ink-2 [&>svg]:h-5 [&>svg]:w-5" aria-hidden>{icon}</span>}
-      <span className={`min-w-0 flex-1 truncate text-ui ${emphasis ? 'font-semibold text-ink' : 'text-ink-2'}`}>{name}</span>
-      <PaperBar value={value} max={max} label={name} emphasis={emphasis} className="flex-1 max-w-[160px]" />
-      <span className="w-9 shrink-0 text-right text-meta tabular-nums text-ink-muted">{display ?? value}</span>
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-3">
+        {icon && <span className="inline-flex w-5 shrink-0 justify-center text-ink-2 [&>svg]:h-5 [&>svg]:w-5" aria-hidden>{icon}</span>}
+        <span className={`min-w-0 flex-1 text-ui ${emphasis ? 'font-semibold text-ink' : 'text-ink-2'}`}>{name}</span>
+        <span className="shrink-0 text-right text-meta tabular-nums text-ink-muted">{display ?? value}</span>
+      </div>
+      <PaperBar value={value} max={max} label={name} emphasis={emphasis} />
     </div>
   );
 }

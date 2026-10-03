@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { DeckLibrary, type DeckFilter } from '../components/readings/DeckLibrary';
+import { PageHeader } from '../components/ui';
 import { fullDeck } from '../data/tarotDeck';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
@@ -27,6 +29,7 @@ export function TarotMeaningsPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const locale = getLocale();
+  const { user } = useAuth();
 
   useEffect(() => {
     setPageMeta(t('tarot.pageTitle'), t('tarot.pageDesc'));
@@ -39,16 +42,24 @@ export function TarotMeaningsPage() {
   const open = (card: TarotCard) => navigate(`/tarot-meanings/${slugFromCardId(card.id)}`);
 
   return (
-    <div className="tm-page py-6 sm:py-10">
+    <div className="tm-page py-6 sm:py-10 space-y-4">
+      <PageHeader
+        eyebrow={t('tarot.deckCount', { defaultValue: '78 cards' })}
+        title={t('tarot.libraryTitle', { defaultValue: 'Card meanings' })}
+      />
       <DeckLibrary
         cards={localizedDeck}
         onSelect={open}
-        showHeader
         initialFilter={initialFilter}
         footer={
           <div className="tm-bottom-cta">
             <p className="tm-bottom-text">{t('tarot.bottomText')}</p>
-            <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
+            {/* A visitor is offered a free reading; a signed-in reader goes to the table. */}
+            {user ? (
+              <Link to="/readings" className="tm-bottom-btn">{t('tarot.startReading', { defaultValue: 'Start a reading' })}</Link>
+            ) : (
+              <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
+            )}
           </div>
         }
       />

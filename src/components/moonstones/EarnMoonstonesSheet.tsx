@@ -279,7 +279,9 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
             </ListRowGroup>
           )}
 
-          {isSoftCap && (
+          {/* The soft cap is mostly met by Premium members, who need no
+              upsell to the plan they already hold. */}
+          {isSoftCap && !profile?.isPremium && (
             <ListRowGroup>
               <ListRow
                 icon={<Crown />}

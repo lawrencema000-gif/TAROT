@@ -110,9 +110,10 @@ Deno.serve(
       // with nothing in the envelope and only a stack in the logs, which is
       // how "Start your free trial" could fail silently for weeks (polish
       // R5 B-3). Stripe's error type/code/param are safe to return: they
-      // name the misconfiguration (an inactive product, a key without
-      // Checkout permission, a live price on a test key) without exposing
-      // anything secret, and the client shows generic copy either way.
+      // name the class of misconfiguration without exposing anything. The
+      // raw Stripe message (which can describe the merchant account's
+      // state, e.g. "Your account cannot currently make live charges")
+      // goes to the log only; the client shows generic copy either way.
       let session: Stripe.Checkout.Session;
       try {
         session = await stripe.checkout.sessions.create({
@@ -157,7 +158,6 @@ Deno.serve(
             stripeType: err?.type ?? null,
             stripeCode: err?.code ?? null,
             stripeParam: err?.param ?? null,
-            stripeMessage: String(err?.message ?? "").slice(0, 300) || null,
           },
         );
       }

@@ -31,7 +31,8 @@
     "ziwei": "紫微斗数",
     "mansions": "二十八宿",
     "goodDays": "吉日を選ぶ",
-    "wishingSky": "願いの星空"
+    "wishingSky": "願いの星空",
+    "cartomancy": "トランプ"
   },
   "actions": {
     "continue": "続ける",
@@ -44,7 +45,8 @@
     "shareFailed": "共有できませんでした。もう一度お試しください。",
     "loading": "読み込み中…",
     "send": "送信",
-    "refresh": "更新"
+    "refresh": "更新",
+    "back": "戻る"
   },
   "labels": {
     "email": "メールアドレス",
@@ -112,7 +114,8 @@
     "fieldRequired": "この項目は必須です。",
     "tooShort": "短すぎます。",
     "tooLong": "長すぎます。",
-    "invalidValue": "この値は無効です。"
+    "invalidValue": "この値は無効です。",
+    "sessionExpired": "セッションの有効期限が切れました。もう一度ログインしてください"
   },
   "toast": {
     "languageChanged": "言語を変更しました。"
@@ -134,5 +137,23 @@
   },
   "sheet": {
     "panel": "パネル"
+  },
+  "disclaimer": {
+    "label": "免責事項",
+    "lead": {
+      "tarot": "タロットにも答えられないことはあります。",
+      "astrology": "占星術は予報ではなく、ひとつのレンズです。",
+      "quiz": "診断は判定ではなく、鏡です。",
+      "ai": "このリーディングはAIモデルが書いたものです。",
+      "cartomancy": "カードは示唆するもので、決めるものではありません。",
+      "general": "助言ではなく、内省のためのものです。"
+    },
+    "body": "Arcanaのリーディングは、内省とエンターテインメントのためのものです。医療、法律、金融、心理に関する助言ではありません。"
+  },
+  "affirmation": {
+    "label": "アファメーション"
+  },
+  "resultSheet": {
+    "summaryHeading": "リーディングのまとめ"
   }
 }

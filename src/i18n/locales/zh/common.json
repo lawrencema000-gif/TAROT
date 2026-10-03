@@ -31,7 +31,8 @@
     "ziwei": "紫微斗數",
     "mansions": "二十八宿",
     "goodDays": "择日",
-    "wishingSky": "許願星空"
+    "wishingSky": "許願星空",
+    "cartomancy": "扑克牌"
   },
   "actions": {
     "continue": "继续",
@@ -44,7 +45,8 @@
     "shareFailed": "分享失败，请重试。",
     "loading": "加载中…",
     "send": "发送",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "back": "返回"
   },
   "labels": {
     "email": "邮箱",
@@ -112,7 +114,8 @@
     "fieldRequired": "此项为必填。",
     "tooShort": "内容过短。",
     "tooLong": "内容过长。",
-    "invalidValue": "此值无效。"
+    "invalidValue": "此值无效。",
+    "sessionExpired": "登录已过期，请重新登录"
   },
   "toast": {
     "languageChanged": "已切换语言。"
@@ -134,5 +137,23 @@
   },
   "sheet": {
     "panel": "面板"
+  },
+  "disclaimer": {
+    "label": "免责声明",
+    "lead": {
+      "tarot": "塔罗无法回答一切。",
+      "astrology": "占星是一种视角，不是预报。",
+      "quiz": "测试是一面镜子，不是定论。",
+      "ai": "这段解读由 AI 模型撰写。",
+      "cartomancy": "牌只是提示，不做决定。",
+      "general": "供你反思，而非建议。"
+    },
+    "body": "Arcana 的解读用于自我反思与娱乐，不构成医疗、法律、财务或心理方面的建议。"
+  },
+  "affirmation": {
+    "label": "肯定语"
+  },
+  "resultSheet": {
+    "summaryHeading": "解读摘要"
   }
 }

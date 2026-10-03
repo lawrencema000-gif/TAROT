@@ -31,7 +31,8 @@
     "ziwei": "자미두수",
     "mansions": "이십팔수",
     "goodDays": "택일",
-    "wishingSky": "소원의 별하늘"
+    "wishingSky": "소원의 별하늘",
+    "cartomancy": "트럼프 카드"
   },
   "actions": {
     "continue": "계속",
@@ -44,7 +45,8 @@
     "shareFailed": "공유하지 못했어요. 다시 시도해 주세요.",
     "loading": "불러오는 중…",
     "send": "보내기",
-    "refresh": "새로고침"
+    "refresh": "새로고침",
+    "back": "뒤로"
   },
   "labels": {
     "email": "이메일",
@@ -112,7 +114,8 @@
     "fieldRequired": "필수 항목이에요.",
     "tooShort": "너무 짧아요.",
     "tooLong": "너무 길어요.",
-    "invalidValue": "올바른 값이 아니에요."
+    "invalidValue": "올바른 값이 아니에요.",
+    "sessionExpired": "세션이 만료됐어요 — 다시 로그인해 주세요"
   },
   "toast": {
     "languageChanged": "언어가 변경되었습니다."
@@ -134,5 +137,23 @@
   },
   "sheet": {
     "panel": "패널"
+  },
+  "disclaimer": {
+    "label": "면책 고지",
+    "lead": {
+      "tarot": "타로가 모든 것에 답할 수는 없어요.",
+      "astrology": "점성술은 예보가 아니라 하나의 렌즈예요.",
+      "quiz": "퀴즈는 판정이 아니라 거울이에요.",
+      "ai": "이 리딩은 AI 모델이 작성했어요.",
+      "cartomancy": "카드는 암시할 뿐, 결정하지 않아요.",
+      "general": "조언이 아니라 성찰을 위한 내용이에요."
+    },
+    "body": "Arcana의 리딩은 자기 성찰과 엔터테인먼트를 위한 것이에요. 의료, 법률, 재무, 심리에 관한 조언이 아니에요."
+  },
+  "affirmation": {
+    "label": "확언"
+  },
+  "resultSheet": {
+    "summaryHeading": "리딩 요약"
   }
 }

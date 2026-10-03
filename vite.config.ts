@@ -2,6 +2,7 @@ import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { readFileSync } from 'node:fs';
+import { CJK_FONTS, CJK_FONT_CSS_BASE, CJK_FONT_CSS_SUFFIX } from './src/i18n/cjkFonts';
 
 // Emits dist/version.json at build time. Served with no-store via netlify.toml.
 function versionJsonPlugin(): Plugin {
@@ -55,8 +56,10 @@ const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z-]
 // Namespaces a route loads on demand. They must NOT be modulepreloaded with
 // the UI bundles: the four learn overlays are 25–60 KB gz each per locale,
 // and only a visitor who opens /astrology, /numerology, /glossary or
-// /crystals in that language should download the one that page reads.
-const ON_DEMAND_BUNDLE_RE = /^learn-/;
+// /crystals in that language should download the one that page reads. The
+// playing-card corpus (cartomancy.json, 40–60 KB gz) is the same: the
+// cartomancy screens fetch it (ensureCartomancyCorpus), the boot does not.
+const ON_DEMAND_BUNDLE_RE = /^(?:learn-|cartomancy$)/;
 
 // Starts the locale chunks downloading before the main bundle has parsed.
 //
@@ -95,7 +98,11 @@ function localePreloadPlugin(): Plugin {
           `(function(){try{var m=${JSON.stringify(byLocale)};` +
           `var q=new URLSearchParams(location.search).get('lang');var s=null;` +
           `try{s=localStorage.getItem('arcana_locale')}catch(e){}` +
-          `var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;` +
+          `var l=String(q||s||'').toLowerCase().split('-')[0];` +
+          // The locale's CJK sans stylesheet, the URL loadCjkFonts asks for later.
+          `var c=${JSON.stringify(CJK_FONTS)}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';` +
+          `k.href=${JSON.stringify(CJK_FONT_CSS_BASE)}+c+${JSON.stringify(CJK_FONT_CSS_SUFFIX)};document.head.appendChild(k)}` +
+          `var f=m[l];if(!f)return;` +
           `for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';` +
           `e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();`;
         // `<meta charset>` has to sit in the first 1024 bytes of the document

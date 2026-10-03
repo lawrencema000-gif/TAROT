@@ -275,7 +275,7 @@
       "premiumAI": "프리미엄 AI",
       "aiInterpretation": "AI 해석",
       "aiSubtitle": "당신의 카드와 프로필을 기반으로 한 맞춤형 통찰",
-      "showCardMeanings": "← 카드 의미 표시",
+      "showCardMeanings": "카드 의미 보기",
       "loveFocus": "사랑 포커스",
       "careerFocus": "커리어 포커스",
       "moneyFocus": "돈 포커스",
@@ -5925,7 +5925,11 @@
       "title": "레벨 업.",
       "level": "레벨",
       "newAbilities": "새로운 능력이 열렸어요",
-      "rank": "랭크"
+      "rank": "랭크",
+      "eyebrow": "레벨 업",
+      "levelN": "레벨 {{level}}",
+      "xpEarned": "+{{xp}} XP",
+      "continue": "계속"
     }
   },
   "pageTitles": {

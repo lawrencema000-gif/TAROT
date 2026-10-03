@@ -115,10 +115,10 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
 
           {/* Slide-up menu panel */}
           <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
-            <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-card overflow-hidden">
+            <div className="bg-mystic-800 border border-mystic-700/40 rounded-card overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-1 border-b border-mystic-700/30">
-                <span className="text-gold font-semibold text-sm tracking-wide">{t('nav.more')}</span>
+                <span className="text-gold font-semibold text-ui tracking-wide">{t('nav.more')}</span>
                 <button
                   onClick={() => setMoreOpen(false)}
                   className="min-h-[44px] min-w-[44px] -mr-3 flex items-center justify-center rounded-lg text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/40 transition-colors"
@@ -204,15 +204,13 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
       )}
 
       {/* Bottom navigation bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom" aria-label="Main navigation" role="tablist">
-        {/* Hairline gold separator above the bar — replaces the previous
-            mystic-700 border for a more refined brand-line treatment.
-            Fades at the edges for a softer attachment to the page. */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/25 to-transparent" aria-hidden />
-        {/* Opaque: elevation is fill, and a blur over an opaque bar was a
-            compositing layer that hid nothing. The gold hairline above is
-            the bar's edge. */}
-        <div className="bg-mystic-900">
+      {/* The fill is on the <nav> itself, not an inner box: `.safe-bottom`
+          pads the nav by the gesture inset (16px at least), and with the
+          fill one level down that padding was transparent — a strip of the
+          page scrolled past underneath the tabs at 390px. Opaque, because
+          elevation is fill; the gold hairline on top is the bar's edge. */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom bg-mystic-900 border-t border-gold/20" aria-label="Main navigation" role="tablist">
+        <div>
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {
               const Icon = tab.icon;
@@ -241,7 +239,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   `}>
                     <Icon className="w-5 h-5 transition-all duration-slow" />
                   </div>
-                  <span className={`text-caption font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
+                  <span className={`bottom-nav-label text-caption font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
                     {t(tab.labelKey)}
                   </span>
                   {/* Active dot — small gold sparkle below the label,
@@ -277,7 +275,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               `}>
                 <MoreHorizontal className="w-5 h-5 transition-all duration-slow" />
               </div>
-              <span className={`text-caption font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
+              <span className={`bottom-nav-label text-caption font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
                 {t('nav.more')}
               </span>
               {(isMoreActive || moreOpen) && (

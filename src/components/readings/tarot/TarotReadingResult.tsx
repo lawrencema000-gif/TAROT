@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
-import { ResultSheet, Tag, KeywordRow, ReadingProse, AffirmationPanel } from '../../ui';
+import { ResultSheet, Tag, KeywordRow, ReadingProse, AffirmationPanel, Disclosure } from '../../ui';
 import { SUIT_GLYPHS, suitKeyFor } from '../../icons/SuitGlyphs';
 import { useT } from '../../../i18n/useT';
 import type { TarotCard } from '../../../types';
 import type { FocusArea } from './types';
-import { PaperDisclosure } from './PaperDisclosure';
 import {
   affirmationFor,
   focusMeaningFor,
@@ -108,7 +107,7 @@ export function TarotReadingResult({
                 </div>
                 {short && <ReadingProse lede={false} text={short} className="mt-4" />}
                 {more && (
-                  <PaperDisclosure
+                  <Disclosure surface="paper" variant="row" lazy
                     className="mt-4"
                     label={t('readings.result.readFullMeaning', { defaultValue: 'Read the full meaning' })}
                   >
@@ -128,7 +127,7 @@ export function TarotReadingResult({
                         <blockquote className="reading-quote">{card.reflectionPrompt}</blockquote>
                       )}
                     </div>
-                  </PaperDisclosure>
+                  </Disclosure>
                 )}
               </section>
             );

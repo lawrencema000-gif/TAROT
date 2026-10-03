@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
-import { apiCall, ApiError, ApiContractError } from '../lib/apiClient';
+import { apiCall, ApiError, ApiContractError, handleSessionExpired } from '../lib/apiClient';
 import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
 
@@ -139,6 +139,9 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
             });
             if (!retry.ok) {
               const text = await retry.text();
+              // Still 401 with a fresh token: the session is gone. Same
+              // handling as apiCall (one toast, sign out), not a silent card.
+              if (retry.status === 401) void handleSessionExpired();
               throw new AstroCallError('HTTP', text, retry.status);
             }
             return retry.json();
@@ -148,6 +151,8 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
         }
       }
       const text = await res.text();
+      // 401 and the refresh produced no session: expired.
+      if (res.status === 401) void handleSessionExpired();
       throw new AstroCallError('HTTP', text, res.status);
     }
     return res.json();

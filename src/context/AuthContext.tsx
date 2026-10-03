@@ -855,11 +855,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // specific accounts, and find affected sessions for replay. We
       // include only id + email — never names or PII beyond what's
       // already in the profile.
-      import('@sentry/react').then((Sentry) => {
+      // Destructured so Rollup can see which exports are used (see main.tsx).
+      import('@sentry/react').then(({ setUser: setSentryUser }) => {
         if (session?.user) {
-          Sentry.setUser({ id: session.user.id, email: session.user.email });
+          setSentryUser({ id: session.user.id, email: session.user.email });
         } else {
-          Sentry.setUser(null);
+          setSentryUser(null);
         }
       }).catch(() => undefined);
 
@@ -1423,14 +1424,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // them" work on Sentry events. Clearing on sign-out prevents leakage across
   // accounts on shared devices.
   useEffect(() => {
-    import('@sentry/react').then((Sentry) => {
+    import('@sentry/react').then(({ setUser: setSentryUser }) => {
       if (user) {
-        Sentry.setUser({
+        setSentryUser({
           id: user.id,
           email: user.email ?? undefined,
         });
       } else {
-        Sentry.setUser(null);
+        setSentryUser(null);
       }
     }).catch(() => { /* Sentry not initialized / offline */ });
   }, [user]);

@@ -6,6 +6,7 @@ import { getSpreadBySlug, getSpreadLayout, type SpreadLayoutPosition } from '../
 import { SPREAD_LAYOUTS, type SpreadGlyphId } from '../../icons/SpreadGlyph';
 import { getAllTarotCards } from '../../../services/tarotCards';
 import { localizeCardNameSync } from '../../../i18n/localizeCard';
+import { localizePlayingCard } from '../../../i18n/localizePlayingCard';
 import { useT } from '../../../i18n/useT';
 import type { TarotCard } from '../../../types';
 import type { PlayingCard } from '../../../types/cartomancy';
@@ -41,6 +42,8 @@ export interface SavedReadingRow {
   focus_area: string | null;
   cards: SavedCardRow[];
   interpretation?: string | null;
+  /** The question typed on the focus step, when one was (rows saved before 2026-10 have none). */
+  question?: string | null;
 }
 
 const LEGACY_NAME_KEY: Record<string, string> = {
@@ -81,6 +84,10 @@ export function savedSpreadLayout(spreadType: string, count: number): SpreadLayo
   if (catalogue && catalogue.cardCount === count) return getSpreadLayout(catalogue);
   const cols = count <= 3 ? Math.max(1, count) : 3;
   return Array.from({ length: count }, (_, i) => ({ x: i % cols, y: Math.floor(i / cols) }));
+}
+
+function localizeIfFound(card: PlayingCard | undefined): PlayingCard | undefined {
+  return card ? localizePlayingCard(card) : undefined;
 }
 
 /** The reveal's table rule: the layout on a grid, doubled for half-cells. */
@@ -129,6 +136,8 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
   const focus = (reading.focus_area as FocusArea | null) ?? null;
   const focusLabel = focus ? t(`readings.focusAreas.${focus.toLowerCase()}`, { defaultValue: focus }) : '';
   const metaLine = [focusLabel, dateLabel].filter(Boolean).join(' · ');
+  // The question titles the reading, as it did on the live reveal.
+  const question = reading.question?.trim() || null;
   // More than three cards across: faces too narrow for a name on the plate (as in the reveal).
   const dense = layout.length > 0 && Math.max(...layout.map((p) => p.x)) - Math.min(...layout.map((p) => p.x)) + 1 > 3;
 
@@ -144,7 +153,8 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
 
   if (playing) {
     const cards = rows.map((row) => ({
-      card: (row.cardId !== undefined ? getPlayingCard(row.cardId) : undefined) as PlayingCard | undefined,
+      // The caller (LibrarySection) holds this sheet until the corpus is in.
+      card: (row.cardId !== undefined ? localizeIfFound(getPlayingCard(row.cardId)) : undefined) as PlayingCard | undefined,
       row,
     }));
     const ai = reading.interpretation ? splitLede(reading.interpretation) : null;
@@ -171,8 +181,8 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
           }}
         </Table>
         <ResultSheet
-          eyebrow={focusLabel || spreadName}
-          title={spreadName}
+          eyebrow={question ? t('readings.result.yourQuestion', { defaultValue: 'Your question' }) : focusLabel || spreadName}
+          title={question ?? spreadName}
           summary={ai ? ai.lede : undefined}
           headingLevel="h2"
           disclaimer={ai ? 'ai' : 'cartomancy'}
@@ -240,6 +250,7 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
           cards={ready.map((r) => ({ card: r.card, reversed: r.row.reversed }))}
           getPositionLabel={(i) => ready[i]?.row.position ?? ''}
           selectedFocus={focus}
+          question={question}
           eyebrow={focusLabel || spreadName}
           title={spreadName}
           aiInterpretation={reading.interpretation ?? null}

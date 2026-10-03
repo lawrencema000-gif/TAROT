@@ -52,6 +52,7 @@ import {
   type CartoSettings,
   type DealtCard,
 } from './cartoFlow';
+import { CartomancyCorpusGate } from './CartomancyCorpusGate';
 
 /*
  * The playing-card reading flow: home (pick a spread) → focus and question →
@@ -94,7 +95,7 @@ function glyphLayout(spread: CartoSpread): SpreadGlyphPosition[] {
   return layout.cells.map((c) => ({ x: c.span && c.span > 1 ? 0.5 : c.col, y: c.row }));
 }
 
-export function CartomancySection({ onShowPaywall, initialSpread = null, onExit }: CartomancySectionProps) {
+function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: CartomancySectionProps) {
   const { t } = useT('app');
   const navigate = useNavigate();
   const locale = getLocale();
@@ -408,6 +409,7 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
       focusArea: selectedFocus,
       cards: toSavedCards(drawnCards, getPositionLabel),
       interpretation: aiInterpretation ?? undefined,
+      question: question.trim() || undefined,
       saved: true,
     });
     if (!res.ok) {
@@ -643,5 +645,18 @@ export function CartomancySection({ onShowPaywall, initialSpread = null, onExit 
       )}
       {AiEarnSheet}
     </>
+  );
+}
+
+/**
+ * The playing-card reading flow, once the corpus for the active locale is
+ * loaded (English: at once). The card text, spreads and the share card all
+ * read it, so nothing below renders before it lands.
+ */
+export function CartomancySection(props: CartomancySectionProps) {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancySectionBody {...props} />
+    </CartomancyCorpusGate>
   );
 }

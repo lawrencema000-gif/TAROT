@@ -13,6 +13,7 @@ import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { localizePlayingCard } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy/cards — the library: a filter, suit tabs, and the faces in a
@@ -33,7 +34,7 @@ function suitIcon(suit: PlayingSuit): ComponentType<{ className?: string }> {
 
 const SUIT_ICONS = Object.fromEntries(PLAYING_SUITS.map((s) => [s, suitIcon(s)])) as Record<PlayingSuit, ComponentType<{ className?: string }>>;
 
-export function CartomancyCardsPage() {
+function CartomancyCardsPageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -152,5 +153,14 @@ export function CartomancyCardsPage() {
         {detail && <CartomancyCardDetail card={detail} localize={localize} sequence={shown.length > 1 ? shown : undefined} onNavigate={setDetail} />}
       </Sheet>
     </Page>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyCardsPage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyCardsPageBody />
+    </CartomancyCorpusGate>
   );
 }

@@ -798,6 +798,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       // (it's the expensive, non-reproducible part — local focus/traditional
       // text is re-derived deterministically). Omitted when none was generated.
       interpretation: aiInterpretation ?? undefined,
+      question: question.trim() || undefined,
       saved: true,
     });
 
@@ -861,7 +862,9 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       const raw = error instanceof Error ? error.message : '';
       const errorMessage = raw.includes('INSUFFICIENT_BALANCE')
         ? t('readings.toasts.aiInsufficient', { defaultValue: 'Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.' })
-        : raw.includes('AI_SOFT_CAP') || raw.includes('AI_DAILY_LIMIT')
+        : // generate-reading answers 429 DAILY_LIMIT_REACHED with the message
+          // "Daily reading limit reached" — the same mapping as CartomancySection.
+          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit/i.test(raw)
           ? t('readings.toasts.aiLimit', { defaultValue: 'You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.' })
           : t('readings.toasts.aiFailed', { defaultValue: 'Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.' });
       toast(errorMessage, 'error');

@@ -18,6 +18,7 @@ import { localizeCartoLesson, localizeCartoSpread, localizePlayingCard } from '.
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { localDateStr } from '../utils/localDate';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy — the hub of the playing-card section.
@@ -38,7 +39,7 @@ function glyphLayout(spread: CartoSpread): SpreadGlyphPosition[] {
   return layout.cells.map((c) => ({ x: c.span && c.span > 1 ? 0.5 : c.col, y: c.row }));
 }
 
-export function CartomancyPage() {
+function CartomancyPageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -190,5 +191,14 @@ export function CartomancyPage() {
         {detail && <CartomancyCardDetail card={detail.card} reversed={detail.reversed} localize={localize} onNavigate={(card) => setDetail({ card, reversed: false })} />}
       </Sheet>
     </Page>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyPage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyPageBody />
+    </CartomancyCorpusGate>
   );
 }

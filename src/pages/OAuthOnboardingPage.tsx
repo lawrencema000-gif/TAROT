@@ -109,7 +109,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const [step, setStep] = useState(() => firstIncompleteStep(seedFromProfile(profile)));
   const [loading, setLoading] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
-  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, search: geoSearch, usedFallback: geoApprox } = useGeocode();
   const [showGeoResults, setShowGeoResults] = useState(false);
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Attribution runs while the reveal is on screen; Begin awaits it.
@@ -378,6 +378,10 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                       ))}
                     </div>
                   )}
+                  {/* The search fell back to the offline city list: say so, without blocking. */}
+                  {geoApprox && (data.birthLat !== undefined || (showGeoResults && geoResults.length > 0)) && (
+                    <p className="text-meta text-mystic-400 mt-1.5">{t('app:horoscope.onboarding.approxLocation', { defaultValue: 'Using an approximate location — the nearest city we could match.' })}</p>
+                  )}
                   <p className="text-caption text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
                 </div>
               </div>
@@ -502,9 +506,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
       <div className="p-6 flex gap-3 safe-bottom">
         {step > 0 && step !== REVEAL && (
-          <Button size="lg" variant="ghost" onClick={prevStep} >
+          // One line at 360px: the label is short and the button never
+          // shrinks or wraps; the gold button takes the rest of the row.
+          <Button size="lg" variant="ghost" onClick={prevStep} className="shrink-0 whitespace-nowrap">
             <ChevronLeft className="w-4 h-4" aria-hidden />
-            {t('oauth.back', { defaultValue: 'Previous step' })}
+            {t('oauth.back', { defaultValue: 'Back' })}
           </Button>
         )}
         <Button size="lg"

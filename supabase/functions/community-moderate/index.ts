@@ -32,6 +32,7 @@
 
 import { handler, AppError } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
+import { detectCrisis } from "../_shared/crisis.ts";
 
 const RequestSchema = z.object({
   content: z.string().min(1).max(5000),
@@ -67,29 +68,9 @@ interface ModerationResponse {
   };
 }
 
-// ---------------------------------------------------------------
-// Crisis keywords — curated to catch self-harm ideation with low
-// false-positive rate. Tuned for short community posts.
-// ---------------------------------------------------------------
-const CRISIS_PATTERNS: RegExp[] = [
-  /\b(i\s+(want|am\s+going|plan|need|have\s+to)\s+(to\s+)?(kill|end|hurt|harm)\s+(myself|me))\b/i,
-  /\b(suicid(e|al))\b/i,
-  /\b(end\s+(my|it\s+all|everything))\b/i,
-  /\b(no\s+(reason|point)\s+(to\s+)?(live|living|be\s+here))\b/i,
-  /\b(better\s+off\s+(dead|without\s+me|gone))\b/i,
-  /\b(can't\s+(do\s+this|go\s+on|keep\s+going)\s+anymore)\b/i,
-  /\b(want\s+to\s+die)\b/i,
-  /\b(ending\s+my\s+life)\b/i,
-  /\b(take\s+my\s+(own\s+)?life)\b/i,
-  /\b(not\s+worth\s+living)\b/i,
-  /\b(self[- ]?harm)\b/i,
-  /\b(cutting\s+myself)\b/i,
-];
-
-function detectCrisis(text: string): boolean {
-  for (const re of CRISIS_PATTERNS) if (re.test(text)) return true;
-  return false;
-}
+// Crisis keywords live in ../_shared/crisis.ts (pure, so they can be tested
+// from Node): self-harm / suicide phrasings, both apostrophes, biased toward
+// a false positive over a miss.
 
 // OpenAI categories that ALWAYS block regardless of score — zero-tolerance.
 const HARD_BLOCK_CATEGORIES = new Set([
@@ -213,13 +194,18 @@ Deno.serve(handler<Request, ModerationResponse>({
 
     // Detect crisis first — this result is independent of OpenAI and
     // determines whether we surface resources regardless of other signals.
-    const crisis = detectCrisis(content);
+    const keywordCrisis = detectCrisis(content);
 
     // Run OpenAI Moderation. On unavailability we FAIL TO REVIEW (not
     // allow) — see classifyFromOpenAI. `screened=false` is logged so we
     // can alert on screening-outage spikes.
     const openAIOutcome = await runOpenAIModeration(content);
     const { verdict: openAIVerdict, categories, screened } = classifyFromOpenAI(openAIOutcome);
+    // A second net under the keywords: when the classifier hears self-harm
+    // intent in words the list does not know, the person still gets the
+    // resources (the keyword pass alone missed "I do not want to be alive
+    // anymore" until 2026-10-03).
+    const crisis = keywordCrisis || categories.some((c) => c === "self-harm" || c === "self-harm/intent");
     if (!screened) {
       ctx.log.warn("moderation.unscreened_failsafe_review", {
         reason: categories[0],

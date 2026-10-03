@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Brain, Loader2 } from 'lucide-react';
-import { Button, Chip, EyebrowLabel, KeywordRow, ReadingProse, ResultSheet, Tag } from '../ui';
+import { Button, Chip, EyebrowLabel, KeywordRow, ReadingProse, ResultSheet, Tag, Disclosure } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
 import { flipHaptics } from '../../utils/haptics';
@@ -12,7 +12,6 @@ import { PlayingCardFace } from './PlayingCardFace';
 import { SuitGlyph } from './SuitGlyph';
 import { CartomancyLayout, tileFor } from './CartomancyLayout';
 import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS, DEFAULT_BACK } from './FlipTile';
-import { PaperDisclosure } from './PaperDisclosure';
 import { cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
 
 /**
@@ -432,17 +431,15 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
                           </h3>
                         </div>
                       </div>
-                      <div className="[&>div]:justify-start">
-                        <KeywordRow keywords={card.keywords} />
-                      </div>
+                      <KeywordRow keywords={card.keywords} align="start" />
                       <p className="reading-copy">{short}</p>
                       {(full !== short || extra.length > 0) && (
-                        <PaperDisclosure label={t('cartomancy.result.readFull', { defaultValue: 'Read the full meaning' })}>
+                        <Disclosure surface="paper" variant="row" lazy label={t('cartomancy.result.readFull', { defaultValue: 'Read the full meaning' })}>
                           <div className="space-y-3">
                             {full !== short && <p className="reading-copy">{full}</p>}
                             {extra}
                           </div>
-                        </PaperDisclosure>
+                        </Disclosure>
                       )}
                     </section>
                   );

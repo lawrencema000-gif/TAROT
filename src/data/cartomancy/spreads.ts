@@ -31,7 +31,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
         meaning: "The subject (suit), the stage it is at (number) and, if a court card, the person involved. Read it as a lens, not a verdict.",
       },
     ],
-    readingMethod: "Read suit first, then number, then color. A Heart suggests the day's weather is emotional; a Club, practical; a Diamond, material or newsy; a Spade, demanding. Red leans yes and ease, black leans effort and care. If a court card appears, ask who in your life it describes.",
+    readingMethod: "Read suit first, then number, then color. A Heart suggests the day’s weather is emotional; a Club, practical; a Diamond, material or newsy; a Spade, demanding. Red leans yes and ease, black leans effort and care. If a court card appears, ask who in your life it describes.",
     exampleQuestions: ["What should I keep in mind today?", "What is the honest state of this situation?", "What is one thing I am not seeing?"],
     faqs: [
       {
@@ -424,7 +424,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
       { position: 20, name: "Future: soon", meaning: "The nearer part of that chapter." },
       { position: 21, name: "Future: further ahead", meaning: "The far horizon." },
     ],
-    readingMethod: "Begin with the spine, positions 4, 11 and 18: the root, the present and the resolution of the matter itself. Then read each row left to right as a story. Then read each column top to bottom to see how each territory of your life evolves. Only then look for combinations across the whole table: three or four of a kind, runs of one suit, a court card between two cards of its own suit (that person is central), the Nine of Hearts and whatever sits beside it, the Ace of Spades and whatever it touches. Count the suits: the majority is the season's subject; the minority is what is being neglected.",
+    readingMethod: "Begin with the spine, positions 4, 11 and 18: the root, the present and the resolution of the matter itself. Then read each row left to right as a story. Then read each column top to bottom to see how each territory of your life evolves. Only then look for combinations across the whole table: three or four of a kind, runs of one suit, a court card between two cards of its own suit (that person is central), the Nine of Hearts and whatever sits beside it, the Ace of Spades and whatever it touches. Count the suits: the majority is the season’s subject; the minority is what is being neglected.",
     exampleQuestions: ["What does the coming season hold for me?", "What is the whole shape of my life right now?", "What should I understand before this big change?"],
     faqs: [
       {
@@ -450,7 +450,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
     difficulty: "intermediate",
     durationMin: 15,
     free: false,
-    shortDescription: "Name a wish, lay nine cards, and look for the Nine of Hearts: the tradition's wish card, and what sits beside it.",
+    shortDescription: "Name a wish, lay nine cards, and look for the Nine of Hearts: the tradition’s wish card, and what sits beside it.",
     longDescription: "Every playing-card tradition in the English-speaking world agrees on one thing: the Nine of Hearts is the wish card. The Wish reading is built around that. You name a wish precisely, lay nine cards in three rows, and read what they say about the wish as it stands, what helps and hinders it, and how it unfolds. Then you look for the Nine of Hearts. Its presence suggests the wish is favored; a Spade beside it suggests a delay or a cost; its absence suggests the wish needs reshaping, or more time. The reading does not grant wishes. It shows you what the wish is made of.",
     bestFor: ["A specific wish you can say in one sentence", "Deciding whether to keep pursuing something", "New Moon intentions with a plain deck", "Learning to read the Nine of Hearts in context"],
     whenToUse: "When you have a real wish, not a vague hope, and are ready to hear what is in its way.",
@@ -508,7 +508,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
         meaning: "What you are left holding when the wish has run its course.",
       },
     ],
-    readingMethod: "Read the three rows as the wish, its conditions and its course. Then apply the wish-card rule. If the Nine of Hearts is among the nine, the wish is favored; the card to its right describes the wish's shape and the card to its left describes what it asks of you. If a Spade sits beside it, the wish is favored with a delay or a price, named by that Spade. If the Nine of Hearts is absent, count the Hearts and Spades: more Hearts suggests the wish is alive and needs tending, more Spades suggests it needs reshaping. The Ace of Spades or the Nine of Spades anywhere suggests not now, and the card beside it says why.",
+    readingMethod: "Read the three rows as the wish, its conditions and its course. Then apply the wish-card rule. If the Nine of Hearts is among the nine, the wish is favored; the card to its right describes the wish’s shape and the card to its left describes what it asks of you. If a Spade sits beside it, the wish is favored with a delay or a price, named by that Spade. If the Nine of Hearts is absent, count the Hearts and Spades: more Hearts suggests the wish is alive and needs tending, more Spades suggests it needs reshaping. The Ace of Spades or the Nine of Spades anywhere suggests not now, and the card beside it says why.",
     verdict: {
       kind: "wish",
       wishCard: "nine-of-hearts",
@@ -632,7 +632,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
     durationMin: 20,
     free: false,
     shortDescription: "Two pillars of three for you and the other person, and one card for the bond between you.",
-    longDescription: "The relationship reading of the playing deck lays two columns side by side, one for you and one for the other person, each with three cards: what each of you brings, what each of you needs, and what each of you fears. A seventh card sits beneath the two pillars for the bond itself, the thing that exists only when you are both in the room. It is built for a real, ongoing connection: a partner, a close friend, a parent, a colleague you must work with. Because court cards describe people, they are read with special care here; a King or Queen in the other person's column is a strong signal of how they are showing up.",
+    longDescription: "The relationship reading of the playing deck lays two columns side by side, one for you and one for the other person, each with three cards: what each of you brings, what each of you needs, and what each of you fears. A seventh card sits beneath the two pillars for the bond itself, the thing that exists only when you are both in the room. It is built for a real, ongoing connection: a partner, a close friend, a parent, a colleague you must work with. Because court cards describe people, they are read with special care here; a King or Queen in the other person’s column is a strong signal of how they are showing up.",
     bestFor: ["An existing relationship that feels stuck or unclear", "Before a hard conversation", "Friendships and family, not only romance", "Comparing what each of you needs"],
     whenToUse: "When the relationship is real and ongoing and you can name the other person. For a crush or a stranger, use the Wish or Yes or No instead.",
     layout: {
@@ -681,7 +681,7 @@ export const CARTO_SPREADS: CartoSpread[] = [
         meaning: "The relationship as a third thing. Its suit names what the bond is made of right now; its color names its warmth.",
       },
     ],
-    readingMethod: "Read the two pillars row by row, as pairs: what you each bring, need and fear. Matching suits in a row suggest you are aligned on that layer; opposite colors suggest friction there. Then read the bond card and ask whether it agrees with the pillars. A Heart bond under two Spade fears suggests warmth surviving a frightened season; a Spade bond under two Heart gifts suggests the connection is costing more than either of you admits. Court cards in the other person's column describe how they are showing up; in your column, who you are being.",
+    readingMethod: "Read the two pillars row by row, as pairs: what you each bring, need and fear. Matching suits in a row suggest you are aligned on that layer; opposite colors suggest friction there. Then read the bond card and ask whether it agrees with the pillars. A Heart bond under two Spade fears suggests warmth surviving a frightened season; a Spade bond under two Heart gifts suggests the connection is costing more than either of you admits. Court cards in the other person’s column describe how they are showing up; in your column, who you are being.",
     exampleQuestions: ["What is really going on between me and my partner?", "Why has this friendship felt off?", "What does each of us need that we are not saying?"],
     faqs: [
       {

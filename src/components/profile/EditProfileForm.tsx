@@ -42,7 +42,7 @@ interface EditProfileFormProps {
 export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
   const { t } = useT(['app', 'common']);
   const { profile, user, updateProfile, refreshProfile } = useAuth();
-  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch, usedFallback: geoApprox } = useGeocode();
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [saving, setSaving] = useState(false);
   const [showGeoResults, setShowGeoResults] = useState(false);
@@ -183,6 +183,11 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
               />
             ))}
           </ListRowGroup>
+        )}
+
+        {/* The search fell back to the offline city list: say so, without blocking. */}
+        {geoApprox && (located || (showGeoResults && geoResults.length > 0)) && (
+          <p className="text-meta text-mystic-400">{t('app:horoscope.onboarding.approxLocation', { defaultValue: 'Using an approximate location — the nearest city we could match.' })}</p>
         )}
 
         {form.birthPlace.length > 0 && form.birthPlace.length < 2 && (

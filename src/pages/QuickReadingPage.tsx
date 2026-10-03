@@ -1,18 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Share2, Send, AlertCircle, RefreshCw, KeyRound } from 'lucide-react';
-import {
-  Button,
-  Chip,
-  Page,
-  PageHeader,
-  ReadingProse,
-  ResultSheet,
-  Tag,
-  AffirmationPanel,
-  TarotFace,
-  toast,
-} from '../components/ui';
+import { Button, Chip, Page, PageHeader, ReadingProse, ResultSheet, AffirmationPanel, TarotFace, toast, KeywordRow } from '../components/ui';
 import { TarotCardIcon, PlayingCardIcon } from '../components/ui/NavIcons';
 import { PlayingCardFace } from '../components/cartomancy/PlayingCardFace';
 import { useT } from '../i18n/useT';
@@ -28,6 +17,7 @@ import { ALL_CARDS } from '../config/bundledImages';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getPlayingCard, getPlayingCardBySlug, PLAYING_CARDS_ALL } from '../data/cartomancy';
+import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import type { PlayingCard } from '../types/cartomancy';
 
 const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
@@ -162,6 +152,11 @@ export function QuickReadingPage() {
   // One id per attempt. It survives a failure so "Try again" is the same
   // request (and the same charge); it is cleared once a reading lands.
   const attemptId = useRef<string | null>(null);
+  // A drawn playing card's keywords come from the cartomancy corpus, which
+  // ja/ko/zh fetch on demand: start when the playing deck is picked.
+  const resultCard = result?.card;
+  const resultIsPlaying = !!resultCard && (resultCard.deck ?? (typeof resultCard.id === 'number' && resultCard.id >= 100 ? 'playing' : 'tarot')) === 'playing';
+  const cartoReady = useCartomancyCorpus(deck === 'playing' || resultIsPlaying);
 
   useEffect(() => {
     try {
@@ -284,9 +279,11 @@ export function QuickReadingPage() {
     const { summary, rest } = splitReading(result.reading);
     const card = result.card;
     const cardDeck: Deck = card?.deck ?? (card && typeof card.id === 'number' && card.id >= 100 ? 'playing' : 'tarot');
-    const playing = card && cardDeck === 'playing' ? playingCardFor(card) : undefined;
+    const playingEn = card && cardDeck === 'playing' ? playingCardFor(card) : undefined;
+    const playing = playingEn && cartoReady ? localizePlayingCard(playingEn) : playingEn;
     const tarotId = card && !playing ? tarotIdFor(card) : null;
-    const keywords = card ? (playing ? playing.keywords.slice(0, 4) : tarotKeywordsFor(card.name)) : [];
+    // Until the corpus is in, a playing card shows no keywords rather than English ones.
+    const keywords = card ? (playing ? (cartoReady ? playing.keywords.slice(0, 4) : []) : tarotKeywordsFor(card.name)) : [];
     const affirmation = card && !playing ? getEnrichment(card.name)?.affirmation : undefined;
     return (
       <Page spacing="md">
@@ -333,14 +330,8 @@ export function QuickReadingPage() {
                       </span>
                     )}
                   </h3>
-                  {keywords.length > 0 && (
-                    // Left-aligned beside the face (KeywordRow centres its pills).
-                    <div className="flex flex-wrap gap-2">
-                      {keywords.map((k) => (
-                        <Tag key={k} variant="keyword">{k}</Tag>
-                      ))}
-                    </div>
-                  )}
+                  {/* Left-aligned beside the face. */}
+                  {keywords.length > 0 && <KeywordRow keywords={keywords} align="start" />}
                 </div>
               </section>
             )}

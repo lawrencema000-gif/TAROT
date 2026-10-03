@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
-import { Button, Disclaimer, Page, PageHeader, Paper } from '../components/ui';
+import { Button, Disclaimer, Page, PageHeader, Paper, ListSkeleton } from '../components/ui';
 import { decodeReading, sharedDeck } from '../services/shareableReadings';
 import { fullDeck } from '../data/tarotDeck';
 import { getSpreadBySlug } from '../data/tarotSpreads';
@@ -14,7 +14,7 @@ import { getBundledFullPath } from '../config/bundledImages';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { localizeCard } from '../i18n/localizeCard';
-import { localizeCartoSpread, localizePlayingCard } from '../i18n/localizePlayingCard';
+import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { cartoPositionLabel, firstSentences } from '../components/cartomancy/cartoFlow';
 
 /**
@@ -47,9 +47,13 @@ export function SharedReadingPage() {
 
   const payload = useMemo(() => (token ? decodeReading(token) : null), [token]);
   const deck = payload ? sharedDeck(payload) : 'tarot';
+  // A playing-card reading reads the corpus, fetched on demand in ja/ko/zh.
+  const cartoReady = useCartomancyCorpus(deck === 'playing');
 
+  // Each memo reads the corpus through `cartoReady`: nothing is derived from
+  // a playing-card reading until its locale's corpus is in the store.
   const cards = useMemo<SharedCard[]>(() => {
-    if (!payload) return [];
+    if (!payload || (deck === 'playing' && !cartoReady)) return [];
     const out: SharedCard[] = [];
     for (const [id, reversedFlag] of payload.c) {
       const reversed = reversedFlag === 1;
@@ -62,24 +66,26 @@ export function SharedReadingPage() {
       }
     }
     return out;
-  }, [payload, deck, locale]);
+  }, [payload, deck, locale, cartoReady]);
 
   /** What each position is called: the spread's own names, else "Position n". */
   const positionLabel = useMemo(() => {
     const generic = (n: number) => t('readings.positions.generic', { index: n });
     if (!payload) return generic;
     if (deck === 'playing') {
+      if (!cartoReady) return generic;
       const spread = getCartoSpread(payload.s);
       const localized = spread ? localizeCartoSpread(spread, locale) : null;
       return (n: number) => cartoPositionLabel(localized, n - 1, generic);
     }
     const catalogue = getSpreadBySlug(payload.s);
     return (n: number) => catalogue?.positions[n - 1]?.name || generic(n);
-  }, [payload, deck, locale, t]);
+  }, [payload, deck, locale, t, cartoReady]);
 
   const spreadName = useMemo(() => {
     if (!payload) return '';
     if (deck === 'playing') {
+      if (!cartoReady) return '';
       const spread = getCartoSpread(payload.s);
       if (spread) return localizeCartoSpread(spread, locale).name;
     }
@@ -88,7 +94,7 @@ export function SharedReadingPage() {
     const catalogue = getSpreadBySlug(payload.s);
     if (catalogue) return catalogue.name;
     return payload.s.replace(/^carto-/, '').replace(/-/g, ' ');
-  }, [payload, deck, locale, t]);
+  }, [payload, deck, locale, t, cartoReady]);
 
   useEffect(() => {
     const title = payload
@@ -109,6 +115,16 @@ export function SharedReadingPage() {
           title="This reading link is invalid"
           subtitle="The link may be malformed or from an older version of the app."
         />
+      </Page>
+    );
+  }
+
+  if (deck === 'playing' && !cartoReady) {
+    return (
+      <Page className="max-w-2xl mx-auto py-6 sm:py-10">
+        <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+          <ListSkeleton count={3} />
+        </div>
       </Page>
     );
   }

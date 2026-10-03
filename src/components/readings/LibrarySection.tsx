@@ -12,7 +12,7 @@ import {
   Brain,
 } from 'lucide-react';
 import { TarotCardIcon, PlayingCardIcon } from '../ui/NavIcons';
-import { Card, Button, Chip, Tabs, Tag, Badge, Sheet, toast, ReadingProse, Paper } from '../ui';
+import { Card, Button, Chip, Tabs, Tag, Badge, Sheet, toast, ReadingProse, Paper, Skeleton, ListSkeleton } from '../ui';
 import { SpreadGlyph } from '../icons/SpreadGlyph';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
@@ -21,6 +21,7 @@ import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
 import { tArray } from '../../utils/tArray';
 import { CARTO_LESSONS, getPlayingCard } from '../../data/cartomancy';
+import { localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 import {
   SavedReadingSheet,
@@ -284,13 +285,17 @@ export function LibrarySection() {
     });
   };
 
+  // Saved playing-card readings name their cards from the cartomancy
+  // corpus, which ja/ko/zh fetch on demand: only when one is in the list.
+  const cartoReady = useCartomancyCorpus(tarotReadings.some((r) => isPlayingReading(r)));
+
   /** A saved reading's card names for its row: localized tarot names, or the playing cards' names. */
   const savedCardNames = (reading: TarotReading): string[] => {
     const playing = isPlayingReading(reading);
     return (reading.cards ?? []).map((c) => {
       if (playing) {
         const pc = c.cardId !== undefined ? getPlayingCard(c.cardId) : undefined;
-        return pc?.name ?? c.cardName;
+        return pc ? localizePlayingCard(pc).name : c.cardName;
       }
       return localizeCardNameSync(c.cardName);
     });
@@ -353,12 +358,14 @@ export function LibrarySection() {
                     const playing = isPlayingReading(reading);
                     const name = savedSpreadName(t, reading.spread_type);
                     const names = savedCardNames(reading);
+                    // A typed question titles the row, as it titled the reveal; the spread becomes its eyebrow.
+                    const asked = reading.question?.trim() || null;
                     return (
                       <Card key={reading.id} padding="md" className="flex items-start gap-3">
                         <button
                           type="button"
                           onClick={() => setSelectedTarot(reading)}
-                          aria-label={t('library.openReading', { defaultValue: 'Open {{name}} from {{date}}', name, date: formatDate(reading.date) })}
+                          aria-label={t('library.openReading', { defaultValue: 'Open {{name}} from {{date}}', name: asked ?? name, date: formatDate(reading.date) })}
                           className="flex-1 min-w-0 flex items-start gap-3 text-left rounded-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
                         >
                           <span className="w-12 h-12 shrink-0 rounded-inset bg-mystic-800 text-gold inline-flex items-center justify-center" aria-hidden>
@@ -369,18 +376,25 @@ export function LibrarySection() {
                             )}
                           </span>
                           <span className="flex-1 min-w-0 block">
-                            <span className="flex items-center gap-2 mb-1 min-w-0">
-                              <span className="text-ui font-medium text-mystic-100 truncate">{name}</span>
+                            {/* Asked: the spread and focus become the eyebrow line and the
+                                question takes the title's full width (two lines at most). */}
+                            <span className={`flex items-center gap-2 min-w-0 ${asked ? 'mb-0.5' : 'mb-1'}`}>
+                              <span className={asked ? 'text-meta text-mystic-400 truncate' : 'text-ui font-medium text-mystic-100 truncate'}>{name}</span>
                               {reading.focus_area && (
                                 <Tag tone="neutral" size="sm">
                                   {t(`readings.focusAreas.${reading.focus_area.toLowerCase()}`, { defaultValue: reading.focus_area })}
                                 </Tag>
                               )}
                             </span>
-                            <span className="block text-meta text-mystic-400 line-clamp-1">
-                              {names.slice(0, 3).map((n, i) => `${n}${reading.cards[i]?.reversed ? ' (R)' : ''}`).join(', ')}
-                              {names.length > 3 && ` +${names.length - 3}`}
-                            </span>
+                            {asked && <span className="mb-1 text-ui font-medium text-mystic-100 line-clamp-2">{asked}</span>}
+                            {playing && !cartoReady ? (
+                              <Skeleton variant="text" className="block h-4 w-2/3 my-0.5" />
+                            ) : (
+                              <span className="text-meta text-mystic-400 line-clamp-1">
+                                {names.slice(0, 3).map((n, i) => `${n}${reading.cards[i]?.reversed ? ' (R)' : ''}`).join(', ')}
+                                {names.length > 3 && ` +${names.length - 3}`}
+                              </span>
+                            )}
                             <span className="mt-1 flex items-center gap-1 text-meta text-mystic-500">
                               <Calendar className="w-3 h-3" aria-hidden />
                               {formatDate(reading.date)}
@@ -552,11 +566,11 @@ export function LibrarySection() {
                             </Tag>
                           )}
                         </span>
-                        <span className="block text-meta text-mystic-400 line-clamp-1">
+                        <span className="text-meta text-mystic-400 line-clamp-1">
                           {reading.cards.slice(0, 3).map((card) => `${card.name}${card.reversed ? ' (R)' : ''}`).join(', ')}
                           {reading.cards.length > 3 && ` +${reading.cards.length - 3}`}
                         </span>
-                        <span className="block text-meta text-mystic-400 line-clamp-2 mt-1">
+                        <span className="text-meta text-mystic-400 line-clamp-2 mt-1">
                           {reading.content.slice(0, 150)}…
                         </span>
                         <span className="mt-1 flex items-center gap-1 text-meta text-mystic-500">
@@ -669,7 +683,15 @@ export function LibrarySection() {
         onClose={() => setSelectedTarot(null)}
         title={selectedTarot ? savedSpreadName(t, selectedTarot.spread_type) : undefined}
       >
-        {selectedTarot && <SavedReadingSheet reading={selectedTarot} dateLabel={formatDate(selectedTarot.date)} />}
+        {selectedTarot && (
+          isPlayingReading(selectedTarot) && !cartoReady ? (
+            <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+              <ListSkeleton count={2} />
+            </div>
+          ) : (
+            <SavedReadingSheet reading={selectedTarot} dateLabel={formatDate(selectedTarot.date)} />
+          )
+        )}
       </Sheet>
 
       <Sheet

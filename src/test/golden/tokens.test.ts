@@ -148,14 +148,12 @@ const RULES: Rule[] = [
       'src/components/achievements/AchievementCard.tsx',
       'src/components/achievements/AchievementUnlockModal.tsx',
       'src/components/bazi/BaziAIReading.tsx',
-      'src/components/celebration/LevelUpCelebration.tsx',
       'src/components/celestial/CelestialMapIntroLoader.tsx',
       'src/components/celestial/CityInsightPanel.tsx',
       'src/components/celestial/DestinedPlaceBanner.tsx',
       'src/components/celestial/FindYourPlace.tsx',
       'src/components/compat/InviteFriendSheet.tsx',
       'src/components/error/ErrorBoundary.tsx',
-      'src/components/layout/BottomNav.tsx',
       'src/components/oracle/AskOracleButton.tsx',
       'src/components/setup/MissingSupabaseConfig.tsx',
       'src/components/ui/ResultLayout.tsx',
@@ -228,7 +226,6 @@ const RULES: Rule[] = [
       'src/components/admin/AdAnalyticsPanel.tsx',
       'src/components/admin/AdvisorVerificationPanel.tsx',
       'src/components/admin/BlogManager.tsx',
-      'src/components/celebration/LevelUpCelebration.tsx',
       'src/components/celestial/CelestialCitySearch.tsx',
       'src/components/celestial/CelestialMapIntroLoader.tsx',
       'src/components/celestial/CelestialPowerPlaces.tsx',
@@ -238,7 +235,6 @@ const RULES: Rule[] = [
       'src/components/diagnostics/DiagnosticsPanel.tsx',
       'src/components/error/ErrorBoundary.tsx',
       'src/components/horoscope/BirthChart.tsx',
-      'src/components/layout/BottomNav.tsx',
       'src/components/oracle/AskOracleButton.tsx',
       'src/components/overlays/SavedSheet.tsx',
       'src/components/overlays/SearchSheet.tsx',
@@ -271,7 +267,8 @@ const RULES: Rule[] = [
   {
     name: 'bg-paper-2 outside the paper primitives',
     re: /\bbg-paper-2\b/,
-    allowed: new Set(['src/components/ui/AffirmationPanel.tsx', 'src/components/icons/SpreadGlyph.tsx']),
+    // Disclosure surface="paper": its panel variant and press fill.
+    allowed: new Set(['src/components/ui/AffirmationPanel.tsx', 'src/components/icons/SpreadGlyph.tsx', 'src/components/ui/Disclosure.tsx']),
   },
   {
     // Glyphs are drawn (src/components/icons, NavIcons, SuitGlyphs). An

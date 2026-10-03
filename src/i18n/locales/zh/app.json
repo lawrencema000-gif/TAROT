@@ -275,7 +275,7 @@
       "premiumAI": "高级AI",
       "aiInterpretation": "AI 解读",
       "aiSubtitle": "基于你的牌和个人资料的个性化洞察",
-      "showCardMeanings": "← 显示牌意",
+      "showCardMeanings": "显示牌意",
       "loveFocus": "爱情焦点",
       "careerFocus": "事业焦点",
       "moneyFocus": "财运焦点",
@@ -5925,7 +5925,11 @@
       "title": "升级了。",
       "level": "等级",
       "newAbilities": "新能力已解锁",
-      "rank": "等级"
+      "rank": "等级",
+      "eyebrow": "升级",
+      "levelN": "等级 {{level}}",
+      "xpEarned": "+{{xp}} XP",
+      "continue": "继续"
     }
   },
   "pageTitles": {

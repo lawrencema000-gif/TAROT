@@ -418,7 +418,7 @@
       "premiumAI": "Premium AI",
       "aiInterpretation": "AI interpretation",
       "aiSubtitle": "Personalized insight based on your cards and profile",
-      "showCardMeanings": "← Show card meanings",
+      "showCardMeanings": "Show card meanings",
       "loveFocus": "Love focus",
       "careerFocus": "Career focus",
       "moneyFocus": "Money focus",
@@ -6052,7 +6052,11 @@
       "title": "Level up.",
       "level": "Level",
       "newAbilities": "New abilities unlocked",
-      "rank": "Rank"
+      "rank": "Rank",
+      "eyebrow": "Level up",
+      "levelN": "Level {{level}}",
+      "xpEarned": "+{{xp}} XP",
+      "continue": "Continue"
     }
   },
   "pageTitles": {

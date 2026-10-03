@@ -1,3 +1,4 @@
+import { useEffect, useReducer } from 'react';
 import type { CartoLesson, CartoSpread, PlayingCard, PlayingCardCombination } from '../types/cartomancy';
 import { getPlayingCard, getPlayingCardBySlug } from '../data/cartomancy/deck';
 import { SAME_RANK_COMBINATIONS } from '../data/cartomancy/tables.en';
@@ -9,12 +10,15 @@ import i18n, { CARTO_CORPUS_NS, getLocale, type SupportedLocale } from './config
  *
  * `src/i18n/locales/<lng>/cartomancy.json` carries the 54 cards, the nine
  * spreads and the twelve lessons in ja/ko/zh (shape: scratchpad
- * p7-cartomancy-corpus-en.json). i18next loads it as the `cartomancy`
- * namespace alongside the UI bundles, so by the time `getLocale()` says
- * 'ja' the bundle is in the store and these synchronous helpers find it —
- * the same arrangement as `localizeCard.ts` for the tarot corpus. A missing
- * bundle, or a card the translation does not carry yet, falls back to the
- * English field by field. English needs no corpus.
+ * p7-cartomancy-corpus-en.json). It is the `cartomancy` i18next namespace,
+ * but it is NOT loaded at boot: at 40–60 KB gz per locale it was the largest
+ * thing every Japanese visitor downloaded, and most never open the playing
+ * cards. `ensureCartomancyCorpus()` fetches it on demand, and
+ * `useCartomancyCorpus()` says when it is in the store — every screen that
+ * reads it waits on that hook (a skeleton until ready; English is ready at
+ * once). Once loaded, these synchronous helpers find it. A missing bundle,
+ * or a card the translation does not carry yet, falls back to the English
+ * field by field.
  *
  * Slugs and ids are never localized; only the prose overlays.
  */
@@ -69,6 +73,75 @@ interface CartoBundle {
   sameRankCombinations?: { rank?: string; count?: number; meaning?: string }[];
   /** Keyed by the rule's `id`, which is never localized. */
   neighborRules?: { id?: string; meaning?: string }[];
+}
+
+// ── Loading on demand ──────────────────────────────────────────────────
+
+/** Locales whose corpus fetch has finished, loaded or failed (a failure falls back to English). */
+const settled = new Set<SupportedLocale>();
+const inflight = new Map<SupportedLocale, Promise<void>>();
+
+/** True when the active locale's corpus is in the store, or its fetch has given up. Always true for English. */
+export function isCartomancyCorpusReady(locale: SupportedLocale = getLocale()): boolean {
+  if (locale === 'en' || settled.has(locale)) return true;
+  return i18n.hasResourceBundle(locale, CARTO_CORPUS_NS);
+}
+
+/**
+ * Fetch the active locale's corpus if it is not in the store yet. Resolves
+ * (never rejects) once it is there or the fetch has failed; concurrent
+ * callers share one request.
+ */
+export function ensureCartomancyCorpus(): Promise<void> {
+  const locale = getLocale();
+  if (isCartomancyCorpusReady(locale)) return Promise.resolve();
+  let pending = inflight.get(locale);
+  if (!pending) {
+    pending = Promise.resolve(i18n.loadNamespaces(CARTO_CORPUS_NS))
+      .catch(() => undefined)
+      .then(() => {
+        settled.add(locale);
+        inflight.delete(locale);
+      });
+    inflight.set(locale, pending);
+  }
+  return pending;
+}
+
+/**
+ * Whether the playing-card corpus for the active locale is ready to read.
+ * Starts the fetch when it is not (and again after a language change).
+ * `enabled = false` neither fetches nor waits: a screen that only sometimes
+ * shows playing cards (a shared reading, the Library) passes whether it does.
+ */
+export function useCartomancyCorpus(enabled = true): boolean {
+  const [, rerender] = useReducer((n: number) => n + 1, 0);
+  const ready = !enabled || isCartomancyCorpusReady();
+
+  useEffect(() => {
+    if (!enabled) return;
+    let live = true;
+    const load = () => {
+      if (isCartomancyCorpusReady()) return;
+      void ensureCartomancyCorpus().then(() => {
+        if (live) rerender();
+      });
+    };
+    // A switch to ja/ko/zh needs that locale's corpus: re-render (so `ready`
+    // is read for the new locale — false until it lands) and fetch it.
+    const onLanguage = () => {
+      rerender();
+      load();
+    };
+    load();
+    i18n.on('languageChanged', onLanguage);
+    return () => {
+      live = false;
+      i18n.off('languageChanged', onLanguage);
+    };
+  }, [enabled]);
+
+  return ready;
 }
 
 function corpusFor(locale: SupportedLocale): CartoBundle | null {

@@ -10,7 +10,7 @@ import { AppProvider } from './context/AppContext';
 import { useRitual } from './context/RitualContext';
 import { syncDailyReminder, syncStreakNudge } from './services/localNotifications';
 import { GlobalAchievementCelebration } from './components/achievements/GlobalAchievementCelebration';
-import { FeatureFlagProvider, useFeatureFlag } from './context/FeatureFlagContext';
+import { FeatureFlagProvider, useFeatureFlag, useFeatureFlags } from './context/FeatureFlagContext';
 import { useUI, isTabRoot } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
 import { usePostCheckout } from './hooks/usePostCheckout';
@@ -251,6 +251,14 @@ function AppContent() {
   // The playing-card section. The hub, the card meanings and the guide are
   // public (SEO); the reading is behind sign-in like every other reading.
   const cartomancyEnabled = useFeatureFlag('cartomancy');
+  // A flag is unknown (= off) until the flags load, so a gated route decides
+  // only once they have: before that it shows the route skeleton. Deciding on
+  // the first render bounced every cold deep link to a gated page (a shared
+  // /cartomancy link, a bookmarked /iching) to Home, or to the 404 page when
+  // signed out.
+  const { ready: flagsReady } = useFeatureFlags();
+  const gated = (enabled: boolean, page: JSX.Element, fallback: JSX.Element) =>
+    !flagsReady ? <ListSkeleton count={3} /> : enabled ? page : fallback;
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   // The settings sheet is fetched on its first open and stays mounted after
@@ -517,11 +525,11 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
-                <Route path="/cartomancy" element={cartomancyEnabled ? <CartomancyPage /> : <NotFoundPage />} />
-                <Route path="/cartomancy/cards" element={cartomancyEnabled ? <CartomancyCardsPage /> : <NotFoundPage />} />
-                <Route path="/cartomancy/cards/:slug" element={cartomancyEnabled ? <CartomancyCardPage /> : <NotFoundPage />} />
-                <Route path="/cartomancy/guide" element={cartomancyEnabled ? <CartomancyGuidePage /> : <NotFoundPage />} />
-                <Route path="/cartomancy/guide/:lesson" element={cartomancyEnabled ? <CartomancyLessonPage /> : <NotFoundPage />} />
+                <Route path="/cartomancy" element={gated(cartomancyEnabled, <CartomancyPage />, <NotFoundPage />)} />
+                <Route path="/cartomancy/cards" element={gated(cartomancyEnabled, <CartomancyCardsPage />, <NotFoundPage />)} />
+                <Route path="/cartomancy/cards/:slug" element={gated(cartomancyEnabled, <CartomancyCardPage />, <NotFoundPage />)} />
+                <Route path="/cartomancy/guide" element={gated(cartomancyEnabled, <CartomancyGuidePage />, <NotFoundPage />)} />
+                <Route path="/cartomancy/guide/:lesson" element={gated(cartomancyEnabled, <CartomancyLessonPage />, <NotFoundPage />)} />
                 {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
@@ -660,7 +668,7 @@ function AppContent() {
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogPostPage />} />
                   <Route path="/admin" element={<AdminPage />} />
-                  <Route path="/iching" element={ichingEnabled ? <IChingPage /> : <Navigate to="/" replace />} />
+                  <Route path="/iching" element={gated(ichingEnabled, <IChingPage />, <Navigate to="/" replace />)} />
                   <Route path="/mood-diary" element={<MoodDiaryPage />} />
                   {/* The learn library. These were only in the public table, so
                       a member following a footer link or "Back to glossary"
@@ -676,22 +684,22 @@ function AppContent() {
                   <Route path="/community" element={<CommunityPage mode="normal" />} />
                   <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
                   <Route path="/companion" element={<AiCompanionPage />} />
-                  <Route path="/advisors" element={advisorsEnabled ? <AdvisorsPage /> : <Navigate to="/" replace />} />
+                  <Route path="/advisors" element={gated(advisorsEnabled, <AdvisorsPage />, <Navigate to="/" replace />)} />
                   <Route path="/runes" element={<RunesPage />} />
                   <Route path="/dice" element={<DicePage />} />
                   <Route path="/reports/career" element={<CareerReportPage />} />
                   <Route path="/reports/year-ahead" element={<YearAheadReportPage />} />
                   <Route path="/reports/natal-chart" element={<NatalChartReportPage />} />
                   <Route path="/invite/:code" element={<CompatInvitePage />} />
-                  <Route path="/advisors/:slug/book" element={advisorsEnabled ? <AdvisorBookingPage /> : <Navigate to="/" replace />} />
-                  <Route path="/advisors/session/:id" element={advisorsEnabled ? <AdvisorSessionPage /> : <Navigate to="/" replace />} />
+                  <Route path="/advisors/:slug/book" element={gated(advisorsEnabled, <AdvisorBookingPage />, <Navigate to="/" replace />)} />
+                  <Route path="/advisors/session/:id" element={gated(advisorsEnabled, <AdvisorSessionPage />, <Navigate to="/" replace />)} />
                   <Route path="/ai/quick" element={<QuickReadingPage />} />
                   <Route path="/ai/tarot" element={<TarotCompanionPage />} />
-                  <Route path="/live-rooms" element={liveRoomsEnabled ? <LiveRoomsPage /> : <Navigate to="/" replace />} />
-                  <Route path="/live-rooms/:id" element={liveRoomsEnabled ? <LiveRoomPage /> : <Navigate to="/" replace />} />
-                  <Route path="/advisors/verify" element={advisorsEnabled ? <AdvisorVerifyPage /> : <Navigate to="/" replace />} />
-                  <Route path="/sandbox" element={sandboxEnabled ? <SandboxPage /> : <Navigate to="/" replace />} />
-                  <Route path="/advisors/dashboard" element={advisorsEnabled ? <AdvisorDashboardPage /> : <Navigate to="/" replace />} />
+                  <Route path="/live-rooms" element={gated(liveRoomsEnabled, <LiveRoomsPage />, <Navigate to="/" replace />)} />
+                  <Route path="/live-rooms/:id" element={gated(liveRoomsEnabled, <LiveRoomPage />, <Navigate to="/" replace />)} />
+                  <Route path="/advisors/verify" element={gated(advisorsEnabled, <AdvisorVerifyPage />, <Navigate to="/" replace />)} />
+                  <Route path="/sandbox" element={gated(sandboxEnabled, <SandboxPage />, <Navigate to="/" replace />)} />
+                  <Route path="/advisors/dashboard" element={gated(advisorsEnabled, <AdvisorDashboardPage />, <Navigate to="/" replace />)} />
                   <Route path="/pick-a-card" element={<PickACardPage />} />
                   <Route path="/celestial-map" element={<CelestialMapPage />} />
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />
@@ -713,12 +721,12 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
-                  <Route path="/cartomancy" element={cartomancyEnabled ? <CartomancyPage /> : <Navigate to="/" replace />} />
-                  <Route path="/cartomancy/reading" element={cartomancyEnabled ? <CartomancyReadingPage /> : <Navigate to="/" replace />} />
-                  <Route path="/cartomancy/cards" element={cartomancyEnabled ? <CartomancyCardsPage /> : <Navigate to="/" replace />} />
-                  <Route path="/cartomancy/cards/:slug" element={cartomancyEnabled ? <CartomancyCardPage /> : <Navigate to="/" replace />} />
-                  <Route path="/cartomancy/guide" element={cartomancyEnabled ? <CartomancyGuidePage /> : <Navigate to="/" replace />} />
-                  <Route path="/cartomancy/guide/:lesson" element={cartomancyEnabled ? <CartomancyLessonPage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy" element={gated(cartomancyEnabled, <CartomancyPage />, <Navigate to="/" replace />)} />
+                  <Route path="/cartomancy/reading" element={gated(cartomancyEnabled, <CartomancyReadingPage />, <Navigate to="/" replace />)} />
+                  <Route path="/cartomancy/cards" element={gated(cartomancyEnabled, <CartomancyCardsPage />, <Navigate to="/" replace />)} />
+                  <Route path="/cartomancy/cards/:slug" element={gated(cartomancyEnabled, <CartomancyCardPage />, <Navigate to="/" replace />)} />
+                  <Route path="/cartomancy/guide" element={gated(cartomancyEnabled, <CartomancyGuidePage />, <Navigate to="/" replace />)} />
+                  <Route path="/cartomancy/guide/:lesson" element={gated(cartomancyEnabled, <CartomancyLessonPage />, <Navigate to="/" replace />)} />
                   {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                   {/* Legacy: the Dice Oracle linked here before the AI hub moved
                       under /ai; an installed shortcut or a bookmark may still. */}

@@ -259,6 +259,11 @@ export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = '
 export interface KeywordRowProps {
   /** The card's keywords — tarotDeck.ts carries four per card; show all four. */
   keywords: string[];
+  /**
+   * `center` under a centred heading or a drawn card (the default); `start`
+   * when the row sits in a left-aligned column of copy.
+   */
+  align?: 'center' | 'start';
   className?: string;
 }
 
@@ -267,9 +272,9 @@ export interface KeywordRowProps {
  * wrapping, 8px apart. Reads on the canvas and on paper (see Tag
  * variant="keyword"). Not for tappable filters — that is ChipGroup.
  */
-export function KeywordRow({ keywords, className = '' }: KeywordRowProps) {
+export function KeywordRow({ keywords, align = 'center', className = '' }: KeywordRowProps) {
   return (
-    <div className={`flex flex-wrap justify-center gap-2 ${className}`.trim()}>
+    <div className={`flex flex-wrap ${align === 'start' ? 'justify-start' : 'justify-center'} gap-2 ${className}`.trim()}>
       {keywords.map((k) => (
         <Tag key={k} variant="keyword">{k}</Tag>
       ))}

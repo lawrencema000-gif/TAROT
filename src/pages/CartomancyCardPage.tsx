@@ -13,6 +13,7 @@ import { getLocale } from '../i18n/config';
 import { localizePlayingCard } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy/cards/:slug — one card's meaning, public.
@@ -27,7 +28,7 @@ import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 
 const ORIGIN = 'https://tarotlife.app';
 
-export function CartomancyCardPage() {
+function CartomancyCardPageBody() {
   const { t } = useT('app');
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -194,5 +195,14 @@ export function CartomancyCardPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyCardPage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyCardPageBody />
+    </CartomancyCorpusGate>
   );
 }

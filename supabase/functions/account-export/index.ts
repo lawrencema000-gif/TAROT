@@ -21,6 +21,7 @@ type Req = z.infer<typeof RequestSchema>;
 const TABLES_OWNED_BY_USER = [
   "profiles",
   "journal_entries",
+  "mood_entries",
   "tarot_readings",
   "daily_rituals",
   "quiz_results",

@@ -53,8 +53,13 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3">
-      <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} />
+    <div
+      // An error interrupts (assertive); everything else rides the
+      // container's polite status region.
+      role={type === 'error' ? 'alert' : undefined}
+      className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3"
+    >
+      <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-ui text-mystic-100">{message}</p>
         {action && (
@@ -178,7 +183,13 @@ export function ToastContainer() {
   };
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none md:left-auto md:right-6 md:max-w-sm">
+    // A live region, mounted empty from the start, so a screen reader hears
+    // each toast as it arrives ("Reading saved") instead of nothing at all.
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-24 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none md:left-auto md:right-6 md:max-w-sm"
+    >
       <AnimatePresence initial={false}>
         {toasts.map(t => (
           <motion.div

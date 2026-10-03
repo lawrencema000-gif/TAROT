@@ -5,6 +5,7 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CartomancySection } from '../components/cartomancy/CartomancySection';
 import { useT } from '../i18n/useT';
 import { setPageMeta } from '../utils/seo';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy/reading — the table. `?spread=carto-wish` begins that spread
@@ -12,7 +13,7 @@ import { setPageMeta } from '../utils/seo';
  * on its own picker. Auth-only: the reading counts against the free tier
  * and saves to the reader's library.
  */
-export function CartomancyReadingPage() {
+function CartomancyReadingPageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -31,5 +32,14 @@ export function CartomancyReadingPage() {
       <CartomancySection initialSpread={params.get('spread')} onShowPaywall={setPaywall} onExit={() => navigate('/cartomancy')} />
       <PaywallSheet open={paywall !== null} onClose={() => setPaywall(null)} feature={paywall ?? ''} />
     </Page>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyReadingPage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyReadingPageBody />
+    </CartomancyCorpusGate>
   );
 }

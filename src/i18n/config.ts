@@ -39,6 +39,7 @@ import enCommon from './locales/en/common.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enLanding from './locales/en/landing.json';
 import enApp from './locales/en/app.json';
+import { CJK_FONTS, cjkFontHref } from './cjkFonts';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -49,7 +50,9 @@ export const UI_NAMESPACES = ['common', 'app', 'onboarding', 'landing'] as const
 export const TAROT_CORPUS_NS = 'tarot';
 /** The translated playing-card corpus (54 cards, 9 spreads, 12 lessons); `localizePlayingCard.ts` reads it whole. */
 export const CARTO_CORPUS_NS = 'cartomancy';
-const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS, CARTO_CORPUS_NS];
+// The cartomancy corpus is deliberately absent: it loads on demand
+// (ensureCartomancyCorpus in localizePlayingCard.ts), not with every boot.
+const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS];
 
 export const LOCALE_STORAGE_KEY = 'arcana_locale';
 
@@ -267,11 +270,6 @@ i18n.on('languageChanged', syncDocumentLang);
 // serif falls back to the system CJK face for the few heading glyphs the
 // Latin Cormorant lacks, and the body tier renders in 400/600, which is
 // all the type roles ask for.
-const CJK_FONTS: Record<string, string> = {
-  ja: 'family=Noto+Sans+JP:wght@400;600',
-  ko: 'family=Noto+Sans+KR:wght@400;600',
-  zh: 'family=Noto+Sans+SC:wght@400;600',
-};
 function loadCjkFonts(lng: string) {
   if (typeof document === 'undefined') return;
   const locale = normalizeLocale(lng) ?? 'en';
@@ -282,7 +280,8 @@ function loadCjkFonts(lng: string) {
   const link = document.createElement('link');
   link.id = id;
   link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
+  // The same URL index.html preloads (vite.config.ts localePreloadPlugin).
+  link.href = cjkFontHref(query);
   document.head.appendChild(link);
 }
 loadCjkFonts(i18n.language);

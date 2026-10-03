@@ -697,6 +697,25 @@
     color: rgb(var(--gold-primary));
   }
 
+  /* Japanese, Korean and Chinese have no capitals to carry an 11px label,
+     and wide tracking pulls the glyphs of a word apart. At 13px with
+     light tracking the eyebrow reads as a label, not as scattered marks. */
+  html:lang(ja) .font-display-eyebrow,
+  html:lang(ko) .font-display-eyebrow,
+  html:lang(zh) .font-display-eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* The bottom-nav labels, for the same reason: 12px kana and hangul
+     close up. Five tabs still fit one line each at 390px at 13px. */
+  html:lang(ja) .bottom-nav-label,
+  html:lang(ko) .bottom-nav-label,
+  html:lang(zh) .bottom-nav-label {
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
   /* Drop cap — first letter of a paragraph rendered as a serif initial.
      Apply `.drop-cap` to a wrapping <p>. ReadingProse no longer applies
      it (Phase 7: the gold glow under an initial was the tell); the class

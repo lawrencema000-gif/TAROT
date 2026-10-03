@@ -9,12 +9,13 @@ import { getLocale } from '../i18n/config';
 import { localizeCartoLesson } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy/guide — the twelve lessons in reading order, with the ticks
  * this viewer has earned (localStorage; a convenience, not a record).
  */
-export function CartomancyGuidePage() {
+function CartomancyGuidePageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const locale = getLocale();
@@ -80,5 +81,14 @@ export function CartomancyGuidePage() {
         })}
       </ListRowGroup>
     </Page>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyGuidePage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyGuidePageBody />
+    </CartomancyCorpusGate>
   );
 }

@@ -275,7 +275,7 @@
       "premiumAI": "プレミアムAI",
       "aiInterpretation": "AI解釈",
       "aiSubtitle": "あなたのカードとプロフィールに基づくパーソナライズされた洞察",
-      "showCardMeanings": "← カードの意味を表示",
+      "showCardMeanings": "カードの意味を表示",
       "loveFocus": "恋愛フォーカス",
       "careerFocus": "キャリアフォーカス",
       "moneyFocus": "マネーフォーカス",
@@ -5925,7 +5925,11 @@
       "title": "レベルアップ。",
       "level": "レベル",
       "newAbilities": "新しい能力を解放しました",
-      "rank": "ランク"
+      "rank": "ランク",
+      "eyebrow": "レベルアップ",
+      "levelN": "レベル{{level}}",
+      "xpEarned": "+{{xp}} XP",
+      "continue": "続ける"
     }
   },
   "pageTitles": {

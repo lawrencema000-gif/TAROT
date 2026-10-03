@@ -156,7 +156,7 @@ export const NEIGHBOR_RULES: NeighborRule[] = [
   {
     id: "ending-touch",
     when: "ace-of-spades adjacent to any card",
-    meaning: "That card's matter is ending or being decided finally.",
+    meaning: "That card’s matter is ending or being decided finally.",
   },
   {
     id: "heart-softens",
@@ -186,11 +186,11 @@ export const NEIGHBOR_RULES: NeighborRule[] = [
   {
     id: "suit-majority",
     when: "a majority of one suit across the table",
-    meaning: "The reading's subject, whatever was asked; the minority suit is what is neglected.",
+    meaning: "The reading’s subject, whatever was asked; the minority suit is what is neglected.",
   },
   {
     id: "color-majority",
     when: "a majority of one color across the table",
-    meaning: "The reading's mood: red for ease and warmth, black for effort and care.",
+    meaning: "The reading’s mood: red for ease and warmth, black for effort and care.",
   },
 ];

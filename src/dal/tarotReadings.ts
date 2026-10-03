@@ -12,6 +12,8 @@ export interface TarotReadingRow {
   cards: unknown;
   interpretation?: string | null;
   saved?: boolean | null;
+  /** The question typed on the focus step (null when none was asked, or before the column existed). */
+  question?: string | null;
   created_at: string;
   [key: string]: unknown;
 }
@@ -31,37 +33,112 @@ export interface TarotReadingInsert {
   cards: unknown;
   interpretation?: string | null;
   saved?: boolean;
+  /** The reader's typed question. Sent only when non-empty after trimming. */
+  question?: string | null;
 }
+
+/*
+ * The `question` column arrives with migration 20261003000010. Until it is
+ * live, PostgREST answers PGRST204 ("could not find the 'question' column")
+ * to an insert that names it and 42703 ("column ... does not exist") to a
+ * select that names it. Both paths retry once without the column and
+ * remember the answer for the session, so the app saves and lists readings
+ * on either side of the push, and stops asking once it knows.
+ */
+let questionColumn: 'unknown' | 'present' | 'absent' = 'unknown';
+
+interface PgError { code?: string; message?: string }
+
+/** True when the error is the database saying the `question` column is not there (yet). */
+export function isMissingQuestionColumn(error: PgError | null | undefined): boolean {
+  if (!error) return false;
+  const code = error.code ?? '';
+  if (code !== 'PGRST204' && code !== '42703') return false;
+  return /question/i.test(error.message ?? '');
+}
+
+/** Test seam: forget what this session learned about the column. */
+export function __resetQuestionColumnProbe(): void {
+  questionColumn = 'unknown';
+}
+
+function trimmedQuestion(q: string | null | undefined): string | null {
+  const v = (q ?? '').trim();
+  return v ? v.slice(0, 500) : null;
+}
+
+function toRow(reading: TarotReadingInsert): Record<string, unknown> {
+  const row: Record<string, unknown> = {
+    user_id: reading.userId,
+    date: reading.date,
+    spread_type: reading.spreadType,
+    cards: reading.cards,
+  };
+  if (reading.focusArea !== undefined) row.focus_area = reading.focusArea;
+  if (reading.interpretation !== undefined) row.interpretation = reading.interpretation;
+  if (reading.saved !== undefined) row.saved = reading.saved;
+  const q = trimmedQuestion(reading.question);
+  if (q && questionColumn !== 'absent') row.question = q;
+  return row;
+}
+
+function withoutQuestion(row: Record<string, unknown>): Record<string, unknown> {
+  const { question: _dropped, ...rest } = row;
+  void _dropped;
+  return rest;
+}
+
+export interface SavedReadingSummary {
+  id: string;
+  date: string;
+  spread_type: string;
+  focus_area: string | null;
+  cards: unknown;
+  interpretation: string | null;
+  question: string | null;
+  created_at: string;
+}
+
+const SAVED_COLUMNS = 'id, date, spread_type, focus_area, cards, interpretation, created_at';
 
 export async function listSaved(
   userId: string,
   options: { limit?: number; offset?: number } = {},
-): Promise<Result<{ id: string; date: string; spread_type: string; focus_area: string | null; cards: unknown; created_at: string }[]>> {
+): Promise<Result<SavedReadingSummary[]>> {
   const { limit = 20, offset = 0 } = options;
-  const { data, error } = await supabase
-    .from('tarot_readings')
-    .select('id, date, spread_type, focus_area, cards, created_at')
-    .eq('user_id', userId)
-    .eq('saved', true)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+  const run = (columns: string) =>
+    supabase
+      .from('tarot_readings')
+      .select(columns)
+      .eq('user_id', userId)
+      .eq('saved', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+  let res = await run(questionColumn === 'absent' ? SAVED_COLUMNS : `${SAVED_COLUMNS}, question`);
+  if (res.error && questionColumn !== 'absent' && isMissingQuestionColumn(res.error)) {
+    questionColumn = 'absent';
+    res = await run(SAVED_COLUMNS);
+  } else if (!res.error && questionColumn === 'unknown') {
+    questionColumn = 'present';
+  }
+  const { data, error } = res;
   if (error) {
     captureException('dal.tarotReadings.listSaved', error, { userId });
     return { ok: false, error: error.message };
   }
   return {
     ok: true,
-    data: (data ?? []).map(r => {
-      const row = r as Record<string, unknown>;
-      return {
-        id: row.id as string,
-        date: row.date as string,
-        spread_type: row.spread_type as string,
-        focus_area: (row.focus_area as string | null) ?? null,
-        cards: row.cards,
-        created_at: row.created_at as string,
-      };
-    }),
+    data: ((data ?? []) as unknown as Record<string, unknown>[]).map(row => ({
+      id: row.id as string,
+      date: row.date as string,
+      spread_type: row.spread_type as string,
+      focus_area: (row.focus_area as string | null) ?? null,
+      cards: row.cards,
+      interpretation: (row.interpretation as string | null) ?? null,
+      question: (row.question as string | null | undefined) ?? null,
+      created_at: row.created_at as string,
+    })),
   };
 }
 
@@ -140,17 +217,14 @@ export async function listHistory(
 }
 
 export async function insert(reading: TarotReadingInsert): Promise<Result<void>> {
-  const row: Record<string, unknown> = {
-    user_id: reading.userId,
-    date: reading.date,
-    spread_type: reading.spreadType,
-    cards: reading.cards,
-  };
-  if (reading.focusArea !== undefined) row.focus_area = reading.focusArea;
-  if (reading.interpretation !== undefined) row.interpretation = reading.interpretation;
-  if (reading.saved !== undefined) row.saved = reading.saved;
-
-  const { error } = await supabase.from('tarot_readings').insert(row);
+  const row = toRow(reading);
+  let { error } = await supabase.from('tarot_readings').insert(row);
+  if (error && 'question' in row && isMissingQuestionColumn(error)) {
+    questionColumn = 'absent';
+    ({ error } = await supabase.from('tarot_readings').insert(withoutQuestion(row)));
+  } else if (!error && 'question' in row) {
+    questionColumn = 'present';
+  }
   if (error) {
     captureException('dal.tarotReadings.insert', error, { userId: reading.userId });
     return { ok: false, error: error.message };
@@ -161,21 +235,16 @@ export async function insert(reading: TarotReadingInsert): Promise<Result<void>>
 export async function insertReturningId(
   reading: TarotReadingInsert,
 ): Promise<Result<{ id: string }>> {
-  const row: Record<string, unknown> = {
-    user_id: reading.userId,
-    date: reading.date,
-    spread_type: reading.spreadType,
-    cards: reading.cards,
-  };
-  if (reading.focusArea !== undefined) row.focus_area = reading.focusArea;
-  if (reading.interpretation !== undefined) row.interpretation = reading.interpretation;
-  if (reading.saved !== undefined) row.saved = reading.saved;
-
-  const { data, error } = await supabase
-    .from('tarot_readings')
-    .insert(row)
-    .select('id')
-    .single();
+  const row = toRow(reading);
+  const run = (r: Record<string, unknown>) =>
+    supabase.from('tarot_readings').insert(r).select('id').single();
+  let { data, error } = await run(row);
+  if (error && 'question' in row && isMissingQuestionColumn(error)) {
+    questionColumn = 'absent';
+    ({ data, error } = await run(withoutQuestion(row)));
+  } else if (!error && 'question' in row) {
+    questionColumn = 'present';
+  }
   if (error || !data) {
     captureException(
       'dal.tarotReadings.insertReturningId',

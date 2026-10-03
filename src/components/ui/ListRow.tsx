@@ -99,7 +99,7 @@ export function ListRow({
       )}
       <span className="min-w-0 flex-1">
         <span className={`block truncate text-ui font-medium ${danger ? 'text-coral' : 'text-mystic-100'}`}>{label}</span>
-        {meta && <span className="block text-meta text-mystic-400 line-clamp-2">{meta}</span>}
+        {meta && <span className="text-meta text-mystic-400 line-clamp-2">{meta}</span>}
       </span>
       {/* The label wins. A long value (an email's local part, a long plan
           name) used to be `shrink-0` and pushed the label down to "Edit …";

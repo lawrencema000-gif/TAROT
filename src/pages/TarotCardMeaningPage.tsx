@@ -4,20 +4,7 @@ import { ArrowUp, ArrowDown, Check, ChevronLeft, ChevronRight, Mail } from 'luci
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
-import {
-  AffirmationPanel,
-  Button,
-  Disclaimer,
-  EmptyState,
-  Input,
-  KeywordRow,
-  PageGrid,
-  PageHeader,
-  Paper,
-  ReadingProse,
-  TarotFace,
-} from '../components/ui';
-import { PaperDisclosure } from '../components/readings/tarot/PaperDisclosure';
+import { AffirmationPanel, Button, Disclaimer, EmptyState, Input, KeywordRow, PageGrid, PageHeader, Paper, ReadingProse, TarotFace, Disclosure } from '../components/ui';
 import { meaningSections } from '../components/readings/tarot/readingText';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
@@ -433,7 +420,7 @@ export function TarotCardMeaningPage() {
             </div>
             <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-0 pt-1 min-w-0" />
             {/* Under both on a phone, beside the face from sm up. */}
-            <KeywordRow keywords={card.keywords.slice(0, 4)} className="col-span-2 sm:col-span-1 sm:col-start-2 !justify-start" />
+            <KeywordRow keywords={card.keywords.slice(0, 4)} align="start" className="col-span-2 sm:col-span-1 sm:col-start-2" />
           </div>
           {enrichment?.affirmation && <AffirmationPanel text={enrichment.affirmation} />}
         </div>
@@ -518,18 +505,18 @@ export function TarotCardMeaningPage() {
                 demand; the crawler copy carries all of it (scripts/seo-body.mjs). */}
             <div>
               {card.loveMeaning && (
-                <PaperDisclosure label={t('tarot.loveAndRelationships')}>
+                <Disclosure surface="paper" variant="row" lazy label={t('tarot.loveAndRelationships')}>
                   <FocusMeaning text={card.loveMeaning} />
-                </PaperDisclosure>
+                </Disclosure>
               )}
               {card.careerMeaning && (
-                <PaperDisclosure label={t('tarot.careerAndFinances')}>
+                <Disclosure surface="paper" variant="row" lazy label={t('tarot.careerAndFinances')}>
                   <FocusMeaning text={card.careerMeaning} />
-                </PaperDisclosure>
+                </Disclosure>
               )}
             {enrichment && (
               <div>
-                <PaperDisclosure label={t('cardMeaning.correspondences', { defaultValue: 'Astrology and numerology' })}>
+                <Disclosure surface="paper" variant="row" lazy label={t('cardMeaning.correspondences', { defaultValue: 'Astrology and numerology' })}>
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
@@ -546,9 +533,9 @@ export function TarotCardMeaningPage() {
                       <p className="reading-copy mt-1">{enrichment.numerology}</p>
                     </div>
                   </div>
-                </PaperDisclosure>
+                </Disclosure>
 
-                <PaperDisclosure label={t('cardMeaning.combinations', { defaultValue: 'Card combinations' })}>
+                <Disclosure surface="paper" variant="row" lazy label={t('cardMeaning.combinations', { defaultValue: 'Card combinations' })}>
                   <div className="space-y-5">
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.reinforcingCards', { defaultValue: 'Reinforcing cards' })}</h3>
@@ -569,10 +556,10 @@ export function TarotCardMeaningPage() {
                       </div>
                     </div>
                   </div>
-                </PaperDisclosure>
+                </Disclosure>
 
                 {/* Visible FAQ — mirrors the FAQPage JSON-LD so readers see the same Q&A Google does. */}
-                <PaperDisclosure label={t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}>
+                <Disclosure surface="paper" variant="row" lazy label={t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}>
                   <dl className="space-y-4">
                     {[
                       [`What does the ${enCard.name} tarot card mean?`, enCard.meaningUpright],
@@ -597,7 +584,7 @@ export function TarotCardMeaningPage() {
                       </div>
                     ))}
                   </dl>
-                </PaperDisclosure>
+                </Disclosure>
               </div>
             )}
             </div>

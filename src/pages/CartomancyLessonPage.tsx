@@ -14,6 +14,7 @@ import { getLocale } from '../i18n/config';
 import { localizeCartoLesson, localizePlayingCard } from '../i18n/localizePlayingCard';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
 
 /**
  * /cartomancy/guide/:lesson — one lesson on the learn-entry frame: eyebrow,
@@ -22,7 +23,7 @@ import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
  * side; and Mark as done, which ticks the guide and reports the lesson to
  * the Card Reader badge.
  */
-export function CartomancyLessonPage() {
+function CartomancyLessonPageBody() {
   const { t } = useT('app');
   const { lesson: slug } = useParams<{ lesson: string }>();
   const navigate = useNavigate();
@@ -156,5 +157,14 @@ export function CartomancyLessonPage() {
         </ListRowGroup>
       )}
     </LearnEntryTemplate>
+  );
+}
+
+/** The page, once the playing-card corpus for the active locale is loaded (English: at once). */
+export function CartomancyLessonPage() {
+  return (
+    <CartomancyCorpusGate>
+      <CartomancyLessonPageBody />
+    </CartomancyCorpusGate>
   );
 }

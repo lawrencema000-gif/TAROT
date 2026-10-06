@@ -1578,7 +1578,7 @@ export const tarotSpreads: TarotSpread[] = [
     shortDescription:
       'A nuanced yes-or-no — five cards for the questions that need more than a binary.',
     longDescription:
-      'Yes-No Pulse is for the questions where a flat yes-or-no is not quite enough. Five cards: a tone card, three answer cards (which together form a leaning), a context card, and a timing card. The combined weight of upright versus reversed and constructive versus challenging cards yields a richer answer than a single pull — yes, but not yet; no, unless this changes; almost yes, watch this. It is the spread to use when you trust your deck enough to let it argue with itself.',
+      'Yes-No Pulse is for the questions where a flat yes-or-no is not quite enough. Five cards: a tone card, three answer cards (a yes voice, a no voice and the deciding voice, which together form a leaning), and one card for context and timing. The combined weight of upright versus reversed and constructive versus challenging cards yields a richer answer than a single pull — yes, but not yet; no, unless this changes; almost yes, watch this. It is the spread to use when you trust your deck enough to let it argue with itself.',
     bestFor: [
       'Yes-no questions that feel too important for a single card',
       'Decisions where timing matters as much as the answer',

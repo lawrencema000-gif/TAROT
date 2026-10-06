@@ -21,6 +21,7 @@ import { linesNearPoint, nearestCity, type City } from '../utils/celestialGeo';
 import { GLOBAL_CITIES } from '../data/citiesGlobal';
 import type { DestinedPlace } from '../types';
 import { scrollBehavior } from '../utils/motion';
+import { getLocale } from '../i18n/config';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
@@ -494,7 +495,7 @@ export function CelestialMapPage() {
           birthUtc={birth.utcDate.toISOString()}
           zodiacSign={profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined}
           mbtiType={profile?.mbtiType ?? undefined}
-          locale={typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : undefined}
+          locale={getLocale()}
           isPremium={isPremium}
           onUpgrade={() => setShowPaywall(true)}
           trySpend={tryConsume}
@@ -553,7 +554,7 @@ export function CelestialMapPage() {
           intent={activeFilter}
           zodiacSign={profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined}
           mbtiType={profile?.mbtiType ?? undefined}
-          locale={typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : undefined}
+          locale={getLocale()}
           trySpend={tryConsume}
           onUpgrade={() => {
             setShowInsightPanel(false);

@@ -10,6 +10,7 @@ import {
 } from '../data/ziweiContent';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useContentOverlay, ct } from '../i18n/contentOverlay';
 import { setPageMeta } from '../utils/seo';
 
@@ -28,6 +29,7 @@ export function ZiweiPage() {
   // The ziwei.* strings live in app.json; the common namespace this page
   // used to read left every label English in ja/ko/zh.
   const { t } = useT(['app', 'common']);
+  const hanziLocale = getLocale() === 'zh' || getLocale() === 'ja';
   const { profile } = useAuth();
   // Star, palace, transformation and bureau prose from the `ziwei` content
   // module, keyed by star / palace / kind / bureau id; English until loaded.
@@ -180,11 +182,23 @@ export function ZiweiPage() {
                   onOpenChange={(next) => setOpenPalace(next ? p.key : null)}
                   icon={<span className="block w-5 text-mystic-500">{p.branchCn}</span>}
                   label={
-                    <>
-                      <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
-                      <span className="text-mystic-400 text-meta"> {meaning ? ct(overlay, `palaces.${p.key}.name`, meaning.en) : p.en}</span>
-                      {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · 身宮</span>}
-                    </>
+                    // In Chinese and Japanese the localized palace name IS the
+                    // hanzi term (命宫 / 命宮), so printing p.cn beside it read
+                    // twice; Korean and English keep the hanzi plus a gloss.
+                    hanziLocale ? (
+                      <>
+                        <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>
+                          {meaning ? ct(overlay, `palaces.${p.key}.name`, p.cn) : p.cn}
+                        </span>
+                        {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · {getLocale() === 'zh' ? '身宫' : '身宮'}</span>}
+                      </>
+                    ) : (
+                      <>
+                        <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
+                        <span className="text-mystic-400 text-meta"> {meaning ? ct(overlay, `palaces.${p.key}.name`, meaning.en) : p.en}</span>
+                        {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · 身宮</span>}
+                      </>
+                    )
                   }
                   meta={
                     p.stars.length === 0 ? '—' : p.stars.map((s) => (

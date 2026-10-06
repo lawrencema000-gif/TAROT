@@ -127,7 +127,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
               <Icon className={`w-12 h-12 ${rarityColor}`} />
             </div>
 
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
               <Badge tone={RARITY_TONE[achievement.rarity]}>
                 {rarityLabel(achievement.rarity, t)}
               </Badge>

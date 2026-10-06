@@ -148,9 +148,13 @@
       "quiz": "A quiz is a mirror, not a verdict.",
       "ai": "This reading was written by a model.",
       "cartomancy": "The cards suggest; they don’t decide.",
-      "general": "For reflection, not advice."
+      "general": "For reflection, not advice.",
+      "wellbeing": "A screen, not a diagnosis."
     },
-    "body": "Arcana’s readings are for reflection and entertainment. They are not medical, legal, financial or psychological advice."
+    "body": "Arcana’s readings are for reflection and entertainment. They are not medical, legal, financial or psychological advice.",
+    "bodies": {
+      "wellbeing": "These questions reflect how you have been feeling. They cannot diagnose anything. If you are struggling, or do not feel safe, please talk to someone you trust, a doctor or a mental-health professional."
+    }
   },
   "affirmation": {
     "label": "Affirmation"

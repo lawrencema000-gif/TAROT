@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Download, AlertTriangle } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, Section, Disclosure, Disclaimer } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, Section, Disclosure, Disclaimer, toast } from '../components/ui';
 import {
   INTENTIONS, scoreWindow, bestDays, daysToAvoid, toICS,
   type Intention, type DayScore, type DayReason, type DayReasonCode,
@@ -14,8 +14,7 @@ import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
 import { setPageMeta } from '../utils/seo';
-import { isNative } from '../utils/platform';
-import { downloadBlob, sharePng } from '../utils/nativeShare';
+import { shareFile } from '../utils/nativeShare';
 
 /** English templates for the reasons a day scored as it did (dates.reasons.*). */
 const REASON_EN: Record<DayReasonCode, string> = {
@@ -30,6 +29,9 @@ const REASON_EN: Record<DayReasonCode, string> = {
 };
 
 const WINDOW_DAYS = 90;
+
+/** The calendar file's type; the blob and shareFile name the same one. */
+const ICS_MIME = 'text/calendar;charset=utf-8';
 
 /**
  * 擇日 — pick a day for something.
@@ -85,14 +87,18 @@ export function AuspiciousDatesPage() {
   const avoid = useMemo(() => daysToAvoid(window, 4), [window]);
 
   // The calendar file in the reader's language. On Android/iOS the WebView
-  // ignores <a download>, so the file goes through the share sheet (the
-  // same path as the data export); on the web it downloads.
+  // ignores <a download>, so shareFile hands it to the share sheet (the same
+  // path as the data export: open it in a calendar, save it, mail it); on
+  // the web it downloads. Only a failure needs saying: the share sheet or
+  // the browser's download already show where the file went.
   const download = async () => {
     const ics = toICS(best, intention, { title: intentionLabel(intention), reason: reasonText });
-    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([ics], { type: ICS_MIME });
     const fileName = `arcana-${intention}-dates.ics`;
-    if (isNative()) await sharePng(blob, fileName, { title: intentionLabel(intention) });
-    else downloadBlob(blob, fileName);
+    const outcome = await shareFile(blob, fileName, ICS_MIME, { title: intentionLabel(intention) });
+    if (outcome === 'failed') {
+      toast(t('dates.exportFailed', { defaultValue: 'Couldn’t save the calendar file. Try again.' }), 'error');
+    }
   };
 
   // The app's language, not the device's.

@@ -11,7 +11,6 @@
     "ritualComplete": "リチュアル完了",
     "streak": "{{n}}日連続達成。このまま続けていきましょう。",
     "savedToday": "今日保存したもの",
-    "savedToHighlights": "ハイライトに保存しました",
     "copiedToClipboard": "クリップボードにコピーしました",
     "dayStreakLabel": "日連続",
     "xpValue": "{{current}} / {{required}} XP",
@@ -248,7 +247,6 @@
     "shuffleView": {
       "inProgress": "デッキをシャッフル中…",
       "clearMind": "心を澄ませて",
-      "spreading": "全78枚を広げています",
       "focusQuestion": "質問に集中してください",
       "shuffleDeck": "デッキをシャッフル",
       "cutDeck": "デッキをカット"
@@ -257,7 +255,6 @@
       "chooseMore_one": "あと{{count}}枚選んでください",
       "chooseMore_other": "あと{{count}}枚選んでください",
       "readyReveal": "めくる準備ができました。",
-      "trustIntuition": "直感を信じて • 全78枚",
       "selectMore": "あと{{count}}枚選ぶ",
       "revealCards": "カードをめくる",
       "chooseMore": "あと{{count}}枚選んでください",
@@ -1908,11 +1905,7 @@
       "tritype": "トライタイプ {{a}}-{{b}}-{{c}}：3つのセンターそれぞれでいちばん強いタイプを、あなた自身のタイプから順に並べたものです。",
       "anxietyAxis": "不安",
       "avoidanceAxis": "回避",
-      "whatYouNeedFromPartner": "パートナーに求めるもの",
-      "courtSplit": "{{what}}について、あなたの回答はちょうど半々に分かれました。上のカードは、決め手となる質問へのあなたの回答に基づいています。",
-      "courtSplitBoth": "スートとランクの両方",
-      "courtSplitSuit": "スート",
-      "courtSplitRank": "ランク"
+      "whatYouNeedFromPartner": "パートナーに求めるもの"
     },
     "takeAnother": "別の診断を受ける",
     "courtCards": {
@@ -5015,7 +5008,6 @@
     },
     "paywall": {
       "heading": "すべてのリーディングを開く",
-      "subheading": "すべてのタロットスプレッド、出生図の全体、パートナーとのシナストリー、星占いの全タブ——広告なし、ムーンストーンの消費なしで。",
       "featureRequires": "{{feature}}はプレミアムで使えます",
       "whatYouUnlock": "プレミアムで開くもの",
       "loadingPrices": "価格を読み込み中…",
@@ -5023,10 +5015,6 @@
         "adFree": {
           "label": "広告なし",
           "desc": "リーディングの合間に広告なし"
-        },
-        "allSpreads": {
-          "label": "全タロットスプレッド",
-          "desc": "最大10枚まで、すべてのスプレッド"
         },
         "unlimitedSaves": {},
         "compatibility": {
@@ -10003,7 +9991,6 @@
       "nextStepTomorrow": "明日またチェックインしに来るか、プレミアムにしましょう。"
     },
     "gateCheckFailed": "残高を確認できませんでした。もう一度お試しください。",
-    "costLineConversation": "会話を始めると<gold>ムーンストーン{{n}}個</gold>を使います",
     "costLinePortrait": "肖像画を描くと<gold>ムーンストーン{{n}}個</gold>を使います"
   },
   "companion": {
@@ -11219,7 +11206,6 @@
     "save": "画像を保存",
     "repaint": "もう一度描く",
     "disclaimer": "あなたのチャートの象徴を芸術的に解釈したものであり、実在の人物を描いたものではありません。",
-    "timedOut": "肖像の仕上がりに、いつもより時間がかかっています。何も失われていません。少し待ってからもう一度お試しください。",
     "waitNearly": "もう少しです。肖像は最大90秒ほどかかります",
     "waitNote": "このまま読み進めてかまいません。できあがると、ここに肖像が表示されます。",
     "waitStill": "まだ描いています。通常は1分ほどかかります"

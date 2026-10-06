@@ -24,11 +24,58 @@ import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
 import { appStorage } from '../../lib/appStorage';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { localDateStr } from '../../utils/localDate';
 
 
 interface HoroscopeSectionProps {
   onShowPaywall: (feature: string) => void;
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+type RangePart = { type: string; value: string; source?: string };
+type RangeFormatter = Intl.DateTimeFormat & {
+  formatRange?: (a: Date, b: Date) => string;
+  formatRangeToParts?: (a: Date, b: Date) => RangePart[];
+};
+
+/**
+ * A sign's dates ("Mar 21 - Apr 19" in utils/zodiac) in the app's language,
+ * through Intl: the locale's own range where it writes each end the way a
+ * single date is written (Mar 21 – Apr 19, 3월 21일 ~ 4월 19일). Japanese and
+ * Chinese switch a range to digits (03/21～04/19), so there each end is
+ * written alone (3月21日) and only the range's separator is borrowed. A
+ * string it cannot read is shown as it is.
+ */
+function localSignDates(range: string, locale: string): string {
+  const m = /^([A-Z][a-z]{2}) (\d{1,2}) - ([A-Z][a-z]{2}) (\d{1,2})$/.exec(range.trim());
+  const from = m ? MONTHS.indexOf(m[1]) : -1;
+  const to = m ? MONTHS.indexOf(m[3]) : -1;
+  if (!m || from < 0 || to < 0) return range;
+  try {
+    // One leap year for both ends: Capricorn's Dec 22 – Jan 19 keeps the
+    // order the eye reads and never prints a year.
+    const start = new Date(2000, from, Number(m[2]));
+    const end = new Date(2000, to, Number(m[4]));
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }) as RangeFormatter;
+    const a = fmt.format(start);
+    const b = fmt.format(end);
+    let whole: string | undefined;
+    let sep = ' – ';
+    try {
+      whole = fmt.formatRange?.(start, end);
+      const shared = fmt.formatRangeToParts?.(start, end).find((p) => p.source === 'shared' && p.type === 'literal');
+      // Only a bare separator: Korean's shared part also carries the 일 of the first date.
+      if (shared?.value.trim() && !/[\p{L}\p{N}]/u.test(shared.value)) sep = shared.value;
+    } catch {
+      /* an engine without ranges: the en dash */
+    }
+    if (whole && whole.length > a.length + b.length && whole.startsWith(a) && whole.endsWith(b)) return whole;
+    return `${a}${sep}${b}`;
+  } catch {
+    return range;
+  }
 }
 
 /**
@@ -250,7 +297,7 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
 
   const handleShare = async () => {
     const shareText = t('horoscope.share.template', {
-      sign: zodiacInfo.name,
+      sign: signName,
       general: horoscope.general,
       affirmation,
     });
@@ -276,7 +323,7 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
           </div>
           <div className="flex-1">
             <h2 className="heading-display-lg heading-strong text-mystic-100">{signName}</h2>
-            <p className="text-meta text-mystic-400">{zodiacInfo.dateRange}</p>
+            <p className="text-meta text-mystic-400">{localSignDates(zodiacInfo.dateRange, getLocale())}</p>
           </div>
           <button
             onClick={handleSave}

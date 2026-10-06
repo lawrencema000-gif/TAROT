@@ -1,6 +1,7 @@
 import { ZIWEI_TRANSFORM_COLOR, withAlpha } from '../../lib/chart';
 import { getLocale } from '../../i18n/config';
 import { useT } from '../../i18n/useT';
+import { useContentOverlay, ct } from '../../i18n/contentOverlay';
 
 export interface ZiweiStar {
   /** Romanised key, e.g. 'Ziwei' */
@@ -38,8 +39,10 @@ const TRANSFORM_LABEL: Record<string, string> = {
  *   寅 丑 子 亥
  *
  * Rows share a height but grow with their content, so a palace with many
- * stars wraps instead of being clipped at 390px. Palace names render in
- * English outside the CJK locales when the data carries one.
+ * stars wraps instead of being clipped at 390px. Palace names come from the
+ * Zi Wei overlay (content-ziwei.json, `palaces.<key>.name`) in ja/ko/zh;
+ * until a locale has them, the CJK locales read the traditional name
+ * (命宮) and English reads the data's English one.
  */
 const GRID_BRANCHES: (number | null)[][] = [
   [5, 6, 7, 8],
@@ -56,6 +59,7 @@ export function ZiweiChart({
   centre: React.ReactNode;
 }) {
   const { t } = useT('app');
+  const { overlay } = useContentOverlay('ziwei');
   const locale = getLocale();
   const cjk = locale === 'ja' || locale === 'zh' || locale === 'ko';
   const byBranch = new Map(palaces.map((p) => [p.branchIdx, p]));
@@ -80,7 +84,7 @@ export function ZiweiChart({
           }
 
           const p = byBranch.get(branch);
-          const name = p ? (cjk || !p.en ? p.cn : p.en) : '';
+          const name = p ? ct(overlay, `palaces.${p.key}.name`, cjk || !p.en ? p.cn : p.en) : '';
           return (
             <div
               key={`${r}-${c}`}

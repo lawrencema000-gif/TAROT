@@ -11,7 +11,6 @@
     "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
     "savedToday": "今日已保存",
-    "savedToHighlights": "已保存到亮点",
     "copiedToClipboard": "已复制到剪贴板",
     "dayStreakLabel": "天连续",
     "xpValue": "{{current}} / {{required}} 经验值",
@@ -248,7 +247,6 @@
     "shuffleView": {
       "inProgress": "正在洗牌…",
       "clearMind": "清空思绪",
-      "spreading": "展开全部78张牌",
       "focusQuestion": "专注于你的问题",
       "shuffleDeck": "洗牌",
       "cutDeck": "切牌"
@@ -257,7 +255,6 @@
       "chooseMore_one": "再选{{count}}张牌",
       "chooseMore_other": "再选{{count}}张牌",
       "readyReveal": "准备揭示。",
-      "trustIntuition": "相信你的直觉 • 全78张",
       "selectMore": "再选 {{count}} 张",
       "revealCards": "揭示牌面",
       "chooseMore": "再选 {{count}} 张",
@@ -1908,11 +1905,7 @@
       "tritype": "三元型 {{a}}-{{b}}-{{c}}：你在三大中心各自的主导类型，你的主类型排在最前。",
       "anxietyAxis": "焦虑",
       "avoidanceAxis": "回避",
-      "whatYouNeedFromPartner": "你需要伴侣给予的",
-      "courtSplit": "你的答案在{{what}}上平分秋色；上面这张牌依据的是你对决胜题的回答。",
-      "courtSplitBoth": "花色和成熟阶段两方面",
-      "courtSplitSuit": "花色",
-      "courtSplitRank": "成熟阶段"
+      "whatYouNeedFromPartner": "你需要伴侣给予的"
     },
     "takeAnother": "再做一个测试",
     "courtCards": {
@@ -5015,7 +5008,6 @@
     },
     "paywall": {
       "heading": "开启每一种解读",
-      "subheading": "全部塔罗牌阵、完整出生星盘、伴侣合盘和运势各分页——无广告，也无需消耗月光石。",
       "featureRequires": "{{feature}}需高级版解锁",
       "whatYouUnlock": "高级版为你开启",
       "loadingPrices": "正在加载价格…",
@@ -5023,10 +5015,6 @@
         "adFree": {
           "label": "无广告",
           "desc": "解读之间没有广告"
-        },
-        "allSpreads": {
-          "label": "全部塔罗牌阵",
-          "desc": "每种牌阵，最多十张牌"
         },
         "unlimitedSaves": {},
         "compatibility": {
@@ -10003,7 +9991,6 @@
       "nextStepTomorrow": "明天回来签到，或升级高级版。"
     },
     "gateCheckFailed": "无法查询你的余额——请重试。",
-    "costLineConversation": "开始一段对话消耗 <gold>{{n}} 月光石</gold>",
     "costLinePortrait": "绘制这幅画像消耗 <gold>{{n}} 月光石</gold>"
   },
   "companion": {
@@ -11219,7 +11206,6 @@
     "save": "保存图片",
     "repaint": "再画一次",
     "disclaimer": "这是对你星盘象征的艺术诠释——不是对真实人物的描绘。",
-    "timedOut": "画像花的时间比平常久。没有任何内容丢失——请稍后再试。",
     "waitNearly": "快好了——画像最多需要 90 秒",
     "waitNote": "你可以继续阅读——画像完成后会出现在这里。",
     "waitStill": "还在绘制中——通常需要一分钟左右"

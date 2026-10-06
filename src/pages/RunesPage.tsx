@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { RotateCcw, Share2, Loader2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import {
   Card,
@@ -19,7 +19,8 @@ import { getLocale } from '../i18n/config';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
-import { castRunes, type RuneCastResult } from '../data/runes';
+import { castRunes, runeId, RUNE_TEXT_FIELDS, type Rune, type RuneCastResult } from '../data/runes';
+import { ctEntry, useContentOverlay } from '../i18n/contentOverlay';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getCardById } from '../data/tarotDeck';
 import { localizeCard } from '../i18n/localizeCard';
@@ -33,11 +34,40 @@ interface OracleReading {
   card?: { name: string; meaning: string; id?: number; deck?: string };
 }
 
+/**
+ * Why the reading did not arrive. `spent`: the server answered this cast
+ * once already and can no longer show that answer (409
+ * REQUEST_ALREADY_USED), so reading it again is a new request.
+ */
+type OracleFailure = AiFailure | 'spent';
+
 type OracleState =
   | { status: 'idle' }
-  | { status: 'loading' }
+  | { status: 'loading'; stillReading?: boolean }
   | { status: 'done'; result: OracleReading }
-  | { status: 'error'; failure: AiFailure };
+  | { status: 'error'; failure: OracleFailure };
+
+/** How many times a request the server is still reading (409 REQUEST_IN_FLIGHT) is sent again. */
+const MAX_IN_FLIGHT_RETRIES = 3;
+
+/** The server's `retryAfterMs`, kept within 1–10 s; 3 s when it sends none. */
+function inFlightWaitMs(retryAfterMs: unknown): number {
+  const ms = Number(retryAfterMs);
+  return Number.isFinite(ms) && ms > 0 ? Math.min(10_000, Math.max(1_000, ms)) : 3_000;
+}
+
+/** The `{ code, details }` of a function's error envelope (a FunctionsHttpError keeps the Response on `context`). */
+async function errorEnvelopeOf(error: unknown): Promise<{ code?: string; details?: Record<string, unknown> } | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: unknown };
+    const e = body?.error;
+    return e && typeof e === 'object' ? (e as { code?: string; details?: Record<string, unknown> }) : null;
+  } catch {
+    return null;
+  }
+}
 
 /** The tarot card the oracle drew alongside, named in the reader's language. */
 function drawnCardName(card: NonNullable<OracleReading['card']>): string {
@@ -70,24 +100,42 @@ export function RunesPage() {
   const [castId, setCastId] = useState<string | null>(null);
   const [oracle, setOracle] = useState<OracleState>({ status: 'idle' });
   const { tryConsume, EarnSheet } = useMoonstoneSpend('quick-reading');
-  // The cast id whose reading has been requested. A second request under
-  // it is a retry of the same body, which the server charges at most once
-  // — so it skips the client balance gate, which a charged-then-lost first
-  // attempt could otherwise leave closed (review #28).
-  const sentCastId = useRef<string | null>(null);
+  // The staves' names, meanings and prompts in the reader's language: the
+  // content-runes overlay, English wherever it has no translation yet.
+  const { overlay: runeOverlay, ready: runesReady } = useContentOverlay('runes');
+  const localRune = useCallback(
+    (rune: Rune): Rune => ctEntry(rune, runeOverlay, `runes.${runeId(rune)}`, RUNE_TEXT_FIELDS),
+    [runeOverlay],
+  );
+  // The request sent for a cast: its id and the exact body. A second
+  // request under that id is a retry, so it sends the same body (the server
+  // keys its one debit on id + body; a body rebuilt after a language switch
+  // would be a new, charged request) and skips the client balance gate,
+  // which a charged-then-lost first attempt could otherwise leave closed
+  // (review #28).
+  const sent = useRef<{ castId: string; body: Record<string, unknown> } | null>(null);
+  // The cast on screen, so an answer that lands after "Cast again" or after
+  // leaving the page is dropped instead of shown under the next cast.
+  const liveCastId = useRef<string | null>(null);
+  useEffect(() => () => {
+    liveCastId.current = null;
+  }, []);
 
   const startCast = async () => {
     setStage('casting');
     setCast(null);
     setOracle({ status: 'idle' });
     await new Promise((r) => setTimeout(r, 1200));
+    const id = crypto.randomUUID();
+    liveCastId.current = id;
     setCast(castRunes());
-    setCastId(crypto.randomUUID());
+    setCastId(id);
     setStage('result');
   };
 
   const reset = () => {
-    sentCastId.current = null;
+    sent.current = null;
+    liveCastId.current = null;
     setStage('intro');
     setQuestion('');
     setCast(null);
@@ -97,33 +145,33 @@ export function RunesPage() {
 
   const readCast = useCallback(async () => {
     if (!cast || !castId) return;
-    if (sentCastId.current !== castId) {
+    let body: Record<string, unknown>;
+    if (sent.current?.castId === castId) {
+      body = sent.current.body;
+    } else {
       const ok = await tryConsume();
       if (!ok) return;
-      sentCastId.current = castId;
-    }
-    setOracle({ status: 'loading' });
-    // The cast is described to the Oracle in the reader's language, like
-    // the question it rides in.
-    const runes = cast.runes
-      .map((r) => {
-        const position = t(`runes.positions.${r.position}`, { defaultValue: r.position });
-        return r.reversed
-          ? t('runes.aiRuneReversed', { defaultValue: '{{rune}} (reversed) in {{position}}', rune: r.rune.name, position })
-          : t('runes.aiRune', { defaultValue: '{{rune}} in {{position}}', rune: r.rune.name, position });
-      })
-      .join(t('runes.aiJoin', { defaultValue: ', ' }));
-    const context = question.trim()
-      ? t('runes.aiCastAsked', { defaultValue: 'my rune cast — {{runes}}, asked about: {{question}}', runes, question: question.trim() })
-      : t('runes.aiCast', { defaultValue: 'my rune cast — {{runes}}', runes });
-    const sunSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
-    const sent = t('askOracle.question', {
-      defaultValue: 'Read this for me — {{context}}. What is it pointing to in my life right now?',
-      context,
-    }).slice(0, 500);
-    const { data, error } = await supabase.functions.invoke('ai-quick-reading', {
-      body: {
-        question: sent,
+      // The cast is described to the Oracle in the reader's language, like
+      // the question it rides in.
+      const runes = cast.runes
+        .map((r) => {
+          const position = t(`runes.positions.${r.position}`, { defaultValue: r.position });
+          const rune = localRune(r.rune).name;
+          return r.reversed
+            ? t('runes.aiRuneReversed', { defaultValue: '{{rune}} (reversed) in {{position}}', rune, position })
+            : t('runes.aiRune', { defaultValue: '{{rune}} in {{position}}', rune, position });
+        })
+        .join(t('runes.aiJoin', { defaultValue: ', ' }));
+      const context = question.trim()
+        ? t('runes.aiCastAsked', { defaultValue: 'my rune cast — {{runes}}, asked about: {{question}}', runes, question: question.trim() })
+        : t('runes.aiCast', { defaultValue: 'my rune cast — {{runes}}', runes });
+      const sunSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
+      const asked = t('askOracle.question', {
+        defaultValue: 'Read this for me — {{context}}. What is it pointing to in my life right now?',
+        context,
+      }).slice(0, 500);
+      body = {
+        question: asked,
         requestId: castId,
         userContext: {
           zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
@@ -131,14 +179,43 @@ export function RunesPage() {
           locale: getLocale(),
           displayName: profile?.displayName ?? undefined,
         },
-      },
-    });
+      };
+      sent.current = { castId, body };
+    }
+    const live = () => liveCastId.current === castId;
+    setOracle({ status: 'loading' });
+    const send = () => supabase.functions.invoke('ai-quick-reading', { body });
+    let res = await send();
+    // 409 REQUEST_IN_FLIGHT: an earlier send of this very request (a retry
+    // after a dropped connection) is still being read. Wait as long as the
+    // server asks and send the same request again; it then answers with
+    // that reading, charged once.
+    for (let retry = 0; retry < MAX_IN_FLIGHT_RETRIES && res.error; retry++) {
+      const envelope = await errorEnvelopeOf(res.error);
+      if (envelope?.code !== 'REQUEST_IN_FLIGHT' || !live()) break;
+      setOracle({ status: 'loading', stillReading: true });
+      await new Promise((r) => setTimeout(r, inFlightWaitMs(envelope.details?.retryAfterMs)));
+      if (!live()) return;
+      res = await send();
+    }
+    if (!live()) return;
+    const { data, error } = res;
     if (error) {
+      if ((await errorEnvelopeOf(error))?.code === 'REQUEST_ALREADY_USED') {
+        // Answered before, and that answer can no longer be shown: this id
+        // is spent, so the next press is a new request under a new id.
+        sent.current = null;
+        const next = crypto.randomUUID();
+        liveCastId.current = next;
+        setCastId(next);
+        setOracle({ status: 'error', failure: 'spent' });
+        return;
+      }
       const failure = await aiFailureOf(error);
       if (failure === 'insufficient' || failure === 'soft-cap') {
         // Refused before the debit: the next request needs the gate again,
         // which opens the Earn sheet with the balance or the reset time.
-        sentCastId.current = null;
+        sent.current = null;
         setOracle({ status: 'idle' });
         if (await tryConsume()) setOracle({ status: 'error', failure: 'generic' });
         return;
@@ -152,7 +229,7 @@ export function RunesPage() {
       return;
     }
     setOracle({ status: 'done', result: payload });
-  }, [cast, castId, question, profile, tryConsume, t]);
+  }, [cast, castId, question, profile, tryConsume, t, localRune]);
 
   if (stage === 'intro') {
     return (
@@ -192,7 +269,9 @@ export function RunesPage() {
     );
   }
 
-  if (stage === 'casting') {
+  // The staves wait for their words: a Japanese reader sees the casting
+  // screen a moment longer, never English names that then change.
+  if (stage === 'casting' || (stage === 'result' && !runesReady)) {
     return (
       <Page spacing="md" className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-10 h-10 text-gold animate-spin mb-3" aria-hidden />
@@ -209,14 +288,16 @@ export function RunesPage() {
       present: t('runes.positions.present', { defaultValue: 'Present' }) as string,
       future: t('runes.positions.future', { defaultValue: 'Future' }) as string,
     };
+    // The cast as it is read: each stave's words in the reader's language.
+    const staves = cast.runes.map((r) => ({ ...r, rune: localRune(r.rune) }));
 
     const handleShare = async () => {
       try {
-        const firstRune = cast.runes[0];
+        const firstRune = staves[0];
         const blob = await renderShareCard({
-          title: cast.runes.map((r) => r.rune.glyph).join(' · '),
+          title: staves.map((r) => r.rune.glyph).join(' · '),
           subtitle: t('runes.castLabel', { defaultValue: 'Three-rune cast' }) as string,
-          tagline: `${firstRune.rune.name} · ${cast.runes[1].rune.name} · ${cast.runes[2].rune.name}`,
+          tagline: staves.map((r) => r.rune.name).join(' · '),
           affirmation: firstRune.rune.prompt,
           brand: t('share.brand.runes', { defaultValue: 'Runes' }) as string,
         });
@@ -228,7 +309,7 @@ export function RunesPage() {
       }
     };
 
-    const castTitle = question.trim() || `${cast.runes.map((r) => r.rune.name).join(' · ')}`;
+    const castTitle = question.trim() || staves.map((r) => r.rune.name).join(' · ');
 
     return (
       <Page spacing="sm">
@@ -251,7 +332,7 @@ export function RunesPage() {
         {/* Three-rune display */}
         <Card variant="glow" padding="lg">
           <div className="grid grid-cols-3 gap-3 mb-2">
-            {cast.runes.map((r, i) => (
+            {staves.map((r, i) => (
               <div key={i} className="text-center">
                 <div className={`text-6xl font-display text-gold ${r.reversed ? 'rotate-180' : ''} transition-transform`}>
                   {r.rune.glyph}
@@ -272,7 +353,7 @@ export function RunesPage() {
         </Card>
 
         {/* Detailed meanings */}
-        {cast.runes.map((r, i) => (
+        {staves.map((r, i) => (
           <Card key={i} padding="lg">
             <div className="flex items-start gap-3 mb-3">
               <div className={`text-4xl font-display text-gold flex-shrink-0 ${r.reversed ? 'rotate-180' : ''}`}>
@@ -337,7 +418,13 @@ export function RunesPage() {
                 reads as dark bars on cream, and a reading surface never
                 loops (review #163). */}
             <Paper as="article">
-              <p className="sr-only">{t('askOracle.drawing', { defaultValue: 'Drawing…' })}</p>
+              {oracle.stillReading ? (
+                // The server is still reading an earlier send of this very
+                // request; this screen waits for that answer.
+                <p className="reading-meta text-center mb-6">{t('runes.stillReading', { defaultValue: 'Still reading…' })}</p>
+              ) : (
+                <p className="sr-only">{t('askOracle.drawing', { defaultValue: 'Drawing…' })}</p>
+              )}
               <div className="mx-auto flex flex-col items-center gap-3">
                 <PaperBlock w={96} h={12} />
                 <PaperBlock w="70%" h={28} />
@@ -365,11 +452,15 @@ export function RunesPage() {
                       : t('runes.oracleFailed', { defaultValue: 'The reading didn’t come through.' })}
                 </p>
                 <p className="text-meta text-mystic-400 mt-1">
-                  {failedBeforeCharge(oracle.failure)
-                    ? t('quickReading.errorNoCharge', { defaultValue: 'Nothing was charged for a reading you did not receive.' })
-                    : t('runes.oracleFailedBody', {
-                        defaultValue: 'Check your connection and try again — this cast is one request, so you won’t be charged twice.',
-                      })}
+                  {oracle.failure === 'spent'
+                    ? t('runes.oracleSpent', {
+                        defaultValue: 'This cast was read once already, and that reading can no longer be shown. Trying again starts a new reading.',
+                      })
+                    : failedBeforeCharge(oracle.failure)
+                      ? t('quickReading.errorNoCharge', { defaultValue: 'Nothing was charged for a reading you did not receive.' })
+                      : t('runes.oracleFailedBody', {
+                          defaultValue: 'Check your connection and try again — this cast is one request, so you won’t be charged twice.',
+                        })}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={readCast}>

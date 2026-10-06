@@ -45,10 +45,41 @@ const SHEET_SHARE = 0.45;
 
 type Placement = { edge: 'bottom'; px: number } | { edge: 'top' };
 
-function pinnedAncestor(el: Element, stack: Element | null): Element | null {
+/**
+ * The top edge of the pinned band `el` belongs to, or null when it belongs
+ * to none. The band is the nearest fixed or sticky ancestor: the bottom
+ * nav, a fixed call-to-action bar. A fixed layer that covers the whole
+ * screen is a band only by what is in it:
+ *  - under one, the band is the outermost box on the way down that starts
+ *    below the top of the screen (the sheet an overlay lifts up);
+ *  - a probe that lands on the layer's backdrop finds the layer's panel
+ *    instead, when the layer sits above the page (z-index above 0);
+ *  - the app's own background (fixed, full screen, z-index 0 or below)
+ *    pins nothing. Read as a band, it sent every toast on a short screen
+ *    to the top.
+ */
+function pinnedBandTop(el: Element, stack: Element | null): number | null {
+  const path: Element[] = [];
   for (let n: Element | null = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-    const pos = getComputedStyle(n).position;
-    if (pos === 'fixed' || pos === 'sticky') return stack && stack.contains(n) ? null : n;
+    if (stack && stack.contains(n)) return null;
+    const style = getComputedStyle(n);
+    if (style.position === 'fixed' || style.position === 'sticky') {
+      const top = n.getBoundingClientRect().top;
+      if (top > 1) return top;
+      for (let i = path.length - 1; i >= 0; i--) {
+        const inner = path[i].getBoundingClientRect().top;
+        if (inner > 1) return inner;
+      }
+      if (!(parseInt(style.zIndex, 10) > 0)) return null;
+      let panel = Infinity;
+      for (const child of Array.from(n.children)) {
+        const r = child.getBoundingClientRect();
+        if (r.height > 0 && r.top > 1) panel = Math.min(panel, r.top);
+      }
+      // An overlay with nothing but full-screen boxes covers the screen.
+      return panel === Infinity ? 0 : panel;
+    }
+    path.push(n);
   }
   return null;
 }
@@ -72,14 +103,13 @@ function measurePlacement(stack: Element | null): Placement {
     let pinnedTop: number | null = null;
     for (const fx of [0.5, 0.2, 0.8]) {
       const hit = document.elementsFromPoint(vw * fx, y).find((el) => !(stack && stack.contains(el)));
-      const pinned = hit ? pinnedAncestor(hit, stack) : null;
-      if (pinned) {
-        pinnedTop = pinned.getBoundingClientRect().top;
-        break;
-      }
+      pinnedTop = hit ? pinnedBandTop(hit, stack) : null;
+      if (pinnedTop !== null) break;
     }
-    if (pinnedTop === null) break;
-    top = Math.min(top, pinnedTop);
+    // Nothing pinned here, or the band already measured (an overlay's
+    // backdrop above its panel): the band ends here.
+    if (pinnedTop === null || pinnedTop >= top) break;
+    top = pinnedTop;
     y = Math.min(y, top);
     if (vh - top > vh * SHEET_SHARE) return { edge: 'top' };
   }
@@ -207,15 +237,21 @@ export function ToastContainer() {
   const [placement, setPlacement] = useState<Placement>({ edge: 'bottom', px: DEFAULT_BOTTOM_PX });
   const stackRef = useRef<HTMLDivElement>(null);
   const reduce = !!useReducedMotion();
-  const visible = toasts.length > 0;
+  const stackKey = toasts.map((t) => t.id).join(',');
 
-  // Measure when the stack appears, and again while it is up whenever the
-  // screen under it changes size (the keyboard, a rotation) or the body's
-  // state classes change (keyboard-open / sheet-open hide the nav). A layout
-  // effect, so the first toast paints where it belongs, not at the default.
+  // Measure whenever a toast arrives or leaves (the screen under the stack
+  // may have changed since the last one), and while the stack is up
+  // whenever the screen changes size (the keyboard, a rotation) or the
+  // body's state classes change (keyboard-open / sheet-open hide the nav).
+  // A layout effect, so a toast paints where it belongs, not at the default.
   useLayoutEffect(() => {
-    if (!visible) return;
-    const remeasure = () => setPlacement(measurePlacement(stackRef.current));
+    if (!stackKey) return;
+    const remeasure = () =>
+      setPlacement((prev) => {
+        const next = measurePlacement(stackRef.current);
+        const same = prev.edge === next.edge && (prev.edge === 'top' || (next.edge === 'bottom' && prev.px === next.px));
+        return same ? prev : next;
+      });
     remeasure();
     const vv = window.visualViewport;
     window.addEventListener('resize', remeasure);
@@ -227,7 +263,7 @@ export function ToastContainer() {
       vv?.removeEventListener('resize', remeasure);
       observer?.disconnect();
     };
-  }, [visible]);
+  }, [stackKey]);
 
   useEffect(() => {
     const listener = (toast: Toast) => {

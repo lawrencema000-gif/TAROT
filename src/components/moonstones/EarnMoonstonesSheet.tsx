@@ -8,6 +8,7 @@
 // "Not now" with nowhere sensible to return to (R7).
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Trans } from 'react-i18next';
 import { Moon, CalendarCheck, Gift, Crown, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
@@ -16,7 +17,7 @@ import { ListRow, ListRowGroup } from '../ui/ListRow';
 import { useAuth } from '../../context/AuthContext';
 import { isNative } from '../../utils/platform';
 import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
-import { doDailyCheckin, hasCheckedInToday } from '../../dal/moonstones';
+import { doDailyCheckin, getBalance, hasCheckedInToday } from '../../dal/moonstones';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
 import { useT } from '../../i18n/useT';
 import { PaywallSheet } from '../premium/PaywallSheet';
@@ -137,6 +138,14 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
         // added, so no "+0 Moonstones". The row turns into "already checked in".
         setFeedback(tr('moonstones.earnSheet.checkinAlready', { defaultValue: 'Already claimed today' }));
         setCheckinDone(true);
+        // That claim credited the balance elsewhere: re-read it, so the line
+        // above is right and the hook can close the sheet if it now covers
+        // the action.
+        if (user) {
+          void getBalance(user.id).then((b) => {
+            if (b.ok && b.data !== balance) onBalanceChange?.(b.data);
+          });
+        }
       } else if (res.ok) {
         setFeedback(
           tr('moonstones.earnSheet.checkinDone', {
@@ -176,14 +185,16 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
 
   // What the user can actually do from here. On the web there is no ad to
   // watch, so "Earn more below" promised a row that was never there (R6
-  // A15); the line now names the one path that exists today.
-  const nextStep = native
+  // A15); the line now names the one path that exists today. The same goes
+  // for the app once today's ads are used up: the ad row is gone then.
+  const offersAd = native && !adsCapped;
+  const nextStep = offersAd
     ? tr('moonstones.earnSheet.earnBelow', { defaultValue: 'Earn more below.' })
     : checkinDone
       ? tr('moonstones.earnSheet.nextStepTomorrow', { defaultValue: 'Come back tomorrow for your check-in, or go Premium.' })
       : tr('moonstones.earnSheet.nextStepCheckin', { defaultValue: 'Check in below for today’s Moonstones, or go Premium.' });
 
-  return (
+  const sheets = (
     <>
       <Sheet open={open} onClose={onClose} title={title} variant="glow">
         <div className="space-y-5 px-1 pb-6">
@@ -252,7 +263,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
           {!isSoftCap && (
             <ListRowGroup>
               {/* Watch ad — native only, and only while an ad can still earn today */}
-              {native && !adsCapped && (
+              {offersAd && (
                 <ListRow
                   icon={<Gift />}
                   tone="gold"
@@ -326,4 +337,11 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
       <PaywallSheet open={showPaywall} onClose={handlePaywallClose} />
     </>
   );
+
+  // Portalled to <body>, as CrisisBanner is. useMoonstoneSpend hands its
+  // callers this sheet to place wherever the hook lives, and a caller inside
+  // a card with a backdrop blur or an entrance animation (a containing block
+  // for `position: fixed`) drew it inside that card: the soulmate portrait's
+  // earn sheet sat mid-page, clipped to the card's width.
+  return typeof document === 'undefined' ? sheets : createPortal(sheets, document.body);
 }

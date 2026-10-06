@@ -143,7 +143,7 @@ function resolveFeatureId(
 // accounts, and the three report pages treat isPremium as an unlock.
 type UnlockKey =
   | 'adFree'
-  | 'allSpreads'
+  | 'everySpread'
   | 'compatibility'
   | 'partnerSynastry'
   | 'deepInterpretations'
@@ -162,7 +162,7 @@ type UnlockIcon = ComponentType<{ className?: string }>;
 
 const UNLOCK_ICONS: Record<UnlockKey, UnlockIcon> = {
   adFree: Ban,
-  allSpreads: TarotCardIcon,
+  everySpread: TarotCardIcon,
   compatibility: Heart,
   partnerSynastry: Users,
   deepInterpretations: Brain,
@@ -178,19 +178,26 @@ const UNLOCK_ICONS: Record<UnlockKey, UnlockIcon> = {
   reports: ScrollText,
 };
 
-/** English for the two unlock entries added in Phase 5c (see BY_FEATURE_DEFAULTS). */
+/**
+ * English for the unlock entries added since Phase 5c (see BY_FEATURE_DEFAULTS).
+ * `everySpread` replaced "All tarot spreads / up to ten cards" (P7 requests,
+ * FX4 #4): Premium opens the playing-card spreads too, the Romany Spread
+ * has 21 cards, and a paywall opened from a playing-card spread led with a
+ * tarot-only promise. It names both decks and no card count.
+ */
 const UNLOCK_DEFAULTS: Partial<Record<UnlockKey, { label: string; desc: string }>> = {
+  everySpread: { label: 'Every spread', desc: 'Tarot and playing cards, Celtic Cross included' },
   celestialMap: { label: 'Celestial Map', desc: 'All 40 planetary lines and city readings' },
   reports: { label: 'Deep reports', desc: 'Natal, career and year ahead, no Moonstones to spend' },
 };
 
 /** Which line leads when the sheet knows what the user tapped. */
 const FEATURE_UNLOCK: Record<PaywallFeatureId, UnlockKey> = {
-  celticCross: 'allSpreads',
-  relationship: 'allSpreads',
-  careerSpread: 'allSpreads',
+  celticCross: 'everySpread',
+  relationship: 'everySpread',
+  careerSpread: 'everySpread',
   shadow: 'shadowWork',
-  unlimitedReadings: 'allSpreads',
+  unlimitedReadings: 'everySpread',
   horoscopeChart: 'birthChart',
   horoscopeForecast: 'horoscopeFull',
   horoscopeExplore: 'horoscopeFull',
@@ -212,7 +219,7 @@ const FEATURE_UNLOCK: Record<PaywallFeatureId, UnlockKey> = {
  * description to a fragment on a phone; five rows that wrap can be read.
  * The matched feature leads, the rest fill from the broadest promises.
  */
-const DEFAULT_ORDER: UnlockKey[] = ['allSpreads', 'birthChart', 'deepInterpretations', 'adFree', 'horoscopeFull'];
+const DEFAULT_ORDER: UnlockKey[] = ['everySpread', 'birthChart', 'deepInterpretations', 'adFree', 'horoscopeFull'];
 const BENEFIT_COUNT = 5;
 
 function benefitsFor(featureId: PaywallFeatureId | null): UnlockKey[] {
@@ -589,9 +596,12 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
     : t('premium.paywall.heading', { defaultValue: 'Open every reading' });
   const outcome = featureId
     ? t(`premium.paywall.byFeature.${featureId}.outcome`, { defaultValue: byFeature?.outcome })
-    : t('premium.paywall.subheading', {
+    : // Deck-neutral: the sheet also opens from a playing-card spread, and
+      // Premium opens those spreads as well ("Every tarot spread" was half
+      // the offer, and the wrong half there).
+      t('premium.paywall.subheadingEverySpread', {
         defaultValue:
-          'Every tarot spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.',
+          'Every tarot and playing-card spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.',
       });
 
   // Continuity: what the user already has. The streak is a real count (the

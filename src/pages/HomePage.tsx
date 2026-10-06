@@ -300,10 +300,17 @@ export function HomePage() {
   const handleTarotSave = async () => {
     if (!user || !drawnTarot) return;
 
+    // A failed write says so. Both failure toasts used to repeat the success
+    // line in red ("Saved to highlights" for a save that did not happen).
     if (tarotSaved) {
       const res = await savedHighlights.deleteByTypeAndDate(user.id, 'tarot', today);
       if (!res.ok) {
-        toast(t('home.removedFromSaved'), 'error');
+        toast(
+          t('home.highlightRemoveFailed', {
+            defaultValue: 'Couldn’t remove this card from your highlights — check your connection and try again.',
+          }),
+          'error',
+        );
         return;
       }
       setTarotSaved(false);
@@ -317,12 +324,17 @@ export function HomePage() {
         content: { card: drawnTarot.card, reversed: drawnTarot.reversed },
       });
       if (!res.ok) {
-        toast(t('home.savedToHighlights'), 'error');
+        toast(
+          t('home.highlightSaveFailed', {
+            defaultValue: 'Couldn’t save this card to your highlights — check your connection and try again.',
+          }),
+          'error',
+        );
         return;
       }
       setTarotSaved(true);
       updateRitualProgress('tarotViewed');
-      toast(t('home.savedToHighlights'), 'success');
+      toast(t('home.highlightSaved', { defaultValue: 'Saved to your highlights' }), 'success');
       checkRitualStatus();
     }
   };

@@ -55,6 +55,8 @@ export function MoonstoneWidget() {
       // since before the claim): nothing was added, so never "+0 Moonstones".
       toast(t('moonstones.alreadyClaimedToday', { defaultValue: 'Already claimed today' }), 'info');
       setCanClaim(false);
+      // The claim credited the balance wherever it happened; show that here.
+      void refresh();
     } else if (res.ok) {
       toast(
         t('moonstones.claimed', {

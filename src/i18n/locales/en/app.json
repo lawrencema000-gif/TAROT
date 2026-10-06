@@ -21,7 +21,6 @@
     "loveTreeSub": "90 seconds, 12 questions → your attachment style as a living tree.",
     "streak": "Day {{n}} of the streak.",
     "savedToday": "Saved today",
-    "savedToHighlights": "Saved to highlights",
     "copiedToClipboard": "Copied to clipboard",
     "dayStreakLabel": "day streak",
     "xpValue": "{{current}} / {{required}} XP",
@@ -69,7 +68,10 @@
       "why": "Why this number",
       "influence": "{{transiting}} {{type}} your {{natal}}",
       "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate."
-    }
+    },
+    "highlightSaved": "Saved to your highlights",
+    "highlightSaveFailed": "Couldn’t save this card to your highlights — check your connection and try again.",
+    "highlightRemoveFailed": "Couldn’t remove this card from your highlights — check your connection and try again."
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -234,7 +236,7 @@
         "title": "Where your work shines"
       },
       "growth": {
-        "body": "Intense places that crack you open — best when you are ready for radical change, identity shifts, and the version of yourself that hasn't arrived yet.",
+        "body": "Intense places that crack you open — best when you are ready for radical change, identity shifts, and the version of yourself that hasn’t arrived yet.",
         "title": "Where you transform"
       },
       "healing": {
@@ -453,7 +455,6 @@
     "shuffleView": {
       "inProgress": "Shuffling the deck",
       "clearMind": "Clear your mind",
-      "spreading": "Tap the deck to cut it when it feels right.",
       "focusQuestion": "Hold your focus, then shuffle.",
       "shuffleDeck": "Shuffle the deck",
       "cutDeck": "Cut the deck",
@@ -463,7 +464,6 @@
       "chooseMore_one": "Choose {{count}} more card",
       "chooseMore_other": "Choose {{count}} more cards",
       "readyReveal": "Ready to reveal.",
-      "trustIntuition": "Trust your intuition • All 78 cards",
       "selectMore": "Select {{count}} more",
       "revealCards": "Reveal cards",
       "chooseMore": "Choose {{count}} more",
@@ -522,7 +522,9 @@
       "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.",
       "shared": "Shared",
       "imageSaved": "Image saved to your downloads",
-      "aiTooManyCards": "AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged."
+      "aiTooManyCards": "AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.",
+      "aiFallback": "The AI reader is unavailable right now. No Moonstones were charged.",
+      "aiFallbackCharged": "The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored."
     },
     "positions": {
       "yourCard": "Your card",
@@ -2126,10 +2128,6 @@
       "anxietyAxis": "Anxiety",
       "avoidanceAxis": "Avoidance",
       "whatYouNeedFromPartner": "What you need from a partner",
-      "courtSplit": "Your answers split evenly on {{what}}; the card above follows your answer to the tie-break question.",
-      "courtSplitBoth": "both suit and rank",
-      "courtSplitSuit": "suit",
-      "courtSplitRank": "rank",
       "courtSuitUnsettled": "Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.",
       "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere."
     },
@@ -4569,10 +4567,7 @@
     "savedToProfile": "Saved to your profile",
     "saveToProfileFailed": "Could not save this to your profile. Try again.",
     "resultNotSaved": "Your result could not be saved. You can still read it here.",
-    "disclaimer": {
-      "wellbeingLead": "A screen, not a diagnosis.",
-      "wellbeingBody": "This check helps you notice how you have been. It cannot diagnose anything. If your result worries you, or you do not feel safe, talk to a doctor or a mental-health professional."
-    }
+    "disclaimer": {}
   },
   "horoscope": {
     "energyScore": "Energy score",
@@ -5305,7 +5300,6 @@
     },
     "paywall": {
       "heading": "Open every reading",
-      "subheading": "Every tarot spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.",
       "featureRequires": "{{feature}} opens with Premium",
       "whatYouUnlock": "What opens with Premium",
       "loadingPrices": "Loading prices…",
@@ -5313,10 +5307,6 @@
         "adFree": {
           "label": "Ad-free",
           "desc": "No ads between readings"
-        },
-        "allSpreads": {
-          "label": "All tarot spreads",
-          "desc": "Every spread, up to ten cards"
         },
         "compatibility": {
           "label": "Full compatibility",
@@ -5369,6 +5359,10 @@
         "reports": {
           "label": "Deep reports",
           "desc": "Natal, career and year ahead, no Moonstones to spend"
+        },
+        "everySpread": {
+          "desc": "Tarot and playing cards, Celtic Cross included",
+          "label": "Every spread"
         }
       },
       "plans": {
@@ -5527,7 +5521,8 @@
         "entriesPlain": "journal",
         "readingsPlain": "saved readings"
       },
-      "restoring": "Checking your purchases…"
+      "restoring": "Checking your purchases…",
+      "subheadingEverySpread": "Every tarot and playing-card spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend."
     },
     "subscription": {
       "heading": "Premium is on",
@@ -10269,12 +10264,15 @@
       "notNow": "Not now",
       "checkinTomorrow": "Your next check-in opens tomorrow",
       "nextStepCheckin": "Check in below for today’s Moonstones, or go Premium.",
-      "nextStepTomorrow": "Come back tomorrow for your check-in, or go Premium."
+      "nextStepTomorrow": "Come back tomorrow for your check-in, or go Premium.",
+      "adDailyCap": "You’ve watched today’s ads. Come back tomorrow.",
+      "adTooSoon": "Give it a few seconds, then try again.",
+      "checkinAlready": "Already claimed today"
     },
     "gateCheckFailed": "Couldn’t check your balance — try again.",
-    "costLineConversation": "Starting a conversation uses <gold>{{n}} Moonstones</gold>",
     "costLinePortrait": "Painting the portrait uses <gold>{{n}} Moonstones</gold>",
-    "costLinePerConversation": "A conversation uses <gold>{{n}} Moonstones</gold>, every reply included"
+    "alreadyClaimedToday": "Already claimed today",
+    "costLineConversationDay": "A conversation uses <gold>{{n}} Moonstones</gold>, every reply for 24 hours included"
   },
   "askOracle": {
     "cta": "Ask the Oracle about this",
@@ -10435,7 +10433,9 @@
     "aiJoin": ", ",
     "aiRune": "{{rune}} in {{position}}",
     "aiRuneReversed": "{{rune}} (reversed) in {{position}}",
-    "shareTitle": "My rune cast"
+    "shareTitle": "My rune cast",
+    "oracleSpent": "This cast was read once already, and that reading can no longer be shown. Trying again starts a new reading.",
+    "stillReading": "Still reading…"
   },
   "dice": {
     "title": "Dice Oracle",
@@ -10919,7 +10919,7 @@
         "1": "What is Mercury retrograde doing to me?",
         "2": "What does my chart say about love?",
         "3": "Why do I clash with certain signs?",
-        "4": "What's the full moon stirring up for me?",
+        "4": "What’s the full moon stirring up for me?",
         "5": "Is Saturn testing me right now?",
         "6": "When will my luck shift this year?",
         "7": "What career suits my birth chart?",
@@ -10948,7 +10948,7 @@
         "6": "Am I burning out or just tired?",
         "7": "Will this interview go my way?",
         "8": "Take the risky offer, or stay safe?",
-        "9": "What's blocking my next step at work?"
+        "9": "What’s blocking my next step at work?"
       },
       "dice": {
         "0": "Should I text them tonight?",
@@ -10960,7 +10960,7 @@
         "6": "Do they miss me?",
         "7": "Should I buy it or wait?",
         "8": "Is it worth one more try?",
-        "9": "Quick roll: how's this week looking?"
+        "9": "Quick roll: how’s this week looking?"
       },
       "general": {
         "0": "Why do I feel stuck lately?",
@@ -10968,11 +10968,11 @@
         "2": "Am I on the right path?",
         "3": "What am I not seeing about my situation?",
         "4": "How do I stop overthinking everything?",
-        "5": "What's draining my energy right now?",
+        "5": "What’s draining my energy right now?",
         "6": "Is it time for a big change?",
         "7": "What do I need to let go of?",
         "8": "Why does everything feel heavy right now?",
-        "9": "What's going well that I keep ignoring?"
+        "9": "What’s going well that I keep ignoring?"
       },
       "iching": {
         "0": "Should I act now, or wait for the moment?",
@@ -11001,16 +11001,17 @@
       "tarot": {
         "0": "What energy surrounds me today?",
         "1": "What does my heart already know?",
-        "2": "Show me what I'm avoiding.",
-        "3": "What's the lesson in this situation?",
-        "4": "What's coming into my life next?",
+        "2": "Show me what I’m avoiding.",
+        "3": "What’s the lesson in this situation?",
+        "4": "What’s coming into my life next?",
         "5": "What do they feel about me, truly?",
         "6": "Pull a card for my week ahead.",
         "7": "What should I release before the new moon?",
         "8": "Where is this connection headed?",
         "9": "What hidden strength can I lean on?"
       }
-    }
+    },
+    "stillReading": "Still reading…"
   },
   "tarotCompanion": {
     "title": "Tarot companion",
@@ -11253,7 +11254,8 @@
       "frameSupport": "The day shares a 三合 frame with your day pillar — quietly supportive",
       "inauspiciousGeneral": "{{mansion}} is a 凶宿 — generally unfavourable, with nothing specific recorded for this",
       "yearClash": "The day clashes with your year branch (沖太歲)"
-    }
+    },
+    "exportFailed": "Couldn’t save the calendar file. Try again."
   },
   "freeCourse": {
     "errors": {
@@ -11666,7 +11668,6 @@
     "save": "Save the image",
     "repaint": "Paint it again",
     "disclaimer": "An artistic interpretation of your chart’s symbolism — not a depiction of a real person.",
-    "timedOut": "The portrait is taking longer than usual. Nothing was lost — try again in a moment.",
     "waitNearly": "Nearly there — portraits take up to 90 seconds",
     "waitNote": "You can keep reading — the portrait appears here when it is done.",
     "waitStill": "Still painting — this usually takes about a minute",

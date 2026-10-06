@@ -14,14 +14,19 @@ export interface UserProfile {
   email: string;
   displayName: string;
   birthDate: string;
-  birthTime?: string;
-  birthPlace?: string;
-  birthLat?: number;
-  birthLon?: number;
+  // The five birth fields below take `null` in an update: null clears the
+  // column (EditProfileForm, when the person empties it), while undefined
+  // is dropped by mapProfileToDb and changes nothing. A profile read from
+  // the database never holds null here: mapDbToProfile turns NULL into
+  // undefined.
+  birthTime?: string | null;
+  birthPlace?: string | null;
+  birthLat?: number | null;
+  birthLon?: number | null;
   /** IANA timezone of the BIRTH PLACE (e.g. Asia/Tokyo). Derived from
    *  geocoded coordinates when available; the DB falls back to the
    *  device timezone for the birth_utc computation. */
-  birthTz?: string;
+  birthTz?: string | null;
   /** Canonical UTC instant of birth (ISO string). Computed by a DB
    *  trigger from birth_date + birth_time interpreted in birthTz —
    *  read this for all chart math; never recompute locally. */

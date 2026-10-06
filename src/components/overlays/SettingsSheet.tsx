@@ -36,8 +36,8 @@ import { EditProfileForm } from '../profile/EditProfileForm';
 import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
 import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
-import { isNative } from '../../utils/platform';
-import { downloadBlob, sharePng } from '../../utils/nativeShare';
+import { shareFile } from '../../utils/nativeShare';
+import { cardBackSrc } from '../../utils/imageUrl';
 import type { UserProfile } from '../../types';
 
 /**
@@ -308,30 +308,25 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         throw error ?? new Error('empty export');
       }
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const mime = 'application/json';
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: mime });
       const fileName = `arcana-data-export-${new Date().toISOString().split('T')[0]}.json`;
 
       // Say "ready" only once the file has actually gone somewhere. The
-      // Android/iOS WebView ignores <a download>, so on native the file is
-      // written to the app cache and handed to the share sheet (save to
-      // Files/Drive, mail it…). nativeShare's native file path is
-      // type-agnostic despite the name `sharePng`; on the web it is a
-      // plain download.
-      if (isNative()) {
-        const outcome = await sharePng(blob, fileName, {
-          title: tAppSettings('settings.exportShareTitle', { defaultValue: 'Your Arcana data' }) as string,
-        });
-        if (outcome === 'shared') {
-          toast(tAppSettings('settings.toasts.exportShared', { defaultValue: 'Your data export is in the place you chose.' }), 'success');
-        } else if (outcome === 'cancelled') {
-          toast(tAppSettings('settings.toasts.exportCancelled', { defaultValue: 'Export not saved. Tap Export my data to try again.' }), 'info');
-        } else {
-          throw new Error('native export share failed');
-        }
-      } else if (downloadBlob(blob, fileName)) {
+      // Android/iOS WebView ignores <a download>, so on native shareFile
+      // writes the file to the app cache and hands it to the share sheet
+      // (save to Files/Drive, mail it…); on the web it is a plain download.
+      const outcome = await shareFile(blob, fileName, mime, {
+        title: tAppSettings('settings.exportShareTitle', { defaultValue: 'Your Arcana data' }) as string,
+      });
+      if (outcome === 'shared') {
+        toast(tAppSettings('settings.toasts.exportShared', { defaultValue: 'Your data export is in the place you chose.' }), 'success');
+      } else if (outcome === 'cancelled') {
+        toast(tAppSettings('settings.toasts.exportCancelled', { defaultValue: 'Export not saved. Tap Export my data to try again.' }), 'info');
+      } else if (outcome === 'downloaded') {
         toast(tAppSettings('settings.toasts.exportDownloaded', { defaultValue: 'Your data export has downloaded.' }), 'success');
       } else {
-        throw new Error('download unavailable');
+        throw new Error('export share failed');
       }
     } catch (err) {
       console.error('Export failed:', err);
@@ -600,7 +595,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                         className={`${SWATCH} aspect-[2/3] bg-mystic-800 min-h-[120px] ${on ? SWATCH_ON : SWATCH_OFF}`}
                       >
                         <img
-                          src={cardBack.url}
+                          src={cardBackSrc(cardBack.url, 120)}
                           alt=""
                           loading="lazy"
                           decoding="async"

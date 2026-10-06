@@ -11,7 +11,6 @@
     "ritualComplete": "의식 완료",
     "streak": "{{n}}일 연속이에요. 이대로 계속 가요.",
     "savedToday": "오늘 저장한 것",
-    "savedToHighlights": "하이라이트에 저장했어요",
     "copiedToClipboard": "클립보드에 복사되었어요",
     "dayStreakLabel": "일 연속",
     "xpValue": "{{current}} / {{required}} XP",
@@ -248,7 +247,6 @@
     "shuffleView": {
       "inProgress": "덱을 섞는 중…",
       "clearMind": "마음을 비우세요",
-      "spreading": "78장을 펼치는 중",
       "focusQuestion": "질문에 집중하세요",
       "shuffleDeck": "덱 섞기",
       "cutDeck": "덱 나누기"
@@ -257,7 +255,6 @@
       "chooseMore_one": "{{count}}장 더 선택하세요",
       "chooseMore_other": "{{count}}장 더 선택하세요",
       "readyReveal": "공개할 준비가 됐어요.",
-      "trustIntuition": "직관을 믿으세요 • 전체 78장",
       "selectMore": "{{count}}장 더 선택",
       "revealCards": "카드 공개",
       "chooseMore": "{{count}}장 더 고르기",
@@ -1908,11 +1905,7 @@
       "tritype": "트라이타입 {{a}}-{{b}}-{{c}}: 세 가지 중심에서 각각 가장 앞서는 유형이에요. 당신의 유형이 맨 앞에 와요.",
       "anxietyAxis": "불안",
       "avoidanceAxis": "회피",
-      "whatYouNeedFromPartner": "파트너에게 필요한 것",
-      "courtSplit": "{{what}}에서 답변이 정확히 반반으로 나뉘었어요. 위 카드는 동점 결정 질문에 대한 당신의 답을 따른 거예요.",
-      "courtSplitBoth": "슈트와 랭크 모두",
-      "courtSplitSuit": "슈트",
-      "courtSplitRank": "랭크"
+      "whatYouNeedFromPartner": "파트너에게 필요한 것"
     },
     "takeAnother": "다른 퀴즈 풀기",
     "courtCards": {
@@ -5015,7 +5008,6 @@
     },
     "paywall": {
       "heading": "모든 리딩을 열어요",
-      "subheading": "모든 타로 스프레드, 전체 출생 차트, 파트너 시너스트리, 운세 탭까지 — 광고 없이, 문스톤 소모 없이.",
       "featureRequires": "{{feature}}은(는) 프리미엄으로 열려요",
       "whatYouUnlock": "프리미엄으로 열리는 것",
       "loadingPrices": "가격을 불러오는 중…",
@@ -5023,10 +5015,6 @@
         "adFree": {
           "label": "광고 없음",
           "desc": "리딩 사이에 광고가 없어요"
-        },
-        "allSpreads": {
-          "label": "모든 타로 스프레드",
-          "desc": "최대 10장까지, 모든 스프레드"
         },
         "unlimitedSaves": {},
         "compatibility": {
@@ -10003,7 +9991,6 @@
       "nextStepTomorrow": "내일 다시 와서 체크인하거나, 프리미엄을 시작하세요."
     },
     "gateCheckFailed": "잔액을 확인하지 못했어요 — 다시 시도해 주세요.",
-    "costLineConversation": "대화를 시작하면 <gold>문스톤 {{n}}개</gold>를 사용해요",
     "costLinePortrait": "초상을 그리면 <gold>문스톤 {{n}}개</gold>를 사용해요"
   },
   "companion": {
@@ -11219,7 +11206,6 @@
     "save": "이미지 저장",
     "repaint": "다시 그리기",
     "disclaimer": "당신 차트의 상징을 예술적으로 해석한 것이에요 — 실제 인물을 그린 것이 아니에요.",
-    "timedOut": "초상을 그리는 데 평소보다 오래 걸리고 있어요. 잃은 것은 없어요 — 잠시 후 다시 시도해 주세요.",
     "waitNearly": "거의 다 됐어요 — 초상은 최대 90초까지 걸려요",
     "waitNote": "계속 읽고 있어도 돼요 — 초상이 완성되면 여기에 나타나요.",
     "waitStill": "아직 그리는 중이에요 — 보통 1분 정도 걸려요"

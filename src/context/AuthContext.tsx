@@ -1196,10 +1196,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow.
+      // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow, and
+      // come back the way Google does — to this screen, in this language.
+      // It used to return to the bare origin, so the person landed on Home:
+      // /signin and /signup are where the signed-in app sends them on to
+      // the `next` they arrived with (App.tsx keeps it in sessionStorage,
+      // because the code exchange strips the query string), and the origin
+      // never asked.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}?lang=${getLocale()}` },
       });
       if (error) {
         setOAuthProcessing(false);

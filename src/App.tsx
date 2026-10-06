@@ -168,7 +168,10 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith('/blog') ||
     pathname.startsWith('/tarot-meanings') ||
     pathname.startsWith('/reading/') ||
-    pathname.startsWith('/spreads') ||
+    // The spread builder saves to an account; everything else under /spreads
+    // is the public catalogue (a signed-out /spreads/builder used to land on
+    // the catalogue's :slug route as "Spread not found").
+    (pathname.startsWith('/spreads') && !pathname.startsWith('/spreads/builder')) ||
     pathname.startsWith('/astrology') ||
     pathname.startsWith('/numerology') ||
     pathname.startsWith('/glossary') ||

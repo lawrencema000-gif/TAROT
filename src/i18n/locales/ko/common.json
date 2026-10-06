@@ -32,7 +32,8 @@
     "mansions": "이십팔수",
     "goodDays": "택일",
     "wishingSky": "소원의 별하늘",
-    "cartomancy": "트럼프 카드"
+    "cartomancy": "트럼프 카드",
+    "mainNavigation": "주 메뉴"
   },
   "actions": {
     "continue": "계속",
@@ -46,7 +47,8 @@
     "loading": "불러오는 중…",
     "send": "보내기",
     "refresh": "새로고침",
-    "back": "뒤로"
+    "back": "뒤로",
+    "dismiss": "닫기"
   },
   "labels": {
     "email": "이메일",
@@ -146,14 +148,21 @@
       "quiz": "퀴즈는 판정이 아니라 거울이에요.",
       "ai": "이 리딩은 AI 모델이 작성했어요.",
       "cartomancy": "카드는 암시할 뿐, 결정하지 않아요.",
-      "general": "조언이 아니라 성찰을 위한 내용이에요."
+      "general": "조언이 아니라 성찰을 위한 내용이에요.",
+      "wellbeing": "진단이 아니라 점검이에요."
     },
-    "body": "Arcana의 리딩은 자기 성찰과 엔터테인먼트를 위한 것이에요. 의료, 법률, 재무, 심리에 관한 조언이 아니에요."
+    "body": "Arcana의 리딩은 자기 성찰과 엔터테인먼트를 위한 것이에요. 의료, 법률, 재무, 심리에 관한 조언이 아니에요.",
+    "bodies": {
+      "wellbeing": "이 질문들은 요즘 당신이 어떤 기분으로 지내 왔는지를 비춰 봐요. 무엇도 진단할 수는 없어요. 힘들거나 안전하지 않다고 느낀다면, 믿을 수 있는 사람이나 의사, 정신건강 전문가와 꼭 이야기해 주세요."
+    }
   },
   "affirmation": {
     "label": "확언"
   },
   "resultSheet": {
     "summaryHeading": "리딩 요약"
+  },
+  "resultLayout": {
+    "readFullReading": "전체 리딩 읽기"
   }
 }

@@ -24,7 +24,9 @@
     "back": "이전 단계",
     "appleCta": "Apple로 계속",
     "showPassword": "비밀번호 표시",
-    "hidePassword": "비밀번호 숨기기"
+    "hidePassword": "비밀번호 숨기기",
+    "passwordPlaceholderShort": "비밀번호",
+    "passwordRule": "영문과 숫자를 포함해 8자 이상."
   },
   "toast": {
     "invalidEmail": "이메일이 올바르지 않은 것 같아요 — 확인하고 다시 시도해 주세요.",

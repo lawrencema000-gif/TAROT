@@ -32,7 +32,8 @@
     "mansions": "二十八宿",
     "goodDays": "择日",
     "wishingSky": "許願星空",
-    "cartomancy": "扑克牌"
+    "cartomancy": "扑克牌",
+    "mainNavigation": "主导航"
   },
   "actions": {
     "continue": "继续",
@@ -46,7 +47,8 @@
     "loading": "加载中…",
     "send": "发送",
     "refresh": "刷新",
-    "back": "返回"
+    "back": "返回",
+    "dismiss": "关闭"
   },
   "labels": {
     "email": "邮箱",
@@ -146,14 +148,21 @@
       "quiz": "测试是一面镜子，不是定论。",
       "ai": "这段解读由 AI 模型撰写。",
       "cartomancy": "牌只是提示，不做决定。",
-      "general": "供你反思，而非建议。"
+      "general": "供你反思，而非建议。",
+      "wellbeing": "这是筛查，不是诊断。"
     },
-    "body": "Arcana 的解读用于自我反思与娱乐，不构成医疗、法律、财务或心理方面的建议。"
+    "body": "Arcana 的解读用于自我反思与娱乐，不构成医疗、法律、财务或心理方面的建议。",
+    "bodies": {
+      "wellbeing": "这些问题反映的是你最近的感受，无法用来诊断任何情况。如果你正在苦苦支撑，或感到不安全，请和你信任的人、医生或心理健康专业人士谈一谈。"
+    }
   },
   "affirmation": {
     "label": "肯定语"
   },
   "resultSheet": {
     "summaryHeading": "解读摘要"
+  },
+  "resultLayout": {
+    "readFullReading": "阅读完整解读"
   }
 }

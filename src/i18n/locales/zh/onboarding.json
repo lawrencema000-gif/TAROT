@@ -24,7 +24,9 @@
     "back": "上一步",
     "appleCta": "使用 Apple 继续",
     "showPassword": "显示密码",
-    "hidePassword": "隐藏密码"
+    "hidePassword": "隐藏密码",
+    "passwordPlaceholderShort": "密码",
+    "passwordRule": "至少 8 位，需包含字母和数字。"
   },
   "toast": {
     "invalidEmail": "邮箱地址格式不正确，请检查后重试。",

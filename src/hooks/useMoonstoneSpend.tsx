@@ -99,6 +99,9 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
         reason={reason}
         balance={balance}
         resetAt={resetAt}
+        // What this action costs: a 150-Moonstone portrait must not read
+        // "You need 50 Moonstones" (P7 #10).
+        cost={cost}
         onBalanceChange={(newBalance) => {
           setBalance(newBalance);
           // If the user earned enough mid-sheet, auto-close so they can retry.

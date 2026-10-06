@@ -23,6 +23,7 @@ import { Button, Chip, TarotFace } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import { flipHaptics } from '../../../utils/haptics';
+import { cardBackSrc } from '../../../utils/imageUrl';
 import type { TarotCard } from '../../../types';
 import type { SpreadLayoutPosition } from '../../../data/tarotSpreads';
 import type { DrawnCard, FocusArea } from './types';
@@ -60,7 +61,6 @@ const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
 const FLIP_STAGGER_MS = 120;
 /** A beat after the last card has landed before the reading arrives. */
 const FLIP_SETTLE_MS = 120;
-const DEFAULT_BACK = '/card-backs/default.svg';
 
 const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
@@ -148,7 +148,6 @@ export function TarotRevealView(props: TarotRevealViewProps) {
   } = props;
 
   const reduceMotion = !!useReducedMotion();
-  const backSrc = cardBackUrl || DEFAULT_BACK;
 
   /*
    * The hand feels every turn: a tap as the card is pressed, a thump as
@@ -225,6 +224,8 @@ export function TarotRevealView(props: TarotRevealViewProps) {
   const gridCols = Math.round(across * scale);
   const tableWidth =
     across <= 1 ? 'max-w-[10rem]' : across <= 2 ? 'max-w-[15.75rem]' : across <= 3 ? 'max-w-sm' : 'max-w-md';
+  // A lone column is 160 px wide; two or more across are 120 px at most.
+  const backSrc = cardBackSrc(cardBackUrl, across <= 1 ? 160 : 120);
   const radius: 'inset' | 'card' = single ? 'card' : 'inset';
   // More than three cards across leaves a face about 60 px wide at 390:
   // too narrow for a name on the plate, so it carries the rank and suit

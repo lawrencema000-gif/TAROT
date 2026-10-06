@@ -159,6 +159,26 @@ export async function deleteById(id: string, userId: string): Promise<Result<voi
   return { ok: true, data: undefined };
 }
 
+/**
+ * Attach the AI interpretation to a reading that was saved before it was
+ * generated, in place. RLS ("Users can update own tarot readings") limits
+ * the update to the owner's rows; an update that matched no row (deleted
+ * meanwhile, or not the caller's) is reported as a failure, not a success.
+ */
+export async function updateInterpretation(id: string, interpretation: string): Promise<Result<void>> {
+  const { data, error } = await supabase
+    .from('tarot_readings')
+    .update({ interpretation })
+    .eq('id', id)
+    .select('id');
+  if (error) {
+    captureException('dal.tarotReadings.updateInterpretation', error, { id });
+    return { ok: false, error: error.message };
+  }
+  if (!data || data.length === 0) return { ok: false, error: 'not found' };
+  return { ok: true, data: undefined };
+}
+
 export async function listRecent(
   userId: string,
   limit = 10,

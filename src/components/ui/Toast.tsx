@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, X, ChevronRight } from 'lucide-react';
 import { useT } from '../../i18n/useT';
@@ -35,6 +35,56 @@ const colors = {
 
 /** How many toasts can be on screen before the oldest is retired. */
 const MAX_VISIBLE = 3;
+
+/** Space between the stack and whatever is pinned to the bottom of the screen. */
+const GAP_PX = 12;
+/** Where the stack sits before the first measurement: above the bottom nav. */
+const DEFAULT_BOTTOM_PX = 96;
+/** A pinned band taller than this share of the screen is a sheet: the stack moves to the top. */
+const SHEET_SHARE = 0.45;
+
+type Placement = { edge: 'bottom'; px: number } | { edge: 'top' };
+
+function pinnedAncestor(el: Element, stack: Element | null): Element | null {
+  for (let n: Element | null = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+    const pos = getComputedStyle(n).position;
+    if (pos === 'fixed' || pos === 'sticky') return stack && stack.contains(n) ? null : n;
+  }
+  return null;
+}
+
+/**
+ * How much of the bottom of the screen is covered by things pinned there:
+ * the bottom nav, a fixed call-to-action bar, the update banner, an open
+ * sheet. Probed with elementsFromPoint up from the bottom edge, so nothing
+ * has to register itself; it stops at the first row with nothing pinned.
+ * The toast stack used to sit at a fixed 96px and covered a primary button
+ * that sat above the nav (R7 #143); it now sits above whatever is there.
+ */
+function measurePlacement(stack: Element | null): Placement {
+  if (typeof document === 'undefined' || typeof document.elementsFromPoint !== 'function') {
+    return { edge: 'bottom', px: DEFAULT_BOTTOM_PX };
+  }
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  let top = vh;
+  for (let y = vh - 2; y > 0; y -= 8) {
+    let pinnedTop: number | null = null;
+    for (const fx of [0.5, 0.2, 0.8]) {
+      const hit = document.elementsFromPoint(vw * fx, y).find((el) => !(stack && stack.contains(el)));
+      const pinned = hit ? pinnedAncestor(hit, stack) : null;
+      if (pinned) {
+        pinnedTop = pinned.getBoundingClientRect().top;
+        break;
+      }
+    }
+    if (pinnedTop === null) break;
+    top = Math.min(top, pinnedTop);
+    y = Math.min(y, top);
+    if (vh - top > vh * SHEET_SHARE) return { edge: 'top' };
+  }
+  return { edge: 'bottom', px: Math.max(vh - top, 0) + GAP_PX };
+}
 
 const EASE_OUT: [number, number, number, number] = [0.22, 0.8, 0.25, 1];
 const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1];
@@ -154,7 +204,30 @@ export function dismissToasts(filter?: DismissFilter) {
  */
 export function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [placement, setPlacement] = useState<Placement>({ edge: 'bottom', px: DEFAULT_BOTTOM_PX });
+  const stackRef = useRef<HTMLDivElement>(null);
   const reduce = !!useReducedMotion();
+  const visible = toasts.length > 0;
+
+  // Measure when the stack appears, and again while it is up whenever the
+  // screen under it changes size (the keyboard, a rotation) or the body's
+  // state classes change (keyboard-open / sheet-open hide the nav). A layout
+  // effect, so the first toast paints where it belongs, not at the default.
+  useLayoutEffect(() => {
+    if (!visible) return;
+    const remeasure = () => setPlacement(measurePlacement(stackRef.current));
+    remeasure();
+    const vv = window.visualViewport;
+    window.addEventListener('resize', remeasure);
+    vv?.addEventListener('resize', remeasure);
+    const observer = typeof MutationObserver === 'function' ? new MutationObserver(remeasure) : null;
+    observer?.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => {
+      window.removeEventListener('resize', remeasure);
+      vv?.removeEventListener('resize', remeasure);
+      observer?.disconnect();
+    };
+  }, [visible]);
 
   useEffect(() => {
     const listener = (toast: Toast) => {
@@ -208,7 +281,15 @@ export function ToastContainer() {
   const polite = toasts.filter(t => t.type !== 'error');
   const errors = toasts.filter(t => t.type === 'error');
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm">
+    <div
+      ref={stackRef}
+      className="fixed left-4 right-4 z-50 flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm"
+      style={
+        placement.edge === 'top'
+          ? { top: `calc(env(safe-area-inset-top, 0px) + ${GAP_PX}px)` }
+          : { bottom: `${placement.px}px` }
+      }
+    >
       <LayoutGroup>
         <div role="status" aria-live="polite" className="flex flex-col gap-2">
           <AnimatePresence initial={false}>

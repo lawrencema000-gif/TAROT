@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
+import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
@@ -128,7 +129,10 @@ export function NatalChartReportPage() {
   const hasBirthData = !!profile?.birthDate;
   // Rewarded ads only exist inside the native shell; on the web the page
   // must not promise one (R5 M-9).
-  const adAvailable = isNative();
+  const adNative = isNative();
+  // ...and an ad is offered only while one can still earn today: after the
+  // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
+  const adAvailable = useCanOfferAd();
 
   const checkUnlock = useCallback(async () => {
     if (!user || !hasBirthData) {
@@ -461,7 +465,7 @@ export function NatalChartReportPage() {
             </div>
           ) : undefined}
         />
-        {moonstonesEnabled && adAvailable && (
+        {moonstonesEnabled && adNative && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}

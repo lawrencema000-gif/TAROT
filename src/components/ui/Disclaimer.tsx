@@ -1,7 +1,7 @@
 import { useT } from '../../i18n/useT';
 import { EyebrowLabel } from './Ornament';
 
-export type DisclaimerKind = 'tarot' | 'astrology' | 'quiz' | 'ai' | 'cartomancy' | 'general';
+export type DisclaimerKind = 'tarot' | 'astrology' | 'quiz' | 'ai' | 'cartomancy' | 'general' | 'wellbeing';
 
 /** English defaults; the locale files carry common:disclaimer.lead.<kind>. */
 const LEAD: Record<DisclaimerKind, string> = {
@@ -11,10 +11,22 @@ const LEAD: Record<DisclaimerKind, string> = {
   ai: 'This reading was written by a model.',
   cartomancy: 'The cards suggest; they don’t decide.',
   general: 'For reflection, not advice.',
+  wellbeing: 'A screen, not a diagnosis.',
 };
 
 const BODY =
   'Arcana’s readings are for reflection and entertainment. They are not medical, legal, financial or psychological advice.';
+
+/**
+ * Kinds whose screen the standing body would undercut. A wellbeing check
+ * (low mood, anxiety, burnout) closes under crisis resources and "please
+ * talk to someone"; calling it "entertainment" there unsays the screen
+ * (R7 #107). common:disclaimer.bodies.<kind>.
+ */
+const KIND_BODY: Partial<Record<DisclaimerKind, string>> = {
+  wellbeing:
+    'These questions reflect how you have been feeling. They cannot diagnose anything. If you are struggling, or do not feel safe, please talk to someone you trust, a doctor or a mental-health professional.',
+};
 
 export interface DisclaimerProps {
   /** Which lead sentence. Pick the one that names what the screen just did. */
@@ -65,7 +77,12 @@ export function Disclaimer({ kind = 'general', tail = false, lead, body, classNa
       <p className="mt-2 text-ui font-semibold text-mystic-100">
         {lead ?? t(`disclaimer.lead.${kind}`, { defaultValue: LEAD[kind] })}
       </p>
-      <p className="mt-1.5 text-meta text-mystic-400">{body ?? t('disclaimer.body', { defaultValue: BODY })}</p>
+      <p className="mt-1.5 text-meta text-mystic-400">
+        {body ??
+          (KIND_BODY[kind]
+            ? t(`disclaimer.bodies.${kind}`, { defaultValue: KIND_BODY[kind] })
+            : t('disclaimer.body', { defaultValue: BODY }))}
+      </p>
     </aside>
   );
 }

@@ -15,6 +15,7 @@ import { shareOrDownloadCard } from '../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../services/shareableReadings';
 import { localDateStr, localYesterdayStr } from '../utils/localDate';
 import { flipHaptics } from '../utils/haptics';
+import { cardBackSrc } from '../utils/imageUrl';
 import type { TarotCard } from '../types';
 
 /**
@@ -51,7 +52,6 @@ const FLIP_MS = 520;
 const FLIP_EASE: [number, number, number, number] = [0.22, 0.68, 0.24, 1];
 /** The two cards not taken show themselves after the chosen one has landed. */
 const OTHERS_DELAY_MS = 650;
-const DEFAULT_BACK = '/card-backs/default.svg';
 const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
@@ -238,7 +238,8 @@ export function PickACardPage() {
 
   // Always fall back to the Arcana back so every card-selection surface
   // shows a real card, never a placeholder icon.
-  const cardBackUrl = profile?.card_back_url || DEFAULT_BACK;
+  // The cards are 128 px wide at most (w-32): the display rendition, not the stored PNG.
+  const cardBackUrl = cardBackSrc(profile?.card_back_url, 128);
 
   if (!deck || !options) {
     return (

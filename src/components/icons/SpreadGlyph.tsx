@@ -22,8 +22,11 @@ export const SPREAD_LAYOUTS: Record<SpreadGlyphId, SpreadGlyphPosition[]> = {
   relationship: [{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 1, y: 1 }, { x: 2, y: 0 }, { x: 2, y: 2 }],
   career: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
   shadow: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+  // In position order, where CelticCrossLayout lays them: the heart and
+  // what crosses it, then below (3), behind (4), above (5), ahead (6), and
+  // the staff read from the bottom up.
   'celtic-cross': [
-    { x: 1, y: 1 }, { x: 1, y: 1, r: 90 }, { x: 1, y: 0 }, { x: 1, y: 2 }, { x: 0, y: 1 }, { x: 2, y: 1 },
+    { x: 1, y: 1 }, { x: 1, y: 1, r: 90 }, { x: 1, y: 2 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 2, y: 1 },
     { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 0 },
   ],
 };

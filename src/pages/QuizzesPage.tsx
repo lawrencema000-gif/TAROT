@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Page, PageHeader, toast } from '../components/ui';
+import { ListSkeleton, Page, PageHeader, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -10,7 +10,7 @@ import { awardXP } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
 import { ratePromptService } from '../services/ratePrompt';
 import { useT } from '../i18n/useT';
-import { getLocale } from '../i18n/config';
+import { getLocale, ensureRouteStrings, routeStringsReady } from '../i18n/config';
 import { localizeQuiz, localizeQuizMetadata, localizeExtraQuizMetadata } from '../i18n/localizeQuiz';
 import { mbtiQuiz, loveLanguageQuiz, moodCheckQuiz, quizMetadata } from '../data/quizzes';
 import { bigFiveQuiz } from '../data/bigFiveQuiz';
@@ -79,6 +79,24 @@ export function QuizzesPage() {
   // useTranslation re-renders on languageChanged, so reading the normalised
   // locale here is enough for the registry memo below to follow it.
   const locale = getLocale();
+  // The quiz strings are not in the boot bundle (R7 #139, vite.config.ts
+  // routeNamespacePlugin): every state below waits for them, per locale.
+  // Derived on every render, so a language switch shows the skeleton on its
+  // first render rather than one frame of the new locale without its strings.
+  // `attempted` opens the gate after a failed load too: the screen then
+  // reads the English in its data modules (every t() carries a defaultValue).
+  const [attempted, setAttempted] = useState<string | null>(null);
+  const stringsReady = routeStringsReady('quizzes', locale) || attempted === locale;
+  useEffect(() => {
+    if (stringsReady) return;
+    let live = true;
+    void ensureRouteStrings('quizzes', locale).then(() => {
+      if (live) setAttempted(locale);
+    });
+    return () => {
+      live = false;
+    };
+  }, [locale, stringsReady]);
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp, openRatePrompt } = useGamification();
   const [state, setState] = useState<QuizState>('list');
@@ -133,6 +151,8 @@ export function QuizzesPage() {
   // `const quizzes = [`, the `...(flag ? [...] : [])` spreads for the
   // flag-gated entries and one `quiz: localizeQuiz(` per always-on entry.
   const quizzes = useMemo<QuizListEntry[]>(() => {
+    // Localising before the strings land would only log a missing key per string.
+    if (!stringsReady) return [];
     const quizzes = [
       { quiz: localizeQuiz(moodCheckQuiz), metadata: localizeQuizMetadata('mood-check', quizMetadata['mood-check']) },
       ...(ayurvedaEnabled
@@ -154,7 +174,7 @@ export function QuizzesPage() {
     return quizzes;
     // `locale` is the dependency that matters: localizeQuiz reads i18n itself.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale, ayurvedaEnabled, extraQuizzesEnabled]);
+  }, [locale, stringsReady, ayurvedaEnabled, extraQuizzesEnabled]);
 
   const startQuiz = (quiz: QuizDefinition) => {
     submittingRef.current = false;
@@ -283,6 +303,16 @@ export function QuizzesPage() {
 
     if (user && recorded) void afterCompletion(user.id, quiz);
   };
+
+  if (!stringsReady) {
+    // quizzes.title is a boot key, so the header never flashes a raw key.
+    return (
+      <Page spacing="md">
+        <PageHeader title={tApp('quizzes.title')} />
+        <ListSkeleton count={5} />
+      </Page>
+    );
+  }
 
   if (state === 'taking' && progress) {
     return (

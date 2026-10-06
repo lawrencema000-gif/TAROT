@@ -21,6 +21,7 @@ import { Card, Badge, Chip, ListRow, ListRowGroup } from '../../ui';
 import { SpreadGlyph } from '../../icons/SpreadGlyph';
 import { useT } from '../../../i18n/useT';
 import { isNative } from '../../../utils/platform';
+import { cardBackSrc } from '../../../utils/imageUrl';
 import type { SpreadCategory } from '../../../data/tarotSpreads';
 import type { PickerSpread } from './types';
 
@@ -56,7 +57,9 @@ export function TarotHomeView({
   onOpenBrowse,
 }: TarotHomeViewProps) {
   const { t } = useT('app');
-  const backSrc = cardBackUrl || '/card-backs/default.svg';
+  // The daily-draw card is 96 px wide (w-24); the fanned backs are 32 px (w-8).
+  const backSrc = cardBackSrc(cardBackUrl, 96);
+  const fanBackSrc = cardBackSrc(cardBackUrl, 32);
   const [category, setCategory] = useState<SpreadCategory | 'all'>('all');
   const shown = category === 'all' ? spreads : spreads.filter((s) => s.category === category);
 
@@ -158,7 +161,7 @@ export function TarotHomeView({
                   aria-hidden
                 >
                   <img
-                    src={backSrc}
+                    src={fanBackSrc}
                     alt=""
                     decoding="async"
                     className="w-full h-full object-cover pointer-events-none select-none"

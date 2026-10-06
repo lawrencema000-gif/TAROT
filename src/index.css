@@ -1441,19 +1441,20 @@
  * stays glued to viewport bottom + ends up sandwiched between the
  * form and the keyboard, blocking the input the user is typing into.
  *
- * Two-layer fix:
- *   1. `body.keyboard-open` is toggled by the visualViewport listener
- *      in App.tsx — works on every Capacitor / Android browser.
- *   2. `:has(input:focus, ...)` is a CSS-only fallback that works in
- *      modern Chromium-based webviews even before the JS effect runs.
+ * `body.keyboard-open` is toggled by the visualViewport listener in
+ * App.tsx: the keyboard is up while the visual viewport is 150px+ shorter
+ * than the window. It hides the nav with `display: none` rather than
+ * translate — translate would still steal the input's tap target.
  *
- * Both layers hide the nav with `display: none` rather than translate
- * — translate would still steal the input's tap target. Display:none
- * removes it entirely from the layout flow.
+ * Not on focus. A `:has(input:focus, textarea:focus, …)` fallback used to
+ * hide the nav too, and it broke the first tap on every form with a
+ * button near the bottom of the screen: pressing the button blurs the
+ * field, the nav comes back under the finger before the release, and the
+ * click lands on the nav (R7, FX5 #20). The keyboard closes later than
+ * the blur, so the class does not have that race.
  */
 body.keyboard-open nav[data-main-nav],
-body.sheet-open nav[data-main-nav],
-body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[data-main-nav] {
+body.sheet-open nav[data-main-nav] {
   display: none;
 }
 

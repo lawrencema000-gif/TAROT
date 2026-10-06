@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
+import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
   getCareerArchetype,
@@ -38,7 +39,10 @@ export function CareerReportPage() {
   const [showWatchAd, setShowWatchAd] = useState(false);
   const moonstonesEnabled = useFeatureFlag('moonstones');
   // Rewarded ads only exist inside the native shell (R5 M-9).
-  const adAvailable = isNative();
+  const adNative = isNative();
+  // ...and an ad is offered only while one can still earn today: after the
+  // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
+  const adAvailable = useCanOfferAd();
 
   const checkUnlock = useCallback(async () => {
     if (!user || !mbti) {
@@ -300,7 +304,7 @@ export function CareerReportPage() {
             </div>
           }
         />
-        {moonstonesEnabled && adAvailable && (
+        {moonstonesEnabled && adNative && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}

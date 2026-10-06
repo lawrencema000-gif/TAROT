@@ -208,7 +208,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Celtic Cross',
     category: 'general',
     cardCount: 10,
-    glyph: [{ x: 1, y: 1 }, { x: 1, y: 1, r: 90 }, { x: 1, y: 0 }, { x: 1, y: 2 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 0 }],
+    glyph: [{ x: 1, y: 1 }, { x: 1, y: 1, r: 90 }, { x: 1, y: 2 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 2, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 0 }],
     difficulty: 'advanced',
     durationMin: 45,
     shortDescription:

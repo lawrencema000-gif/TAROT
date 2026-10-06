@@ -110,6 +110,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const [drawnCards, setDrawnCards] = useState<DealtCard[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  /** The saved row of the reading on screen, so an AI reading generated after the save is attached to it. */
+  const savedIdRef = useRef<string | null>(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [deckCards, setDeckCards] = useState<number[]>([]);
@@ -230,6 +232,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setDrawCount(null);
     setQuestion('');
     setIsSaved(false);
+    savedIdRef.current = null;
     setShowAIInterpretation(false);
     setAiInterpretation(null);
   };
@@ -310,6 +313,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
     setIsShuffling(false);
     setView('select');
   };
@@ -376,6 +380,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
     setView('reveal');
   };
 
@@ -456,7 +461,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const handleSaveReading = async () => {
     if (!user || drawnCards.length === 0) return;
     if (isSaved) return;
-    const res = await tarotReadings.insert({
+    const res = await tarotReadings.insertReturningId({
       userId: user.id,
       date: new Date().toISOString().split('T')[0],
       spreadType: currentSlug,
@@ -470,6 +475,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       toast(t('readings.toasts.saveFailed'), 'error');
       return;
     }
+    savedIdRef.current = res.data.id;
     setIsSaved(true);
     toast(t('readings.toasts.readingSaved'), 'success');
     // awardXP reports 'reading_saved' to the achievements itself.
@@ -502,8 +508,32 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         jokers: settings.jokers,
         reversals: settings.reversals,
       });
+      if (result.fallback === true) {
+        // Every AI provider failed and the server sent the cards' own
+        // meanings instead, refunding the charge: not shown or saved as
+        // the AI reading, so asking again later makes a real attempt.
+        toast(
+          result.charged === true
+            ? t('readings.toasts.aiFallbackCharged', {
+                defaultValue: 'The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored.',
+              })
+            : t('readings.toasts.aiFallback', {
+                defaultValue: 'The AI reader is unavailable right now. No Moonstones were charged.',
+              }),
+          'error',
+        );
+        return;
+      }
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
+      // Saved before the AI reading was asked for: the saved row carries
+      // the text that was paid for (it used to keep none).
+      const savedId = savedIdRef.current;
+      if (savedId) {
+        void tarotReadings.updateInterpretation(savedId, result.interpretation).then((r) => {
+          if (!r.ok) console.warn('[CartomancySection] could not attach the interpretation to the saved reading:', r.error);
+        });
+      }
       toast(result.usedLlm ? t('readings.toasts.aiReady') : t('readings.toasts.interpretationReady'), 'success');
     } catch (error) {
       await refundAi();

@@ -9,7 +9,8 @@
  *
  * Namespaces (all five load for the active locale before the app renders):
  *   - common     — navigation, buttons, toasts, errors, validation
- *   - app        — every screen
+ *   - app        — every screen (the quiz route's strings arrive later,
+ *                  via ensureRouteStrings)
  *   - onboarding
  *   - landing
  *   - tarot      — the translated tarot corpus (card names and meanings)
@@ -38,7 +39,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from './locales/en/common.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enLanding from './locales/en/landing.json';
-import enApp from './locales/en/app.json';
+// `?boot`: app.json minus the quiz route's strings (vite.config.ts
+// routeNamespacePlugin); ensureRouteStrings below adds them on /quizzes.
+import enApp from './locales/en/app.json?boot';
 import { CJK_FONTS, cjkFontHref } from './cjkFonts';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
@@ -87,7 +90,7 @@ type BundleLoader = () => Promise<{ default: ResourceKey }>;
 const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
   ja: {
     common: () => import('./locales/ja/common.json'),
-    app: () => import('./locales/ja/app.json'),
+    app: () => import('./locales/ja/app.json?boot'),
     onboarding: () => import('./locales/ja/onboarding.json'),
     landing: () => import('./locales/ja/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ja/tarot.json'),
@@ -95,7 +98,7 @@ const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
   },
   ko: {
     common: () => import('./locales/ko/common.json'),
-    app: () => import('./locales/ko/app.json'),
+    app: () => import('./locales/ko/app.json?boot'),
     onboarding: () => import('./locales/ko/onboarding.json'),
     landing: () => import('./locales/ko/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ko/tarot.json'),
@@ -103,7 +106,7 @@ const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
   },
   zh: {
     common: () => import('./locales/zh/common.json'),
-    app: () => import('./locales/zh/app.json'),
+    app: () => import('./locales/zh/app.json?boot'),
     onboarding: () => import('./locales/zh/onboarding.json'),
     landing: () => import('./locales/zh/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/zh/tarot.json'),
@@ -240,6 +243,56 @@ export async function setLocale(locale: SupportedLocale): Promise<void> {
 export function getLocale(): SupportedLocale {
   const current = normalizeLocale(i18n.language);
   return current ?? 'en';
+}
+
+// ---------------------------------------------------------------------------
+// Route strings. The quiz route's part of `app` (extraQuizzes, ayurveda,
+// quizzes.* except share and title) is split out of every locale's boot
+// bundle at build time (vite.config.ts routeNamespacePlugin, R7 #139) and
+// added to the store here, the first time the route needs it. English is
+// loaded too, because it is the fallback for every key a translation lacks.
+// ---------------------------------------------------------------------------
+
+export type RouteStrings = 'quizzes';
+
+const ROUTE_BUNDLES: Record<SupportedLocale, Record<RouteStrings, BundleLoader>> = {
+  en: { quizzes: () => import('./locales/en/app.json?route=quizzes') },
+  ja: { quizzes: () => import('./locales/ja/app.json?route=quizzes') },
+  ko: { quizzes: () => import('./locales/ko/app.json?route=quizzes') },
+  zh: { quizzes: () => import('./locales/zh/app.json?route=quizzes') },
+};
+
+const routeLoaded = new Set<string>();
+
+/** True once the route's strings for `lng` and for English are in the store. */
+export function routeStringsReady(route: RouteStrings, lng: SupportedLocale = getLocale()): boolean {
+  return routeLoaded.has(`en:${route}`) && routeLoaded.has(`${lng}:${route}`);
+}
+
+/**
+ * Adds the route's strings for `lng` and English to the `app` namespace.
+ * Deep-merged without overwriting, so the boot keys stay as they are.
+ * Never rejects: a bundle that fails to load leaves its keys missing, the
+ * screen falls back to the English in its data modules (every t() there
+ * carries a defaultValue), and the next visit to the route tries again.
+ */
+export async function ensureRouteStrings(route: RouteStrings, lng: SupportedLocale = getLocale()): Promise<void> {
+  const want: SupportedLocale[] = lng === 'en' ? ['en'] : [lng, 'en'];
+  await Promise.all(
+    want.map(async (l) => {
+      const key = `${l}:${route}`;
+      if (routeLoaded.has(key)) return;
+      try {
+        const mod = await ROUTE_BUNDLES[l][route]();
+        i18n.addResourceBundle(l, 'app', mod.default, true, false);
+        routeLoaded.add(key);
+      } catch (err) {
+        // The same stale-chunk path as the lazy backend: an obsolete tab
+        // surfaces it so main.tsx's guard can do its one-shot reload.
+        if (err instanceof Error && STALE_CHUNK_RE.test(err.message)) void Promise.reject(err);
+      }
+    }),
+  );
 }
 
 // Expose a minimal i18n reference on globalThis so non-React modules

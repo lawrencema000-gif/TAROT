@@ -5,13 +5,14 @@ import { Button, Chip, EyebrowLabel, KeywordRow, ReadingProse, ResultSheet, Tag,
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
 import { flipHaptics } from '../../utils/haptics';
+import { cardBackSrc } from '../../utils/imageUrl';
 import type { CartoSpread, PlayingCard, PlayingSuit } from '../../types/cartomancy';
 import { getPlayingCard, type CombinationHit } from '../../data/cartomancy';
 import { localizeCombinationHit, localizedYesNoLabel } from '../../i18n/localizePlayingCard';
 import { PlayingCardFace } from './PlayingCardFace';
 import { SuitGlyph } from './SuitGlyph';
 import { CartomancyLayout, tileFor } from './CartomancyLayout';
-import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS, DEFAULT_BACK } from './FlipTile';
+import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS } from './FlipTile';
 import { cartoMainMeaning, cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
 
 /**
@@ -102,10 +103,11 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
   } = props;
 
   const reduceMotion = !!useReducedMotion();
-  const backSrc = cardBackUrl || DEFAULT_BACK;
   const count = drawnCards.length;
   const tile = tileFor(spread, count);
   const small = tile === 'sm' || tile === 'xs';
+  // The hero card is 160 px wide (w-40), a small tile 60 px, any other 120 px at most.
+  const backSrc = cardBackSrc(cardBackUrl, tile === 'hero' ? 160 : small ? 60 : 120);
 
   const cancelHaptic = useRef<() => void>(() => {});
   useEffect(() => () => cancelHaptic.current(), []);

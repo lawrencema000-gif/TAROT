@@ -20,6 +20,10 @@ import { doDailyCheckin, hasCheckedInToday } from '../../dal/moonstones';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
 import { useT } from '../../i18n/useT';
 import { PaywallSheet } from '../premium/PaywallSheet';
+import { useAdCreditsLeft } from './useAdCreditsLeft';
+
+/** How long the ad row stays disabled after a "too soon" refusal. */
+const AD_COOLDOWN_MS = 5_000;
 
 export type EarnSheetReason = 'insufficient' | 'soft-cap' | 'browse' | null;
 
@@ -63,9 +67,13 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
   const [checkinBusy, setCheckinBusy] = useState(false);
   const [checkinDone, setCheckinDone] = useState<boolean | null>(null);
   const [adAvailable, setAdAvailable] = useState(false);
+  /** A short pause after the server said the ad came too soon after the last one. */
+  const [adCooling, setAdCooling] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const native = isNative();
+  // Today's six ad credits used up: an ad would earn nothing, so none is offered.
+  const adsCapped = useAdCreditsLeft() === 0;
 
   useEffect(() => {
     if (!open || !user) return;
@@ -77,6 +85,12 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
       setAdAvailable(rewardedAdsService.isReady());
     }
   }, [open, user, native]);
+
+  useEffect(() => {
+    if (!adCooling) return;
+    const timer = window.setTimeout(() => setAdCooling(false), AD_COOLDOWN_MS);
+    return () => window.clearTimeout(timer);
+  }, [adCooling]);
 
   async function handleWatchAd() {
     if (!native) return;
@@ -99,6 +113,12 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
         );
       } else if (outcome === 'dismissed') {
         setFeedback(tr('moonstones.earnSheet.adDismissed', { defaultValue: 'Ad closed early — watch it to the end to earn Moonstones.' }));
+      } else if (outcome === 'daily-cap') {
+        // The service has already broadcast 0 credits left, so the ad row goes.
+        setFeedback(tr('moonstones.earnSheet.adDailyCap', { defaultValue: 'You’ve watched today’s ads. Come back tomorrow.' }));
+      } else if (outcome === 'too-soon') {
+        setFeedback(tr('moonstones.earnSheet.adTooSoon', { defaultValue: 'Give it a few seconds, then try again.' }));
+        setAdCooling(true);
       } else {
         setFeedback(tr('moonstones.earnSheet.adsUnavailable', { defaultValue: 'Ads aren’t available on this device.' }));
       }
@@ -112,7 +132,12 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
     setFeedback(null);
     try {
       const res = await doDailyCheckin();
-      if (res.ok) {
+      if (res.ok && (res.data.alreadyCheckedIn || res.data.amountAwarded <= 0)) {
+        // Claimed earlier today (another tab, another device): nothing was
+        // added, so no "+0 Moonstones". The row turns into "already checked in".
+        setFeedback(tr('moonstones.earnSheet.checkinAlready', { defaultValue: 'Already claimed today' }));
+        setCheckinDone(true);
+      } else if (res.ok) {
         setFeedback(
           tr('moonstones.earnSheet.checkinDone', {
             defaultValue: '{{n}} Moonstones added — day {{day}} of your streak.',
@@ -226,8 +251,8 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
 
           {!isSoftCap && (
             <ListRowGroup>
-              {/* Watch ad — native only */}
-              {native && (
+              {/* Watch ad — native only, and only while an ad can still earn today */}
+              {native && !adsCapped && (
                 <ListRow
                   icon={<Gift />}
                   tone="gold"
@@ -239,7 +264,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
                   }
                   value={<span className="text-gold font-semibold tabular-nums">+{MOONSTONES_PER_AD}</span>}
                   onClick={handleWatchAd}
-                  disabled={adBusy || !adAvailable}
+                  disabled={adBusy || adCooling || !adAvailable}
                 />
               )}
 

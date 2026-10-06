@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle2 } from 'lucide-react';
 import { Button, Card, Page, PageHeader, Tag, EyebrowLabel, TarotFace } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,7 @@ import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { ctEntry, useContentOverlay } from '../i18n/contentOverlay';
 import { localizeCard } from '../i18n/localizeCard';
+import { signInPathFor } from '../components/layout/authReturn';
 
 /**
  * The Fool's Journey — the 22-level rank ladder mapped to the Major Arcana.
@@ -23,6 +24,7 @@ import { localizeCard } from '../i18n/localizeCard';
 export function FoolsJourneyPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { t } = useT('app');
   const { overlay } = useContentOverlay('journey');
 
@@ -44,7 +46,7 @@ export function FoolsJourneyPage() {
     return (
       <Page className="py-16 text-center">
         <p className="text-body text-mystic-300 mb-4">{t('foolsJourney.signInHint', { defaultValue: "Sign in to see your Fool's Journey." })}</p>
-        <Button variant="gold" onClick={() => navigate('/signin')}>
+        <Button variant="gold" onClick={() => navigate(signInPathFor(pathname))}>
           {t('foolsJourney.signIn', { defaultValue: 'Sign in to walk the journey' })}
         </Button>
       </Page>

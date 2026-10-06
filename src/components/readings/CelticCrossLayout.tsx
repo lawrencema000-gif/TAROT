@@ -6,6 +6,7 @@ import { TarotFace } from '../ui/TarotFace';
 import type { TarotCard } from '../../types';
 import { flipHaptics } from '../../utils/haptics';
 import { getBundledThumbPath } from '../../config/bundledImages';
+import { cardBackSrc } from '../../utils/imageUrl';
 
 /*
  * The Celtic Cross, laid out as the reader would lay it: a cross of six —
@@ -22,7 +23,6 @@ import { getBundledThumbPath } from '../../config/bundledImages';
 const FLIP_MS = 520;
 const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
 const FLIP_STAGGER_MS = 120;
-const DEFAULT_BACK = '/card-backs/default.svg';
 const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
@@ -63,7 +63,8 @@ export function CelticCrossLayout({
 }: CelticCrossLayoutProps) {
   const { t } = useT('app');
   const reduceMotion = !!useReducedMotion();
-  const backSrc = cardBackUrl || DEFAULT_BACK;
+  // Every slot is 56 px wide (w-14).
+  const backSrc = cardBackSrc(cardBackUrl, 56);
 
   // Held so an unmount mid-flip cannot buzz a phone whose card is gone.
   const cancelHaptic = useRef<() => void>(() => {});

@@ -1,6 +1,7 @@
 import { HTMLAttributes, ReactNode, forwardRef, type MouseEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { EyebrowLabel, SectionDivider } from './Ornament';
+import { useT } from '../../i18n/useT';
 
 /**
  * The top of a screen.
@@ -37,7 +38,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
   onBack?: (e: MouseEvent<HTMLElement>) => void;
   /** Back destination. Renders an anchor instead of a button. */
   backHref?: string;
-  /** Text beside the back arrow. Default "Back". */
+  /** Text beside the back arrow. Default common:actions.back ("Back"). */
   backLabel?: string;
   /** Right-hand slot, level with the title. Buttons, a menu, a count. */
   action?: ReactNode;
@@ -65,7 +66,7 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(
       subtitle,
       onBack,
       backHref,
-      backLabel = 'Back',
+      backLabel,
       action,
       icon,
       as: Heading = 'h1',
@@ -76,6 +77,8 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(
     },
     ref,
   ) => {
+    const { t } = useT('common');
+    const back = backLabel ?? t('actions.back', { defaultValue: 'Back' });
     const centered = align === 'center';
     const showBack = Boolean(backHref || onBack);
 
@@ -85,12 +88,12 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(
           backHref ? (
             <a href={backHref} onClick={onBack} className={backClass}>
               <ArrowLeft className="w-4 h-4" aria-hidden />
-              {backLabel}
+              {back}
             </a>
           ) : (
             <button type="button" onClick={onBack} className={backClass}>
               <ArrowLeft className="w-4 h-4" aria-hidden />
-              {backLabel}
+              {back}
             </button>
           )
         )}

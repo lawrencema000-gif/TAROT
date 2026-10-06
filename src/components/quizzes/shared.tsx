@@ -80,40 +80,9 @@ export function ResultBody({
       <Paper as="article" tail>
         <div className="mx-auto max-w-[66ch] space-y-8">{children}</div>
       </Paper>
-      {disclaimer === 'wellbeing' ? <WellbeingDisclaimer /> : <Disclaimer kind="quiz" tail />}
+      <Disclaimer kind={disclaimer} tail />
       {after}
     </>
-  );
-}
-
-/**
- * The Disclaimer block's recipe (mystic-900 tail under the Paper, tracked
- * label, one bold lead, one quiet body) with wellbeing copy: a screen, not
- * a diagnosis, and who to talk to. The Disclaimer primitive has one body
- * sentence for every kind; until it grows a `wellbeing` kind this is its
- * twin, held to the same classes.
- */
-function WellbeingDisclaimer() {
-  const { t } = useT('app');
-  const { t: tc } = useT('common');
-  return (
-    <aside
-      className="-mx-4 rounded-b-sheet bg-mystic-900 px-6 py-5 text-center"
-      aria-label={tc('disclaimer.label', { defaultValue: 'Disclaimer' })}
-    >
-      <EyebrowLabel tone="ink" className="text-mystic-400">
-        {tc('disclaimer.label', { defaultValue: 'Disclaimer' })}
-      </EyebrowLabel>
-      <p className="mt-2 text-ui font-semibold text-mystic-100">
-        {t('quizzes.disclaimer.wellbeingLead', { defaultValue: 'A screen, not a diagnosis.' })}
-      </p>
-      <p className="mt-1.5 text-meta text-mystic-400">
-        {t('quizzes.disclaimer.wellbeingBody', {
-          defaultValue:
-            'This check helps you notice how you have been. It cannot diagnose anything. If your result worries you, or you do not feel safe, talk to a doctor or a mental-health professional.',
-        })}
-      </p>
-    </aside>
   );
 }
 

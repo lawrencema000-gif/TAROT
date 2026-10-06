@@ -50,7 +50,12 @@ export function MoonstoneWidget() {
   const claim = async () => {
     setClaiming(true);
     const res = await moonstones.doDailyCheckin();
-    if (res.ok) {
+    if (res.ok && (res.data.alreadyCheckedIn || res.data.amountAwarded <= 0)) {
+      // Claimed earlier today (another tab or device, or a widget left open
+      // since before the claim): nothing was added, so never "+0 Moonstones".
+      toast(t('moonstones.alreadyClaimedToday', { defaultValue: 'Already claimed today' }), 'info');
+      setCanClaim(false);
+    } else if (res.ok) {
       toast(
         t('moonstones.claimed', {
           defaultValue: '+{{n}} Moonstones · Day {{d}} streak',
@@ -59,8 +64,11 @@ export function MoonstoneWidget() {
         }),
         'success',
       );
-      setBalance((b) => b + res.data.amountAwarded);
+      // doDailyCheckin has already broadcast the new balance, which the
+      // listener above applied; adding the award on top counted it twice.
+      // Re-read instead, in case that broadcast's balance read failed.
       setCanClaim(false);
+      void refresh();
     } else {
       toast(t('moonstones.claimFailed', { defaultValue: 'Could not claim today\'s reward' }), 'error');
     }

@@ -55,6 +55,28 @@ function readDeck(): Deck {
  * connection returns the same reading instead of charging twice.
  */
 
+/** How many times a request the server is still reading (409 REQUEST_IN_FLIGHT) is sent again. */
+const MAX_IN_FLIGHT_RETRIES = 3;
+
+/** The server's `retryAfterMs`, kept within 1–10 s; 3 s when it sends none. */
+function inFlightWaitMs(retryAfterMs: unknown): number {
+  const ms = Number(retryAfterMs);
+  return Number.isFinite(ms) ? Math.min(10_000, Math.max(1_000, ms)) : 3_000;
+}
+
+/** The `{ code, details }` of a function's error envelope (a FunctionsHttpError keeps the Response on `context`). */
+async function errorEnvelopeOf(error: unknown): Promise<{ code?: string; details?: Record<string, unknown> } | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: unknown };
+    const e = body?.error;
+    return e && typeof e === 'object' ? (e as { code?: string; details?: Record<string, unknown> }) : null;
+  } catch {
+    return null;
+  }
+}
+
 interface QuickReadingCard {
   name: string;
   meaning: string;
@@ -110,10 +132,19 @@ export function QuickReadingPage() {
   const [question, setQuestion] = useState(() => (typeof seeded === 'string' ? seeded.slice(0, 500) : ''));
   const [deck, setDeck] = useState<Deck>(readDeck);
   const [loading, setLoading] = useState(false);
+  /** The server is still reading an earlier send of this same request; this screen waits for it. */
+  const [stillReading, setStillReading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
   const [error, setError] = useState<Exclude<AiFailure, 'insufficient' | 'soft-cap'> | null>(null);
   const [context, setContext] = useState<OracleContext>('general');
   const { tryConsume, EarnSheet } = useMoonstoneSpend('quick-reading');
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   // The request this screen last sent and did not get a reading back for:
   // its id and the exact body. Pressing the button again with the same
   // body is a retry of that request — the server charges it at most once
@@ -189,13 +220,32 @@ export function QuickReadingPage() {
     }
     const requestId = attempt.current.id;
     setLoading(true);
+    setStillReading(false);
     setError(null);
     setResult(null);
-    const { data, error: err } = await supabase.functions.invoke('ai-quick-reading', {
-      body: { ...body, requestId },
-    });
+    const send = () => supabase.functions.invoke('ai-quick-reading', { body: { ...body, requestId } });
+    let res = await send();
+    // 409 REQUEST_IN_FLIGHT: an earlier send of this very request (same id,
+    // same body) is still being read — typically a retry after a dropped
+    // connection. Wait as long as the server asks and send the same request
+    // again; it then answers with that reading, charged once.
+    for (let retry = 0; retry < MAX_IN_FLIGHT_RETRIES && res.error; retry++) {
+      const envelope = await errorEnvelopeOf(res.error);
+      if (envelope?.code !== 'REQUEST_IN_FLIGHT') break;
+      if (!mounted.current) return;
+      setStillReading(true);
+      await new Promise((r) => setTimeout(r, inFlightWaitMs(envelope.details?.retryAfterMs)));
+      if (!mounted.current) return;
+      res = await send();
+    }
+    if (!mounted.current) return;
     setLoading(false);
+    setStillReading(false);
+    const { data, error: err } = res;
     if (err) {
+      // Answered before, but the answer can no longer be replayed: this id is
+      // spent, so the next press starts a new request.
+      if ((await errorEnvelopeOf(err))?.code === 'REQUEST_ALREADY_USED') attempt.current = null;
       const failure = await aiFailureOf(err);
       if (failure === 'insufficient' || failure === 'soft-cap') {
         // Rejected before the debit: there is nothing to retry for free.
@@ -279,7 +329,11 @@ export function QuickReadingPage() {
         <PageHeader title={title} />
         <div role="status" aria-live="polite" aria-busy="true">
           <ResultSheet headingLevel="h2" glyph={<KeyRound strokeWidth={1.5} />} eyebrow={yourQuestion} title={question.trim()}>
-            <p className="reading-meta text-center">{t('quickReading.drawing', { defaultValue: 'Drawing…' })}</p>
+            <p className="reading-meta text-center">
+              {stillReading
+                ? t('quickReading.stillReading', { defaultValue: 'Still reading…' })
+                : t('quickReading.drawing', { defaultValue: 'Drawing…' })}
+            </p>
             <div className="mt-6 flex items-center gap-4">
               <PaperBlock w={80} h={120} className="shrink-0" />
               <div className="flex-1 space-y-2.5">

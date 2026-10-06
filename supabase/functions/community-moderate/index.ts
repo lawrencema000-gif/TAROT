@@ -249,11 +249,14 @@ Deno.serve(handler<Request, ModerationResponse>({
     }
 
     if (verdict === "block") {
+      // A refused post can still come from someone in crisis (self-harm
+      // words next to a threat, say). The refusal must not swallow the
+      // helplines: the client shows them instead of the guidelines notice.
       throw new AppError(
         "CONTENT_BLOCKED",
         "This content goes against our community guidelines.",
         422,
-        { categories },
+        { categories, crisis, ...(crisis ? { crisisResources: CRISIS_RESOURCES } : {}) },
       );
     }
 

@@ -6,6 +6,7 @@ import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
 import { flipHaptics } from '../../utils/haptics';
+import { cardBackSrc } from '../../utils/imageUrl';
 import { firstSentences, hasMoreThan } from '../readings/tarot/readingText';
 
 /*
@@ -28,7 +29,6 @@ import { firstSentences, hasMoreThan } from '../readings/tarot/readingText';
  */
 const FLIP_MS = 520;
 const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
-const DEFAULT_BACK = '/card-backs/default.svg';
 
 /** Inline rather than a utility class: the 3D chain is load-bearing here,
  *  and a card that loses `backface-visibility` shows both faces at once. */
@@ -71,8 +71,9 @@ export function TarotFlipCard({
   });
 
   // The face-down side is the Arcana back — the same card the reader
-  // meets everywhere else in the product — or the back they chose.
-  const backSrc = cardBackUrl || DEFAULT_BACK;
+  // meets everywhere else in the product — or the back they chose, at
+  // the card's 180 px (max-w-[180px]).
+  const backSrc = cardBackSrc(cardBackUrl, 180);
 
   const reduceMotion = !!useReducedMotion();
   // Held so an unmount mid-flip cannot buzz a phone whose card is gone.

@@ -15,7 +15,9 @@ import { localizeCard } from '../i18n/localizeCard';
 import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { cartoPositionLabel } from '../components/cartomancy/cartoFlow';
 import { firstSentences } from '../components/readings/tarot/readingText';
-import { tarotPositionLabel, tarotSpreadTitle } from '../components/readings/tarot/spreadLabels';
+import { LEGACY_SPREAD_KEY, isCustomSpreadId, tarotPositionLabel, tarotSpreadTitle } from '../components/readings/tarot/spreadLabels';
+import { getSpreadBySlug } from '../data/tarotSpreads';
+import { getSpreadCardCount } from '../services/readingInterpretation';
 
 /**
  * /reading/:token — a reading someone shared, as one public page in every
@@ -32,6 +34,21 @@ import { tarotPositionLabel, tarotSpreadTitle } from '../components/readings/tar
  */
 
 type SharedCard = { kind: 'tarot'; card: TarotCard; reversed: boolean } | { kind: 'playing'; card: PlayingCard; reversed: boolean };
+
+/** Catalogue slugs TarotSection casts as a legacy id (as spreadLabels reads them). */
+const TAROT_ALIAS: Record<string, string> = {
+  'one-card-daily': 'single',
+  'three-card-past-present-future': 'three-card',
+  'relationship-cross': 'relationship',
+};
+
+/** How many positions a tarot spread names, or null when only the reader's account knows (a custom spread). */
+function tarotSpreadSize(spreadId: string): number | null {
+  const id = TAROT_ALIAS[spreadId] ?? spreadId;
+  if (LEGACY_SPREAD_KEY[id]) return getSpreadCardCount(id);
+  if (isCustomSpreadId(id)) return null;
+  return getSpreadBySlug(id)?.positions.length ?? null;
+}
 
 export function SharedReadingPage() {
   const { t } = useT('app');
@@ -63,16 +80,28 @@ export function SharedReadingPage() {
     return out;
   }, [payload, deck, locale, cartoReady]);
 
-  /** What each position is called (1-based): the spread's own names, else "Position n". */
+  /**
+   * What each position is called (1-based): the spread's own names, else
+   * "Position n". A table dealt with a different number of cards than the
+   * spread names (the five-card Yes or No of a three-position spread) is
+   * numbered card by card instead, as the reveal numbers it: three named
+   * positions followed by "Position 4" and "Position 5" read as a spread
+   * the reader never laid.
+   */
   const positionLabel = useMemo(() => {
     const generic = (n: number) => t('readings.positions.generic', { index: n });
     if (!payload) return generic;
+    const numbered = (n: number) => t('readings.selectView.cardN', { n, defaultValue: 'Card {{n}}' });
+    const dealt = payload.c.length;
     if (deck === 'playing') {
       if (!cartoReady) return generic;
       const spread = getCartoSpread(payload.s);
+      if (spread && spread.cardCount !== dealt) return numbered;
       const localized = spread ? localizeCartoSpread(spread, locale) : null;
       return (n: number) => cartoPositionLabel(localized, n - 1, generic);
     }
+    const size = tarotSpreadSize(payload.s);
+    if (size !== null && size !== dealt) return numbered;
     return (n: number) => tarotPositionLabel(t, payload.s, n - 1);
   }, [payload, deck, locale, t, cartoReady]);
 

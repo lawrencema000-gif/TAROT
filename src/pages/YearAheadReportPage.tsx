@@ -9,6 +9,7 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
+import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 
@@ -71,7 +72,10 @@ export function YearAheadReportPage() {
   const hasNatalChart = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
   const currentYear = new Date().getFullYear();
   // Rewarded ads only exist inside the native shell (R5 M-9).
-  const adAvailable = isNative();
+  const adNative = isNative();
+  // ...and an ad is offered only while one can still earn today: after the
+  // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
+  const adAvailable = useCanOfferAd();
 
   // The twelve months the forecast covers (the unlock reference is the
   // calendar year), named in the user's locale for the paywall's preview.
@@ -336,7 +340,7 @@ export function YearAheadReportPage() {
             </div>
           }
         />
-        {moonstonesEnabled && adAvailable && (
+        {moonstonesEnabled && adNative && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}

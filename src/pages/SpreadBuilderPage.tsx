@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Save, Play } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,7 @@ import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { MAX_AI_TAROT_CARDS } from '../services/readingInterpretation';
+import { signInPathFor } from '../components/layout/authReturn';
 
 interface Position {
   name: string;
@@ -35,6 +36,7 @@ export function SpreadBuilderPage() {
   const { t } = useT('app');
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [positions, setPositions] = useState<Position[]>([
@@ -149,7 +151,7 @@ export function SpreadBuilderPage() {
     return (
       <Page className="py-16 text-center">
         <p className="text-mystic-300 mb-4">{t('spreadBuilder.signInPrompt', { defaultValue: 'Custom spreads are saved to your account.' })}</p>
-        <Button variant="gold" onClick={() => navigate('/signin')}>
+        <Button variant="gold" onClick={() => navigate(signInPathFor(pathname))}>
           {t('spreadBuilder.signInCta', { defaultValue: 'Sign in to build a spread' })}
         </Button>
       </Page>

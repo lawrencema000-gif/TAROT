@@ -63,6 +63,18 @@ export interface ReadingResponse {
   cardCount: number;
   deck?: ReadingDeck;
   cached?: boolean;
+  /**
+   * True when every AI provider failed and the server answered with the
+   * cards' own meanings instead (p7 #34). That text is not what was asked
+   * for: callers must not present it as the AI reading, nor save it as one.
+   */
+  fallback?: boolean;
+  /**
+   * Sent with `fallback`: whether the Moonstone debit stands. The server
+   * gives the charge back for a fallback, so this is false unless that
+   * refund itself failed.
+   */
+  charged?: boolean;
 }
 
 function newRequestId(): string {

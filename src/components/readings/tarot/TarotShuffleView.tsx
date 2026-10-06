@@ -25,6 +25,7 @@ import { ChevronLeft, Shuffle } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { riffleHaptics, thump } from '../../../utils/haptics';
+import { cardBackSrc } from '../../../utils/imageUrl';
 
 interface TarotShuffleViewProps {
   isShuffling: boolean;
@@ -54,7 +55,8 @@ const DECK_KEYFRAMES = `
 export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, onCut }: TarotShuffleViewProps) {
   const { t } = useT('app');
   const reduceMotion = !!useReducedMotion();
-  const backSrc = cardBackUrl || '/card-backs/default.svg';
+  // The deck's cards are 80 px wide (w-20): the display rendition, never the stored PNG.
+  const backSrc = cardBackSrc(cardBackUrl, 80);
 
   useEffect(() => {
     if (!isShuffling || reduceMotion) return;

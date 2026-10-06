@@ -192,7 +192,8 @@ function CartomancyCardPageBody() {
       <div className="text-center space-y-3">
         <EyebrowLabel>{t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })}</EyebrowLabel>
         <p className="text-ui text-mystic-300">{t('cartomancy.card.readWithDeck', { defaultValue: 'Draw this card for yourself in a reading.' })}</p>
-        <Button variant="gold" onClick={() => navigate(user ? '/cartomancy/reading' : '/signin')}>
+        {/* Signed out, the app sends the visitor to sign in and back to the reading. */}
+        <Button variant="gold" onClick={() => navigate('/cartomancy/reading')}>
           {user ? t('cartomancy.home.cta', { defaultValue: 'Start a reading' }) : t('publicNav.signIn', { defaultValue: 'Sign in' })}
         </Button>
       </div>

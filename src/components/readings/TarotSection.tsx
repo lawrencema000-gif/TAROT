@@ -897,18 +897,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   };
 
   /**
-   * A saved reading that gets its AI interpretation afterwards: the row is
-   * written again with the interpretation and the old one removed, so the
-   * Library keeps one copy and it carries the text that was paid for. The
-   * new row lands first; if it fails, the old one stays.
+   * A saved reading that gets its AI interpretation afterwards: the saved
+   * row is updated in place, so the Library keeps its one copy and that copy
+   * carries the text that was paid for. (It used to insert a second row and
+   * delete the first, which also ran the reading counters twice.)
    */
   const attachInterpretationToSaved = async (interpretation: string) => {
-    const oldId = savedIdRef.current;
-    if (!user || !oldId) return;
-    const res = await tarotReadings.insertReturningId(savedRow(interpretation));
-    if (!res.ok) return;
-    savedIdRef.current = res.data.id;
-    await tarotReadings.deleteById(oldId, user.id);
+    const savedId = savedIdRef.current;
+    if (!savedId) return;
+    const res = await tarotReadings.updateInterpretation(savedId, interpretation);
+    if (!res.ok) console.warn('[TarotSection] could not attach the interpretation to the saved reading:', res.error);
   };
 
   const aiTooManyCards = drawnCards.length > MAX_AI_TAROT_CARDS;
@@ -952,6 +950,24 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         zodiacSign: zodiacSign,
         goals: profile?.goals,
       });
+
+      if (result.fallback === true) {
+        // Every AI provider failed and the server sent the cards' own
+        // meanings instead, refunding the charge. That is not the reading
+        // that was asked for: it is not shown or saved as the AI reading,
+        // so asking again later makes a real attempt.
+        toast(
+          result.charged === true
+            ? t('readings.toasts.aiFallbackCharged', {
+                defaultValue: 'The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored.',
+              })
+            : t('readings.toasts.aiFallback', {
+                defaultValue: 'The AI reader is unavailable right now. No Moonstones were charged.',
+              }),
+          'error',
+        );
+        return;
+      }
 
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);

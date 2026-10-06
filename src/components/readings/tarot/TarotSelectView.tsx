@@ -21,6 +21,7 @@ import { ChevronLeft, Eye } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { tap } from '../../../utils/haptics';
+import { cardBackSrc } from '../../../utils/imageUrl';
 
 interface TarotSelectViewProps {
   deckCards: number[];
@@ -46,7 +47,8 @@ export function TarotSelectView({
   onReveal,
 }: TarotSelectViewProps) {
   const { t } = useT('app');
-  const backSrc = cardBackUrl || '/card-backs/default.svg';
+  // Slots and the deck are 64 px wide (w-16).
+  const backSrc = cardBackSrc(cardBackUrl, 64);
   const slots = positionLabels.length > 0 ? positionLabels : selectedIndices.map((_, i) => t('readings.selectView.cardN', { n: i + 1, defaultValue: `Card ${i + 1}` }));
 
   const pick = (cardId: number) => {

@@ -34,6 +34,12 @@ async function functionErrorCode(error: unknown): Promise<string | null> {
   }
 }
 
+/** The HTTP status a function answered with, when the error carries its Response. */
+function functionErrorStatus(error: unknown): number | null {
+  const status = ((error as { context?: unknown } | null)?.context as { status?: unknown } | undefined)?.status;
+  return typeof status === 'number' ? status : null;
+}
+
 const PERSONAS: Array<{
   id: Persona;
   icon: React.ComponentType<{ className?: string }>;
@@ -142,9 +148,12 @@ export function AiCompanionPage() {
       if (error) {
         // Out of Moonstones / over today's AI limit is not a connection
         // problem: re-read the gate, which opens the earn sheet with the
-        // right reason (insufficient or soft cap).
+        // right reason (insufficient or soft cap). This also happens in the
+        // middle of a conversation: one charge covers its replies for 24
+        // hours, and the next message after that is charged again. The
+        // unsent message goes back into the box either way.
         const code = await functionErrorCode(error);
-        if (code === 'INSUFFICIENT_BALANCE' || code === 'AI_SOFT_CAP') {
+        if (code === 'INSUFFICIENT_BALANCE' || code === 'AI_SOFT_CAP' || functionErrorStatus(error) === 402) {
           restore();
           const allowed = await tryConsume();
           if (allowed) {

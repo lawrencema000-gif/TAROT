@@ -18,8 +18,9 @@ interface Props {
   /**
    * What the Moonstones buy. `reading` (default): "Each reading uses 50
    * Moonstones". `conversation`: "A conversation uses 50 Moonstones, every
-   * reply included" — the Companion's server charges once per
-   * conversationId, not per message, and the line says so (R7, P7 #4).
+   * reply for 24 hours included" — the Companion's server charges once per
+   * conversationId for 24 hours, not per message, and the line says so
+   * (R7, P7 #4); after that the conversation is charged again.
    * `portrait`: "Painting the
    * portrait uses 150 Moonstones" — a picture is not a reading.
    */
@@ -57,8 +58,8 @@ export function MoonstoneCostLine({ cost = ACTION_COST, wording = 'reading', cla
         {wording === 'conversation' ? (
           <Trans
             t={t}
-            i18nKey="moonstones.costLinePerConversation"
-            defaults="A conversation uses <gold>{{n}} Moonstones</gold>, every reply included"
+            i18nKey="moonstones.costLineConversationDay"
+            defaults="A conversation uses <gold>{{n}} Moonstones</gold>, every reply for 24 hours included"
             values={{ n: cost }}
             components={{ gold }}
           />

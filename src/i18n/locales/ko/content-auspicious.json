@@ -1,1 +1,40 @@
-{}
+{
+  "intentions": {
+    "wedding": {
+      "label": "결혼",
+      "blurb": "결혼식, 약혼, 함께 살기 시작하는 일."
+    },
+    "travel": {
+      "label": "여행",
+      "blurb": "여정, 해외 이주, 길을 나서는 일."
+    },
+    "business": {
+      "label": "개업",
+      "blurb": "사업 시작, 가게 개점, 영업 첫날."
+    },
+    "moving": {
+      "label": "이사",
+      "blurb": "입주, 주소 변경."
+    },
+    "building": {
+      "label": "공사",
+      "blurb": "착공, 리모델링, 수리."
+    },
+    "signing": {
+      "label": "계약",
+      "blurb": "계약 체결, 부동산 구입, 정식으로 맺는 약속."
+    },
+    "study": {
+      "label": "배움",
+      "blurb": "강좌를 듣기 시작하는 일, 수련의 길에 들어서는 일."
+    },
+    "ceremony": {
+      "label": "의례",
+      "blurb": "의식, 제물 올리기, 추모."
+    },
+    "planting": {
+      "label": "심기",
+      "blurb": "씨 뿌리기, 정원 가꾸기, 뿌리내리길 바라는 무엇이든."
+    }
+  }
+}

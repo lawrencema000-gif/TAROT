@@ -1,1 +1,40 @@
-{}
+{
+  "intentions": {
+    "wedding": {
+      "label": "结婚",
+      "blurb": "婚礼、订婚、搬到一起住。"
+    },
+    "travel": {
+      "label": "旅行",
+      "blurb": "远行、移居海外、启程。"
+    },
+    "business": {
+      "label": "开业",
+      "blurb": "创业起步、开店、营业首日。"
+    },
+    "moving": {
+      "label": "搬家",
+      "blurb": "入住新居、更换住址。"
+    },
+    "building": {
+      "label": "施工",
+      "blurb": "动土、装修、修缮。"
+    },
+    "signing": {
+      "label": "签约",
+      "blurb": "签订合同、购置房产、做出正式承诺。"
+    },
+    "study": {
+      "label": "学习",
+      "blurb": "开始一门课程、踏上修习之路。"
+    },
+    "ceremony": {
+      "label": "仪式",
+      "blurb": "祭礼、供奉、追思。"
+    },
+    "planting": {
+      "label": "种植",
+      "blurb": "播种、园艺，以及任何你想让它扎根的事物。"
+    }
+  }
+}

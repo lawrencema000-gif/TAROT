@@ -84,11 +84,23 @@ const HELPERS =
   "go|gone|decided|decide|deciding|intend|intending|intended|finally|probably|definitely|totally|already|" +
   "eventually|soon|prepared|preparing|willing|get|getting|got|start|starting|started|hope|hoping|wish|wishing)";
 const FIRST_PERSON = `${I_SUBJECT}(?:\\s+${HELPERS}){0,6}\\s+`;
+// For a stated method (jump / step in front of…), any words may stand between
+// the writer and the verb — "I'm so close to jumping", "I keep picturing
+// myself jumping", "I've made up my mind to jump", "I'd rather jump" — as long
+// as none of them brings in another subject or a determiner, which is how a
+// card is described ("I think the Fool is about to jump", "I saw a cat walking
+// in front of the car"). (p9 review C00/C25: a helper whitelist missed all of
+// these; up to eight words, proven against the F01 false positives.)
+const OTHER_SUBJECT =
+  "(?:he|she|they|it|we|you|the|a|an|this|that|these|those|his|her|their|its|someone|somebody|people|person|figures?|" +
+  "everyone|everybody|nobody|man|woman|men|women|fool|card|cards|character|guy|girl|boy|friend)";
+const FIRST_PERSON_LOOSE = `${I_SUBJECT}(?:\\s+(?!${OTHER_SUBJECT}\\b)[\\w'’]+){0,8}\\s+`;
 // …or a clause that starts with the intent and no subject: "Gonna jump off
-// a bridge.", "…so done, about to step in front of a train".
+// a bridge.", "…so done, about to step in front of a train", "Thinking of
+// jumping off a bridge.", "Tempted to…", "Part of me wants to…", "Might…".
 const CLAUSE_INTENT =
-  "(?:^|[.!?…,;:\\n(])\\s*(?:just\\s+|honestly\\s+|seriously\\s+)?(?:gonna|going\\s+to|wanna|want\\s+to|about\\s+to|ready\\s+to|might\\s+as\\s+well)\\s+";
-const WRITER_INTENDS = `(?:${FIRST_PERSON}|${CLAUSE_INTENT})`;
+  "(?:^|[.!?…,;:\\n(])\\s*(?:just\\s+|honestly\\s+|seriously\\s+|still\\s+|been\\s+)?(?:gonna|going\\s+to|wanna|want\\s+to|about\\s+to|ready\\s+to|might\\s+as\\s+well|might|tempted\\s+to|thinking\\s+(?:of|about)|part\\s+of\\s+me\\s+wants\\s+to|so\\s+close\\s+to)(?:\\s+go)?\\s+";
+const WRITER_INTENDS = `(?:${FIRST_PERSON_LOOSE}|${CLAUSE_INTENT})`;
 // Hair dye, misspelt as "die" ("I want to die my hair blue").
 const NOT_DYE = "(?!\\s+(?:my|your|his|her|their|the|our)\\s+(?:hair|beard|brows|eyebrows|roots|tips|nails|clothes|shirt|jeans)\\b)";
 
@@ -100,7 +112,8 @@ export const CRISIS_PATTERNS: RegExp[] = [
   /\bsuicid(?:e|al|ally)\b/i,
   // end it all, end my life, end everything, ending it all — but not "end my
   // relationship" or "end everything with him" (p8 F01)
-  /\bend(?:ing)?\s+(?:my\s+(?:own\s+)?(?:life|existence|suffering)|it\s+all(?!\s+with\b)|everything(?!\s+with\b))\b/i,
+  // (p9 review C25: "end my pain / misery / days / torment" restored)
+  /\bend(?:ing)?\s+(?:my\s+(?:own\s+)?(?:life|existence|suffering|pain|misery|days|torment)|it\s+all(?!\s+with\b)|everything(?!\s+with\b))\b/i,
   // "going to end it", "want to end it", "a plan to end it tonight", "I've
   // decided to end it" — but not "end it with him" (p9 R00: plans and
   // decisions were missing)
@@ -191,8 +204,9 @@ export const CRISIS_PATTERNS: RegExp[] = [
   // …and with no object at all: 「もう終わりにしたい」「疲れた。終わりにしたい。」,
   // the counterpart of "I want to end it" (p9 Q29: F01's narrowing dropped
   // it). A relationship or a job keeps its を (関係を終わりにしたい) and stays
-  // false; so do 宿題を早く終わらせたい and 全部 after を or に.
-  /(?:^|[。、．！？!?\s「『（(…‥]|もう)(?:終わりにしたい|終わらせたい)/,
+  // false; so do 宿題を早く終わらせたい and 全部 after を or に. 早く right
+  // after the clause start trips too: 「早く終わりにしたい…」 (p9 review C25).
+  /(?:^|[。、．！？!?\s「『（(…‥]|もう)(?:もう)?(?:早く)?(?:終わりにしたい|終わらせたい)/,
   // この世から消えたい / いなくなりたい — not この世から争いがなくなりますように
   /この世から(?:消えたい|消えてしまいたい|消えてなくなりたい|いなくなりたい|居なくなりたい|去りたい|おさらばしたい)/,
 

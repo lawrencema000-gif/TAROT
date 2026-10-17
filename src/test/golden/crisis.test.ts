@@ -130,6 +130,26 @@ const MUST_TRIP = [
   '好想消失。',
   '그만 살고 싶어',
   '이제 그만 살고 싶다',
+  // p9 review C00/C25: the verifiers' first-person sentences (each was
+  // CRISIS before F01 and missed after it)
+  "I'm so close to jumping off my balcony.",
+  'Thinking of jumping off a bridge.',
+  'Been thinking about jumping off the roof all week.',
+  'Part of me wants to jump off the bridge.',
+  'Tempted to jump off the balcony tonight.',
+  'Might jump off a bridge tonight, who cares.',
+  "Some days I'd rather jump in front of a train than face work.",
+  'I’ve made up my mind to jump off the roof tonight.',
+  'I keep picturing myself jumping off the bridge.',
+  'Tonight I will finally jump off the bridge.',
+  'I wanna go step in front of a train.',
+  'I just want to end my pain.',
+  "I'm ready to end my misery.",
+  'I want to end my days.',
+  'I wish I could end my pain forever.',
+  'I need to end my misery.',
+  '早く終わりにしたい…',
+  'もう疲れた。終わりにしたい',
 ];
 
 const MUST_STAY_FALSE = [
@@ -191,6 +211,14 @@ const MUST_STAY_FALSE = [
   '我想让疼痛消失',
   '그만하고 싶어',
   '이제 그만 먹고 싶어',
+  // …and the looser first-person rule must still leave other subjects alone
+  'I think the character is going to jump off the tower in the next chapter',
+  'I read about people who jump off bridges for sport',
+  'I love how the Fool is about to jump off the cliff',
+  'I watched a guy jump off the diving tower',
+  '仕事を早く終わりにしたい。',
+  '宿題を早く終わらせたい',
+  'I want to end my subscription',
 ];
 
 describe('detectCrisis', () => {

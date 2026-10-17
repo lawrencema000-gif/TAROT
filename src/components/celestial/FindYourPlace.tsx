@@ -174,8 +174,7 @@ export function FindYourPlace({
       }
       setPhase({ kind: 'reading', result: target });
       onReveal(target.city);
-      const withId: CelestialReadingRequest & { requestId: string } = { ...req, requestId };
-      const res = await generateCelestialReading(withId);
+      const res = await generateCelestialReading({ ...req, requestId });
       if (res.ok) {
         attempt.current = null;
         setPhase({ kind: 'done', result: target, reading: res.data });

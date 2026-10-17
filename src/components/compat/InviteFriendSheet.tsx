@@ -7,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import { compatInvites } from '../../dal';
 import type { CompatKind } from '../../dal/compatInvites';
 import type { MbtiType } from '../../data/partnerCompat';
+import { isNative } from '../../utils/platform';
+import { isShareCancel } from '../../utils/nativeShare';
 
 interface InviteFriendSheetProps {
   open: boolean;
@@ -79,15 +81,28 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
       defaultValue: 'Take this compatibility reading with me on Arcana: {{url}}',
       url: inviteUrl,
     });
-    if (navigator.share) {
+    // The platform's share sheet when there is one: Capacitor's in the app
+    // (its WebView has no navigator.share), the browser's on the web.
+    // Closing the sheet is a choice, not a failure: nothing is copied and
+    // nothing is said (p8 R4). A second tap while the first sheet is still
+    // up (InvalidStateError) is the same.
+    if (isNative() || typeof navigator.share === 'function') {
       try {
-        await navigator.share({ text, url: inviteUrl });
-      } catch {
-        await handleCopy();
+        if (isNative()) {
+          const { Share } = await import('@capacitor/share');
+          // The text already carries the link; Android appends `url` to it.
+          await Share.share({ text, dialogTitle: t('compatInvite.shareLink', { defaultValue: 'Share my invite link' }) });
+        } else {
+          await navigator.share({ text, url: inviteUrl });
+        }
+        return;
+      } catch (err) {
+        if (isShareCancel(err) || (err as { name?: unknown } | null)?.name === 'InvalidStateError') return;
+        // The sheet could not open (no user activation left, blocked): copy instead.
       }
-    } else {
-      await handleCopy();
     }
+    // A missing clipboard fails inside handleCopy's try: "Could not copy", never "Link copied".
+    await handleCopy();
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, Suspense, Component, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { lazyWithReload } from './components/layout/staleChunk';
-import { isAuthPath, isResetPasswordPath, shellPath, signedOutMemberDestination, authPathKeepingNext, rememberNextFrom, postAuthDestination, forgetNext } from './components/layout/authReturn';
+import { isAuthPath, isResetPasswordPath, shellPath, signedOutMemberDestination, trackSignedInPath, authPathKeepingNext, rememberNextFrom, postAuthDestination, forgetNext } from './components/layout/authReturn';
 import { releasePrerenderedHero } from './components/layout/prerenderedHero';
 import { backgroundSrc } from './utils/imageUrl';
 import { ChevronLeft } from 'lucide-react';
@@ -346,11 +346,11 @@ function AppContent() {
   const onboardingOpen = web ? path === '/signup' && !signupDone : showOnboarding;
   const authFormOpen = web ? path === '/signin' || (path === '/signup' && signupDone) : true;
   // The page the visitor was on while signed in, kept by the effect below.
-  // On the render where the session ends it still names that page, so a
-  // sign-out on a member URL goes to `/` (signedOutMemberDestination), not
+  // After the session ends it still names that page while the URL does, so
+  // a sign-out on a member URL goes to `/` (signedOutMemberDestination), not
   // to a sign-in form that would bring the next person back to the last
-  // one's page. Cleared on the first signed-out render after that, so it
-  // never outlives the sign-out (p8 F46).
+  // one's page. Dropped once the visitor is anywhere else, so it never
+  // outlives the sign-out (trackSignedInPath, p8 F46).
   const lastSignedInPath = useRef<string | null>(null);
 
 
@@ -388,8 +388,7 @@ function AppContent() {
   }, [user, location.pathname, location.search]);
 
   useEffect(() => {
-    if (user) lastSignedInPath.current = location.pathname;
-    else if (!loading) lastSignedInPath.current = null;
+    lastSignedInPath.current = trackSignedInPath(lastSignedInPath.current, !!user, loading, location.pathname);
   }, [user, loading, location.pathname]);
 
   useEffect(() => {

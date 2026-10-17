@@ -199,8 +199,7 @@ export function CityInsightPanel({
           return;
         }
       }
-      const withId: CelestialReadingRequest & { requestId: string } = { ...req, requestId: attempt.current!.id };
-      const res = await generateCelestialReading(withId);
+      const res = await generateCelestialReading({ ...req, requestId: attempt.current!.id });
       if (res.ok) {
         attempt.current = null;
         setReading(res.data);

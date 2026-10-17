@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Share2, Heart, Users } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Share2, Heart, Users, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, Button, Input, Page, PageHeader, Progress, Tag, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,8 @@ import { COMPOSITE_PAIRING_READINGS } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { failedBeforeCharge } from '../components/reports/aiReading';
+import { paidFailureOf, sendPaid, type PaidFailure } from '../components/oracle/paidRequest';
 
 /**
  * Partner Compatibility — real synastry under the hood.
@@ -28,9 +30,24 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
  * MBTI is still surfaced as an additional layer (cognitive-function
  * fit) when both sides provided it, but it no longer drives the
  * score. The score is astrology-first, MBTI-supporting.
+ *
+ * Money (p8 R1): only the synastry costs Moonstones (the server charges 50
+ * per request). An MBTI-only match is computed here, free, with no balance
+ * gate and no price line. A press is guarded synchronously (a second tap
+ * during the gate is ignored), the synastry request keeps its `requestId`
+ * until it is answered — a retry of the same pair is the server's free
+ * replay — and a failed synastry says what happened instead of quietly
+ * showing an MBTI-only result for a reading that may have been charged.
  */
 
-type Stage = 'input' | 'loading' | 'result';
+type Stage = 'input' | 'result';
+
+/**
+ * Why the last press brought no match. `spent`: the server answered this
+ * request once and can no longer replay it, so pressing again is new and
+ * charged. A short balance never lands here: the gate opens the Earn sheet.
+ */
+type CompatFailure = Exclude<PaidFailure, 'insufficient' | 'soft-cap'>;
 
 interface Position {
   planet: string;
@@ -76,50 +93,96 @@ export function PartnerCompatPage() {
   const [partnerBirth, setPartnerBirth] = useState('');
   const [partnerBirthTime, setPartnerBirthTime] = useState('');
   const [result, setResult] = useState<CompleteResult | null>(null);
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('partner-compat');
-
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('partner-compat');
+  /**
+   * A press is being handled — from the moment it lands, through the
+   * balance gate, until the request settles. Set synchronously, before
+   * anything is awaited, so a second tap while the gate is answering is
+   * ignored; the state disables the button for the same span (p8 R1).
+   */
+  const pressing = useRef(false);
+  const [busy, setBusy] = useState(false);
+  /** The server is still reading an earlier send of this same request. */
+  const [stillReading, setStillReading] = useState(false);
+  const [failure, setFailure] = useState<CompatFailure | null>(null);
+  /**
+   * The synastry request last sent and not answered: its id and exact body.
+   * The same pair sent again is a retry of it — charged at most once,
+   * answered with the same reading — so it skips the client gate; any
+   * other pair is a new request.
+   */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  const mounted = useRef(true);
   useEffect(() => {
-    if (profile?.mbtiType && !myMbti) setMyMbti(profile.mbtiType as MbtiType);
-    if (profile?.birthDate && !myBirth) setMyBirth(profile.birthDate);
-    if (profile?.birthTime && !myBirthTime) setMyBirthTime(profile.birthTime);
-  }, [profile, myMbti, myBirth, myBirthTime]);
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  const run = async () => {
-    const hasMine = !!myMbti || !!myBirth;
-    const hasPartner = !!partnerMbti || !!partnerBirth;
-    if (!hasMine || !hasPartner) {
-      toast(t('compat.needBothSides', { defaultValue: 'Need at least one data point from each side (MBTI or birth date).' }), 'error');
-      return;
-    }
+  // Your side starts from the profile, once: a field you clear stays clear
+  // (the old effect wrote the profile's value back the moment it was empty).
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (!profile || prefilled.current) return;
+    prefilled.current = true;
+    if (profile.mbtiType) setMyMbti((v) => v || (profile.mbtiType as MbtiType));
+    if (profile.birthDate) setMyBirth((v) => v || profile.birthDate!);
+    if (profile.birthTime) setMyBirthTime((v) => v || profile.birthTime!);
+  }, [profile]);
 
-    const ok = await tryConsume();
-    if (!ok) return;
+  /** A field changed: the failure panel was about the request before it. */
+  const edited = () => setFailure(null);
 
-    setStage('loading');
+  /** Only the synastry is paid, and it needs both birth dates. */
+  const paid = !!myBirth && !!partnerBirth;
 
+  /** One press: the synastry (gated and charged) when both birth dates are in, the MBTI layer, the result. */
+  const compute = async () => {
     let synastry: SynastryResult | null = null;
-    let synastryFailed = false;
-    if (myBirth && partnerBirth) {
-      try {
-        const { data, error } = await supabase.functions.invoke('partner-synastry-adhoc', {
-          body: {
-            myBirthDate: myBirth,
-            myBirthTime: myBirthTime || undefined,
-            myTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-            partnerBirthDate: partnerBirth,
-            partnerBirthTime: partnerBirthTime || undefined,
-            partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-          },
-        });
-        if (error) throw error;
-        // Unwrap { data, correlationId } envelope from shared handler.
-        const payload = (data as { data?: SynastryResult })?.data ?? (data as SynastryResult);
-        if (!payload?.crossAspects) throw new Error('no synastry data');
-        synastry = payload;
-      } catch (e) {
-        synastryFailed = true;
-        console.warn('[PartnerCompat] synastry failed, continuing without:', e);
+    if (paid) {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const body = {
+        myBirthDate: myBirth,
+        myBirthTime: myBirthTime || undefined,
+        myTimezone: timezone,
+        partnerBirthDate: partnerBirth,
+        partnerBirthTime: partnerBirthTime || undefined,
+        partnerTimezone: timezone,
+      };
+      const signature = JSON.stringify(body);
+      if (attempt.current?.body !== signature) {
+        if (!(await tryConsume())) return;
+        attempt.current = { id: crypto.randomUUID(), body: signature };
       }
+      const requestId = attempt.current.id;
+      setFailure(null);
+      const res = await sendPaid(
+        () => supabase.functions.invoke('partner-synastry-adhoc', { body: { ...body, requestId } }),
+        { live: () => mounted.current, onStillReading: () => setStillReading(true) },
+      );
+      if (!res) return;
+      setStillReading(false);
+      // Unwrap { data, correlationId } envelope from shared handler.
+      const data = res.error ? null : (res.data as { data?: SynastryResult } | SynastryResult | null);
+      const payload = (data as { data?: SynastryResult } | null)?.data ?? (data as SynastryResult | null);
+      if (!payload?.crossAspects) {
+        const why = res.error ? await paidFailureOf(res.error) : 'generic';
+        console.warn('[PartnerCompat] synastry failed:', why, res.error);
+        if (why === 'insufficient' || why === 'soft-cap') {
+          // Rejected before the debit: the gate opens the Earn sheet.
+          attempt.current = null;
+          if (await tryConsume()) setFailure('generic');
+          return;
+        }
+        // Spent: this id can no longer be replayed, the next press is new.
+        // Anything else keeps the request, so Try again is its free replay.
+        if (why === 'spent') attempt.current = null;
+        setFailure(why);
+        return;
+      }
+      attempt.current = null;
+      synastry = payload;
     }
 
     let mbti: CompleteResult['mbti'] = null;
@@ -133,20 +196,7 @@ export function PartnerCompatPage() {
       };
     }
 
-    if (!synastry && !mbti) {
-      // No usable result — refund the Moonstones we just debited so the
-      // user isn't charged for a failed compatibility run.
-      if (synastryFailed) await refund();
-      toast(
-        t('compat.failed', {
-          defaultValue:
-            'Compatibility needs at least both birth dates or both MBTI types. Please fill in matching fields for both sides.',
-        }),
-        'error',
-      );
-      setStage('input');
-      return;
-    }
+    if (!synastry && !mbti) return;
 
     // Overall: synastry is primary (if present), MBTI adds a small tilt.
     let overallScore: number;
@@ -162,12 +212,39 @@ export function PartnerCompatPage() {
     setStage('result');
   };
 
+  const run = async () => {
+    // Re-entrancy is decided synchronously, before the gate is awaited.
+    if (pressing.current) return;
+    // A matching pair: both birth dates (the synastry) or both MBTI types.
+    // A birth date on one side and a type on the other used to pass, run
+    // the gate, send nothing and say "check your connection".
+    if (!paid && !(myMbti && partnerMbti)) {
+      toast(
+        t('compat.needBothSides', { defaultValue: 'Fill in the same for both of you: both birth dates, or both MBTI types.' }),
+        'error',
+      );
+      return;
+    }
+    pressing.current = true;
+    setBusy(true);
+    try {
+      await compute();
+    } finally {
+      pressing.current = false;
+      if (mounted.current) {
+        setBusy(false);
+        setStillReading(false);
+      }
+    }
+  };
+
   const reset = () => {
     setStage('input');
     setResult(null);
+    setFailure(null);
   };
 
-  if (stage === 'input' || stage === 'loading') {
+  if (stage === 'input') {
     return (
       <Page spacing="md">
         <PageHeader
@@ -191,13 +268,13 @@ export function PartnerCompatPage() {
               <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.yourBirth', { defaultValue: 'Your birth date' })}
               </label>
-              <Input type="date" value={myBirth} onChange={(e) => setMyBirth(e.target.value)} />
+              <Input type="date" value={myBirth} onChange={(e) => { setMyBirth(e.target.value); edited(); }} />
             </div>
             <div>
               <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.yourBirthTime', { defaultValue: 'Your birth time (sharpens the reading — includes the Moon)' })}
               </label>
-              <Input type="time" value={myBirthTime} onChange={(e) => setMyBirthTime(e.target.value)} />
+              <Input type="time" value={myBirthTime} onChange={(e) => { setMyBirthTime(e.target.value); edited(); }} />
             </div>
             <div>
               <label className="text-caption text-mystic-500 mb-1 block">
@@ -205,7 +282,7 @@ export function PartnerCompatPage() {
               </label>
               <select
                 value={myMbti}
-                onChange={(e) => setMyMbti(e.target.value as MbtiType)}
+                onChange={(e) => { setMyMbti(e.target.value as MbtiType); edited(); }}
                 className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('compat.selectOrSkip', { defaultValue: 'Select or skip' })}</option>
@@ -224,13 +301,13 @@ export function PartnerCompatPage() {
               <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.partnerBirth', { defaultValue: "Partner's birth date" })}
               </label>
-              <Input type="date" value={partnerBirth} onChange={(e) => setPartnerBirth(e.target.value)} />
+              <Input type="date" value={partnerBirth} onChange={(e) => { setPartnerBirth(e.target.value); edited(); }} />
             </div>
             <div>
               <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.partnerBirthTime', { defaultValue: "Partner's birth time (optional)" })}
               </label>
-              <Input type="time" value={partnerBirthTime} onChange={(e) => setPartnerBirthTime(e.target.value)} />
+              <Input type="time" value={partnerBirthTime} onChange={(e) => { setPartnerBirthTime(e.target.value); edited(); }} />
             </div>
             <div>
               <label className="text-caption text-mystic-500 mb-1 block">
@@ -238,7 +315,7 @@ export function PartnerCompatPage() {
               </label>
               <select
                 value={partnerMbti}
-                onChange={(e) => setPartnerMbti(e.target.value as MbtiType)}
+                onChange={(e) => { setPartnerMbti(e.target.value as MbtiType); edited(); }}
                 className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('compat.selectOrSkip', { defaultValue: 'Select or skip' })}</option>
@@ -250,20 +327,57 @@ export function PartnerCompatPage() {
           </div>
         </Card>
 
+        {failure && (
+          <div role="alert" className="flex items-start gap-3 rounded-card bg-mystic-850 border border-coral/30 p-4">
+            <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" aria-hidden />
+            <div className="flex-1 min-w-0">
+              <p className="text-ui text-mystic-100">
+                {failure === 'spent'
+                  ? t('compat.errorSpent', { defaultValue: 'This match was already read once, and that reading can’t be shown again.' })
+                  : failure === 'rate-limit'
+                    ? t('compat.errorRateLimit', { defaultValue: 'Too many checks in a row — wait a moment and try again.' })
+                    : t('compat.failed', { defaultValue: 'Couldn’t compute the match — check your connection and try again.' })}
+              </p>
+              {/* Only what is true for this failure: refused before the
+                  debit cost nothing; a spent id cannot be replayed, so the
+                  next press is new; any other may have been charged, and
+                  then the retry (the same request) is free. */}
+              <p className="text-meta text-mystic-400 mt-1">
+                {failure === 'spent'
+                  ? t('compat.errorSpentNew', { defaultValue: 'Reveal our compatibility starts a new reading, charged as usual.' })
+                  : failedBeforeCharge(failure)
+                    ? t('compat.errorNoCharge', { defaultValue: 'Nothing was charged for a match you did not receive.' })
+                    : t('compat.errorRetryFree', {
+                        defaultValue: 'If you were charged, Try again returns the same reading at no extra cost.',
+                      })}
+              </p>
+            </div>
+          </div>
+        )}
+
         <Button
           variant="primary"
           size="lg"
           fullWidth
           onClick={run}
-          disabled={stage === 'loading'}
-          loading={stage === 'loading'}
+          disabled={busy}
+          loading={busy}
         >
-          <Heart className="w-5 h-5 mr-2" />
-          {stage === 'loading'
-            ? t('compat.computing', { defaultValue: 'Computing the aspects…' })
-            : t('compat.runButton', { defaultValue: 'Reveal our compatibility' })}
+          {!busy && (failure && failure !== 'spent' ? (
+            <RefreshCw className="w-5 h-5 mr-2" aria-hidden />
+          ) : (
+            <Heart className="w-5 h-5 mr-2" aria-hidden />
+          ))}
+          {busy
+            ? stillReading
+              ? t('compat.stillComputing', { defaultValue: 'Still computing the aspects…' })
+              : t('compat.computing', { defaultValue: 'Computing the aspects…' })
+            : failure && failure !== 'spent'
+              ? t('compat.tryAgain', { defaultValue: 'Try again' })
+              : t('compat.runButton', { defaultValue: 'Reveal our compatibility' })}
         </Button>
-        <MoonstoneCostLine />
+        {/* The price only where there is one: an MBTI-only match is free. */}
+        {paid && <MoonstoneCostLine />}
         {EarnSheet}
       </Page>
     );

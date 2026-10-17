@@ -207,7 +207,10 @@ function TransitHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
     if (!source.content) return;
     const shareText = t('horoscope.share.template', {
       sign: signName,
-      general: `${source.content.theme}. ${source.content.summary}`,
+      // The theme is a heading with no closing punctuation: on its own line,
+      // as on screen, which reads right in every script. Joined with an
+      // ASCII ". " it read 'テーマ. 本文…' in ja and zh (p8 F30).
+      general: [source.content.theme, source.content.summary].filter(Boolean).join('\n'),
       affirmation: source.content.powerMove,
     });
     const success = await shareToNative(t('horoscope.share.title'), shareText);

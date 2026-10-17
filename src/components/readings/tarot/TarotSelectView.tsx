@@ -110,7 +110,12 @@ export function TarotSelectView({
                   aria-hidden
                 />
               )}
-              <span className={`text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
+              {/* Breaks between phrases, not inside a word (keep-phrases: ja
+                  auto-phrase, ko keep-all), over the card's width plus half
+                  of each gap (76 px, the column pitch): a six-character
+                  phrase like 「伸ばしている」 does not fit the card's 64 px,
+                  so 「魂が手を伸/ばしている/先」 broke inside 伸ばす (p8 F84). */}
+              <span className={`keep-phrases -mx-1.5 text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
             </div>
           );
         })}

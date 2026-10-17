@@ -115,7 +115,12 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
             <AfterResult onRetake={onRetake} onBack={onBack}>
               <AskOracleButton
                 variant="card"
-                context={`my ${quiz.title} result: ${name} (${tagline})`}
+                context={t('askOracle.context.quizResult', {
+                  defaultValue: 'my {{quiz}} result: {{result}} ({{tagline}})',
+                  quiz: quiz.title,
+                  result: name,
+                  tagline,
+                })}
                 label={t('quizzes.askOracleCta', { defaultValue: 'Read this result for me' })}
               />
             </AfterResult>

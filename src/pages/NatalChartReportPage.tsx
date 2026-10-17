@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState, Paper, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
-import { joinSentences } from '../components/reports/aiReading';
+import { aiFailureOf, joinSentences } from '../components/reports/aiReading';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { isNative } from '../utils/platform';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -128,6 +130,15 @@ export function NatalChartReportPage() {
   const [partnerName, setPartnerName] = useState<string>('');
   const [partnerAspects, setPartnerAspects] = useState<Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>>([]);
   const [loadingVariant, setLoadingVariant] = useState(false);
+  // The partner overlay is astrology-synastry, which the server charges as a
+  // soulmate score (50 Moonstones; premium passes). Gated, and paid at most
+  // once per partner like every other paid call (p8 F20): `synastryBusy` is
+  // set before anything is awaited, so a second tap returns at once, and the
+  // request carries an id kept until the overlay lands, so a retry is the
+  // server's free replay instead of a second charge.
+  const { tryConsume: gateSynastry, EarnSheet: synastryEarnSheet } = useMoonstoneSpend('soulmate-score');
+  const synastryBusy = useRef(false);
+  const synastryAttempt = useRef<{ id: string; body: string } | null>(null);
 
   const reference = profile?.birthDate ?? 'no-birth';
   const hasBirthData = !!profile?.birthDate;
@@ -222,10 +233,11 @@ export function NatalChartReportPage() {
   }, [solarReturnPlanets, t]);
 
   const loadSynastry = useCallback(async () => {
-    if (!partnerBirthDate) return;
+    if (!partnerBirthDate || synastryBusy.current) return;
+    synastryBusy.current = true;
     setLoadingVariant(true);
-    const { data, error } = await supabase.functions.invoke('astrology-synastry', {
-      body: {
+    try {
+      const body = {
         partnerBirthDate,
         partnerBirthTime: partnerBirthTime || undefined,
         // Proxy partner timezone with the user's own — without this the
@@ -233,22 +245,43 @@ export function NatalChartReportPage() {
         // Moon ~5° (sometimes a sign over).
         partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
         partnerName: partnerName || undefined,
-      },
-    });
-    setLoadingVariant(false);
-    if (error) {
-      toast(t('natalReport.synastryFailed', { defaultValue: 'Could not compute synastry.' }), 'error');
-      return;
+      };
+      const signature = JSON.stringify(body);
+      if (synastryAttempt.current?.body !== signature) {
+        synastryAttempt.current = { id: crypto.randomUUID(), body: signature };
+        if (!(await gateSynastry())) {
+          synastryAttempt.current = null;
+          return;
+        }
+      }
+      const { data, error } = await supabase.functions.invoke('astrology-synastry', {
+        body: { ...body, requestId: synastryAttempt.current!.id },
+      });
+      if (error) {
+        const failure = await aiFailureOf(error);
+        if (failure === 'insufficient' || failure === 'soft-cap') {
+          // Refused before the debit (the balance moved after the gate): a
+          // new press is a new request, and the gate opens the Earn sheet.
+          synastryAttempt.current = null;
+          if (!(await gateSynastry())) return;
+        }
+        toast(t('natalReport.synastryFailed', { defaultValue: 'Could not compute synastry.' }), 'error');
+        return;
+      }
+      const payload = (data?.data ?? data) as {
+        partnerPositions?: OverlayPlanet[];
+        crossAspects?: Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>;
+      } | null;
+      if (payload?.partnerPositions) {
+        synastryAttempt.current = null;
+        setPartnerPlanets(payload.partnerPositions);
+        setPartnerAspects(payload.crossAspects ?? []);
+      }
+    } finally {
+      synastryBusy.current = false;
+      setLoadingVariant(false);
     }
-    const payload = (data?.data ?? data) as {
-      partnerPositions?: OverlayPlanet[];
-      crossAspects?: Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>;
-    } | null;
-    if (payload?.partnerPositions) {
-      setPartnerPlanets(payload.partnerPositions);
-      setPartnerAspects(payload.crossAspects ?? []);
-    }
-  }, [partnerBirthDate, partnerBirthTime, partnerName, t]);
+  }, [partnerBirthDate, partnerBirthTime, partnerName, gateSynastry, t]);
 
   useEffect(() => {
     if (variant === 'transits') loadTransits();
@@ -592,6 +625,8 @@ export function NatalChartReportPage() {
                 ? t('natalReport.computing', { defaultValue: 'Computing…' })
                 : t('natalReport.synastryCta', { defaultValue: 'Overlay partner chart' })}
             </Button>
+            {/* The overlay is charged (premium passes): say so before the tap. */}
+            <MoonstoneCostLine cost={50} />
           </div>
         )}
 
@@ -837,6 +872,7 @@ export function NatalChartReportPage() {
         </section>
       </Paper>
       <Disclaimer kind="astrology" tail />
+      {synastryEarnSheet}
     </Page>
   );
 }

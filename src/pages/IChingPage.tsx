@@ -312,7 +312,11 @@ export function IChingPage() {
         <div className="space-y-3 pt-2">
           <AskOracleButton
             variant="card"
-            context={`hexagram ${primary.number} — ${primary.name} (${primary.chinese}) — for my situation`}
+            context={t('askOracle.context.hexagram', {
+              defaultValue: 'hexagram {{number}} — {{name}} — for my situation',
+              number: primary.number,
+              name: localizedName,
+            }) as string}
             label={t('iching.askOracleCta', { defaultValue: 'Read this hexagram for me' }) as string}
           />
 

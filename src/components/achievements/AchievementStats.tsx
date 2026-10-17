@@ -6,7 +6,10 @@ interface AchievementStatsProps {
   /** profiles.xp — the one XP figure the app reports (R6 A8). */
   totalXP: number;
   streak: number;
+  /** Completed readings, as the reading badges count them (achievementFigures.readingsDone). */
   totalReadings: number;
+  /** Every reading badge is unlocked: the figure is a floor, printed "500+". */
+  readingsAtLeast?: boolean;
   totalJournalEntries: number;
   quizzesCompleted: number;
 }
@@ -16,11 +19,17 @@ interface AchievementStatsProps {
  * background photograph shows through), one figure each, one-line labels. The figures are
  * Inter with tabular numerals; the streak is a bare count (its label says
  * "Streak") so no tile wraps to two lines at 390 (R6 A30).
+ *
+ * A tile's text box is 55px at 390 (five columns, 8px gaps): four CJK
+ * characters at 12px. A label longer than that has to break inside its one
+ * word whatever the line-breaking rules are (「ストリー/ク」, p8 F42/F83),
+ * so the ja labels are the four-character forms (連続日数, 占い回数, 日記).
  */
 export function AchievementStats({
   totalXP,
   streak,
   totalReadings,
+  readingsAtLeast = false,
   totalJournalEntries,
   quizzesCompleted,
 }: AchievementStatsProps) {
@@ -42,7 +51,7 @@ export function AchievementStats({
     {
       icon: Trophy,
       label: t('achievements.stats.readings', { defaultValue: 'Readings' }),
-      value: fmt.format(totalReadings),
+      value: readingsAtLeast ? `${fmt.format(totalReadings)}+` : fmt.format(totalReadings),
       color: 'text-cosmic-blue-ink',
     },
     {

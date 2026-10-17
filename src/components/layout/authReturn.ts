@@ -64,6 +64,31 @@ export function signedOutMemberDestination(fullPath: string, pathname: string, s
 }
 
 /**
+ * The shell's record of `signedOutFrom` from one render to the next: the
+ * page while signed in; after a sign-out, that page for as long as the
+ * visitor is still on it, then nothing.
+ *
+ * It must outlive the first signed-out render. The `<Navigate to="/">` that
+ * render returns lands one router update later, and the sign-out's own state
+ * changes (session, user, profile, the Settings sheet closing) re-render the
+ * shell in between, still at the old URL; a record cleared after the first
+ * of them sent that second render to sign-in with the last member's page as
+ * `next` (`/signin?next=%2Fjournal`). Kept while the URL is unchanged, and
+ * dropped as soon as the visitor is anywhere else: `/` once the redirect
+ * lands, or any member link after a sign-out on a public page (p8 F46).
+ */
+export function trackSignedInPath(
+  previous: string | null,
+  signedIn: boolean,
+  loading: boolean,
+  pathname: string,
+): string | null {
+  if (signedIn) return pathname;
+  if (loading || previous === null) return previous;
+  return shellPath(pathname) === shellPath(previous) ? previous : null;
+}
+
+/**
  * `raw` as a same-origin in-app path (`/x?y#z`), or null. Anything that
  * could leave the site (`//evil.com`, `https://…`, `/\evil.com`), carries
  * control characters, or would loop back into the auth screens is refused.

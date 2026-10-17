@@ -225,7 +225,6 @@ const RULES: Rule[] = [
       'src/components/error/ErrorBoundary.tsx',
       'src/components/horoscope/BirthChart.tsx',
       'src/components/oracle/AskOracleButton.tsx',
-      'src/components/overlays/SavedSheet.tsx',
       'src/components/overlays/SearchSheet.tsx',
       'src/components/overlays/UpdateAvailableBanner.tsx',
       'src/components/people/PersonAIReading.tsx',

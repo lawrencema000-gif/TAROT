@@ -23,6 +23,12 @@ export interface TarotReadingRecentSummary {
   date: string;
   spread_type: string;
   cards: unknown;
+  /**
+   * When the reading was saved. The journal's Link-a-reading picker dates a
+   * reading by it on the reader's clock: older rows hold the UTC day in
+   * `date`, so a Tokyo reading saved at 07:00 read as the day before (p8 F49).
+   */
+  created_at: string;
 }
 
 export interface TarotReadingInsert {
@@ -185,7 +191,7 @@ export async function listRecent(
 ): Promise<Result<TarotReadingRecentSummary[]>> {
   const { data, error } = await supabase
     .from('tarot_readings')
-    .select('id, date, spread_type, cards')
+    .select('id, date, spread_type, cards, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);

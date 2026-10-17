@@ -56,15 +56,25 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
   const shownId = achievement?.id ?? null;
   const targetXP = achievement?.xp_reward ?? 0;
 
+  // Every timer is cleared when the badge changes. The exit used to leave
+  // its 300 ms hide pending: the shell mounts this with no badge (a pending
+  // hide), so a queue read that answered within 300 ms of that showed the
+  // modal and the stale timer hid it again at once. The sign-in
+  // celebration was lost on any fast connection, and so was an unlock that
+  // landed just after the previous modal closed.
   useEffect(() => {
     if (shownId !== null) {
       setIsVisible(true);
-      setTimeout(() => setShowContent(true), 100);
+      const enter = setTimeout(() => setShowContent(true), 100);
 
       // Same reasoning as the landing figures: the XP total is the payload,
       // the count-up is decoration, and setInterval is out of reach of the
       // CSS block that freezes this modal's own scale/opacity around it.
-      if (prefersReducedMotion()) { setXpCount(targetXP); return; }
+      if (prefersReducedMotion()) {
+        setXpCount(targetXP);
+        return () => clearTimeout(enter);
+      }
+      setXpCount(0);
       const duration = 1000;
       const steps = 30;
       const increment = targetXP / steps;
@@ -79,11 +89,14 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
         }
       }, duration / steps);
 
-      return () => clearInterval(timer);
-    } else {
-      setShowContent(false);
-      setTimeout(() => setIsVisible(false), 300);
+      return () => {
+        clearTimeout(enter);
+        clearInterval(timer);
+      };
     }
+    setShowContent(false);
+    const exit = setTimeout(() => setIsVisible(false), 300);
+    return () => clearTimeout(exit);
   }, [shownId, targetXP]);
 
   if (!isVisible || !achievement) return null;
@@ -133,7 +146,11 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
               <Icon className={`w-12 h-12 ${rarityColor}`} />
             </div>
 
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
+            {/* One line in every language (P7 O#22/O#51), and on the
+                dialog's own fill: the rare/epic/legendary tints are
+                translucent, so the tile's 2px border ran through the label
+                like a strike-through. */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-mystic-900">
               <Badge tone={RARITY_TONE[achievement.rarity]}>
                 {rarityLabel(achievement.rarity, t)}
               </Badge>

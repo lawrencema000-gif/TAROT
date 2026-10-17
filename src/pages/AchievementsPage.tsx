@@ -10,6 +10,7 @@ import {
 } from '../components/achievements';
 import { achievementIcon } from '../components/achievements/achievementIcons';
 import { localizeAchievement } from '../components/achievements/localizeAchievement';
+import { readingsDone, formatUnlockDate } from '../components/achievements/achievementFigures';
 import type {
   AchievementWithProgress,
   AchievementCategory,
@@ -43,7 +44,6 @@ export function AchievementsPage() {
   const [unnotifiedQueue, setUnnotifiedQueue] = useState<AchievementWithProgress[]>([]);
   const [quizzesCompleted, setQuizzesCompleted] = useState(0);
   const fmt = useMemo(() => new Intl.NumberFormat(getLocale()), []);
-  const dayFmt = useMemo(() => new Intl.DateTimeFormat(getLocale(), { month: 'short', day: 'numeric' }), []);
 
   /** The DB row with its name and description read through the locale. */
   const localize = useCallback(
@@ -138,6 +138,12 @@ export function AchievementsPage() {
       .slice(0, 3);
   }, [localized]);
 
+  // The Readings tile counts what the reading badges below it count:
+  // completed tarot and playing-card readings. profiles.total_readings is
+  // the number of SAVED tarot readings (p8 F64), kept only as the fallback
+  // when the badges did not load.
+  const readings = useMemo(() => readingsDone(achievements), [achievements]);
+
   const completionPercentage = stats?.completion_percentage || 0;
 
   function handleCloseCelebration() {
@@ -220,7 +226,8 @@ export function AchievementsPage() {
       <AchievementStats
         totalXP={profile?.xp || 0}
         streak={profile?.streak || 0}
-        totalReadings={profile?.totalReadings || 0}
+        totalReadings={readings ? readings.count : profile?.totalReadings || 0}
+        readingsAtLeast={readings?.atLeast ?? false}
         totalJournalEntries={profile?.totalJournalEntries || 0}
         quizzesCompleted={quizzesCompleted}
       />
@@ -239,7 +246,7 @@ export function AchievementsPage() {
                   meta={achievement.description}
                   value={
                     <span className="tabular-nums">
-                      {dayFmt.format(new Date(achievement.unlocked_at!))}
+                      {formatUnlockDate(achievement.unlocked_at!, getLocale())}
                     </span>
                   }
                 />

@@ -457,7 +457,10 @@ export function TarotCardMeaningPage() {
         {user && (
           <AskOracleButton
             variant="card"
-            context={`the meaning of ${card.name} tarot card for me`}
+            context={t('askOracle.context.tarotCard', {
+              defaultValue: 'the meaning of {{card}} tarot card for me',
+              card: card.name,
+            }) as string}
             label={t('tarot.askOracleCta', { defaultValue: 'Read this card for me' }) as string}
           />
         )}

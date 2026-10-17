@@ -21,6 +21,7 @@ import {
   ExternalLink,
   ImageIcon,
   Bug,
+  UserX,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast, Card, ListRow, ListRowGroup, Switch, EyebrowLabel, SparkleFourPoint } from '../ui';
@@ -33,6 +34,7 @@ import { useDiagnostics } from '../../context/DiagnosticsContext';
 import { isDevMode } from '../../utils/telemetry';
 import { LanguagePicker } from '../i18n/LanguagePicker';
 import { EditProfileForm } from '../profile/EditProfileForm';
+import { BlockedMembers } from './BlockedMembers';
 import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
 import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
@@ -50,7 +52,7 @@ function appearanceUpdate(field: 'card_back_url' | 'background_url', url: string
   return { [field]: url } as unknown as Partial<UserProfile>;
 }
 
-type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
+type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm' | 'blocked';
 
 /** Reserved URL that tells App.tsx to render the animated Celestial
  *  starfield background instead of loading an image. Must stay in
@@ -418,6 +420,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     {
       title: tAppSettings('settings.sections.privacy'),
       items: [
+        // The only way to undo a block made from a post's menu.
+        { id: 'blocked', icon: UserX, label: tAppSettings('settings.blocked.title', { defaultValue: 'Blocked members' }), action: () => setActiveSheet('blocked') },
         { id: 'exportData', icon: Download, label: tAppSettings('settings.menu.exportData'), action: handleExportData },
         { id: 'deleteAccount', icon: Trash2, label: tAppSettings('settings.menu.deleteAccount'), action: () => setActiveSheet('deleteConfirm'), danger: true },
       ],
@@ -935,6 +939,15 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             {tAppSettings('settings.menu.backToSettings')}
           </Button>
         </div>
+      </Sheet>
+    );
+  }
+
+  if (activeSheet === 'blocked') {
+    return (
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.blocked.title', { defaultValue: 'Blocked members' })}>
+        {renderBackButton()}
+        <BlockedMembers userId={user?.id} />
       </Sheet>
     );
   }

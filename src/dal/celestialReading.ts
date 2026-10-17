@@ -36,6 +36,13 @@ export interface CelestialReadingRequest {
     mbtiType?: string;
     locale?: string;
   };
+  /**
+   * One id per paid attempt, kept across retries of the same request: the
+   * shared edge handler debits once per (requestId, body) and replays the
+   * stored reading to a retry (p8 F20). Optional: a client without one is
+   * charged per request, as before.
+   */
+  requestId?: string;
 }
 
 export interface CelestialReadingResponse {

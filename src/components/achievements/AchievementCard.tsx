@@ -3,6 +3,7 @@ import type { AchievementWithProgress, AchievementRarity } from '../../services/
 import { Badge, Progress, type Tone } from '../ui';
 import { achievementIcon } from './achievementIcons';
 import { rarityLabel } from './localizeAchievement';
+import { formatUnlockDate } from './achievementFigures';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
 
@@ -50,6 +51,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
   const isUnlocked = achievement.unlocked_at !== null;
   const isLocked = !isUnlocked;
   const isPremiumLocked = achievement.is_premium_only && !isPremium && isLocked;
+  const isHiddenLocked = isLocked && achievement.is_hidden;
   const progressPercentage = Math.min((achievement.progress / achievement.target) * 100, 100);
   const Icon = achievementIcon(achievement.icon_name);
 
@@ -67,20 +69,10 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
           ? `${rarityBg} ${rarityBorder}`
           : 'bg-mystic-800/40 border-mystic-700/30'
         }
-        ${isPremiumLocked ? 'overflow-hidden' : ''}
         hover:scale-[1.02] active:scale-[0.98]
         text-left
       `}
     >
-      {isPremiumLocked && (
-        <div className="absolute inset-0 bg-mystic-900 z-10 flex flex-col items-center justify-center rounded-card">
-          <Badge tone="gold">
-            <Crown className="w-3 h-3" aria-hidden />
-            {t('achievements.premiumBadge', { defaultValue: 'Premium' })}
-          </Badge>
-        </div>
-      )}
-
       <div className="flex gap-3">
         <div className={`
           relative flex-shrink-0 w-14 h-14 rounded-control flex items-center justify-center
@@ -90,7 +82,10 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
             : 'bg-mystic-700/30'
           }
         `}>
-          {isLocked && !isPremiumLocked ? (
+          {/* A Premium badge shows its own icon, so a free member can see what
+              it is; every other locked badge (and a hidden one) shows the
+              lock. */}
+          {isLocked && (!isPremiumLocked || isHiddenLocked) ? (
             <Lock className="w-6 h-6 text-mystic-500" />
           ) : (
             <Icon className={`
@@ -111,9 +106,9 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
             <h3 className={`
               text-ui font-semibold leading-tight
               ${isUnlocked ? 'text-mystic-100' : 'text-mystic-300'}
-              ${isLocked && !isPremiumLocked && achievement.is_hidden ? 'blur-sm select-none' : ''}
+              ${isHiddenLocked ? 'blur-sm select-none' : ''}
             `}>
-              {isLocked && achievement.is_hidden ? '???' : achievement.name}
+              {isHiddenLocked ? '???' : achievement.name}
             </h3>
             <Badge tone={isUnlocked ? rarityTone : 'neutral'} className="flex-shrink-0">
               {rarityLabel(achievement.rarity, t)}
@@ -123,9 +118,9 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
           <p className={`
             mt-1 text-meta line-clamp-2
             ${isUnlocked ? 'text-mystic-300' : 'text-mystic-500'}
-            ${isLocked && !isPremiumLocked && achievement.is_hidden ? 'blur-sm select-none' : ''}
+            ${isHiddenLocked ? 'blur-sm select-none' : ''}
           `}>
-            {isLocked && achievement.is_hidden
+            {isHiddenLocked
               ? t('achievements.hiddenDescription', { defaultValue: 'Complete hidden tasks to unlock this achievement.' })
               : achievement.description
             }
@@ -145,8 +140,22 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
                 value={progressPercentage}
                 size="sm"
                 tone={rarityTone}
-                label={isLocked && achievement.is_hidden ? '???' : achievement.name}
+                label={isHiddenLocked ? '???' : achievement.name}
               />
+            </div>
+          )}
+
+          {/* Premium-only and locked for a free member: the card reads like
+              any other locked badge (name, description, rarity) and says
+              what unlocks it where the progress bar goes. It used to be an
+              opaque panel holding only the pill, a blank box in the grid
+              (p8 F63). Monetisation is the violet tone (Badge). */}
+          {isPremiumLocked && (
+            <div className="mt-2">
+              <Badge tone="violet">
+                <Crown className="w-3 h-3" aria-hidden />
+                {t('achievements.premiumBadge', { defaultValue: 'Premium' })}
+              </Badge>
             </div>
           )}
 
@@ -155,8 +164,8 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
               <span className={`text-meta font-medium tabular-nums ${rarityColor}`}>
                 {t('achievements.xpReward', { defaultValue: '+{{n}} XP', n: achievement.xp_reward })}
               </span>
-              <span className="text-meta text-mystic-500">
-                {new Date(achievement.unlocked_at!).toLocaleDateString(locale)}
+              <span className="text-meta text-mystic-500 tabular-nums">
+                {formatUnlockDate(achievement.unlocked_at!, locale)}
               </span>
             </div>
           )}

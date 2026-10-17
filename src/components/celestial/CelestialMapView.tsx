@@ -10,6 +10,7 @@ import type { PlanetName, Angle } from '../../utils/astrocartography';
 import type { DestinedPlace } from '../../types';
 import { useT } from '../../i18n/useT';
 import { localizePlanetName } from '../../i18n/localizeNames';
+import { localizeCountry } from './placeNames';
 
 /**
  * Interactive SVG world map for astrocartography.
@@ -722,7 +723,7 @@ export function CelestialMapView({
             </span>
             <div>
               <div className="font-medium">{hoveredCity.name}</div>
-              <div className="text-caption text-mystic-400">{hoveredCity.country}</div>
+              <div className="text-caption text-mystic-400">{localizeCountry(hoveredCity.cc, hoveredCity.country)}</div>
             </div>
           </motion.div>
         )}

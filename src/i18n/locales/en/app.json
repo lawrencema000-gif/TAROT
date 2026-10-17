@@ -309,6 +309,12 @@
         "premiumBadge": "Premium",
         "body": "One tap. We read every city against your full birth chart and reveal the single best place for you — with the long-form why."
       },
+      "computing": {
+        "stage0": "Reading your natal chart",
+        "stage1": "Crossing every city with your planet lines",
+        "stage2": "Weighing the strongest signals",
+        "stage3": "Naming your place…"
+      },
       "error": {
         "title": "We couldn’t finish your reading",
         "retry": "Try the reading again",
@@ -4900,7 +4906,7 @@
         "name": "Apprentice Awakened"
       },
       "apprentice-reader": {
-        "description": "Complete 10 tarot readings and hone your intuition.",
+        "description": "Complete 10 readings and hone your intuition.",
         "name": "Apprentice Reader"
       },
       "breaking-through": {
@@ -4912,7 +4918,7 @@
         "name": "Card Collector"
       },
       "card-curious": {
-        "description": "Draw your first tarot card and glimpse the mysteries within.",
+        "description": "Draw your first card and glimpse the mysteries within.",
         "name": "Card Curious"
       },
       "celtic-cross-adept": {
@@ -4988,7 +4994,7 @@
         "name": "Master Manifestor"
       },
       "master-reader": {
-        "description": "Complete 100 tarot readings and achieve true mastery.",
+        "description": "Complete 100 readings and achieve true mastery.",
         "name": "Master Reader"
       },
       "monthly-mystic": {
@@ -5012,7 +5018,7 @@
         "name": "Oracle Achieved"
       },
       "oracle-vision": {
-        "description": "Complete 500 tarot readings — you have become the oracle.",
+        "description": "Complete 500 readings — you have become the oracle.",
         "name": "Oracle Vision"
       },
       "premium-patron": {
@@ -5044,7 +5050,7 @@
         "name": "Seasonal Sage"
       },
       "seasoned-reader": {
-        "description": "Complete 50 tarot readings as your skills deepen.",
+        "description": "Complete 50 readings as your skills deepen.",
         "name": "Seasoned Reader"
       },
       "soul-searcher": {
@@ -5832,7 +5838,22 @@
     },
     "backgroundOption": "Painted background {{n}} of {{total}}",
     "cardBackOption": "Card back {{n}} of {{total}}",
-    "exportShareTitle": "Your Arcana data"
+    "exportShareTitle": "Your Arcana data",
+    "blocked": {
+      "title": "Blocked members",
+      "intro": "You don’t see posts or comments from members you’ve blocked.",
+      "empty": "You haven’t blocked anyone.",
+      "loadFailed": "Couldn’t load your blocked members — check your connection and try again.",
+      "anonymous": "Anonymous member",
+      "blockedOn": "Blocked {{date}}",
+      "unblock": "Unblock",
+      "unblockAria": "Unblock {{name}}",
+      "confirmTitle": "Unblock this member?",
+      "confirmAction": "Unblock",
+      "confirmBody": "You’ll see their posts and comments in Community again.",
+      "unblocked": "Unblocked",
+      "unblockFailed": "Couldn’t unblock — check your connection and try again."
+    }
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",
@@ -5853,13 +5874,9 @@
   "saved": {
     "title": "Saved",
     "empty": "No saved items yet",
-    "emptySubAlt": "Star readings, journal entries, and quiz results to save them here",
-    "filters": {
-      "all": "All",
-      "readings": "Readings",
-      "journal": "Journal",
-      "quizzes": "Quizzes"
-    }
+    "emptySubAlt": "Readings, cards and horoscopes you save appear here.",
+    "loadFailed": "Couldn’t load your saved items — check your connection and try again.",
+    "openLibrary": "Open your Library"
   },
   "compatibility": {
     "modes": {
@@ -6616,13 +6633,6 @@
     "geocodeRegionMissed": "None of these places is in {{region}}. Check the spelling, or try the place’s English name.",
     "chartMissing": "Your birth chart isn’t set up yet. Open Horoscope to cast it, then try again."
   },
-  "savedSheet": {
-    "threeCardSpread": "Three-card spread",
-    "morningReflection": "Morning reflection",
-    "morningReflectionSub": "Gratitude and intentions",
-    "loveLanguageResult": "Love language result",
-    "wordsOfAffirmation": "Words of Affirmation"
-  },
   "billing": {
     "purchaseCancelled": "Purchase cancelled — nothing was charged.",
     "purchaseFailed": "The purchase didn’t complete. Try again — if you were charged, use Restore purchases.",
@@ -7201,7 +7211,13 @@
     "nightmaresLabel": "Working with nightmares",
     "share": "Share this interpretation",
     "aiFallback": "The interpretation service didn’t answer, so this reading comes from the symbol dictionary instead. No Moonstones were taken.",
-    "shadowLabel": "Shadow:"
+    "shadowLabel": "Shadow:",
+    "aiFallbackDictionary": "The interpretation service didn’t answer, so this reading comes from the symbol dictionary.",
+    "retryFree": "If you were charged for the full interpretation, Try again returns it at no extra cost.",
+    "tryAgain": "Try again",
+    "stillReading": "Still reading the dream…",
+    "errorSpent": "This dream was already read once, and that reading can’t be shown again.",
+    "errorSpentNew": "Interpret my dream starts a new reading, charged as usual."
   },
   "extraQuizzes": {
     "dark-triad": {
@@ -10032,7 +10048,7 @@
   },
   "compat": {
     "title": "Partner compatibility",
-    "intro": "Combines MBTI cognitive-function fit with astrology elemental compatibility to show you where you click, where you rub, and where the growth edges live. Enter what you know about each side — at least one from each.",
+    "intro": "Combines MBTI cognitive-function fit with astrology elemental compatibility to show you where you click, where you rub, and where the growth edges live. Fill in the same for both of you: both birth dates, or both MBTI types.",
     "yourSide": "You",
     "yourMbti": "Your MBTI type",
     "yourBirth": "Your birth date",
@@ -10041,7 +10057,7 @@
     "partnerBirth": "Partner’s birth date",
     "selectOrSkip": "Select or skip",
     "runButton": "Reveal our compatibility",
-    "needBothSides": "Need at least one data point from each side (MBTI or birth date).",
+    "needBothSides": "Fill in the same for both of you: both birth dates, or both MBTI types.",
     "failed": "Couldn’t compute the match — check your connection and try again.",
     "back": "Check another pair",
     "another": "Check another",
@@ -10061,7 +10077,14 @@
     "elementalLabel": "Elemental blend",
     "compositeLabel": "Your relationship as a third entity",
     "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.",
-    "share": "Share this match"
+    "share": "Share this match",
+    "stillComputing": "Still computing the aspects…",
+    "tryAgain": "Try again",
+    "errorSpent": "This match was already read once, and that reading can’t be shown again.",
+    "errorSpentNew": "Reveal our compatibility starts a new reading, charged as usual.",
+    "errorRateLimit": "Too many checks in a row — wait a moment and try again.",
+    "errorNoCharge": "Nothing was charged for a match you did not receive.",
+    "errorRetryFree": "If you were charged, Try again returns the same reading at no extra cost."
   },
   "wisdom": {
     "title": "Daily wisdom"
@@ -10326,10 +10349,13 @@
       "premiumTitle": "Get Premium",
       "premiumSub": "No Moonstones to spend, no ads, every spread and chart",
       "notNow": "Not now",
-      "checkinTomorrow": "Your next check-in opens tomorrow",
       "nextStepCheckin": "Check in below for today’s Moonstones, or go Premium.",
       "nextStepTomorrow": "Come back tomorrow for your check-in, or go Premium.",
+      "nextStepAt": "Come back at {{time}} for your next check-in, or go Premium.",
+      "nextStepTomorrowAt": "Come back tomorrow at {{time}} for your next check-in, or go Premium.",
       "adDailyCap": "You’ve watched today’s ads. Come back tomorrow.",
+      "adDailyCapAt": "You’ve watched today’s ads. Ads earn again at {{time}}.",
+      "adDailyCapTomorrowAt": "You’ve watched today’s ads. Ads earn again tomorrow at {{time}}.",
       "adTooSoon": "Give it a few seconds, then try again.",
       "checkinAlready": "Already claimed today"
     },
@@ -10348,9 +10374,21 @@
     "drawing": "Drawing…",
     "errorGeneric": "Couldn’t reach the Oracle — check your connection and try again.",
     "share": "Share this reading",
-    "redraw": "Draw again",
     "retry": "Ask the Oracle again",
-    "close": "Close the Oracle"
+    "close": "Close the Oracle",
+    "read": "Draw and read",
+    "stillReading": "Still reading…",
+    "errorSpent": "This was already read once, and that reading can’t be shown again.",
+    "errorSpentNew": "Draw and read starts a new reading, charged as usual.",
+    "errorRateLimit": "You’re asking fast — slow down and try again in a moment.",
+    "errorUnavailable": "Readings are temporarily unavailable.",
+    "errorNoCharge": "Nothing was charged for a reading you did not receive.",
+    "errorRetryFree": "If you were charged, asking again returns the same reading at no extra cost.",
+    "context": {
+      "quizResult": "my {{quiz}} result: {{result}} ({{tagline}})",
+      "hexagram": "hexagram {{number}} — {{name}} — for my situation",
+      "tarotCard": "the meaning of {{card}} tarot card for me"
+    }
   },
   "companion": {
     "title": "Companion",
@@ -10603,7 +10641,7 @@
     "overall": "Overall arc",
     "emptyMonth": "A quiet month, astrologically. Use it to rest.",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.",
-    "upgradeToPremium": "See what Premium includes",
+    "upgradeToPremium": "See Premium plans",
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",
@@ -10732,7 +10770,7 @@
     "monthLabel": "Month {{n}}",
     "reflection": "Sit with these questions",
     "share": "Share my archetype",
-    "upgradeToPremium": "See what Premium includes",
+    "upgradeToPremium": "See Premium plans",
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",

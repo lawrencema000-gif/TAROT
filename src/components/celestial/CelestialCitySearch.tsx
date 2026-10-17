@@ -116,10 +116,21 @@ export function CelestialCitySearch({ onPick }: Props) {
 
   const answered = needsSearch && searched === q && !geoLoading;
   const searching = needsSearch && !answered;
-  const searchResults = useMemo<City[]>(
-    () => (answered ? geoResults.slice(0, MAX_RESULTS).map(toCity) : []),
-    [answered, geoResults],
-  );
+  const searchResults = useMemo<City[]>(() => {
+    if (!answered) return [];
+    // One row per place the reader can tell apart: the search can answer
+    // the same town twice (Paris the city and Paris the département).
+    const seen = new Set<string>();
+    return geoResults
+      .map(toCity)
+      .filter((c) => {
+        const key = `${c.name}\u0000${c.country}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, MAX_RESULTS);
+  }, [answered, geoResults]);
   const rows: { city: City; source: 'list' | 'search' }[] = needsSearch
     ? searchResults.map((city) => ({ city, source: 'search' as const }))
     : listResults.map((city) => ({ city, source: 'list' as const }));

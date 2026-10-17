@@ -203,8 +203,10 @@ export function CareerReportPage() {
             size="lg"
           >
             <Crown className="w-4 h-4 mr-2" />
+            {/* The natal report's label: one line beside the crown at 390 px
+                in every locale (p8 F60); "See what Premium includes" took two. */}
             {t('careerReport.upgradeToPremium', {
-              defaultValue: 'See what Premium includes',
+              defaultValue: 'See Premium plans',
             })}
           </Button>
 

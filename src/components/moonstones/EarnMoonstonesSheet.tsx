@@ -20,7 +20,9 @@ import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAd
 import { doDailyCheckin, getBalance, hasCheckedInToday } from '../../dal/moonstones';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { PaywallSheet } from '../premium/PaywallSheet';
+import { checkinOpening, nextClaimLabel } from '../home/checkinOpening';
 import { useAdCreditsLeft } from './useAdCreditsLeft';
 
 /** How long the ad row stays disabled after a "too soon" refusal. */
@@ -58,6 +60,49 @@ function formatTimeUntil(iso: string, t: Translate): string {
   const minutes = Math.floor((ms % 3_600_000) / 60_000);
   if (hours > 0) return t('moonstones.earnSheet.timeHM', { defaultValue: '{{h}}h {{m}}m', h: hours, m: minutes });
   return t('moonstones.earnSheet.timeM', { defaultValue: '{{m}}m', m: minutes });
+}
+
+/*
+ * The check-in and the ad credits both belong to the UTC day (the server's
+ * CURRENT_DATE), so the next ones open at UTC midnight: 9:00 the same
+ * morning in Tokyo for a claim made at 8:30, 5:00 PM the same afternoon in
+ * Los Angeles. This sheet said "tomorrow" for both, beside Home's widget
+ * naming the hour (p8 F56). Every line here now names it the same way, and
+ * says "tomorrow" alone only where the opening is the reader's midnight.
+ */
+
+/** The header's next step once today's check-in is claimed and no ad is offered. */
+function nextStepAfterCheckin(t: Translate, now: Date): string {
+  const opening = checkinOpening(now, getLocale());
+  if (opening.atMidnight) {
+    return t('moonstones.earnSheet.nextStepTomorrow', { defaultValue: 'Come back tomorrow for your check-in, or go Premium.' });
+  }
+  return opening.day === 'today'
+    ? t('moonstones.earnSheet.nextStepAt', {
+        defaultValue: 'Come back at {{time}} for your next check-in, or go Premium.',
+        time: opening.time,
+      })
+    : t('moonstones.earnSheet.nextStepTomorrowAt', {
+        defaultValue: 'Come back tomorrow at {{time}} for your next check-in, or go Premium.',
+        time: opening.time,
+      });
+}
+
+/** Today's six ad credits are used up: when ads earn again. */
+function adCapLine(t: Translate, now: Date): string {
+  const opening = checkinOpening(now, getLocale());
+  if (opening.atMidnight) {
+    return t('moonstones.earnSheet.adDailyCap', { defaultValue: 'You’ve watched today’s ads. Come back tomorrow.' });
+  }
+  return opening.day === 'today'
+    ? t('moonstones.earnSheet.adDailyCapAt', {
+        defaultValue: 'You’ve watched today’s ads. Ads earn again at {{time}}.',
+        time: opening.time,
+      })
+    : t('moonstones.earnSheet.adDailyCapTomorrowAt', {
+        defaultValue: 'You’ve watched today’s ads. Ads earn again tomorrow at {{time}}.',
+        time: opening.time,
+      });
 }
 
 export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, cost = ACTION_COST, onBalanceChange }: Props) {
@@ -116,7 +161,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
         setFeedback(tr('moonstones.earnSheet.adDismissed', { defaultValue: 'Ad closed early — watch it to the end to earn Moonstones.' }));
       } else if (outcome === 'daily-cap') {
         // The service has already broadcast 0 credits left, so the ad row goes.
-        setFeedback(tr('moonstones.earnSheet.adDailyCap', { defaultValue: 'You’ve watched today’s ads. Come back tomorrow.' }));
+        setFeedback(adCapLine(tr, new Date()));
       } else if (outcome === 'too-soon') {
         setFeedback(tr('moonstones.earnSheet.adTooSoon', { defaultValue: 'Give it a few seconds, then try again.' }));
         setAdCooling(true);
@@ -191,7 +236,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
   const nextStep = offersAd
     ? tr('moonstones.earnSheet.earnBelow', { defaultValue: 'Earn more below.' })
     : checkinDone
-      ? tr('moonstones.earnSheet.nextStepTomorrow', { defaultValue: 'Come back tomorrow for your check-in, or go Premium.' })
+      ? nextStepAfterCheckin(tr, new Date())
       : tr('moonstones.earnSheet.nextStepCheckin', { defaultValue: 'Check in below for today’s Moonstones, or go Premium.' });
 
   const sheets = (
@@ -300,7 +345,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
                 <ListRow
                   icon={<CalendarCheck />}
                   label={tr('moonstones.earnSheet.checkinClaimed', { defaultValue: 'You’ve already checked in today' })}
-                  meta={tr('moonstones.earnSheet.checkinTomorrow', { defaultValue: 'Your next check-in opens tomorrow' })}
+                  meta={nextClaimLabel(tr, new Date(), getLocale())}
                 />
               )}
 

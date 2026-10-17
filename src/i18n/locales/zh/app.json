@@ -4702,7 +4702,7 @@
         "name": "学徒觉醒"
       },
       "apprentice-reader": {
-        "description": "完成 10 次塔罗解读，磨练你的直觉。",
+        "description": "完成 10 次解读，磨练你的直觉。",
         "name": "学徒解读者"
       },
       "breaking-through": {
@@ -4714,7 +4714,7 @@
         "name": "牌卡收藏家"
       },
       "card-curious": {
-        "description": "抽出你的第一张塔罗牌，一窥其中的奥秘。",
+        "description": "抽出你的第一张牌，一窥其中的奥秘。",
         "name": "初探牌意"
       },
       "celtic-cross-adept": {
@@ -4790,7 +4790,7 @@
         "name": "显化大师"
       },
       "master-reader": {
-        "description": "完成 100 次塔罗解读，臻于真正的精通。",
+        "description": "完成 100 次解读，臻于真正的精通。",
         "name": "解读大师"
       },
       "monthly-mystic": {
@@ -4814,7 +4814,7 @@
         "name": "登临神谕"
       },
       "oracle-vision": {
-        "description": "完成 500 次塔罗解读——你已成为神谕。",
+        "description": "完成 500 次解读——你已成为神谕。",
         "name": "神谕之眼"
       },
       "premium-patron": {
@@ -4846,7 +4846,7 @@
         "name": "季节贤者"
       },
       "seasoned-reader": {
-        "description": "完成 50 次塔罗解读，技艺日渐精深。",
+        "description": "完成 50 次解读，技艺日渐精深。",
         "name": "资深解读者"
       },
       "soul-searcher": {
@@ -5650,7 +5650,22 @@
     },
     "backgroundOption": "第 {{n}} 张手绘背景，共 {{total}} 张",
     "cardBackOption": "第 {{n}} 款牌背，共 {{total}} 款",
-    "exportShareTitle": "你的 Arcana 数据"
+    "exportShareTitle": "你的 Arcana 数据",
+    "blocked": {
+      "title": "已屏蔽的成员",
+      "intro": "你不会看到已屏蔽成员的帖子和评论。",
+      "empty": "你还没有屏蔽任何人。",
+      "loadFailed": "无法加载已屏蔽的成员，请检查网络连接后重试。",
+      "anonymous": "匿名成员",
+      "blockedOn": "屏蔽于 {{date}}",
+      "unblock": "取消屏蔽",
+      "unblockAria": "取消屏蔽{{name}}",
+      "confirmTitle": "要取消屏蔽吗？",
+      "confirmAction": "取消屏蔽",
+      "confirmBody": "这位成员的帖子和评论会重新出现在社区中。",
+      "unblocked": "已取消屏蔽",
+      "unblockFailed": "无法取消屏蔽，请检查网络连接后重试。"
+    }
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",
@@ -5671,13 +5686,9 @@
   "saved": {
     "title": "已收藏",
     "empty": "还没有收藏项",
-    "emptySubAlt": "给牌阵、日记、测试结果点星,就会保存到这里",
-    "filters": {
-      "all": "全部",
-      "readings": "牌阵",
-      "journal": "日记",
-      "quizzes": "测试"
-    }
+    "emptySubAlt": "你收藏的牌阵、牌和运势都会显示在这里。",
+    "loadFailed": "无法加载你的收藏，请检查网络连接后重试。",
+    "openLibrary": "打开图书馆"
   },
   "compatibility": {
     "modes": {
@@ -6433,13 +6444,6 @@
     "geocodeUnavailable": "地点搜索无响应，请检查网络连接后重试。",
     "geocodeRegionMissed": "在{{region}}没有找到这个地点，列出的是同名的其他地点。请检查拼写，或试试英文地名。",
     "chartMissing": "你的出生星盘还没有建立。请打开「星座运势」排出星盘，然后再试一次。"
-  },
-  "savedSheet": {
-    "threeCardSpread": "三张牌阵",
-    "morningReflection": "晨间反思",
-    "morningReflectionSub": "感恩与意图",
-    "loveLanguageResult": "爱的语言结果",
-    "wordsOfAffirmation": "肯定的话语"
   },
   "billing": {
     "purchaseCancelled": "购买已取消，未产生任何扣款。",
@@ -7213,7 +7217,13 @@
     "nightmaresLabel": "面对噩梦",
     "share": "分享这份解读",
     "aiFallback": "解读服务没有响应，所以这次解读改由象征词典提供。没有扣除月光石。",
-    "shadowLabel": "阴影："
+    "shadowLabel": "阴影：",
+    "aiFallbackDictionary": "解读服务没有响应，所以这次解读改由象征词典提供。",
+    "retryFree": "如果完整解读已被扣费，点击「重试」即可取回那次解读，无需额外付费。",
+    "tryAgain": "重试",
+    "stillReading": "仍在解读梦境…",
+    "errorSpent": "这个梦已经解读过一次，那次解读已无法再显示。",
+    "errorSpentNew": "点击「解读我的梦」将开始一次新的解读，按常规扣费。"
   },
   "extraQuizzes": {
     "dark-triad": {
@@ -10044,7 +10054,7 @@
   },
   "compat": {
     "title": "伴侣契合",
-    "intro": "把 MBTI 认知功能契合与占星元素契合结合起来，看看你们在哪里合拍、在哪里摩擦、以及成长的边缘在哪里。请为双方各填至少一项（MBTI 或出生日期）。",
+    "intro": "把 MBTI 认知功能契合与占星元素契合结合起来，看看你们在哪里合拍、在哪里摩擦、以及成长的边缘在哪里。请为你们两人填写相同的项目：两人的出生日期，或两人的 MBTI 类型。",
     "yourSide": "你",
     "yourMbti": "你的 MBTI",
     "yourBirth": "你的出生日期",
@@ -10053,7 +10063,7 @@
     "partnerBirth": "伴侣的出生日期",
     "selectOrSkip": "选择或跳过",
     "runButton": "揭晓我们的契合度",
-    "needBothSides": "双方至少各需要一个数据点（MBTI 或出生日期）。",
+    "needBothSides": "请为你们两人填写相同的项目：两人的出生日期，或两人的 MBTI 类型。",
     "failed": "无法计算契合度，请检查网络连接后重试。",
     "back": "查看另一对",
     "another": "另一对",
@@ -10073,7 +10083,14 @@
     "elementalLabel": "元素融合",
     "compositeLabel": "你们的关系作为第三个存在",
     "compositeIntro": "组合盘把关系本身视为拥有独立性格的存在——与你们任何一人都不同。这些观察描述的是这段关系这个整体。",
-    "share": "分享这份配对"
+    "share": "分享这份配对",
+    "stillComputing": "仍在计算相位…",
+    "tryAgain": "重试",
+    "errorSpent": "这对配对已经解读过一次，那次解读已无法再显示。",
+    "errorSpentNew": "点击「揭晓我们的契合度」将开始一次新的解读，按常规扣费。",
+    "errorRateLimit": "连续查看次数太多——请稍等片刻再试。",
+    "errorNoCharge": "你没有收到配对结果，因此没有扣除任何费用。",
+    "errorRetryFree": "如果你已被扣费，点击「重试」即可取回同一次解读，无需额外付费。"
   },
   "wisdom": {
     "title": "每日智慧"
@@ -10338,10 +10355,13 @@
       "premiumTitle": "获取高级版",
       "premiumSub": "无需月光石，无广告，全部牌阵与星盘",
       "notNow": "暂不需要",
-      "checkinTomorrow": "下一次签到明天开放",
       "nextStepCheckin": "在下方签到领取今天的月光石，或升级高级版。",
       "nextStepTomorrow": "明天回来签到，或升级高级版。",
+      "nextStepAt": "{{time}} 起可以再次签到，或升级高级版。",
+      "nextStepTomorrowAt": "明天 {{time}} 起可以再次签到，或升级高级版。",
       "adDailyCap": "今天的广告你已经看完了，明天再来。",
+      "adDailyCapAt": "今天的广告你已经看完了，{{time}} 起看广告可以再次赚取。",
+      "adDailyCapTomorrowAt": "今天的广告你已经看完了，明天 {{time}} 起看广告可以再次赚取。",
       "adTooSoon": "请稍等几秒，然后再试。",
       "checkinAlready": "今天已领取"
     },
@@ -10601,7 +10621,7 @@
     "overall": "整体走向",
     "emptyMonth": "本月行星动向平静。用来休息吧。",
     "disclaimer": "占星是一种象征性的视角，而非预言。行运描述的是原型层面的“天气”——你如何行动，取决于你自己。",
-    "upgradeToPremium": "看看高级版包含什么",
+    "upgradeToPremium": "查看高级版方案",
     "orEarnMoonstones": "或用 {{n}} 月光石解锁",
     "balanceShort": "余额：{{n}}",
     "earnHint": "通过每日签到、观看广告或邀请好友赚取月光石。",
@@ -10730,7 +10750,7 @@
     "monthLabel": "第 {{n}} 月",
     "reflection": "静心思考这些问题",
     "share": "分享我的原型",
-    "upgradeToPremium": "看看高级版包含什么",
+    "upgradeToPremium": "查看高级版方案",
     "orEarnMoonstones": "或用 {{n}} 月光石解锁",
     "balanceShort": "余额：{{n}}",
     "earnHint": "通过每日签到、观看广告或邀请好友赚取月光石。",
@@ -11271,12 +11291,24 @@
     "drawing": "抽牌中…",
     "errorGeneric": "无法连接神谕，请检查网络连接后重试。",
     "question": "请为我解读 — {{context}}。它在我的生活中指向什么?",
-    "redraw": "再抽一次",
     "share": "分享这次解读",
     "sheetTitle": "神谕在解读",
     "subtitle": "基于你的命盘与记忆的个性化解读",
     "retry": "再问一次神谕",
-    "close": "关闭神谕"
+    "close": "关闭神谕",
+    "read": "抽牌并解读",
+    "stillReading": "仍在解读…",
+    "errorSpent": "这个问题已经解读过一次，那次解读已无法再显示。",
+    "errorSpentNew": "点击「抽牌并解读」将开始一次新的解读，按常规扣费。",
+    "errorRateLimit": "你提问得有点快——放慢一些，稍后再试。",
+    "errorUnavailable": "解读暂时不可用。",
+    "errorNoCharge": "你没有收到解读，因此没有扣除任何费用。",
+    "errorRetryFree": "如果你已被扣费，再问一次即可取回同一次解读，无需额外付费。",
+    "context": {
+      "quizResult": "我的{{quiz}}结果：{{result}}（{{tagline}}）",
+      "hexagram": "第{{number}}卦「{{name}}」——关于我现在的处境",
+      "tarotCard": "{{card}}这张牌对我的意义"
+    }
   },
   "dailyMission": {
     "doneSub": "新任务将于午夜到来。",
@@ -11486,6 +11518,12 @@
         "title": "找到你的命定之地",
         "premiumBadge": "高级版",
         "body": "一键完成。我们将每座城市与你的完整出生星盘比对，揭示最适合你的那一个地方——并附上详尽的原因。"
+      },
+      "computing": {
+        "stage0": "正在解读你的出生星盘",
+        "stage1": "正在把每座城市与你的行星线逐一比对",
+        "stage2": "正在权衡最强的信号",
+        "stage3": "正在为你揭晓那个地方…"
       },
       "error": {
         "title": "解读未能完成",

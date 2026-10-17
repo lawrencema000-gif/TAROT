@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Sparkles, Moon, AlertTriangle, AlertCircle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2, RefreshCw } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, Section, Disclosure, ResultSheet, KeywordRow, EyebrowLabel } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -11,6 +11,8 @@ import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacSign } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { failedBeforeCharge } from '../components/reports/aiReading';
+import { paidFailureOf, sendPaid } from '../components/oracle/paidRequest';
 
 /**
  * Dream interpretation page.
@@ -34,9 +36,18 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
  *
  * Both results are read on paper (ResultSheet). The AI one closes with the
  * `ai` disclaimer — a model wrote it — the dictionary one with `general`.
+ *
+ * Money (p8 R1): the server charges 50 Moonstones per request and replays a
+ * request that carries the same `requestId` and body for free. So a press is
+ * guarded synchronously (a second tap during the balance gate is ignored),
+ * the request keeps its id until it is answered, and the dictionary fallback
+ * only says "No Moonstones were taken" when the server refused the request
+ * before the debit. When the answer was lost on the way back (the charge may
+ * have landed), the dictionary reading says so and offers Try again — the
+ * same request, which returns the paid interpretation at no extra cost.
  */
 
-type Stage = 'input' | 'loading' | 'result';
+type Stage = 'input' | 'result';
 
 interface AiReading {
   source: 'ai';
@@ -74,10 +85,125 @@ export function DreamInterpreterPage() {
   const [stage, setStage] = useState<Stage>('input');
   const [dreamText, setDreamText] = useState('');
   const [reading, setReading] = useState<Reading | null>(null);
-  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('dream-interpret');
+  const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('dream-interpret');
+  /**
+   * A press is being handled — from the moment it lands, through the
+   * balance gate, until the request settles. The ref is set synchronously,
+   * before anything is awaited, so a second tap that lands while the gate is
+   * answering is ignored; the state disables the button and the text for
+   * the same span. Without it a double tap passed the gate twice and the
+   * server charged both requests (p8 R1).
+   */
+  const pressing = useRef(false);
+  const [busy, setBusy] = useState(false);
+  /** The server is still reading an earlier send of this same request; the page waits for it. */
+  const [stillReading, setStillReading] = useState(false);
+  /**
+   * The request this page last sent and got no interpretation back for: its
+   * id and its exact body. Sending the same body again is a retry of that
+   * request — charged at most once, answered with the same interpretation —
+   * so it goes out without the client gate (a charge that landed can leave
+   * the balance under the price). A different dream is a new request.
+   */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** The dictionary reading stands in for an interpretation that may have been charged: Try again is free. */
+  const [lostAnswer, setLostAnswer] = useState(false);
+  /** The server answered this request once and can no longer show it (409 REQUEST_ALREADY_USED). */
+  const [spent, setSpent] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  /** The symbol dictionary's reading. `lost`: the paid interpretation may have been charged. */
+  const showDictionary = (lost: boolean) => {
+    if (!lost) {
+      // Refused before the debit (rate limit, readings paused): true.
+      toast(
+        t('dream.aiFallback', {
+          defaultValue: 'The interpretation service didn’t answer, so this reading comes from the symbol dictionary instead. No Moonstones were taken.',
+        }),
+        'info',
+      );
+    }
+    setLostAnswer(lost);
+    setReading({ source: 'local', reading: interpretDream(dreamText) });
+    setStage('result');
+  };
+
+  /** One press: the balance gate (for a new request), the request, and what came back. */
+  const read = async () => {
+    const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
+    const body = {
+      dreamText: dreamText.trim(),
+      userContext: {
+        zodiacSign,
+        mbtiType: profile?.mbtiType ?? undefined,
+        // The app's language, not the device's (P7 #49).
+        locale: getLocale(),
+      },
+    };
+    const signature = JSON.stringify(body);
+    if (attempt.current?.body !== signature) {
+      if (!(await tryConsume())) return;
+      attempt.current = { id: crypto.randomUUID(), body: signature };
+    }
+    const requestId = attempt.current.id;
+    setSpent(false);
+    const res = await sendPaid(
+      () => supabase.functions.invoke('ai-dream-interpret', { body: { ...body, requestId } }),
+      { live: () => mounted.current, onStillReading: () => setStillReading(true) },
+    );
+    if (!res) return;
+    setStillReading(false);
+
+    if (!res.error) {
+      // Unwrap { data, correlationId } envelope.
+      const data = res.data as { data?: Omit<AiReading, 'source'> } | Omit<AiReading, 'source'> | null;
+      const payload = (data as { data?: Omit<AiReading, 'source'> } | null)?.data ?? (data as Omit<AiReading, 'source'> | null);
+      if (payload?.coreTheme) {
+        attempt.current = null;
+        setLostAnswer(false);
+        setReading({ ...payload, source: 'ai' });
+        setStage('result');
+        return;
+      }
+    }
+
+    const failure = res.error ? await paidFailureOf(res.error) : 'generic';
+    console.warn('[Dream] AI interpretation failed:', failure, res.error);
+    if (failure === 'spent') {
+      // Answered once, and the answer can no longer be replayed: this id is
+      // spent. Stay on the dream and say the next press is a new reading.
+      attempt.current = null;
+      setSpent(true);
+      return;
+    }
+    if (failure === 'insufficient' || failure === 'soft-cap') {
+      // Rejected before the debit. The gate opens the Earn sheet with the
+      // balance or the reset time; if it now lets the reading through, the
+      // balance moved in between and the dictionary stands in, free.
+      attempt.current = null;
+      if (await tryConsume()) showDictionary(false);
+      return;
+    }
+    if (failedBeforeCharge(failure)) {
+      attempt.current = null;
+      showDictionary(false);
+      return;
+    }
+    // No answer (network), or the server failed after it may have charged:
+    // keep the request, so Try again is its free replay.
+    showDictionary(true);
+  };
 
   const interpret = async () => {
-    if (!dreamText.trim() || dreamText.trim().length < 20) {
+    // Re-entrancy is decided synchronously, before the gate is awaited.
+    if (pressing.current) return;
+    if (dreamText.trim().length < 20) {
       toast(
         t('dream.needLonger', {
           defaultValue: 'Please share a bit more about the dream (at least a few sentences).',
@@ -86,59 +212,36 @@ export function DreamInterpreterPage() {
       );
       return;
     }
-
-    const ok = await tryConsume();
-    if (!ok) return;
-
-    setStage('loading');
-
-    // Try the AI path first — richer interpretation, personalised.
+    pressing.current = true;
+    setBusy(true);
     try {
-      const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
-      const { data, error } = await supabase.functions.invoke('ai-dream-interpret', {
-        body: {
-          dreamText: dreamText.trim(),
-          userContext: {
-            zodiacSign,
-            mbtiType: profile?.mbtiType ?? undefined,
-            // The app's language, not the device's (P7 #49).
-            locale: getLocale(),
-          },
-        },
-      });
-      if (error) throw error;
-      // Unwrap { data, correlationId } envelope.
-      const payload = (data as { data?: Omit<AiReading, 'source'> })?.data ?? (data as Omit<AiReading, 'source'>);
-      if (!payload || !payload.coreTheme) throw new Error('malformed');
-      setReading({ ...payload, source: 'ai' });
-      setStage('result');
-      return;
-    } catch (e) {
-      // AI failed — refund the spend so the user isn't charged for the
-      // local-dictionary fallback (a free feature). They still get a
-      // reading, just one that doesn't justify the 50-Moonstone cost.
-      await refund();
-      console.warn('[Dream] AI interpretation failed, falling back to local dictionary:', e);
-      toast(
-        t('dream.aiFallback', {
-          defaultValue: 'The interpretation service didn’t answer, so this reading comes from the symbol dictionary instead. No Moonstones were taken.',
-        }),
-        'info',
-      );
+      await read();
+    } finally {
+      pressing.current = false;
+      if (mounted.current) {
+        setBusy(false);
+        setStillReading(false);
+      }
     }
-
-    const local = interpretDream(dreamText);
-    setReading({ source: 'local', reading: local });
-    setStage('result');
   };
 
+  /** Try again from the dictionary reading: the same request, so a charge that landed is not taken twice. */
+  const retry = () => {
+    setStage('input');
+    void interpret();
+  };
+
+  // The unanswered request is kept: the same dream sent again is still its
+  // free retry, and any other dream does not match it and starts a new one.
   const reset = () => {
     setStage('input');
     setDreamText('');
     setReading(null);
+    setLostAnswer(false);
+    setSpent(false);
   };
 
-  if (stage === 'input' || stage === 'loading') {
+  if (stage === 'input') {
     return (
       <Page spacing="md">
         <PageHeader
@@ -160,9 +263,13 @@ export function DreamInterpreterPage() {
           <textarea
             id="dream-text"
             value={dreamText}
-            onChange={(e) => setDreamText(e.target.value)}
+            onChange={(e) => {
+              setDreamText(e.target.value);
+              // A changed dream is a new request: the spent notice was about the old one.
+              setSpent(false);
+            }}
             rows={8}
-            disabled={stage === 'loading'}
+            disabled={busy}
             className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
             placeholder={t('dream.placeholder', {
               defaultValue:
@@ -177,6 +284,19 @@ export function DreamInterpreterPage() {
           </p>
         </Card>
 
+        {spent && (
+          <div role="alert" className="flex items-start gap-3 rounded-card bg-mystic-850 border border-coral/30 p-4">
+            <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" aria-hidden />
+            <div className="flex-1 min-w-0">
+              <p className="text-ui text-mystic-100">
+                {t('dream.errorSpent', { defaultValue: 'This dream was already read once, and that reading can’t be shown again.' })}
+              </p>
+              <p className="text-meta text-mystic-400 mt-1">
+                {t('dream.errorSpentNew', { defaultValue: 'Interpret my dream starts a new reading, charged as usual.' })}
+              </p>
+            </div>
+          </div>
+        )}
         <MoonstoneCostLine />
         {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         <Button
@@ -184,12 +304,14 @@ export function DreamInterpreterPage() {
           size="lg"
           fullWidth
           onClick={interpret}
-          disabled={stage === 'loading'}
-          loading={stage === 'loading'}
+          disabled={busy}
+          loading={busy}
         >
-          {stage !== 'loading' && <Sparkles className="w-5 h-5" aria-hidden />}
-          {stage === 'loading'
-            ? t('dream.interpreting', { defaultValue: 'Reading the dream…' })
+          {!busy && <Sparkles className="w-5 h-5" aria-hidden />}
+          {busy
+            ? stillReading
+              ? t('dream.stillReading', { defaultValue: 'Still reading the dream…' })
+              : t('dream.interpreting', { defaultValue: 'Reading the dream…' })
             : t('dream.interpret', { defaultValue: 'Interpret my dream' })}
         </Button>
         {EarnSheet}
@@ -201,7 +323,12 @@ export function DreamInterpreterPage() {
     return reading.source === 'ai' ? (
       <AiResultView reading={reading} onReset={reset} dreamText={dreamText} />
     ) : (
-      <LocalResultView reading={reading.reading} onReset={reset} dreamText={dreamText} />
+      <LocalResultView
+        reading={reading.reading}
+        onReset={reset}
+        dreamText={dreamText}
+        onRetry={lostAnswer ? retry : undefined}
+      />
     );
   }
 
@@ -504,7 +631,18 @@ function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => 
 }
 
 // ─── Local fallback view — the dictionary reading, on the same paper ─
-function LocalResultView({ reading, onReset, dreamText }: { reading: DreamReading; onReset: () => void; dreamText: string }) {
+function LocalResultView({
+  reading,
+  onReset,
+  dreamText,
+  onRetry,
+}: {
+  reading: DreamReading;
+  onReset: () => void;
+  dreamText: string;
+  /** Set when the paid interpretation may have been charged and lost: Try again is its free replay. */
+  onRetry?: () => void;
+}) {
   const { t } = useT('app');
 
   const handleShare = async () => {
@@ -551,6 +689,31 @@ function LocalResultView({ reading, onReset, dreamText }: { reading: DreamReadin
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
       />
+
+      {/* The answer was lost on the way back, or the server failed after it
+          may have charged: never "No Moonstones were taken" here. Try again
+          sends the same request, which the server charges at most once. */}
+      {onRetry && (
+        <div role="status" className="flex items-start gap-3 rounded-card bg-mystic-850 border border-mystic-700 p-4">
+          <AlertCircle className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" aria-hidden />
+          <div className="flex-1 min-w-0">
+            <p className="text-ui text-mystic-100">
+              {t('dream.aiFallbackDictionary', {
+                defaultValue: 'The interpretation service didn’t answer, so this reading comes from the symbol dictionary.',
+              })}
+            </p>
+            <p className="text-meta text-mystic-400 mt-1">
+              {t('dream.retryFree', {
+                defaultValue: 'If you were charged for the full interpretation, Try again returns it at no extra cost.',
+              })}
+            </p>
+            <Button variant="outline" size="sm" onClick={onRetry} className="mt-3">
+              <RefreshCw className="w-4 h-4" aria-hidden />
+              {t('dream.tryAgain', { defaultValue: 'Try again' })}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ResultSheet
         headingLevel="h2"

@@ -10,6 +10,7 @@ import {
   isResetPasswordPath,
   shellPath,
   signedOutMemberDestination,
+  trackSignedInPath,
 } from '../authReturn';
 import {
   isStaleChunkMessage,
@@ -108,6 +109,30 @@ describe('post-auth destination (P7 #2/#3/#37/#39)', () => {
     );
     // No sign-out in this visit (a bookmark, an invite link).
     expect(signedOutMemberDestination('/invite/AB12?x=1', '/invite/AB12', null)).toBe('/signin?next=%2Finvite%2FAB12%3Fx%3D1');
+  });
+
+  it('keeps the sign-out page through the renders before the redirect lands, then drops it (p8 F46)', () => {
+    // Signed in on /journal, then signed out: every render still at /journal
+    // (the sign-out's own state changes) goes to `/`, not to sign-in.
+    let rec = trackSignedInPath(null, true, false, '/journal');
+    expect(rec).toBe('/journal');
+    rec = trackSignedInPath(rec, false, false, '/journal');
+    expect(signedOutMemberDestination('/journal', '/journal', rec)).toBe('/');
+    rec = trackSignedInPath(rec, false, false, '/journal');
+    expect(signedOutMemberDestination('/journal', '/journal', rec)).toBe('/');
+    // The redirect landed: the record is gone, and a later visit to the page signs in first.
+    rec = trackSignedInPath(rec, false, false, '/');
+    expect(rec).toBeNull();
+    expect(signedOutMemberDestination('/journal', '/journal', rec)).toBe('/signin?next=%2Fjournal');
+
+    // Signed out on a public page: the first member link already signs in.
+    rec = trackSignedInPath(null, true, false, '/cartomancy');
+    rec = trackSignedInPath(rec, false, false, '/cartomancy');
+    expect(signedOutMemberDestination('/cartomancy/reading', '/cartomancy/reading', rec)).toBe('/signin?next=%2Fcartomancy%2Freading');
+    expect(trackSignedInPath(rec, false, false, '/cartomancy/reading')).toBeNull();
+
+    // While the session is still loading nothing changes.
+    expect(trackSignedInPath('/journal', false, true, '/')).toBe('/journal');
   });
 });
 

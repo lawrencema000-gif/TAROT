@@ -4702,7 +4702,7 @@
         "name": "수습의 각성"
       },
       "apprentice-reader": {
-        "description": "타로 리딩을 10회 완료하고 직관을 다듬으세요.",
+        "description": "리딩을 10회 완료하고 직관을 다듬으세요.",
         "name": "수습 리더"
       },
       "breaking-through": {
@@ -4714,7 +4714,7 @@
         "name": "카드 수집가"
       },
       "card-curious": {
-        "description": "첫 타로 카드를 뽑고 그 안의 신비를 엿보세요.",
+        "description": "첫 카드를 뽑고 그 안의 신비를 엿보세요.",
         "name": "카드에 대한 호기심"
       },
       "celtic-cross-adept": {
@@ -4790,7 +4790,7 @@
         "name": "현실화의 대가"
       },
       "master-reader": {
-        "description": "타로 리딩을 100회 완료하고 진정한 경지에 이르세요.",
+        "description": "리딩을 100회 완료하고 진정한 경지에 이르세요.",
         "name": "마스터 리더"
       },
       "monthly-mystic": {
@@ -4814,7 +4814,7 @@
         "name": "오라클 도달"
       },
       "oracle-vision": {
-        "description": "타로 리딩을 500회 완료하세요 — 이제 당신이 오라클이에요.",
+        "description": "리딩을 500회 완료하세요 — 이제 당신이 오라클이에요.",
         "name": "오라클의 눈"
       },
       "premium-patron": {
@@ -4846,7 +4846,7 @@
         "name": "계절의 현자"
       },
       "seasoned-reader": {
-        "description": "타로 리딩을 50회 완료하며 실력을 깊게 다지세요.",
+        "description": "리딩을 50회 완료하며 실력을 깊게 다지세요.",
         "name": "노련한 리더"
       },
       "soul-searcher": {
@@ -5650,7 +5650,22 @@
     },
     "backgroundOption": "그림 배경 {{total}}개 중 {{n}}번째",
     "cardBackOption": "카드 뒷면 {{total}}개 중 {{n}}번째",
-    "exportShareTitle": "나의 Arcana 데이터"
+    "exportShareTitle": "나의 Arcana 데이터",
+    "blocked": {
+      "title": "차단한 멤버",
+      "intro": "차단한 멤버의 게시물과 댓글은 보이지 않아요.",
+      "empty": "차단한 멤버가 없어요.",
+      "loadFailed": "차단한 멤버를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "anonymous": "익명 멤버",
+      "blockedOn": "{{date}}에 차단",
+      "unblock": "해제",
+      "unblockAria": "{{name}} 차단 해제",
+      "confirmTitle": "차단을 해제할까요?",
+      "confirmAction": "차단 해제",
+      "confirmBody": "이 멤버의 게시물과 댓글이 커뮤니티에 다시 보여요.",
+      "unblocked": "차단을 해제했어요",
+      "unblockFailed": "차단을 해제하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+    }
   },
   "search": {
     "placeholder": "카드, 저널, 별자리 운세 검색…",
@@ -5671,13 +5686,9 @@
   "saved": {
     "title": "저장됨",
     "empty": "아직 저장한 항목이 없어요",
-    "emptySubAlt": "리딩, 저널, 퀴즈 결과에 별표를 누르면 여기에 저장돼요",
-    "filters": {
-      "all": "전체",
-      "readings": "리딩",
-      "journal": "저널",
-      "quizzes": "퀴즈"
-    }
+    "emptySubAlt": "저장한 리딩, 카드, 운세가 여기에 표시돼요.",
+    "loadFailed": "저장한 항목을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "openLibrary": "라이브러리 열기"
   },
   "compatibility": {
     "modes": {
@@ -6433,13 +6444,6 @@
     "geocodeUnavailable": "장소 검색이 응답하지 않아요 — 연결을 확인하고 다시 시도해 주세요.",
     "geocodeRegionMissed": "{{region}}에 있는 장소는 찾지 못했어요. 보이는 곳은 이름만 같은 다른 장소예요. 철자를 확인하거나 영어 지명으로 검색해 보세요.",
     "chartMissing": "아직 출생 차트가 준비되지 않았어요. 별자리 운세에서 차트를 계산한 뒤 다시 시도해 주세요."
-  },
-  "savedSheet": {
-    "threeCardSpread": "세 장 스프레드",
-    "morningReflection": "아침 성찰",
-    "morningReflectionSub": "감사와 의도",
-    "loveLanguageResult": "사랑의 언어 결과",
-    "wordsOfAffirmation": "인정하는 말"
   },
   "billing": {
     "purchaseCancelled": "구매가 취소됐어요 — 결제된 것은 없어요.",
@@ -7213,7 +7217,13 @@
     "nightmaresLabel": "악몽 다루기",
     "share": "이 해석 공유",
     "aiFallback": "해석 서비스가 응답하지 않아서, 이 리딩은 상징 사전을 바탕으로 했어요. 문스톤은 차감되지 않았어요.",
-    "shadowLabel": "그림자:"
+    "shadowLabel": "그림자:",
+    "aiFallbackDictionary": "해석 서비스가 응답하지 않아서, 이 리딩은 상징 사전을 바탕으로 했어요.",
+    "retryFree": "전체 해석이 이미 차감됐다면 ‘다시 시도’를 누르면 추가 비용 없이 그 해석을 받을 수 있어요.",
+    "tryAgain": "다시 시도",
+    "stillReading": "아직 꿈을 읽는 중…",
+    "errorSpent": "이 꿈은 이미 한 번 읽었고, 그 리딩은 더 이상 보여 드릴 수 없어요.",
+    "errorSpentNew": "‘내 꿈 해석하기’를 누르면 새 리딩이 시작되고, 평소처럼 차감돼요."
   },
   "extraQuizzes": {
     "dark-triad": {
@@ -10044,7 +10054,7 @@
   },
   "compat": {
     "title": "파트너 궁합",
-    "intro": "MBTI 인지 기능 궁합과 점성술 원소 궁합을 결합해, 어디서 맞고, 어디서 부딪히며, 어디에 성장의 모서리가 있는지 보여줍니다. 양쪽 모두에 대해 MBTI든 생년월일이든, 최소 하나씩은 입력해 주세요.",
+    "intro": "MBTI 인지 기능 궁합과 점성술 원소 궁합을 결합해, 어디서 맞고, 어디서 부딪히며, 어디에 성장의 모서리가 있는지 보여줍니다. 두 사람 모두 같은 항목을 입력해 주세요: 두 사람의 생년월일, 또는 두 사람의 MBTI 유형.",
     "yourSide": "당신",
     "yourMbti": "당신의 MBTI",
     "yourBirth": "당신의 생년월일",
@@ -10053,7 +10063,7 @@
     "partnerBirth": "상대의 생년월일",
     "selectOrSkip": "선택 또는 건너뛰기",
     "runButton": "궁합 확인하기",
-    "needBothSides": "양쪽에서 최소한 하나의 정보가 필요합니다 (MBTI 또는 생년월일).",
+    "needBothSides": "두 사람 모두 같은 항목을 입력해 주세요: 두 사람의 생년월일, 또는 두 사람의 MBTI 유형.",
     "failed": "궁합을 계산하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "back": "다른 짝 보기",
     "another": "다른 짝",
@@ -10073,7 +10083,14 @@
     "elementalLabel": "원소의 조합",
     "compositeLabel": "제3의 존재로서의 관계",
     "compositeIntro": "컴포짓 차트는 관계 그 자체를 두 사람 각각과는 별개의, 고유한 성격을 가진 존재로 다뤄요. 이 관찰은 그 관계라는 존재를 설명해요.",
-    "share": "이 궁합 공유"
+    "share": "이 궁합 공유",
+    "stillComputing": "아직 각도를 계산하는 중…",
+    "tryAgain": "다시 시도",
+    "errorSpent": "이 궁합은 이미 한 번 읽었고, 그 리딩은 더 이상 보여 드릴 수 없어요.",
+    "errorSpentNew": "‘궁합 확인하기’를 누르면 새 리딩이 시작되고, 평소처럼 차감돼요.",
+    "errorRateLimit": "연달아 너무 많이 확인했어요 — 잠시 기다렸다가 다시 시도해 주세요.",
+    "errorNoCharge": "받지 못한 궁합에 대해서는 아무것도 차감되지 않았어요.",
+    "errorRetryFree": "이미 차감됐다면 ‘다시 시도’를 누르면 추가 비용 없이 같은 리딩을 받을 수 있어요."
   },
   "wisdom": {
     "title": "오늘의 지혜"
@@ -10338,10 +10355,13 @@
       "premiumTitle": "프리미엄 시작하기",
       "premiumSub": "문스톤 소모 없음, 광고 없음, 모든 스프레드와 차트",
       "notNow": "나중에",
-      "checkinTomorrow": "다음 체크인은 내일 열려요",
       "nextStepCheckin": "아래에서 체크인하고 오늘의 문스톤을 받거나, 프리미엄을 시작하세요.",
       "nextStepTomorrow": "내일 다시 와서 체크인하거나, 프리미엄을 시작하세요.",
+      "nextStepAt": "{{time}} 이후에 다시 와서 체크인하거나, 프리미엄을 시작하세요.",
+      "nextStepTomorrowAt": "내일 {{time}} 이후에 다시 와서 체크인하거나, 프리미엄을 시작하세요.",
       "adDailyCap": "오늘 볼 수 있는 광고를 모두 봤어요. 내일 다시 오세요.",
+      "adDailyCapAt": "오늘 볼 수 있는 광고를 모두 봤어요. {{time}}부터 다시 광고로 받을 수 있어요.",
+      "adDailyCapTomorrowAt": "오늘 볼 수 있는 광고를 모두 봤어요. 내일 {{time}}부터 다시 광고로 받을 수 있어요.",
       "adTooSoon": "몇 초 기다린 뒤 다시 시도해 주세요.",
       "checkinAlready": "오늘은 이미 받았어요"
     },
@@ -10601,7 +10621,7 @@
     "overall": "전체 흐름",
     "emptyMonth": "점성학적으로 한달이 고요합니다. 쉬어가세요.",
     "disclaimer": "점성학은 상징적 렌즈이지 예언이 아닙니다. 트랜싯은 원형적 날씨를 설명할 뿐 — 그 안에서 무엇을 할지는 당신의 몫입니다.",
-    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "upgradeToPremium": "프리미엄 플랜 보기",
     "orEarnMoonstones": "또는 문스톤 {{n}}개로 열기",
     "balanceShort": "잔액: {{n}}",
     "earnHint": "데일리 체크인, 광고 보기, 친구 초대로 문스톤을 모을 수 있어요.",
@@ -10730,7 +10750,7 @@
     "monthLabel": "{{n}}월",
     "reflection": "이 질문들과 함께 머물러 보기",
     "share": "내 원형 공유하기",
-    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "upgradeToPremium": "프리미엄 플랜 보기",
     "orEarnMoonstones": "또는 문스톤 {{n}}개로 열기",
     "balanceShort": "잔액: {{n}}",
     "earnHint": "데일리 체크인, 광고 보기, 친구 초대로 문스톤을 모을 수 있어요.",
@@ -11271,12 +11291,24 @@
     "drawing": "뽑는 중…",
     "errorGeneric": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "question": "이것을 저를 위해 읽어주세요 — {{context}}. 지금 제 삶에서 무엇을 가리키고 있나요?",
-    "redraw": "다시 뽑기",
     "share": "이 리딩 공유",
     "sheetTitle": "오라클의 해석",
     "subtitle": "당신의 차트와 기억을 바탕으로 한 맞춤 리딩",
     "retry": "오라클에게 다시 묻기",
-    "close": "오라클 닫기"
+    "close": "오라클 닫기",
+    "read": "뽑고 읽기",
+    "stillReading": "아직 읽는 중…",
+    "errorSpent": "이건 이미 한 번 읽었고, 그 리딩은 더 이상 보여 드릴 수 없어요.",
+    "errorSpentNew": "‘뽑고 읽기’를 누르면 새 리딩이 시작되고, 평소처럼 차감돼요.",
+    "errorRateLimit": "질문이 너무 빨라요 — 조금 천천히, 잠시 후 다시 시도해 주세요.",
+    "errorUnavailable": "리딩을 일시적으로 사용할 수 없어요.",
+    "errorNoCharge": "받지 못한 리딩에 대해서는 아무것도 차감되지 않았어요.",
+    "errorRetryFree": "이미 차감됐다면 다시 물어보면 추가 비용 없이 같은 리딩을 받을 수 있어요.",
+    "context": {
+      "quizResult": "제 {{quiz}} 결과: {{result}} ({{tagline}})",
+      "hexagram": "제{{number}}괘 {{name}} — 지금 제 상황에 대해",
+      "tarotCard": "제게 {{card}} 카드가 갖는 의미"
+    }
   },
   "dailyMission": {
     "doneSub": "새로운 미션은 자정에 도착합니다.",
@@ -11486,6 +11518,12 @@
         "title": "운명의 장소 찾기",
         "premiumBadge": "프리미엄",
         "body": "한 번의 탭. 모든 도시를 당신의 전체 출생 차트에 비추어 읽고, 당신에게 가장 잘 맞는 단 하나의 장소를 — 긴 이유와 함께 — 알려드려요."
+      },
+      "computing": {
+        "stage0": "당신의 출생 차트를 읽고 있어요",
+        "stage1": "모든 도시를 당신의 행성 라인과 맞춰 보고 있어요",
+        "stage2": "가장 강한 신호를 가늠하고 있어요",
+        "stage3": "당신의 장소를 정하고 있어요…"
       },
       "error": {
         "title": "리딩을 끝내지 못했어요",

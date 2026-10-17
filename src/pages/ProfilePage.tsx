@@ -13,10 +13,9 @@ import {
   Briefcase,
   Calendar,
   ScrollText,
-  Sparkles,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton, PageGrid, TarotCardIcon, HoroscopeWheelIcon, type ListRowTone } from '../components/ui';
+import { Card, Button, EyebrowLabel, Section, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, PageGrid } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -28,19 +27,12 @@ import { ReferralSheet } from '../components/referral/ReferralSheet';
 import { InviteFriendSheet } from '../components/compat/InviteFriendSheet';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { useAuth } from '../context/AuthContext';
-import { savedHighlights as savedHighlightsDal } from '../dal';
+import { useUI } from '../context/UIContext';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { parseLocalDate } from '../utils/localDate';
-
-interface SavedHighlight {
-  id: string;
-  highlight_type: string;
-  date: string;
-  content: Record<string, unknown>;
-}
 
 const ELEMENT_DEFAULT: Record<string, string> = {
   fire: 'Fire',
@@ -66,20 +58,22 @@ export function ProfilePage() {
     'acts-of-service': t('profile.loveLanguages.acts-of-service'),
     'physical-touch': t('profile.loveLanguages.physical-touch'),
   };
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
+  // Saved opens the one Saved sheet (the header ☆): saved readings, cards and
+  // horoscopes, the Library's records. This page used to keep its own sheet
+  // of highlights only, which said nothing was saved while the Library held
+  // the member's readings (p8 F69).
+  const { openOverlay } = useUI();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [showCompatInvite, setShowCompatInvite] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
   const referralEnabled = useFeatureFlag('referral');
   const compatInviteEnabled = useFeatureFlag('compat-invite');
   const careerReportEnabled = useFeatureFlag('career-report');
   const yearAheadEnabled = useFeatureFlag('year-ahead-report');
   const natalReportEnabled = useFeatureFlag('natal-chart-report');
   const navigate = useNavigate();
-  const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
-  const [loadingSaved, setLoadingSaved] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
 
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
@@ -91,7 +85,6 @@ export function ProfilePage() {
 
   const numberFmt = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const dateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', year: 'numeric' }), [locale]);
-  const shortDateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }), [locale]);
   const timeFmt = useMemo(() => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }), [locale]);
 
   useEffect(() => {
@@ -104,23 +97,6 @@ export function ProfilePage() {
     };
     loadLevelData();
   }, [profile]);
-
-  const loadSavedHighlights = async () => {
-    if (!user) return;
-    setLoadingSaved(true);
-    const res = await savedHighlightsDal.listForUser(user.id, { limit: 20 });
-    if (res.ok) {
-      setSavedHighlights(
-        res.data.map(row => ({
-          id: row.id,
-          highlight_type: row.highlightType,
-          date: row.date,
-          content: row.content,
-        })),
-      );
-    }
-    setLoadingSaved(false);
-  };
 
   const handleUpgrade = () => {
     setShowPaywall(true);
@@ -148,12 +124,6 @@ export function ProfilePage() {
   const elementLabel = zodiacInfo
     ? t(`profile.elements.${zodiacInfo.element}`, { defaultValue: ELEMENT_DEFAULT[zodiacInfo.element] ?? zodiacInfo.element })
     : '';
-
-  const savedTypeLabel = (type: string) =>
-    t(`profile.savedTypes.${type}`, { defaultValue: type.charAt(0).toUpperCase() + type.slice(1) });
-  const SavedIcon = ({ type }: { type: string }) =>
-    type === 'tarot' ? <TarotCardIcon /> : type === 'horoscope' ? <HoroscopeWheelIcon /> : <Sparkles />;
-  const savedTone = (type: string): ListRowTone => (type === 'tarot' ? 'blue' : type === 'horoscope' ? 'gold' : 'violet');
 
   const identity = (
     <Card padding="lg">
@@ -365,7 +335,7 @@ export function ProfilePage() {
           icon={<Bookmark />}
           label={t('profile.saved')}
           meta={t('profile.yourBookmarks')}
-          onClick={() => { setShowSaved(true); loadSavedHighlights(); }}
+          onClick={() => openOverlay('saved')}
         />
       </ListRowGroup>
 
@@ -393,31 +363,6 @@ export function ProfilePage() {
       </PageGrid>
 
       <EditProfileSheet open={showEditProfile} onClose={() => setShowEditProfile(false)} />
-
-      <Sheet open={showSaved} onClose={() => setShowSaved(false)} title={t('profile.saved')}>
-        {loadingSaved ? (
-          <ListSkeleton count={3} />
-        ) : savedHighlights.length === 0 ? (
-          <EmptyState
-            variant="inline"
-            icon={<Bookmark />}
-            title={t('profile.noSaved')}
-            description={t('profile.noSavedSub')}
-          />
-        ) : (
-          <ListRowGroup>
-            {savedHighlights.map(highlight => (
-              <ListRow
-                key={highlight.id}
-                icon={<SavedIcon type={highlight.highlight_type} />}
-                tone={savedTone(highlight.highlight_type)}
-                label={savedTypeLabel(highlight.highlight_type)}
-                meta={<span className="tabular-nums">{shortDateFmt.format(parseLocalDate(highlight.date))}</span>}
-              />
-            ))}
-          </ListRowGroup>
-        )}
-      </Sheet>
 
       <PaywallSheet
         open={showPaywall}

@@ -173,13 +173,17 @@ export function compositeInsights(crossAspects: readonly CrossAspectText[]): Com
   const insights: CompositeInsight[] = [];
   const seen = new Set<string>();
   for (const a of crossAspects) {
-    const sorted = [a.myPlanet, a.partnerPlanet].sort() as [string, string];
-    const pair = sorted.join('-');
+    const pair = [a.myPlanet, a.partnerPlanet].sort().join('-');
     if (seen.has(pair)) continue;
 
-    // Direct pairings
-    if (own(COMPOSITE_PAIRING_READINGS, pair)) {
-      insights.push({ key: pair, planets: sorted });
+    // Direct pairings. The readings are keyed in their own order ('Sun-Moon',
+    // 'Venus-Mars'), not alphabetically, so look the pair up both ways: the
+    // sorted lookup alone never found those two.
+    const forward = `${a.myPlanet}-${a.partnerPlanet}`;
+    const backward = `${a.partnerPlanet}-${a.myPlanet}`;
+    const key = own(COMPOSITE_PAIRING_READINGS, forward) ? forward : own(COMPOSITE_PAIRING_READINGS, backward) ? backward : null;
+    if (key) {
+      insights.push({ key, planets: key.split('-') as [string, string] });
       seen.add(pair);
       continue;
     }

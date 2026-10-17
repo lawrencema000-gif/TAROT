@@ -6933,7 +6933,7 @@
     "calcFailed": "Couldn’t calculate your design — check your birth details and try again.",
     "errorSpent": "This chart was already given once and can’t be shown again. Reveal my design starts a new one, charged as usual.",
     "needBirthDate": "Birth date is required",
-    "disclaimer": "This is a lightweight reading. A full Human Design chart uses planetary positions from your exact birth moment. For the complete 9-centre bodygraph, export your birth data and visit a dedicated Human Design site.",
+    "disclaimer": "Your chart is computed from the planets’ positions at your exact birth moment and at the Design moment, 88° of solar arc earlier. For colour, tone and the finer layers of the bodygraph, a dedicated Human Design platform goes further.",
     "signatureLabel": "Signature",
     "notSelfLabel": "Not-self theme",
     "authorityLabel": "Authority",

@@ -220,7 +220,7 @@ export function HumanDesignPage() {
           <p className="text-caption text-mystic-500 mt-4 italic">
             {t('humanDesign.disclaimer', {
               defaultValue:
-                'Your chart is computed server-side from planetary positions at your exact birth moment + the Design moment 88° of solar arc earlier. For the full 64-gate bodygraph with colour/tone, export to a dedicated HD platform.',
+                'Your chart is computed from the planets’ positions at your exact birth moment and at the Design moment, 88° of solar arc earlier. For colour, tone and the finer layers of the bodygraph, a dedicated Human Design platform goes further.',
             })}
           </p>
         </Card>

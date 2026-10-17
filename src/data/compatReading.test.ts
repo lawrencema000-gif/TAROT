@@ -153,6 +153,19 @@ describe('compat overlay', () => {
     for (const k of Object.keys(COMPOSITE_PAIRING_READINGS)) expect(compositeReading(k, overlay)).toBe(`«${COMPOSITE_PAIRING_READINGS[k]}»`);
   });
 
+  it('composite pairings keyed out of alphabetical order (Sun-Moon, Venus-Mars) are found from either side', () => {
+    // The lookup used the alphabetically sorted pair ('Moon-Sun',
+    // 'Mars-Venus'), so these two readings could never appear.
+    expect(compositeInsights([fnAspect('Moon', 'Sun', 'conjunction', 'harmonious')])).toEqual([{ key: 'Sun-Moon', planets: ['Sun', 'Moon'] }]);
+    expect(compositeInsights([fnAspect('Sun', 'Moon', 'trine', 'harmonious')])).toEqual([{ key: 'Sun-Moon', planets: ['Sun', 'Moon'] }]);
+    expect(compositeInsights([fnAspect('Mars', 'Venus', 'square', 'challenging')])).toEqual([{ key: 'Venus-Mars', planets: ['Venus', 'Mars'] }]);
+    // One reading per pair, whichever side it comes from.
+    expect(compositeInsights([
+      fnAspect('Venus', 'Mars', 'trine', 'harmonious'),
+      fnAspect('Mars', 'Venus', 'opposition', 'challenging'),
+    ])).toEqual([{ key: 'Venus-Mars', planets: ['Venus', 'Mars'] }]);
+  });
+
   const known = paths(corpus).sort();
   for (const lng of ['ja', 'ko', 'zh']) {
     it(`${lng} content-compat.json translates every corpus path, and only those`, () => {

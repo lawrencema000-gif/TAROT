@@ -5616,7 +5616,7 @@
         "adsDisabled": "Ads aren’t available on this device.",
         "creditedEarnOnly": "{{n}} Moonstones added.",
         "insufficientWeb": "You need {{n}} Moonstones for this. The daily check-in earns more.",
-        "dailyCap": "You’ve earned today’s Moonstones from ads. Ads earn again tomorrow.",
+        "dailyCap": "You’ve earned today’s Moonstones from ads. Ads earn again {{when}}.",
         "tooSoon": "That ad came too soon after the last one to count. Wait a few seconds, then try again."
       },
       "unlockTitle": "Unlock this reading",
@@ -5630,9 +5630,14 @@
       "noAdWeb": "No ad here: the daily check-in on Home earns Moonstones every day you open Arcana.",
       "shortfall": "{{n}} more to unlock",
       "unlockSubtitleWeb": "Spend {{cost}} Moonstones to read it now. There is no ad to watch on the web — the daily check-in earns more, or Premium opens everything.",
-      "earnOnlySubtitleCapped": "It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again tomorrow, the daily check-in earns more, or Premium opens everything.",
+      "earnOnlySubtitleCapped": "It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again {{when}}, the daily check-in earns more, or Premium opens everything.",
       "unlockSubtitleCapped": "Spend {{cost}} Moonstones to read it now. Today’s ad Moonstones are used up — the daily check-in earns more, or Premium opens everything.",
-      "adCapReached": "You’ve earned today’s Moonstones from ads. Ads earn again tomorrow; the daily check-in on Home earns more today."
+      "adCapReached": "You’ve earned today’s Moonstones from ads. Ads earn again {{when}}; the daily check-in on Home earns more today.",
+      "when": {
+        "at": "at {{time}}",
+        "tomorrowAt": "tomorrow at {{time}}",
+        "tomorrow": "tomorrow"
+      }
     }
   },
   "settings": {

@@ -9,6 +9,23 @@ import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
 import { isNative } from '../../utils/platform';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { checkinOpening } from '../home/checkinOpening';
+import { getLocale } from '../../i18n/config';
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * When ads earn again, as a phrase the sheet's sentences slot in: the daily
+ * ad ceiling, like the check-in, resets at UTC midnight — 9:00 in Tokyo,
+ * 17:00 in Los Angeles — so "tomorrow" was wrong for half the world (p8 F56).
+ */
+export function adsAgainWhen(t: Translate, now: Date = new Date(), timeZone?: string): string {
+  const opening = checkinOpening(now, getLocale(), timeZone);
+  if (opening.atMidnight) return t('premium.watchAd.when.tomorrow', { defaultValue: 'tomorrow' });
+  return opening.day === 'today'
+    ? t('premium.watchAd.when.at', { defaultValue: 'at {{time}}', time: opening.time })
+    : t('premium.watchAd.when.tomorrowAt', { defaultValue: 'tomorrow at {{time}}', time: opening.time });
+}
 
 /**
  * Earn-or-spend Moonstones sheet for premium-gated features.
@@ -174,7 +191,8 @@ export function WatchAdSheet({
         case 'daily-cap':
           toast(
             t('premium.watchAd.toasts.dailyCap', {
-              defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again tomorrow.',
+              defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again {{when}}.',
+              when: adsAgainWhen(t),
             }),
             'info',
           );
@@ -272,8 +290,9 @@ export function WatchAdSheet({
       return earnOnly
         ? t('premium.watchAd.earnOnlySubtitleCapped', {
             defaultValue:
-              'It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again tomorrow, the daily check-in earns more, or Premium opens everything.',
+              'It costs {{cost}} Moonstones. Today’s ad Moonstones are used up — ads earn again {{when}}, the daily check-in earns more, or Premium opens everything.',
             cost,
+            when: adsAgainWhen(t),
           })
         : t('premium.watchAd.unlockSubtitleCapped', {
             defaultValue:
@@ -387,7 +406,8 @@ export function WatchAdSheet({
                 <CalendarCheck className="w-4 h-4 text-teal shrink-0 mt-0.5" aria-hidden />
                 <p className="text-meta text-mystic-300">
                   {t('premium.watchAd.adCapReached', {
-                    defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again tomorrow; the daily check-in on Home earns more today.',
+                    defaultValue: 'You’ve earned today’s Moonstones from ads. Ads earn again {{when}}; the daily check-in on Home earns more today.',
+                    when: adsAgainWhen(t),
                   })}
                 </p>
               </div>

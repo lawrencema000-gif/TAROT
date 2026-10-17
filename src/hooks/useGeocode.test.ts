@@ -127,3 +127,100 @@ describe('useGeocode otherwise unchanged', () => {
     expect(typedRegion('Tokyo')).toBe('');
   });
 });
+
+/*
+ * p9 R27: the device search filtered every query to settlements. On a bare
+ * name that drops the city's own rows and ranks same-name places first
+ * (live, 2026-10-17: 京都 → 「井都镇, 汕頭市, 広東省, 中国」 first; unfiltered,
+ * Kyoto station in 下京区, 京都市). The filter is kept for "City, Region",
+ * the rescue it was added for ("Springfield, Atlantis" → streets in France).
+ */
+describe('the device search (p9 R27)', () => {
+  const nominatimCall = (calls: string[]) => calls.find((c) => c.includes('nominatim.openstreetmap.org'));
+
+  it('a bare name is searched unfiltered: the first row is in the city typed', async () => {
+    const KYOTO_STATION = [{ lat: '34.9858', lon: '135.7588', display_name: '京都, 塩小路通, 東塩小路町, 下京区, 京都市, 京都府, 600-8213, 日本' }];
+    const calls = stubFetch({ results: [] }, KYOTO_STATION);
+    const out = await searchFor('京都');
+    expect(nominatimCall(calls)).toContain(`q=${encodeURIComponent('京都')}`);
+    expect(nominatimCall(calls)).not.toContain('featureType');
+    expect(out.results[0].displayName).toContain('京都市');
+    // …also when the server is down.
+    const down = stubFetch('down', KYOTO_STATION);
+    await searchFor('静岡');
+    expect(nominatimCall(down)).not.toContain('featureType');
+  });
+
+  it('"City, Region" keeps featureType=settlement, on both paths that reach the device', async () => {
+    const missed = stubFetch({ results: MISSOURI, qualifierMatched: false }, []);
+    await searchFor('Springfield, Atlantis');
+    expect(nominatimCall(missed)).toContain('featureType=settlement');
+    const down = stubFetch('down', []);
+    await searchFor('京都、京都府');
+    expect(nominatimCall(down)).toContain('featureType=settlement');
+  });
+});
+
+/*
+ * p9 R32: searches finish out of order. Reproduction (search-race.mjs): 福岡
+ * typed, then 市 — 福岡 is server-empty and goes on to the device search
+ * (two round trips), 福岡市 is answered by the server (one). HEAD wrote
+ * whichever answer landed last: the rows became the 福岡 villages under the
+ * text 福岡市, for good, and picking the first saved Saitama.
+ */
+describe('only the latest search writes (p9 R32)', () => {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const CITY = { lat: 33.6, lon: 130.42, displayName: '福岡市, 福岡県, 日本' };
+  const VILLAGE = [{ lat: '35.88', lon: '139.55', display_name: '福岡, 埼玉県, 日本' }];
+
+  /** astrology-geocode answers `server[place]` after `delay[place]` ms; the device search answers 福岡's village. */
+  function stagedFetch(server: Record<string, unknown>, delay: Record<string, number>, deviceDelay: number) {
+    vi.stubGlobal('fetch', vi.fn(async (input: string, init?: RequestInit) => {
+      if (String(input).includes('/functions/v1/astrology-geocode')) {
+        const { birthPlace } = JSON.parse(String(init?.body)) as { birthPlace: string };
+        await sleep(delay[birthPlace] ?? 0);
+        return new Response(JSON.stringify(server[birthPlace] ?? { results: [] }), { status: 200 });
+      }
+      await sleep(deviceDelay);
+      return new Response(JSON.stringify(VILLAGE), { status: 200 });
+    }));
+  }
+
+  it('an earlier search that lands later never replaces the newer rows', async () => {
+    stagedFetch({ 福岡市: { results: [CITY], qualifierMatched: true } }, { 福岡: 20, 福岡市: 5 }, 60);
+    const hook = renderHook(() => useGeocode());
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => { first = hook.result.current.search('福岡'); });
+    await act(async () => { await sleep(10); });
+    act(() => { second = hook.result.current.search('福岡市'); });
+    await act(async () => { await second; });
+    expect(hook.result.current).toMatchObject({ results: [CITY], query: '福岡市', loading: false, error: null });
+    await act(async () => { await first; });
+    // HEAD: here the rows became 「福岡, 埼玉県, 日本」 under the text 福岡市.
+    expect(hook.result.current).toMatchObject({ results: [CITY], query: '福岡市', loading: false, error: null, usedFallback: false });
+  });
+
+  it('an earlier search that lands first neither shows its rows nor ends the newer one’s loading', async () => {
+    stagedFetch({ 福岡: { results: [{ ...CITY, displayName: '福岡, 埼玉県, 日本' }], qualifierMatched: true }, 福岡市: { results: [CITY], qualifierMatched: true } }, { 福岡: 5, 福岡市: 40 }, 0);
+    const hook = renderHook(() => useGeocode());
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => { first = hook.result.current.search('福岡'); });
+    act(() => { second = hook.result.current.search('福岡市'); });
+    await act(async () => { await first; });
+    expect(hook.result.current).toMatchObject({ results: [], loading: true });
+    await act(async () => { await second; });
+    expect(hook.result.current).toMatchObject({ results: [CITY], query: '福岡市', loading: false });
+  });
+
+  it('clearing the text drops a search still under way', async () => {
+    stagedFetch({}, { 福岡: 5 }, 20);
+    const hook = renderHook(() => useGeocode());
+    let first!: Promise<void>;
+    act(() => { first = hook.result.current.search('福岡'); });
+    await act(async () => { await hook.result.current.search(''); });
+    await act(async () => { await first; });
+    expect(hook.result.current).toMatchObject({ results: [], loading: false, error: null });
+  });
+});

@@ -17,19 +17,27 @@ import { createElement, forwardRef, type ReactNode } from 'react';
 
 const answers = new Map<string, { results: { lat: number; lon: number; displayName: string }[]; error?: string }>();
 const searched: string[] = [];
+/** Per-query latency of the mocked search (ms; default 30). */
+const delays = new Map<string, number>();
+/** When set, every search writes when it lands, in any order — HEAD's hook (p9 R32). */
+let landsInAnyOrder = false;
 
 vi.mock('../../hooks/useAstrology', async () => {
   const React = await import('react');
   return {
-    // The real hook's contract: `search` sets loading, then results or an error.
+    // The real hook's contract: `search` sets loading, then results — with
+    // the query they answer — or an error; only the latest search writes.
     useGeocode: () => {
-      const [state, setState] = React.useState<{ results: unknown[]; loading: boolean; error: string | null }>({ results: [], loading: false, error: null });
+      const [state, setState] = React.useState<{ results: unknown[]; query: string; loading: boolean; error: string | null }>({ results: [], query: '', loading: false, error: null });
+      const latest = React.useRef(0);
       const search = React.useCallback(async (q: string) => {
+        const ticket = ++latest.current;
         searched.push(q);
         setState((s) => ({ ...s, loading: true, error: null }));
-        await new Promise((r) => setTimeout(r, 30));
+        await new Promise((r) => setTimeout(r, delays.get(q) ?? 30));
+        if (!landsInAnyOrder && ticket !== latest.current) return;
         const a = answers.get(q) ?? { results: [] };
-        setState({ results: a.results, loading: false, error: a.error ?? null });
+        setState({ results: a.results, query: q, loading: false, error: a.error ?? null });
       }, []);
       return { ...state, search, usedFallback: false, regionMissed: false };
     },
@@ -67,7 +75,9 @@ const rowNames = () => screen.queryAllByRole('button').map((b) => b.textContent)
 
 beforeEach(async () => {
   answers.clear();
+  delays.clear();
   searched.length = 0;
+  landsInAnyOrder = false;
   await i18n.changeLanguage('en');
 });
 afterEach(() => cleanup());
@@ -144,5 +154,27 @@ describe('CelestialCitySearch', () => {
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Springfield, Vermont' } });
     });
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('None of these places is in Vermont.'), { timeout: 2000 });
+  });
+
+  it('p9 R32 (ja): the rows are only ever the answer to the text now typed', async () => {
+    // search-race.mjs: 福岡 typed, a pause, then 市. 福岡 takes two round
+    // trips and lands after 福岡市; at HEAD its villages replaced 福岡市 under
+    // the text 福岡市, and picking the first saved Saitama.
+    await i18n.changeLanguage('ja');
+    landsInAnyOrder = true;
+    answers.set('福岡', { results: [{ lat: 35.88, lon: 139.55, displayName: '福岡, 埼玉県, 日本' }] });
+    answers.set('福岡市', { results: [{ lat: 33.6, lon: 130.42, displayName: '福岡市, 福岡県, 日本' }] });
+    delays.set('福岡', 700);
+    delays.set('福岡市', 20);
+    render(<CelestialCitySearch onPick={() => {}} />);
+    type('福岡');
+    await waitFor(() => expect(searched).toEqual(['福岡']), { timeout: 2000 });
+    act(() => {
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '福岡市' } });
+    });
+    expect(await screen.findByRole('button', { name: /福岡県/ }, { timeout: 2000 })).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 800));
+    expect(searched).toEqual(['福岡', '福岡市']);
+    expect(screen.queryByRole('button', { name: /埼玉県/ })).toBeNull();
   });
 });

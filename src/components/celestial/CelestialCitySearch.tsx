@@ -55,9 +55,8 @@ export function CelestialCitySearch({ onPick }: Props) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
-  /** The query the place search last answered (its results carry no query of their own). */
-  const [searched, setSearched] = useState('');
+  // `geoQuery`: the query the place search's rows answer (its results carry no query of their own).
+  const { results: geoResults, query: geoQuery, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
 
   // Close the dropdown on outside click / Escape — needs both because
   // mobile touch doesn't always fire blur reliably across browsers.
@@ -108,13 +107,14 @@ export function CelestialCitySearch({ onPick }: Props) {
   useEffect(() => {
     if (!needsSearch) return;
     const timer = setTimeout(() => {
-      setSearched(q);
       void geoSearch(q);
     }, 400);
     return () => clearTimeout(timer);
   }, [needsSearch, q, geoSearch]);
 
-  const answered = needsSearch && searched === q && !geoLoading;
+  // Rows are listed only as the answer to the text now typed (p9 R32: an
+  // earlier search that finished last used to show its places under it).
+  const answered = needsSearch && geoQuery === q && !geoLoading;
   const searching = needsSearch && !answered;
   const searchResults = useMemo<City[]>(() => {
     if (!answered) return [];

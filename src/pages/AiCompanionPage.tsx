@@ -18,7 +18,11 @@ import {
   saveDailyCount,
   newConversationId,
   conversationCovered,
-  chargedAtAfterReply,
+  mayBePaid,
+  markPending,
+  withoutPending,
+  afterReply,
+  historyToSend,
   legacyCompanionOffer,
   claimLegacyCompanion,
   declineLegacyCompanion,
@@ -49,6 +53,18 @@ function listOf(names: string[]): string {
     /* an unknown locale tag: plain commas below */
   }
   return names.join(', ');
+}
+
+/** The `error.code` of a function's JSON envelope (a FunctionsHttpError keeps the Response on `context`). */
+async function errorCodeOf(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
 }
 
 /** The conversation id this account has saved for `persona`, or null when nothing is saved yet. */
@@ -161,16 +177,37 @@ export function AiCompanionPage() {
     setBusy(true);
     const sentPersona = persona;
     const prior = convo;
-    const wasCovered = conversationCovered(prior);
+    const now = Date.now();
+    const wasCovered = conversationCovered(prior, now);
+    /**
+     * A resend after a reply that never came back (p9 R09): the server may
+     * have charged that send already, and then answers this one free. The
+     * gate reads only the balance, so it would stop a reader that charge
+     * left under 50 from the reply they paid for; the server itself still
+     * refuses (402) if nothing was charged and the balance is short.
+     */
+    const resend = !wasCovered && mayBePaid(prior, now);
+    // What the thread is sent from: marked with this send when the
+    // conversation is not covered, so a reply lost after the charge leaves
+    // a record of when it may have been paid (kept through a reload).
+    const base = wasCovered ? prior : markPending(prior, now);
     const stillOnScreen = () =>
       onScreen.current.userId === userId &&
       onScreen.current.persona === sentPersona &&
       onScreen.current.conversationId === prior.conversationId;
+    const uid = userId;
+    /** Filed under the persona and conversation it was sent in, unless that conversation was replaced meanwhile. */
+    const file = (c: CompanionConversation) => {
+      const saved = savedConversationId(uid, sentPersona);
+      if (saved === null || saved === prior.conversationId) saveConversation(uid, sentPersona, c);
+    };
     // An unanswered message is taken back out of the thread and returned
     // to the composer, so sending again is a clean retry, not a double.
-    const restore = () => {
+    // `to`: the conversation as it stands after the failure — still marked
+    // when the send may have been charged.
+    const restore = (to: CompanionConversation) => {
       if (!stillOnScreen()) return;
-      setConvo(prior);
+      setConvo(to);
       setInput((cur) => cur || trimmed);
     };
     try {
@@ -178,14 +215,15 @@ export function AiCompanionPage() {
       // no debit). Any message it will charge — the first of a
       // conversation, or the first after its 24 hours — is checked against
       // the balance first.
-      if (!wasCovered) {
+      if (!wasCovered && !resend) {
         const ok = await tryConsume();
         if (!ok) return;
       }
+      if (base !== prior) file(base);
 
       const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
-      const newHistory = [...prior.messages, userMsg];
-      if (stillOnScreen()) setConvo({ ...prior, messages: newHistory });
+      const newHistory = [...base.messages, userMsg];
+      if (stillOnScreen()) setConvo({ ...base, messages: newHistory });
       setInput('');
       setSending(true);
 
@@ -202,7 +240,9 @@ export function AiCompanionPage() {
           persona: sentPersona,
           conversationId: prior.conversationId,
           requestId: newConversationId(),
-          history: newHistory.map((m) => ({ role: m.role, content: m.content })),
+          // A bounded window, not the whole thread: the function refuses
+          // more than 100 messages and reads the last 20 (p9 R23).
+          history: historyToSend(newHistory),
           userContext,
         },
       });
@@ -214,11 +254,22 @@ export function AiCompanionPage() {
         // back into the box either way.
         const failure = await aiFailureOf(error);
         if (failure === 'insufficient' || failure === 'soft-cap') {
-          restore();
+          // Refused before any debit: nothing is paid, and nothing pending.
+          const cleared = withoutPending(prior);
+          file(cleared);
+          restore(cleared);
           const allowed = await tryConsume();
           if (allowed) {
             toast(t('companion.balanceChangedRetry', { defaultValue: 'Your balance changed — send your message again.' }), 'info');
           }
+          return;
+        }
+        // Refused as sent (400, before any charge): sending it again the
+        // same way fails the same way, and it is not the connection.
+        if ((await errorCodeOf(error)) === 'INVALID_REQUEST') {
+          if (base !== prior) file(prior);
+          restore(prior);
+          toast(t('companion.sendRejected', { defaultValue: 'This message couldn’t be sent. Start a new conversation and send it again.' }), 'error');
           return;
         }
         throw error;
@@ -226,7 +277,7 @@ export function AiCompanionPage() {
 
       // New handler envelope wraps the result as `{ data: { reply, ... }, correlationId }`.
       // Fall back to the legacy flat shape for rollback safety.
-      const payload = (data?.data ?? data) as { reply?: string; charged?: boolean } | null;
+      const payload = (data?.data ?? data) as { reply?: string; charged?: boolean; conversationPaid?: boolean } | null;
       if (!payload?.reply) {
         throw new Error('No reply');
       }
@@ -236,21 +287,17 @@ export function AiCompanionPage() {
         content: payload.reply,
         timestamp: Date.now(),
       };
-      const next: CompanionConversation = {
-        ...prior,
-        messages: [...newHistory, assistantMsg],
-        chargedAt: chargedAtAfterReply(prior, payload.charged, wasCovered),
-      };
+      const next = afterReply(base, [...newHistory, assistantMsg], payload, wasCovered);
       // Filed under the persona and conversation it was sent in, whatever
       // the screen shows now — unless that conversation was replaced
       // ("New conversation") while the reply was on its way.
-      const saved = savedConversationId(userId, sentPersona);
-      if (saved === null || saved === prior.conversationId) saveConversation(userId, sentPersona, next);
+      file(next);
       if (stillOnScreen()) setConvo(next);
       incDailyUsed();
     } catch {
       toast(t('companion.sendFailed', { defaultValue: 'Couldn’t reach your companion — check your connection and send again.' }), 'error');
-      restore();
+      // It may have been charged on the way: the mark stays.
+      restore(base);
     } finally {
       inFlight.current = false;
       setSending(false);

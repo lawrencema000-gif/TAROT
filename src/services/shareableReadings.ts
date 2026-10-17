@@ -1,5 +1,5 @@
 import { isNative } from '../utils/platform';
-import i18n, { getLocale, normalizeLocale, LOCALE_STORAGE_KEY, type SupportedLocale } from '../i18n/config';
+import i18n, { getLocale, normalizeLocale, setLocale, LOCALE_STORAGE_KEY, type SupportedLocale } from '../i18n/config';
 // URL-shareable readings.
 //
 // Encodes a reading (cards + reversed flags + spread + optional question)
@@ -125,8 +125,17 @@ export const SHARE_LOCALE_PARAM = 'hl';
 export function buildShareUrl(token: string, locale: SupportedLocale = getLocale()): string {
   const here = typeof window !== 'undefined' ? window.location.origin : '';
   const trusted = !isNative() && /^(https:\/\/(www\.)?tarotlife\.app|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(here);
-  const query = locale !== 'en' ? `?${SHARE_LOCALE_PARAM}=${locale}` : '';
-  return `${trusted ? here : CANONICAL_ORIGIN}/reading/${token}${query}`;
+  return `${trusted ? here : CANONICAL_ORIGIN}/reading/${token}${shareLocaleQuery(locale)}`;
+}
+
+/**
+ * The query a shared link names its language with: `?hl=ja` for a ja, ko or
+ * zh sharer, nothing for English. Every shared link carries it, not only a
+ * reading's: a card shared from a Japanese reading used to send Japanese
+ * text with an English card page (p9 R13, F76's symptom on a sibling share).
+ */
+export function shareLocaleQuery(locale: SupportedLocale = getLocale()): string {
+  return locale !== 'en' ? `?${SHARE_LOCALE_PARAM}=${locale}` : '';
 }
 
 /** The language a share link was made in (`?hl=`), when it names one other than English. */
@@ -146,11 +155,32 @@ let visitSwitches = 0;
 let storedBeforeVisit: string | null = null;
 
 /**
- * Show the rest of this visit in `locale` without making it the reader's
- * language. i18next stores every language it changes to (the detector's
- * localStorage cache), so the stored choice is put back as it was: a reload,
- * or the next visit, opens in the reader's own language again. Overlapping
- * calls (a remount) put back what the first one found, not each other's.
+ * The visit open now: the language a shared page shows it in, and the
+ * stored choice it found. Null once the reader has left that page or kept
+ * its language.
+ */
+let visit: { locale: SupportedLocale; stored: string | null } | null = null;
+/** The language change the latest visit started (awaited before it is undone). */
+let visitSwitch: Promise<unknown> = Promise.resolve();
+
+function putBackStored(stored: string | null): void {
+  try {
+    if (stored === null) localStorage.removeItem(LOCALE_STORAGE_KEY);
+    else localStorage.setItem(LOCALE_STORAGE_KEY, stored);
+  } catch {
+    // Storage blocked: nothing is stored either way.
+  }
+}
+
+/**
+ * Show this visit in `locale` without making it the reader's language.
+ * i18next stores every language it changes to (the detector's localStorage
+ * cache), so the stored choice is put back as it was: a reload, or the next
+ * visit, opens in the reader's own language again. Overlapping calls (a
+ * remount) put back what the first one found, not each other's.
+ *
+ * The page that calls it calls {@link endVisit} when the reader leaves it,
+ * or {@link keepVisitLanguage} when they take the language with them.
  */
 export async function showVisitIn(locale: SupportedLocale): Promise<void> {
   if (visitSwitches === 0) {
@@ -162,15 +192,65 @@ export async function showVisitIn(locale: SupportedLocale): Promise<void> {
     }
   }
   visitSwitches++;
+  visit = { locale, stored: storedBeforeVisit };
+  const change = i18n.changeLanguage(locale);
+  visitSwitch = change;
   try {
-    await i18n.changeLanguage(locale);
+    await change;
   } finally {
     visitSwitches--;
-    try {
-      if (storedBeforeVisit === null) localStorage.removeItem(LOCALE_STORAGE_KEY);
-      else localStorage.setItem(LOCALE_STORAGE_KEY, storedBeforeVisit);
-    } catch {
-      // Storage blocked.
-    }
+    putBackStored(storedBeforeVisit);
   }
+}
+
+/**
+ * The reader left the page the visit was shown for: the app is in their own
+ * language again (the stored choice, else English). The link's language is
+ * for that page only. It used to stay for the rest of the session: the
+ * public nav's Sign in opened the form and then the signed-in app in it,
+ * and AuthContext, finding the detector's stored 'en' an explicit choice,
+ * wrote the visit's 'ja' into profiles.locale (p9 R12).
+ *
+ * A language still loading is waited for first, so leaving a moment after
+ * arriving does not leave the app in it. Nothing is undone when a new visit
+ * has begun meanwhile (the page mounted again), when the reader kept the
+ * language (keepVisitLanguage, or a stored choice that is now the visit's),
+ * or when the language is no longer the visit's (the reader chose one).
+ */
+export async function endVisit(): Promise<void> {
+  const ending = visit;
+  if (!ending) return;
+  visit = null;
+  try {
+    await visitSwitch;
+  } catch {
+    // The switch failed: the app stayed in the reader's language.
+  }
+  if (visit) return;
+  if (getLocale() !== ending.locale) return;
+  let storedNow: string | null = null;
+  try {
+    storedNow = localStorage.getItem(LOCALE_STORAGE_KEY);
+  } catch {
+    // Storage blocked.
+  }
+  if (storedNow !== null && normalizeLocale(storedNow) === ending.locale) return;
+  const own = normalizeLocale(ending.stored) ?? 'en';
+  if (own === ending.locale) return;
+  try {
+    await i18n.changeLanguage(own);
+  } finally {
+    putBackStored(ending.stored);
+  }
+}
+
+/**
+ * The reader takes the visit's language into the app (the shared page's
+ * "Get your own reading"): it becomes their stored choice, and leaving the
+ * page no longer undoes it. Opening a link is not a choice; this is.
+ */
+export async function keepVisitLanguage(): Promise<void> {
+  const kept = visit;
+  visit = null;
+  if (kept && getLocale() === kept.locale) await setLocale(kept.locale);
 }

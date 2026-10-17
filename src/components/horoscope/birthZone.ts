@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
-import { getLocale } from '../../i18n/config';
 import { deriveBirthTz } from '../../utils/birthTz';
 import type { UserProfile } from '../../types';
 
 /**
- * The zone a birth time is read in (p8 F21).
+ * The zone a birth time is read in (p8 F21), and the stored chart kept the
+ * chart of the profile (p9 R29, R30).
  *
  * A birth time is a wall-clock reading at the birth place: born 06:45 in
  * Osaka is 06:45 Asia/Tokyo, whatever the phone says today. The profile
@@ -20,17 +19,32 @@ import type { UserProfile } from '../../types';
  * birth_tz → timezone → UTC) inherited the same error, and with it the
  * Celestial Map's lines, Compare and the Chart Library.
  *
+ * The stored chart (astrology_natal_charts) is what every chart screen, the
+ * daily reading and the paid natal report read, as it is. F21 recast it
+ * only for a profile with coordinates and no birthTz — but a missing zone
+ * does not identify a wrongly cast chart. Edit profile saves the zone on any
+ * save, a display-name change included, and v1.2.0 saved it whenever a place
+ * was re-picked, both without a recast, so a chart cast in UTC stayed for
+ * good (R29); and a corrected birth date, time or place recast nothing (R30).
+ * The chart itself is now checked against the profile: this file repeats
+ * astrology-compute-natal's computation of the instant, the Moon and the
+ * ascendant (`expectedCast`), compares it with what the chart stores
+ * (`chartAnswers`) and recasts a chart that is not the profile's
+ * (`syncStoredChart`). No schema change: every chart since chart_version 2
+ * stores the Moon's full longitude and the ascendant.
+ *
  *  - `birthZoneOf`: the zone to cast in. The stored birthTz; else one
  *    derived from the coordinates (returned as `derived`, so the caller
  *    persists it); else `fallbackZone`.
  *  - `fallbackZone`: no birth-place zone at all. The device's zone, then
  *    the profile's, then UTC.
- *  - `runBirthTzBackfill` / `useBirthTzBackfill`: an account set up before
- *    F21. With coordinates and no birthTz: derive the zone, recast the
- *    stored chart in it, then persist the zone. With the bare signup
- *    'UTC' as its timezone: persist the device's zone, the birth_utc
- *    fallback for a profile with no birth place. Once per account: what is
- *    persisted ends the condition.
+ *  - `syncChartWithProfile`: Edit profile, after each save.
+ *  - `runBirthTzBackfill` / `useBirthTzBackfill`: every screen that shows
+ *    the chart, once per account and birth data per session. With
+ *    coordinates: check the chart in the birth-place zone (deriving and
+ *    persisting a missing zone) and recast it when it differs. With the
+ *    bare signup 'UTC' as its timezone: persist the device's zone, the
+ *    birth_utc fallback for a profile with no birth place.
  */
 
 type BirthFields = Pick<UserProfile, 'birthDate' | 'birthTime' | 'birthLat' | 'birthLon' | 'birthTz' | 'timezone'>;
@@ -95,7 +109,162 @@ export function castParamsFor(profile: Located, tz: string): CastParams {
   };
 }
 
-/** Cast before F21: a birth date and coordinates, and no birth-place zone. */
+// ── The stored chart, checked against the profile ─────────────────────────
+
+/**
+ * The instant astrology-compute-natal reads a birth date and time as — its
+ * localToUTC, step for step: the wall clock in `timezone`, noon when there
+ * is no time.
+ */
+export function castInstant(birthDate: string, birthTime: string | null, timezone: string): Date {
+  const tempUtc = new Date(`${birthDate}T${birthTime || '12:00:00'}Z`);
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    }).formatToParts(tempUtc);
+    const p: Record<string, string> = {};
+    for (const part of parts) p[part.type] = part.value;
+    const hour = p.hour === '24' ? '00' : p.hour;
+    const localAsUtc = new Date(`${p.year}-${p.month}-${p.day}T${hour}:${p.minute}:${p.second}Z`);
+    const offsetMs = localAsUtc.getTime() - tempUtc.getTime();
+    return new Date(tempUtc.getTime() - offsetMs);
+  } catch {
+    return tempUtc;
+  }
+}
+
+type Astronomy = typeof import('astronomy-engine');
+let astronomy: Promise<Astronomy> | null = null;
+/** astronomy-engine, loaded the first time a chart is checked; a failed load is retried next time. */
+function loadAstronomy(): Promise<Astronomy> {
+  astronomy ??= import('astronomy-engine').catch((e) => {
+    astronomy = null;
+    throw e;
+  });
+  return astronomy;
+}
+
+const normDeg = (d: number) => ((d % 360) + 360) % 360;
+
+/**
+ * What astrology-compute-natal computes for `params`, in what the stored
+ * chart keeps of it: the Moon's geocentric longitude and, with a birth
+ * time, the ascendant (its formula, obliquity 23.4393°).
+ */
+export async function expectedCast(params: CastParams): Promise<{ moon: number; ascendant: number | null }> {
+  const A = await loadAstronomy();
+  const utc = castInstant(params.birthDate, params.birthTime, params.timezone);
+  const moon = A.EclipticGeoMoon(utc).lon;
+  if (!params.birthTime || params.chartMode === 'unknown') return { moon, ascendant: null };
+  const lst = ((A.SiderealTime(utc) + params.lon / 15) % 24 + 24) % 24;
+  const ramcRad = (lst * 15 * Math.PI) / 180;
+  const latRad = (params.lat * Math.PI) / 180;
+  const oblRad = (23.4393 * Math.PI) / 180;
+  const y = Math.cos(ramcRad);
+  const x = -(Math.sin(ramcRad) * Math.cos(oblRad) + Math.tan(latRad) * Math.sin(oblRad));
+  return { moon, ascendant: normDeg((Math.atan2(y, x) * 180) / Math.PI) };
+}
+
+/** What a stored chart (astrology-get-chart's natalChart) says it was cast for. */
+export interface StoredChart {
+  planets?: Array<{ planet?: string; longitude?: number }>;
+  ascendant?: number | null;
+}
+
+/**
+ * 0.05°: the Moon covers it in about six minutes, the ascendant in a
+ * fraction of one — far below a wrong zone, date, time or place, far above
+ * the floating-point difference between two engines.
+ */
+const CAST_TOLERANCE_DEG = 0.05;
+
+const arc = (a: number, b: number) => {
+  const d = Math.abs(normDeg(a) - normDeg(b));
+  return Math.min(d, 360 - d);
+};
+
+/**
+ * Was `chart` cast for `params`? Its houses must exist exactly when there is
+ * a birth time, its Moon must be where that instant puts it, and its
+ * ascendant where that instant and place put it. A chart without a Moon
+ * longitude cannot be checked, and answers nothing.
+ */
+export async function chartAnswers(chart: StoredChart, params: CastParams): Promise<boolean> {
+  const moon = chart.planets?.find((p) => p.planet === 'Moon')?.longitude;
+  if (typeof moon !== 'number' || !Number.isFinite(moon)) return false;
+  const asc = typeof chart.ascendant === 'number' && Number.isFinite(chart.ascendant) ? chart.ascendant : null;
+  const want = await expectedCast(params);
+  if ((asc === null) !== (want.ascendant === null)) return false;
+  if (arc(moon, want.moon) > CAST_TOLERANCE_DEG) return false;
+  return asc === null || arc(asc, want.ascendant as number) <= CAST_TOLERANCE_DEG;
+}
+
+export interface ChartDeps {
+  /** The stored chart; null when none is cast yet. May throw when it cannot be read. */
+  loadChart: () => Promise<StoredChart | null>;
+  /** Recast the stored natal chart; true when it was saved. */
+  recast: (params: CastParams) => Promise<boolean>;
+}
+
+/**
+ * - current: the stored chart is the profile's.
+ * - recast: it was not, and has been recast.
+ * - none: there is no chart to check (none cast yet, or no place or zone).
+ * - failed: it could not be read, checked or recast; try again later.
+ */
+export type ChartSync = 'current' | 'recast' | 'none' | 'failed';
+
+/** Recast the stored chart when it is not the chart of `profile` read in `tz`. */
+export async function syncStoredChart(profile: Located, tz: string, deps: ChartDeps): Promise<ChartSync> {
+  const params = castParamsFor(profile, tz);
+  try {
+    const chart = await deps.loadChart();
+    if (!chart) return 'none';
+    if (await chartAnswers(chart, params)) return 'current';
+    return (await deps.recast(params)) ? 'recast' : 'failed';
+  } catch {
+    return 'failed';
+  }
+}
+
+/**
+ * The live chart: read through astrology-get-chart and recast through
+ * astrology-compute-natal, both through useNatalChart's cache, so the next
+ * screen to read the chart reads the one checked or cast here.
+ */
+export function liveChartDeps(): ChartDeps {
+  const astro = () => import('../../hooks/useAstrology');
+  return {
+    loadChart: async () => (await (await astro()).loadNatalChart())?.natalChart ?? null,
+    recast: async (params) => {
+      try {
+        await (await astro()).recastNatalChart(params);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
+}
+
+/**
+ * After a profile save (Edit profile, p9 R30): the stored chart checked
+ * against what was saved, in its birth-place zone, and recast when it is
+ * not that chart — a corrected birth date, time or place, or a zone saved
+ * over a chart cast in another (R29). 'none' without a birth date, place or
+ * zone to cast from.
+ */
+export async function syncChartWithProfile(profile: Partial<BirthFields>, deps: ChartDeps = liveChartDeps()): Promise<ChartSync> {
+  if (!profile.birthDate || !hasCoords(profile) || !profile.birthTz) return 'none';
+  return syncStoredChart(profile, profile.birthTz, deps);
+}
+
+// ── The backfill every chart screen runs ──────────────────────────────────
+
+/** A birth place with no zone saved: derive it and save it. */
 export function needsBirthTzBackfill(profile: Partial<BirthFields> | null | undefined): boolean {
   return !!profile?.birthDate && hasCoords(profile) && !profile.birthTz;
 }
@@ -106,10 +275,8 @@ export function needsTimezoneRepair(profile: Partial<BirthFields> | null | undef
   return !profile.timezone || profile.timezone === 'UTC';
 }
 
-export interface BackfillDeps {
+export interface BackfillDeps extends ChartDeps {
   derive: (lat: number, lon: number) => Promise<string | null>;
-  /** Recast the stored natal chart; true when it was saved. */
-  recast: (params: CastParams) => Promise<boolean>;
   /** Save these profile fields; true when they were saved. */
   persist: (patch: ProfilePatch) => Promise<boolean>;
   /** The device's zone (deviceZone()). */
@@ -123,39 +290,56 @@ export interface BackfillResult {
   recast: boolean;
   /** What was saved on the profile; empty when nothing was, or the save failed. */
   saved: ProfilePatch;
+  /** The chart could not be read, checked or recast: the next screen tries again. */
+  retry?: boolean;
 }
 
 /**
- * Derive, recast, persist — in that order. The condition that brings a
- * profile here is the missing zone, so a zone persisted over the old chart
- * would never be revisited: a failed recast leaves the zone unsaved, and
- * the next session tries again (recasting again is harmless: same inputs,
- * same chart). Both fields go in one write, so two saves never race to
- * replace the profile.
+ * Check (and recast), then persist. A zone derived here is saved once the
+ * chart agrees with it, or when there is no chart yet; a check that failed
+ * leaves it unsaved, and the next try derives it again. Both fields go in
+ * one write, so two saves never race to replace the profile.
  */
 export async function runBirthTzBackfill(profile: Partial<BirthFields> | null | undefined, deps: BackfillDeps): Promise<BackfillResult> {
   const patch: ProfilePatch = {};
   let recast = false;
-  if (needsBirthTzBackfill(profile)) {
-    const p = profile as Located;
-    const tz = await deps.derive(p.birthLat, p.birthLon);
-    if (tz && (await deps.recast(castParamsFor(p, tz)))) {
-      recast = true;
-      patch.birthTz = tz;
+  let retry = false;
+  if (profile?.birthDate && hasCoords(profile)) {
+    const derived = needsBirthTzBackfill(profile) ? await deps.derive(profile.birthLat, profile.birthLon) : null;
+    const tz = profile.birthTz || derived;
+    if (tz) {
+      const sync = await syncStoredChart(profile, tz, deps);
+      recast = sync === 'recast';
+      retry = sync === 'failed';
+      if (derived && !retry) patch.birthTz = derived;
     }
   }
   if (needsTimezoneRepair(profile, deps.device)) patch.timezone = deps.device!;
-  if (!patch.birthTz && !patch.timezone) return { recast, saved: {} };
+  if (!patch.birthTz && !patch.timezone) return { recast, saved: {}, retry };
   const ok = await deps.persist(patch);
-  return { recast, saved: ok ? patch : {} };
+  return { recast, saved: ok ? patch : {}, retry };
 }
 
-/** One backfill per account per session, shared by every screen that mounts the hook. */
+/** One run per account and birth data per session, shared by every screen that mounts the hook. */
 const runs = new Map<string, Promise<BackfillResult>>();
 
 /** Test seam: forget this session's runs. */
 export function resetBirthTzBackfillRuns(): void {
   runs.clear();
+}
+
+/**
+ * What a run is keyed on: the account and every field it reads, so an edit
+ * of the birth data (here or on another device) is checked again. Null when
+ * there is nothing to do.
+ */
+export function backfillKey(profile: (Partial<BirthFields> & { id?: string }) | null | undefined, device: string | null): string | null {
+  const id = profile?.id;
+  if (!profile || !id) return null;
+  const chart = !!profile.birthDate && hasCoords(profile);
+  const repair = needsTimezoneRepair(profile, device);
+  if (!chart && !repair) return null;
+  return [id, profile.birthDate, profile.birthTime, profile.birthLat, profile.birthLon, profile.birthTz, repair ? 'tz' : ''].join('|');
 }
 
 /**
@@ -177,30 +361,25 @@ export function useBirthTzBackfill(onRecast?: () => void): void {
     return () => { mounted.current = false; };
   }, []);
 
-  const needed = needsBirthTzBackfill(profile) || needsTimezoneRepair(profile, deviceZone());
-  const uid = profile?.id;
+  const key = backfillKey(profile, deviceZone());
   useEffect(() => {
-    if (!needed || !uid || !profile) return;
-    let run = runs.get(uid);
+    if (!key || !profile) return;
+    let run = runs.get(key);
     if (!run) {
       run = runBirthTzBackfill(profile, {
+        ...liveChartDeps(),
         derive: deriveBirthTz,
-        recast: async (params) => {
-          const { error } = await supabase.functions.invoke('astrology-compute-natal', {
-            body: { ...params, locale: getLocale() },
-          });
-          return !error;
-        },
         persist: async (patch) => !(await updateProfile(patch)).error,
         device: deviceZone(),
-      }).catch((): BackfillResult => ({ recast: false, saved: {} }));
-      runs.set(uid, run);
+      }).catch((): BackfillResult => ({ recast: false, saved: {}, retry: true }));
+      runs.set(key, run);
     }
-    void run.then(({ recast }) => {
+    void run.then(({ recast, retry }) => {
+      if (retry && runs.get(key) === run) runs.delete(key);
       if (recast && mounted.current) onRecastRef.current?.();
     });
     // The profile object changes on every update; the run is keyed on the
-    // account and the condition, not on the object.
+    // account and the fields it reads, not on the object.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [needed, uid]);
+  }, [key]);
 }

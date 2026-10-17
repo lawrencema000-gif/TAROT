@@ -4639,7 +4639,8 @@
       "saveFailed": "プロフィールを保存できませんでした。接続を確認して、もう一度お試しください。",
       "birthDateRequired": "生年月日を入力してください。すべてのチャートは、生年月日をもとに立てられます。",
       "nameRequired": "お呼びする名前を入力してください。",
-      "pickCity": "チャートに正しい場所が使われるよう、出生地の都市をリストから選んでください。"
+      "pickCity": "チャートに正しい場所が使われるよう、出生地の都市をリストから選んでください。",
+      "chartPending": "プロフィールを更新しました。チャートはまだ更新できていません。次に星占いを開いたときに更新されます。"
     },
     "untitled": "あなたのプロフィール",
     "elements": {
@@ -6031,6 +6032,9 @@
     },
     "periodWeekly": "週間",
     "periodMonthly": "月間",
+    "savedHoroscopeLabel": "{{sign}}・{{period}}",
+    "cardReversed": "{{name}}（逆位置）",
+    "cardReversedShort": "{{name}}（逆位置）",
     "aiReading": "AIリーディング",
     "openReading": "{{date}}の{{name}}を開く",
     "deleteReading": "{{name}}を削除",
@@ -10018,6 +10022,7 @@
     "themeLabel": "テーマ",
     "carePracticeLabel": "ひとつの実践",
     "rewriteLetter": "別の手紙を書いてもらう",
+    "nextLetterHint": "次の手紙は、これから記録する気分を読んで書きます。",
     "patternLabel": "今週",
     "heaviestDayLabel": "いちばん重かった日",
     "lightestDayLabel": "いちばん軽かった日",
@@ -10386,6 +10391,7 @@
     "placeholder": "コンパニオンに問う…",
     "thinking": "考えています……",
     "sendFailed": "コンパニオンに届きませんでした。接続を確認して、もう一度送信してください。",
+    "sendRejected": "このメッセージは送信できませんでした。新しい会話を始めて、もう一度送信してください。",
     "dailyLimitReached": "今日の上限に達しました——また明日",
     "dailyRemaining": "本日残り {{remaining}} 通",
     "personas": {
@@ -11129,6 +11135,7 @@
     "composerPlaceholder": "続けて聞く…",
     "seedMessage": "今{{card}}を引きました。いまそれが示しているかもしれないことと、どう向き合えばいいか手助けしてください。",
     "aiFailed": "オラクルに接続できませんでした。接続を確認して、もう一度尋ねてください。",
+    "sendRejected": "この質問は送信できませんでした。新しいカードを引いて、新しい会話を始めてください。",
     "thinking": "オラクルが考えています…",
     "cardReversed": "{{name}}（逆位置）",
     "readCta": "このカードを読む",

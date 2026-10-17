@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
 import { Button, Disclaimer, Page, PageHeader, Paper, ListSkeleton, TarotFace } from '../components/ui';
-import { decodeReading, sharedDeck, sharedReadingLocale, showVisitIn } from '../services/shareableReadings';
+import { decodeReading, endVisit, keepVisitLanguage, sharedDeck, sharedReadingLocale, showVisitIn } from '../services/shareableReadings';
 import { useAuth } from '../context/AuthContext';
 import { calendarDay } from '../components/readings/tarot/readingDates';
 import { fullDeck } from '../data/tarotDeck';
@@ -12,7 +12,7 @@ import type { TarotCard } from '../types';
 import { PlayingCardFace } from '../components/cartomancy/PlayingCardFace';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
-import { getLocale, setLocale } from '../i18n/config';
+import { getLocale } from '../i18n/config';
 import { localizeCard } from '../i18n/localizeCard';
 import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { cartoPositionLabel } from '../components/cartomancy/cartoFlow';
@@ -65,11 +65,13 @@ export function SharedReadingPage() {
    * The language the reading was shared in (`?hl=`, buildShareUrl). A friend
    * opening a Japanese reader's link signed out, in English — the language
    * every first visit starts in, since the detector ignores the browser's
-   * — sees the page in Japanese, for this visit only (showVisitIn stores
+   * — sees the page in Japanese, on this page only (showVisitIn stores
    * nothing). A reader who is signed in, or reads the app in a language of
-   * their own, keeps theirs (p8 F76). Taking the page's own invitation into
-   * the app ("Get your own reading", in Japanese) keeps the language: that
-   * is a choice, where opening a link is not.
+   * their own, keeps theirs (p8 F76). Leaving the page ends it (endVisit):
+   * the public nav's Sign in used to open the form and the signed-in app in
+   * Japanese and write 'ja' into the account (p9 R12). Taking the page's own
+   * invitation into the app ("Get your own reading", in Japanese) keeps the
+   * language: that is a choice, where opening a link is not.
    */
   const [visitLocale] = useState(() => {
     const shared = sharedReadingLocale(search);
@@ -86,6 +88,7 @@ export function SharedReadingPage() {
       });
     return () => {
       live = false;
+      void endVisit();
     };
     // Once, on arrival: the link's language, before anything is drawn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -303,8 +306,9 @@ export function SharedReadingPage() {
           variant="gold"
           className="flex-1"
           onClick={() => {
-            // Into the app in the language the page was read in (see visitLocale).
-            if (visitLocale && getLocale() === visitLocale) void setLocale(visitLocale);
+            // Into the app in the language the page was read in (see visitLocale):
+            // kept before the page unmounts, so leaving does not undo it.
+            void keepVisitLanguage();
             navigate(deck === 'playing' ? '/cartomancy' : '/');
           }}
         >

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
-import { Button, Badge, EyebrowLabel, ReadingProse } from '../ui';
+import { useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { AlertCircle, Bookmark, Compass, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
+import { Button, EyebrowLabel, ReadingProse, Sheet } from '../ui';
+import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { scorePlaces, type PlaceScore, type LifeIntent } from '../../utils/celestialScoring';
@@ -21,11 +22,23 @@ const planetLabel = (p: string) => ((PLANETS as readonly string[]).includes(p) ?
  * user's birth chart + chosen life-area intent → top city is revealed
  * with a cinematic animation + AI-generated long-form reading.
  *
- * Free users see the button as a premium teaser; tapping opens the
- * paywall. Premium users get the full reveal on tap. Moonstones users
- * spend 250 stones per run (handled by the parent's trySpend).
+ * Premium readers get the reveal on tap. Everyone else pays 250
+ * Moonstones per reading (the parent's trySpend is the balance gate; the
+ * server debits), and the price is on the card and beside "Show me a
+ * different place" before the tap (p9 R04: the card said "Premium" and
+ * charged 250 without a word).
  *
- * The component is purely the button + reveal modal. The map's flyTo()
+ * The reveal is a Sheet, so the bottom nav is hidden while it is up: as an
+ * inline `fixed` layer inside <main>'s stacking context it sat under the
+ * nav, and its last row ("Save this place", "Show me a different place",
+ * "Try the reading again") was a nav tab (p9 R05).
+ *
+ * A reading paid for is kept for as long as the map is open, by the
+ * request it answered, and shown again — running Find Your Place again, or
+ * coming back to a city by re-rolling — instead of being bought again for
+ * the same cached text (p9 R08).
+ *
+ * The component is purely the button + reveal sheet. The map's flyTo()
  * + beacon-pin are driven from the parent via callbacks.
  */
 
@@ -88,6 +101,9 @@ export function FindYourPlace({
 }: Props) {
   const { t } = useT('app');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  /** What the sheet shows: the last phase that was not idle, so it does not empty while it slides away. */
+  const [view, setView] = useState<Phase>(phase);
+  if (phase.kind !== 'idle' && view !== phase) setView(phase);
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
 
@@ -108,18 +124,36 @@ export function FindYourPlace({
   // expensive Σ over (cities × lines) only runs when inputs change.
   const ranked = useMemo(() => scorePlaces(GLOBAL_CITIES, allLines, intent, 5), [allLines, intent]);
 
-  // Lock body scroll while the reveal modal is open.
-  useEffect(() => {
-    if (phase.kind === 'idle') return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [phase.kind]);
+  /** The paid request for `target`. */
+  const requestFor = (target: PlaceScore): CelestialReadingRequest => ({
+    mode: 'best-place',
+    city: {
+      name: target.city.name,
+      country: target.city.country,
+      lat: target.city.lat,
+      lon: target.city.lon,
+    },
+    intent,
+    lines: target.contributingLines.map((c) => ({ planet: c.planet, angle: c.angle, distanceKm: c.distanceKm })),
+    birth: { utc: birthUtc },
+    userContext: { zodiacSign, mbtiType, locale },
+  });
 
-  /** The paid request in flight or last failed: its id and the body it was sent with. */
-  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /**
+   * Readings bought here, by the request they answered (p9 R08). The
+   * function takes the 250 before its 7-day cache, so the same request
+   * bought again is the same text for another 250: a place read once is
+   * shown again — free — when Find Your Place runs again or a re-roll comes
+   * back to it.
+   */
+  const [kept, setKept] = useState<Record<string, CelestialReadingResponse>>({});
+  const keptFor = (target: PlaceScore | undefined) => (target ? kept[JSON.stringify(requestFor(target))] ?? null : null);
+  /**
+   * The requestId of each request sent without a reading back, by its body
+   * — not only the last one: coming back to a place whose reply was lost is
+   * the server's free replay of it, never a second charge.
+   */
+  const pending = useRef(new Map<string, string>());
   /** A reading is between its first line and its last (set synchronously). */
   const busy = useRef(false);
   /** The same, for the buttons: disabled from the spend gate on. */
@@ -134,36 +168,31 @@ export function FindYourPlace({
    * lands: the server debits once per (requestId, body), so retrying the
    * same place gets the first run's reading back instead of a second
    * charge, and skips the gate (the first attempt may have left the balance
-   * under the cost).
+   * under the cost). A place already read is shown from `kept`, unsent.
    */
   async function readPlace(target: PlaceScore, opts: { computing?: boolean } = {}) {
     if (busy.current) return;
+    const req = requestFor(target);
+    const signature = JSON.stringify(req);
+    const already = kept[signature];
+    if (already) {
+      onReveal(target.city);
+      setPhase({ kind: 'done', result: target, reading: already });
+      return;
+    }
     busy.current = true;
     setWorking(true);
     const failed = () => setPhase({ kind: 'error', result: target, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
     try {
-      const req: CelestialReadingRequest = {
-        mode: 'best-place',
-        city: {
-          name: target.city.name,
-          country: target.city.country,
-          lat: target.city.lat,
-          lon: target.city.lon,
-        },
-        intent,
-        lines: target.contributingLines.map((c) => ({ planet: c.planet, angle: c.angle, distanceKm: c.distanceKm })),
-        birth: { utc: birthUtc },
-        userContext: { zodiacSign, mbtiType, locale },
-      };
-      const signature = JSON.stringify(req);
-      if (attempt.current?.body !== signature) {
-        attempt.current = { id: crypto.randomUUID(), body: signature };
+      let requestId = pending.current.get(signature);
+      if (!requestId) {
+        requestId = crypto.randomUUID();
+        pending.current.set(signature, requestId);
         if (!isPremium && !(await trySpend())) {
-          attempt.current = null;
+          pending.current.delete(signature);
           return;
         }
       }
-      const requestId = attempt.current!.id;
       if (opts.computing) {
         setPhase({ kind: 'computing' });
         // Brief computing animation to give the user something to look at
@@ -176,9 +205,12 @@ export function FindYourPlace({
       onReveal(target.city);
       const res = await generateCelestialReading({ ...req, requestId });
       if (res.ok) {
-        attempt.current = null;
+        pending.current.delete(signature);
+        setKept((k) => ({ ...k, [signature]: res.data }));
         setPhase({ kind: 'done', result: target, reading: res.data });
       } else {
+        // Answered once and no longer replayable: the next press is a new request.
+        if (res.error === 'REQUEST_ALREADY_USED') pending.current.delete(signature);
         failed();
       }
     } catch {
@@ -201,17 +233,22 @@ export function FindYourPlace({
     setPhase({ kind: 'idle' });
   }
 
-  async function handleReroll() {
-    // Re-roll: take the next candidate from the ranked list. If we've
-    // exhausted candidates, wrap to #1 (rare; only happens after 5+
-    // re-rolls on a chart with limited line coverage).
+  /**
+   * Re-roll: the next candidate from the ranked list after the place on
+   * screen. Exhausted, it wraps to #1 (rare; only after 5+ re-rolls on a
+   * chart with limited line coverage).
+   */
+  const rerollTarget = (() => {
     const used = phase.kind === 'done' || phase.kind === 'reading' || phase.kind === 'error'
       ? phase.result?.city
       : null;
     const usedIndex = used ? ranked.findIndex((r) => r.city.name === used.name && r.city.cc === used.cc) : -1;
-    const next = ranked[(usedIndex + 1) % ranked.length];
-    if (!next) return;
-    await readPlace(next);
+    return ranked.length > 0 ? ranked[(usedIndex + 1) % ranked.length] : undefined;
+  })();
+
+  async function handleReroll() {
+    if (!rerollTarget) return;
+    await readPlace(rerollTarget);
   }
 
   /** "Try the reading again": the same place, the same request — not the next city, charged anew. */
@@ -247,103 +284,88 @@ export function FindYourPlace({
             <Compass className="w-6 h-6 text-gold" aria-hidden />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="heading-display-md text-mystic-100 leading-tight">
-                {t('celestial.findPlace.cta.title', { defaultValue: 'Find your destined place' })}
-              </h3>
-              {!isPremium && (
-                <Badge tone="gold">
-                  <Crown className="w-3 h-3" aria-hidden />
-                  {t('celestial.findPlace.cta.premiumBadge', { defaultValue: 'Premium' })}
-                </Badge>
-              )}
-            </div>
+            <h3 className="heading-display-md text-mystic-100 leading-tight mb-1">
+              {t('celestial.findPlace.cta.title', { defaultValue: 'Find your destined place' })}
+            </h3>
             <p className="text-meta text-mystic-300">
               {t('celestial.findPlace.cta.body', {
                 defaultValue:
                   'One tap. We read every city against your full birth chart and reveal the single best place for you — with the long-form why.',
               })}
             </p>
+            {/* The price of the tap, before it (p9 R04) — not when the tap
+                only shows a reading already paid for. */}
+            {!isPremium && !keptFor(ranked[0]) && <MoonstoneCostLine cost={250} className="mt-2" />}
           </div>
           <Sparkles className="w-5 h-5 text-gold flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
         </div>
       </motion.button>
 
-      {/* ── Reveal modal — full-page takeover with the result ──── */}
-      <AnimatePresence>
-        {phase.kind !== 'idle' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-mystic-950/85 p-0 sm:p-6"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && (phase.kind === 'done' || phase.kind === 'error')) handleClose();
-            }}
-          >
-            <motion.div
-              initial={{ y: 32, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 32, opacity: 0 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="relative w-full sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-t-sheet sm:rounded-sheet bg-gradient-to-b from-mystic-900 to-mystic-950 hairline-gold"
+      {/* ── The reveal — a sheet, so the bottom nav is hidden while it is
+          up and its last row is never under a nav tab (p9 R05). It closes
+          only once the reading has landed or failed. ─────────────────── */}
+      <Sheet
+        open={phase.kind !== 'idle'}
+        onClose={() => {
+          if (phase.kind === 'done' || phase.kind === 'error') handleClose();
+        }}
+        variant="glow"
+        label={t('celestial.findPlace.hero.eyebrow', { defaultValue: 'Your destined place' })}
+      >
+        <div className="relative space-y-6 pb-[env(safe-area-inset-bottom,0px)]">
+          {/* Close button — only after the reading lands */}
+          {(view.kind === 'done' || view.kind === 'error') && (
+            <button
+              onClick={handleClose}
+              aria-label={t('common:actions.close', { defaultValue: 'Close' })}
+              className="absolute -top-2 right-0 z-10 w-11 h-11 rounded-full bg-mystic-800/60 hairline-gold-soft hover:bg-mystic-800 text-mystic-200 hover:text-gold flex items-center justify-center transition-colors"
             >
-              {/* Close button — only after the reading lands */}
-              {(phase.kind === 'done' || phase.kind === 'error') && (
-                <button
-                  onClick={handleClose}
-                  aria-label={t('common:actions.close', { defaultValue: 'Close' })}
-                  className="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-mystic-800/60 hairline-gold-soft hover:bg-mystic-800 text-mystic-200 hover:text-gold flex items-center justify-center transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              <X className="w-4 h-4" />
+            </button>
+          )}
 
-              <div className="p-6 sm:p-8 space-y-6">
-                {phase.kind === 'computing' && <ComputingState />}
-                {phase.kind === 'reading' && (
-                  <RevealHero result={phase.result}>
-                    <ReadingLoading />
-                  </RevealHero>
-                )}
-                {phase.kind === 'done' && (
-                  <RevealHero result={phase.result}>
-                    <ReadingBody
-                      reading={phase.reading}
-                      onReroll={handleReroll}
-                      onSave={handleSave}
-                      saving={saving}
-                      savedFlash={savedFlash}
-                      working={working}
-                    />
-                  </RevealHero>
-                )}
-                {phase.kind === 'error' && (
-                  <div className="space-y-4">
-                    {phase.result && <RevealHero result={phase.result}>{null}</RevealHero>}
-                    <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-4">
-                      <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" aria-hidden />
-                      <div className="flex-1">
-                        <p className="text-sm text-coral-light font-medium mb-1">
-                          {t('celestial.findPlace.error.title', { defaultValue: "We couldn't finish your reading" })}
-                        </p>
-                        <p className="text-meta text-coral-light/80 mb-3">
-                          {phase.message}
-                        </p>
-                        <Button variant="ghost" size="sm" onClick={handleRetry} disabled={working}>
-                          <RefreshCw className="w-3 h-3 mr-1.5" aria-hidden />
-                          {t('celestial.findPlace.error.retry', { defaultValue: 'Try the reading again' })}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+          {view.kind === 'computing' && <ComputingState />}
+          {view.kind === 'reading' && (
+            <RevealHero result={view.result}>
+              <ReadingLoading />
+            </RevealHero>
+          )}
+          {view.kind === 'done' && (
+            <RevealHero result={view.result}>
+              <ReadingBody
+                reading={view.reading}
+                onReroll={handleReroll}
+                onSave={handleSave}
+                saving={saving}
+                savedFlash={savedFlash}
+                working={working}
+                // The next place's price, when the re-roll is a new reading.
+                rerollPriced={!isPremium && !keptFor(rerollTarget)}
+              />
+            </RevealHero>
+          )}
+          {view.kind === 'error' && (
+            <div className="space-y-4">
+              {view.result && <RevealHero result={view.result}>{null}</RevealHero>}
+              <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-4">
+                <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" aria-hidden />
+                <div className="flex-1">
+                  <p className="text-sm text-coral-light font-medium mb-1">
+                    {t('celestial.findPlace.error.title', { defaultValue: "We couldn't finish your reading" })}
+                  </p>
+                  <p className="text-meta text-coral-light/80 mb-3">
+                    {view.message}
+                  </p>
+                  <Button variant="ghost" size="sm" onClick={handleRetry} disabled={working}>
+                    <RefreshCw className="w-3 h-3 mr-1.5" aria-hidden />
+                    {t('celestial.findPlace.error.retry', { defaultValue: 'Try the reading again' })}
+                  </Button>
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </Sheet>
     </>
   );
 }
@@ -457,6 +479,7 @@ function ReadingBody({
   saving,
   savedFlash,
   working,
+  rerollPriced,
 }: {
   reading: CelestialReadingResponse;
   onReroll: () => void;
@@ -465,6 +488,8 @@ function ReadingBody({
   savedFlash: boolean;
   /** A paid re-roll is already on its way: one tap, one charge. */
   working: boolean;
+  /** "Show me a different place" is a new, charged reading: its price goes beside it (p9 R04). */
+  rerollPriced: boolean;
 }) {
   const { t } = useT('app');
   return (
@@ -522,35 +547,39 @@ function ReadingBody({
         </p>
       )}
 
-      <div className="flex gap-2 pt-2">
-        <Button variant="ghost" size="md" onClick={onReroll} disabled={saving || working}>
-          <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
-          {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Show me a different place' })}
-        </Button>
-        <Button
-          variant={savedFlash ? 'secondary' : 'primary'}
-          size="md"
-          fullWidth
-          disabled={saving || savedFlash}
-          onClick={onSave}
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />
-              {t('celestial.findPlace.reading.saving', { defaultValue: 'Saving…' })}
-            </>
-          ) : savedFlash ? (
-            <>
-              <Bookmark className="w-4 h-4 mr-2 fill-current" aria-hidden />
-              {t('celestial.findPlace.reading.saved', { defaultValue: 'Saved' })}
-            </>
-          ) : (
-            <>
-              <Bookmark className="w-4 h-4 mr-2" aria-hidden />
-              {t('celestial.findPlace.reading.saveCta', { defaultValue: 'Save this place' })}
-            </>
-          )}
-        </Button>
+      <div className="space-y-2 pt-2">
+        <div className="flex gap-2">
+          <Button variant="ghost" size="md" onClick={onReroll} disabled={saving || working}>
+            <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
+            {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Show me a different place' })}
+          </Button>
+          <Button
+            variant={savedFlash ? 'secondary' : 'primary'}
+            size="md"
+            fullWidth
+            disabled={saving || savedFlash}
+            onClick={onSave}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />
+                {t('celestial.findPlace.reading.saving', { defaultValue: 'Saving…' })}
+              </>
+            ) : savedFlash ? (
+              <>
+                <Bookmark className="w-4 h-4 mr-2 fill-current" aria-hidden />
+                {t('celestial.findPlace.reading.saved', { defaultValue: 'Saved' })}
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-4 h-4 mr-2" aria-hidden />
+                {t('celestial.findPlace.reading.saveCta', { defaultValue: 'Save this place' })}
+              </>
+            )}
+          </Button>
+        </div>
+        {/* Under the re-roll, which it prices; saving is free. */}
+        {rerollPriced && <MoonstoneCostLine cost={250} />}
       </div>
     </motion.div>
   );

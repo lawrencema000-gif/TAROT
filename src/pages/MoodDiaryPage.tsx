@@ -47,6 +47,56 @@ type SyncState = 'syncing' | 'synced' | 'local';
 
 const LETTER_MIN_DAYS = 3;
 
+/**
+ * How long ai-mood-letter answers the same entries and context with the
+ * same letter: it caches by them for a day (`ttlDays: 1`), after the 50
+ * Moonstone debit. Inside that day a second letter for the same days is the
+ * same letter, paid again (p9 R07).
+ */
+const LETTER_SAME_FOR_MS = 24 * 60 * 60_000;
+/** How long a letter is kept on this device, to be read again. */
+const LETTER_KEPT_MS = 7 * 24 * 60 * 60_000;
+const LETTER_KEY_PREFIX = 'arcana_mood_letter_v1:';
+
+/** The letter on screen, the request that wrote it (its exact body), and when it arrived. */
+interface KeptLetter {
+  letter: MoodLetter;
+  signature: string;
+  at: number;
+}
+
+/**
+ * This account's last letter, kept on the device (scoped by account, like
+ * the diary's own cache), so leaving the diary and coming back shows the
+ * letter already paid for instead of selling the same one again.
+ */
+function loadKeptLetter(userId: string | null | undefined, now = Date.now()): KeptLetter | null {
+  if (!userId) return null;
+  try {
+    const raw = window.localStorage.getItem(LETTER_KEY_PREFIX + userId);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<KeptLetter>;
+    const l = p.letter as Partial<MoodLetter> | undefined;
+    if (
+      !l || typeof l.letter !== 'string' || typeof l.dominantTheme !== 'string' || typeof l.careSuggestion !== 'string' ||
+      typeof p.signature !== 'string' || typeof p.at !== 'number' || !Number.isFinite(p.at) || now - p.at >= LETTER_KEPT_MS
+    ) {
+      return null;
+    }
+    return { letter: { letter: l.letter, dominantTheme: l.dominantTheme, careSuggestion: l.careSuggestion }, signature: p.signature, at: p.at };
+  } catch {
+    return null;
+  }
+}
+
+function keepLetter(userId: string, kept: KeptLetter): void {
+  try {
+    window.localStorage.setItem(LETTER_KEY_PREFIX + userId, JSON.stringify(kept));
+  } catch {
+    /* storage full or unavailable — the letter stays on screen for this visit */
+  }
+}
+
 /** The `error.code` a function answered with (a FunctionsHttpError keeps the Response on `context`). */
 async function functionErrorCode(error: unknown): Promise<string | null> {
   const ctx = (error as { context?: unknown } | null)?.context;
@@ -86,7 +136,9 @@ export function MoodDiaryPage() {
   const [todayEntry, setTodayEntry] = useState<MoodEntry | null>(null);
   const [allEntries, setAllEntries] = useState<MoodEntry[]>([]);
   const [syncState, setSyncState] = useState<SyncState>('syncing');
-  const [letter, setLetter] = useState<MoodLetter | null>(null);
+  /** The letter on screen and the request that wrote it (p9 R07). */
+  const [kept, setKept] = useState<KeptLetter | null>(() => loadKeptLetter(user?.id));
+  const letter = kept?.letter ?? null;
   const [generatingLetter, setGeneratingLetter] = useState(false);
 
   const today = localDateStr();
@@ -148,6 +200,7 @@ export function MoodDiaryPage() {
     setIntensity(3);
     setNote('');
     adopt(loadMoodEntries(user?.id));
+    setKept(loadKeptLetter(user?.id));
     setLegacyDays(legacyMoodOffer(user?.id));
     if (!user) {
       setSyncState('local');
@@ -276,6 +329,33 @@ export function MoodDiaryPage() {
     ? t('mood.letterProgressOne', { defaultValue: '1 more day until your letter' })
     : t('mood.letterProgress', { defaultValue: '{{n}} more days until your letter', n: daysToLetter });
 
+  /** The letter request for the diary as it stands: the last 14 days and the reader's context. */
+  const letterBody = {
+    entries: [...allEntries]
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 14)
+      .map((e) => ({
+        date: e.date,
+        category: e.category,
+        intensity: e.intensity,
+        note: e.note,
+      })),
+    userContext: {
+      displayName: profile?.displayName || undefined,
+      // The app's language, not the device's: a Japanese UI on an
+      // English phone gets a Japanese letter.
+      locale: getLocale(),
+    },
+  };
+  const letterSignature = JSON.stringify(letterBody);
+  /**
+   * Whether "Write me another letter" would write another letter (p9 R07):
+   * only once the days it reads (or the language or name) have changed, or
+   * a day after this one arrived. Before that the function answers the same
+   * request with the same cached letter — and charged 50 for it.
+   */
+  const anotherIsNew = !!kept && (kept.signature !== letterSignature || Date.now() - kept.at >= LETTER_SAME_FOR_MS);
+
   const handleGenerateLetter = async () => {
     if (writing.current) return;
     if (allEntries.length < LETTER_MIN_DAYS) {
@@ -285,25 +365,8 @@ export function MoodDiaryPage() {
     writing.current = true;
     setGeneratingLetter(true);
     try {
-      const recent = [...allEntries]
-        .sort((a, b) => (a.date < b.date ? 1 : -1))
-        .slice(0, 14)
-        .map((e) => ({
-          date: e.date,
-          category: e.category,
-          intensity: e.intensity,
-          note: e.note,
-        }));
-      const body = {
-        entries: recent,
-        userContext: {
-          displayName: profile?.displayName || undefined,
-          // The app's language, not the device's: a Japanese UI on an
-          // English phone gets a Japanese letter.
-          locale: getLocale(),
-        },
-      };
-      const signature = JSON.stringify(body);
+      const body = letterBody;
+      const signature = letterSignature;
       if (letterAttempt.current?.body !== signature) {
         const ok = await tryConsume();
         if (!ok) return;
@@ -328,7 +391,13 @@ export function MoodDiaryPage() {
       const payload = (data as { data?: MoodLetter })?.data ?? (data as MoodLetter);
       if (!payload?.letter) throw new Error('empty letter');
       letterAttempt.current = null;
-      setLetter(payload);
+      const next: KeptLetter = {
+        letter: { letter: payload.letter, dominantTheme: payload.dominantTheme, careSuggestion: payload.careSuggestion },
+        signature,
+        at: Date.now(),
+      };
+      setKept(next);
+      if (user) keepLetter(user.id, next);
     } catch (e) {
       console.warn('[Mood] letter generation failed:', e);
       toast(
@@ -702,15 +771,31 @@ export function MoodDiaryPage() {
             </EyebrowLabel>
             <p className="text-ui text-mystic-300 italic">{letter.careSuggestion}</p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => { setLetter(null); handleGenerateLetter(); }}
-            disabled={generatingLetter}
-            className="mt-4"
-            size="sm"
-          >
-            {t('mood.rewriteLetter', { defaultValue: 'Write me another letter' })}
-          </Button>
+          {/* Another letter is offered only when it would be another letter
+              — the same days within a day are answered with this one, for
+              50 more (p9 R07) — and with its price before the tap. This
+              letter stays on screen until the new one has arrived. */}
+          {anotherIsNew ? (
+            <div className="mt-4 space-y-2">
+              <MoonstoneCostLine />
+              <Button
+                variant="outline"
+                onClick={handleGenerateLetter}
+                disabled={generatingLetter}
+                loading={generatingLetter}
+                size="sm"
+              >
+                {generatingLetter
+                  ? t('mood.writingLetter', { defaultValue: 'Writing…' })
+                  : t('mood.rewriteLetter', { defaultValue: 'Write me another letter' })}
+              </Button>
+              {EarnSheet}
+            </div>
+          ) : (
+            <p className="mt-4 text-meta text-mystic-400">
+              {t('mood.nextLetterHint', { defaultValue: 'Your next letter will read the moods you log from here.' })}
+            </p>
+          )}
         </Card>
       )}
 

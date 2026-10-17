@@ -1,11 +1,21 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
-import i18n, { getLocale, LOCALE_STORAGE_KEY } from '../i18n/config';
+import i18n, { getLocale, setLocale, LOCALE_STORAGE_KEY } from '../i18n/config';
 import jaCommon from '../i18n/locales/ja/common.json';
 import jaApp from '../i18n/locales/ja/app.json';
 import jaOnboarding from '../i18n/locales/ja/onboarding.json';
 import jaLanding from '../i18n/locales/ja/landing.json';
 import jaTarot from '../i18n/locales/ja/tarot.json';
-import { buildShareUrl, decodeReading, encodeReading, sharedReadingLocale, showVisitIn, SHARE_LOCALE_PARAM } from './shareableReadings';
+import {
+  buildShareUrl,
+  decodeReading,
+  encodeReading,
+  endVisit,
+  keepVisitLanguage,
+  shareLocaleQuery,
+  sharedReadingLocale,
+  showVisitIn,
+  SHARE_LOCALE_PARAM,
+} from './shareableReadings';
 
 /*
  * p8 F76: a reading shared in Japanese opened in English for the friend it
@@ -93,5 +103,89 @@ describe('share links name their language (p8 F76)', () => {
     await Promise.all([showVisitIn('ja'), showVisitIn('ja')]);
     expect(getLocale()).toBe('ja');
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
+    await endVisit();
+  });
+});
+
+/*
+ * p9 R12: the link's language stayed for the rest of the session. The
+ * public nav's Sign in opened the form and the signed-in app in Japanese,
+ * and AuthContext — which pushes getLocale() to profiles.locale whenever a
+ * stored choice exists, and the detector stores 'en' on every first visit —
+ * wrote 'ja' into an English reader's account.
+ */
+describe('the link’s language ends with the visit (p9 R12)', () => {
+  it('leaving the page puts the reader’s own language back, stored as it was', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    await showVisitIn('ja');
+    expect(getLocale()).toBe('ja');
+    await endVisit();
+    expect(getLocale()).toBe('en');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
+
+    // Nothing stored before the visit: nothing stored after it.
+    localStorage.removeItem(LOCALE_STORAGE_KEY);
+    await showVisitIn('ko');
+    await endVisit();
+    expect(getLocale()).toBe('en');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBeNull();
+  });
+
+  it('leaving while the language is still loading does not leave the app in it', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    const arriving = showVisitIn('ja');
+    const leaving = endVisit();
+    await Promise.all([arriving, leaving]);
+    expect(getLocale()).toBe('en');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
+  });
+
+  it('a remount (StrictMode: mount, cleanup, mount) keeps the visit', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    const first = showVisitIn('ja');
+    const cleanup = endVisit();
+    const second = showVisitIn('ja');
+    await Promise.all([first, cleanup, second]);
+    expect(getLocale()).toBe('ja');
+    await endVisit();
+    expect(getLocale()).toBe('en');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
+  });
+
+  it('the page’s own invitation keeps the language: then it is the reader’s choice', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    await showVisitIn('ja');
+    await keepVisitLanguage();
+    await endVisit();
+    expect(getLocale()).toBe('ja');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('ja');
+  });
+
+  it('a language the reader picks meanwhile is theirs, and stays', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    await showVisitIn('ja');
+    await setLocale('ko');
+    await endVisit();
+    expect(getLocale()).toBe('ko');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('ko');
+  });
+
+  it('ending with no visit open changes nothing', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en');
+    await i18n.changeLanguage('en');
+    await endVisit();
+    expect(getLocale()).toBe('en');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
+  });
+});
+
+/* p9 R13: a card shared from a ja reading linked an English card page. */
+describe('every shared link names its language', () => {
+  it('?hl= for ja, ko and zh, nothing for English', () => {
+    expect(shareLocaleQuery('ja')).toBe(`?${SHARE_LOCALE_PARAM}=ja`);
+    expect(shareLocaleQuery('ko')).toBe('?hl=ko');
+    expect(shareLocaleQuery('zh')).toBe('?hl=zh');
+    expect(shareLocaleQuery('en')).toBe('');
+    expect(sharedReadingLocale(shareLocaleQuery('ja'))).toBe('ja');
   });
 });

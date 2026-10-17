@@ -16,14 +16,11 @@ import { Card, Button, Chip, Tabs, Tag, Badge, Sheet, toast, ReadingProse, Paper
 import { SpreadGlyph } from '../icons/SpreadGlyph';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
-import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localizeCard';
-import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
 import { tArray } from '../../utils/tArray';
 import { calendarDay } from './tarot/readingDates';
-import { CARTO_LESSONS, getPlayingCard } from '../../data/cartomancy';
-import { localizeCartoLesson, localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
-import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
+import { CARTO_LESSONS } from '../../data/cartomancy';
+import { localizeCartoLesson, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import {
   SavedReadingSheet,
   isPlayingReading,
@@ -31,6 +28,8 @@ import {
   savedSpreadLayout,
   type SavedReadingRow,
 } from './tarot/SavedReadingSheet';
+// The header ☆ sheet names saved items the same way (one source, p9 R16).
+import { savedCardLabel, savedCardLine, savedCardName, savedHoroscopeLabel, type SavedCardRef } from '../overlays/SavedSheet';
 
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
 type SavedFilter = 'all' | 'tarot' | 'horoscope' | 'spreads';
@@ -55,9 +54,25 @@ interface PremiumReading {
     question?: string;
     focusArea?: string;
     usedLlm?: boolean;
+    /** Phase 7: 'playing' for a playing-card table; absent on tarot rows written before it. */
+    deck?: string;
   };
+  /** As generate-reading stores them: the id, and the name in whatever language the client sent it. */
   cards: Array<{ id: number; name: string; reversed: boolean }>;
   created_at: string;
+}
+
+/**
+ * A playing-card AI reading: its deck says so, or its ids are the playing
+ * deck's (100..153). Read for every row on every render (the corpus gate),
+ * so a row with no `context` or `cards` (both nullable jsonb) reads as tarot.
+ */
+function isPlayingPremium(reading: PremiumReading): boolean {
+  return (
+    reading.context?.deck === 'playing' ||
+    (reading.reading_type ?? '').startsWith('carto-') ||
+    (reading.cards ?? []).some((c) => typeof c?.id === 'number' && c.id >= 100)
+  );
 }
 
 interface GuideSection { title: string; content: string; }
@@ -119,12 +134,6 @@ export function LibrarySection() {
   const { t } = useT('app');
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<LibraryTab>('saved');
-
-  // Warm the tarot deck lookup cache so card name localization hits on
-  // first paint of saved reading previews.
-  useEffect(() => {
-    prefetchCardNameIndex();
-  }, []);
 
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
   const [savedHighlights, setSavedHighlights] = useState<SavedItem[]>([]);
@@ -312,8 +321,9 @@ export function LibrarySection() {
   const readingDay = (reading: TarotReading) => reading.created_at || reading.date;
 
   // Saved playing-card readings name their cards from the cartomancy
-  // corpus, which ja/ko/zh fetch on demand: only when one is in the list.
-  const cartoReady = useCartomancyCorpus(tarotReadings.some((r) => isPlayingReading(r)));
+  // corpus, which ja/ko/zh fetch on demand: only when one is in the list
+  // (a saved reading, or an AI reading of a playing-card table).
+  const cartoReady = useCartomancyCorpus(tarotReadings.some((r) => isPlayingReading(r)) || premiumReadings.some(isPlayingPremium));
   // The playing-card guide reads its lessons from the same corpus.
   const guideCorpusReady = useCartomancyCorpus(selectedGuide?.id === 'cartomancy-basics');
   const guideSections = selectedGuide
@@ -322,16 +332,16 @@ export function LibrarySection() {
       : selectedGuide.sections
     : [];
 
-  /** A saved reading's card names for its row: localized tarot names, or the playing cards' names. */
-  const savedCardNames = (reading: TarotReading): string[] => {
+  /** A saved reading's card line for its row, each card named by id in the reader's language (savedCardName). */
+  const readingCardLine = (reading: TarotReading): string => {
     const playing = isPlayingReading(reading);
-    return (reading.cards ?? []).map((c) => {
-      if (playing) {
-        const pc = c.cardId !== undefined ? getPlayingCard(c.cardId) : undefined;
-        return pc ? localizePlayingCard(pc).name : c.cardName;
-      }
-      return localizeCardNameSync(c.cardName);
-    });
+    return savedCardLine(t, (reading.cards ?? []).map((c) => ({ name: savedCardName(c, playing), reversed: c.reversed })));
+  };
+
+  /** An AI reading's cards, named the same way (generate-reading stores the name the client sent). */
+  const premiumCards = (reading: PremiumReading) => {
+    const playing = isPlayingPremium(reading);
+    return (reading.cards ?? []).map((c) => ({ name: savedCardName(c, playing), reversed: c.reversed }));
   };
 
   return (
@@ -390,7 +400,6 @@ export function LibrarySection() {
                   {tarotReadings.map(reading => {
                     const playing = isPlayingReading(reading);
                     const name = savedSpreadName(t, reading.spread_type);
-                    const names = savedCardNames(reading);
                     // A typed question titles the row, as it titled the reveal; the spread becomes its eyebrow.
                     const asked = reading.question?.trim() || null;
                     return (
@@ -423,10 +432,7 @@ export function LibrarySection() {
                             {playing && !cartoReady ? (
                               <Skeleton variant="text" className="block h-4 w-2/3 my-0.5" />
                             ) : (
-                              <span className="text-meta text-mystic-400 line-clamp-1">
-                                {names.slice(0, 3).map((n, i) => `${n}${reading.cards[i]?.reversed ? ' (R)' : ''}`).join(', ')}
-                                {names.length > 3 && ` +${names.length - 3}`}
-                              </span>
+                              <span className="text-meta text-mystic-400 line-clamp-1">{readingCardLine(reading)}</span>
                             )}
                             <span className="mt-1 flex items-center gap-1 text-meta text-mystic-500">
                               <Calendar className="w-3 h-3" aria-hidden />
@@ -465,18 +471,16 @@ export function LibrarySection() {
                   {filteredHighlights
                     .filter(h => h.highlight_type === 'tarot')
                     .map(item => {
-                      const content = item.content as { card?: { name: string }; reversed?: boolean };
-                      const name = content.card?.name ? localizeCardNameSync(content.card.name) : '';
+                      const content = item.content as { card?: SavedCardRef; reversed?: boolean } | null;
+                      // By id: Home saves the card as it was on screen, in that day's language.
+                      const name = content?.card ? savedCardName(content.card, false) : '';
                       return (
                         <Card key={item.id} padding="md" className="flex items-center gap-3">
                           <span className="w-12 h-12 shrink-0 rounded-inset bg-mystic-800 text-gold inline-flex items-center justify-center" aria-hidden>
                             <TarotCardIcon className="w-5 h-5" />
                           </span>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-ui font-medium text-mystic-100 truncate">
-                              {name}
-                              {content.reversed && <span className="text-mystic-400 ml-1">({t('readings.revealView.reversed')})</span>}
-                            </h4>
+                            <h4 className="text-ui font-medium text-mystic-100 truncate">{savedCardLabel(t, name, content?.reversed)}</h4>
                             <div className="flex items-center gap-1 text-meta text-mystic-500">
                               <Calendar className="w-3 h-3" aria-hidden />
                               {formatDate(item.date)}
@@ -502,25 +506,7 @@ export function LibrarySection() {
                   {filteredHighlights
                     .filter(h => h.highlight_type === 'horoscope')
                     .map(item => {
-                      const content = item.content as { zodiacSign?: string; period?: string };
-                      const sign = (() => {
-                        if (!content.zodiacSign) return '';
-                        // DB stores either 'gemini' or 'Gemini'; localizeSignName
-                        // expects Pascal case. Normalise both.
-                        const pascal = content.zodiacSign.charAt(0).toUpperCase() + content.zodiacSign.slice(1).toLowerCase();
-                        return localizeSignName(pascal as ZodiacSignPC);
-                      })();
-                      const period = (() => {
-                        const p = content.period;
-                        if (!p) return t('library.periodDaily', { defaultValue: 'Daily' });
-                        // Translate common period values stored in the DB
-                        const key = p.toLowerCase();
-                        if (key === 'today' || key === 'daily') return t('library.periodDaily', { defaultValue: 'Daily' });
-                        if (key === 'weekly' || key === 'week') return t('library.periodWeekly', { defaultValue: 'Weekly' });
-                        if (key === 'monthly' || key === 'month') return t('library.periodMonthly', { defaultValue: 'Monthly' });
-                        return p;
-                      })();
-                      const name = `${sign} - ${period}`;
+                      const name = savedHoroscopeLabel(t, item.content as { zodiacSign?: string; period?: string });
                       return (
                         <Card key={item.id} padding="md" className="flex items-center gap-3">
                           <span className="w-12 h-12 shrink-0 rounded-inset bg-mystic-800 text-gold inline-flex items-center justify-center" aria-hidden>
@@ -599,10 +585,11 @@ export function LibrarySection() {
                             </Tag>
                           )}
                         </span>
-                        <span className="text-meta text-mystic-400 line-clamp-1">
-                          {reading.cards.slice(0, 3).map((card) => `${card.name}${card.reversed ? ' (R)' : ''}`).join(', ')}
-                          {reading.cards.length > 3 && ` +${reading.cards.length - 3}`}
-                        </span>
+                        {isPlayingPremium(reading) && !cartoReady ? (
+                          <Skeleton variant="text" className="block h-4 w-2/3 my-0.5" />
+                        ) : (
+                          <span className="text-meta text-mystic-400 line-clamp-1">{savedCardLine(t, premiumCards(reading))}</span>
+                        )}
                         <span className="text-meta text-mystic-400 line-clamp-2 mt-1">
                           {reading.content.slice(0, 150)}…
                         </span>
@@ -762,10 +749,9 @@ export function LibrarySection() {
             <div>
               <h4 className="font-display-eyebrow text-mystic-400 mb-3">{t('library.reading.cardsDrawn')}</h4>
               <div className="flex flex-wrap gap-2">
-                {selectedReading.cards.map((card, i) => (
+                {premiumCards(selectedReading).map((card, i) => (
                   <Tag key={i} tone="neutral" size="md" icon={<TarotCardIcon className="w-3.5 h-3.5 text-gold" />}>
-                    {card.name}
-                    {card.reversed && <span className="text-mystic-400 ml-1">(R)</span>}
+                    {savedCardLabel(t, card.name, card.reversed)}
                   </Tag>
                 ))}
               </div>

@@ -14,7 +14,11 @@ import { aiFailureOf } from '../components/reports/aiReading';
 import {
   newConversationId,
   conversationCovered,
-  chargedAtAfterReply,
+  mayBePaid,
+  markPending,
+  withoutPending,
+  afterReply,
+  historyToSend,
   loadTarotSession,
   saveTarotSession,
   clearTarotSession,
@@ -22,6 +26,18 @@ import {
   type CompanionMessage,
 } from '../components/companion/companionHistory';
 import type { TarotCard } from '../types';
+
+/** The `error.code` of a function's JSON envelope (a FunctionsHttpError keeps the Response on `context`). */
+async function errorCodeOf(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Tarot companion — draws a card, then, when the reader asks, opens a
@@ -44,8 +60,9 @@ import type { TarotCard } from '../types';
  */
 
 type ReplyOutcome =
-  | { ok: true; reply: string; charged?: boolean }
-  | { ok: false; balance: boolean };
+  | { ok: true; reply: string; charged?: boolean; conversationPaid?: boolean }
+  /** `balance`: refused for the balance or the soft cap. `rejected`: refused as sent (400), before any charge. */
+  | { ok: false; balance: boolean; rejected?: boolean };
 
 export function TarotCompanionPage() {
   const { t } = useT('app');
@@ -131,7 +148,9 @@ export function TarotCompanionPage() {
       body: {
         persona: 'oracle',
         conversationId,
-        history: history.map((m) => ({ role: m.role, content: m.content })),
+        // A bounded window: the function refuses more than 100 messages and
+        // reads the last 20 (p9 R23).
+        history: historyToSend(history),
         userContext,
       },
     });
@@ -139,19 +158,31 @@ export function TarotCompanionPage() {
       // Short of Moonstones / over today's AI limit is not a connection
       // problem: the caller reopens the gate, which shows the Earn sheet.
       const failure = await aiFailureOf(error);
-      return { ok: false, balance: failure === 'insufficient' || failure === 'soft-cap' };
+      if (failure === 'insufficient' || failure === 'soft-cap') return { ok: false, balance: true };
+      return { ok: false, balance: false, rejected: (await errorCodeOf(error)) === 'INVALID_REQUEST' };
     }
-    const payload = (data?.data ?? data) as { reply?: string; charged?: boolean } | null;
-    return payload?.reply ? { ok: true, reply: payload.reply, charged: payload.charged } : { ok: false, balance: false };
+    const payload = (data?.data ?? data) as { reply?: string; charged?: boolean; conversationPaid?: boolean } | null;
+    return payload?.reply
+      ? { ok: true, reply: payload.reply, charged: payload.charged, conversationPaid: payload.conversationPaid }
+      : { ok: false, balance: false };
   };
+
+  /** "Couldn't reach the oracle", unless the request was refused as sent — then not the connection. */
+  const failedToast = (res: { rejected?: boolean }) =>
+    res.rejected
+      ? toast(t('tarotCompanion.sendRejected', { defaultValue: 'This question couldn’t be sent. Draw a new card to start a new conversation.' }), 'error')
+      : toast(t('tarotCompanion.aiFailed', { defaultValue: 'Couldn’t reach the oracle — check your connection and ask again.' }), 'error');
 
   /**
    * Send `asked` (the thread with the new user message) and settle it: the
    * reply joins the conversation and is kept for the account; anything else
-   * takes the message back out. Returns whether a reply came.
+   * takes the message back out. Returns whether a reply came. `prior` is the
+   * conversation before this send, `base` the same marked with it when it is
+   * not covered (p9 R09).
    */
   const exchange = async (
     drawn: { card: TarotCard; reversed: boolean },
+    prior: CompanionConversation,
     base: CompanionConversation,
     asked: CompanionConversation,
     wasCovered: boolean,
@@ -162,11 +193,12 @@ export function TarotCompanionPage() {
     setSending(false);
     const shown = shownConversation.current === base.conversationId;
     if (res.ok) {
-      const next: CompanionConversation = {
-        ...asked,
-        messages: [...asked.messages, { role: 'assistant', content: res.reply, timestamp: Date.now() }],
-        chargedAt: chargedAtAfterReply(base, res.charged, wasCovered),
-      };
+      const next = afterReply(
+        base,
+        [...asked.messages, { role: 'assistant', content: res.reply, timestamp: Date.now() }],
+        res,
+        wasCovered,
+      );
       // Kept even if the page was left or a new card drawn meanwhile: it is paid for.
       if (userId && (shown || !loadTarotSession(userId))) {
         saveTarotSession(userId, { cardId: drawn.card.id, reversed: drawn.reversed, conversation: next });
@@ -174,7 +206,15 @@ export function TarotCompanionPage() {
       if (shown) setConvo(next);
       return res;
     }
-    if (shown) setConvo(base);
+    // Not answered. Refused for the balance (before any debit — and an
+    // earlier send that had been charged would have made this one free):
+    // nothing is paid or pending. Refused as sent (400): this send charged
+    // nothing. Anything else may have been charged: the mark stays.
+    const back = res.balance ? withoutPending(prior) : res.rejected ? prior : base;
+    if (shown) {
+      if (back !== base && userId) saveTarotSession(userId, { cardId: drawn.card.id, reversed: drawn.reversed, conversation: back });
+      setConvo(back);
+    }
     return res;
   };
 
@@ -185,9 +225,23 @@ export function TarotCompanionPage() {
     const drawn = card;
     try {
       // The opener is the conversation's one charge (premium: no debit;
-      // the soft cap counts one slot). Check the balance first.
-      const ok = await tryConsume();
-      if (!ok) return;
+      // the soft cap counts one slot). Check the balance first — unless
+      // this is the same card's opener again after a reply that never came
+      // back: the server may have charged it, and then answers this one
+      // free, which the gate would block for a balance the charge left
+      // short (p9 R09).
+      const now = Date.now();
+      const prior = convo;
+      if (!mayBePaid(prior, now)) {
+        const ok = await tryConsume();
+        if (!ok) return;
+      }
+      // Kept for the account before it goes, marked with this send: if the
+      // reply is lost after the charge, coming back finds this card and
+      // this conversation — whose opener is then answered free — not a new
+      // card to pay for again.
+      const base = markPending(prior, now);
+      if (userId) saveTarotSession(userId, { cardId: drawn.card.id, reversed: drawn.reversed, conversation: base });
       const label = drawn.reversed
         ? t('tarotCompanion.cardReversed', { name: drawn.card.name, defaultValue: '{{name}} (reversed)' })
         : drawn.card.name;
@@ -199,8 +253,7 @@ export function TarotCompanionPage() {
         }) as string,
         timestamp: Date.now(),
       };
-      const base = convo;
-      const res = await exchange(drawn, base, { ...base, messages: [seed] }, false);
+      const res = await exchange(drawn, prior, base, { ...base, messages: [seed] }, false);
       if (res.ok) return;
       if (res.balance) {
         if (await tryConsume()) {
@@ -208,7 +261,7 @@ export function TarotCompanionPage() {
         }
         return;
       }
-      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Couldn’t reach the oracle — check your connection and ask again.' }), 'error');
+      failedToast(res);
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -221,19 +274,25 @@ export function TarotCompanionPage() {
     inFlight.current = true;
     setBusy(true);
     const drawn = card;
-    const base = convo;
-    const wasCovered = conversationCovered(base);
+    const now = Date.now();
+    const prior = convo;
+    const wasCovered = conversationCovered(prior, now);
+    // Marked with this send when it is not covered (see sendInitial).
+    const base = wasCovered ? prior : markPending(prior, now);
     try {
       // Follow-ups are free while the opener's charge covers the
       // conversation (24 hours). After that the next message is charged:
-      // the price is on screen and the balance is checked first.
-      if (!wasCovered) {
+      // the price is on screen and the balance is checked first — unless a
+      // send whose reply was lost may have paid for it already (p9 R09).
+      if (!wasCovered && !mayBePaid(prior, now)) {
         const ok = await tryConsume();
         if (!ok) return;
       }
+      if (!wasCovered && userId) saveTarotSession(userId, { cardId: drawn.card.id, reversed: drawn.reversed, conversation: base });
       setDraft('');
       const res = await exchange(
         drawn,
+        prior,
         base,
         { ...base, messages: [...base.messages, { role: 'user', content: text, timestamp: Date.now() }] },
         wasCovered,
@@ -249,7 +308,7 @@ export function TarotCompanionPage() {
         }
         return;
       }
-      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Couldn’t reach the oracle — check your connection and ask again.' }), 'error');
+      failedToast(res);
     } finally {
       inFlight.current = false;
       setBusy(false);

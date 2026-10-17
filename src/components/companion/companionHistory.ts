@@ -46,6 +46,15 @@ export interface CompanionConversation {
    * field existed — and then the next message is treated as charged.
    */
   chargedAt?: number;
+  /**
+   * When a message this conversation was not covered for went out and no
+   * reply came back (epoch ms; the first such send since the last reply).
+   * The server may have taken the conversation's charge then — a reply
+   * lost on its way back — so a later reply that reports the conversation
+   * already paid (`conversationPaid`) dates the 24 hours from here, and
+   * resending is not held at the balance gate (p9 R09). Cleared by a reply.
+   */
+  pendingSince?: number;
 }
 
 const LEGACY_HISTORY_PREFIX = 'arcana_companion_v1_';
@@ -59,6 +68,23 @@ const LEGACY_DECLINED_PREFIX = 'arcana_companion_legacy_declined:';
  * import never trims what it moved.
  */
 export const MAX_STORED_MESSAGES = 80;
+
+/**
+ * Bound on the messages sent with each request (p9 R23). ai-companion-chat
+ * refuses a history of more than 100 messages (400 INVALID_REQUEST, before
+ * any charge) and reads only the last 20 (MAX_HISTORY_MESSAGES); a thread
+ * that loaded at 80 used to pass 100 on the eleventh message of a visit,
+ * and every send after that failed as "check your connection". 40 is room
+ * to spare on both sides.
+ */
+export const MAX_SENT_MESSAGES = 40;
+/** ai-companion-chat's bound on one message's content. */
+const MAX_SENT_CONTENT = 4000;
+
+/** The messages a request carries: the last MAX_SENT_MESSAGES of the thread, each within the function's bound. */
+export function historyToSend(messages: CompanionMessage[]): Array<{ role: CompanionMessage['role']; content: string }> {
+  return messages.slice(-MAX_SENT_MESSAGES).map((m) => ({ role: m.role, content: m.content.slice(0, MAX_SENT_CONTENT) }));
+}
 
 /** How long one charge covers a conversation, server-side (ai-companion-chat, `ttlHours: 24`). */
 export const CONVERSATION_COVER_MS = 24 * 60 * 60_000;
@@ -104,20 +130,89 @@ export function conversationCovered(
 }
 
 /**
- * The conversation after a reply: `charged` is what the server reported
- * for that message. A message charged on the server starts the 24 hours
- * now; an older server that reports nothing is read as having charged a
- * message the conversation was not covered for.
+ * Whether a send whose reply never came back may already have paid for
+ * this conversation: one went out (uncovered) less than 24 hours ago. Its
+ * resend is then not held at the balance gate — the server answers it
+ * free if the charge was taken, and refuses (402) only if it was not and
+ * the balance is short — so a charge that left the reader under 50 does
+ * not block the reply it paid for (p9 R09).
+ */
+export function mayBePaid(convo: Pick<CompanionConversation, 'messages' | 'pendingSince'>, now: number = Date.now()): boolean {
+  if (typeof convo.pendingSince !== 'number') return false;
+  const age = now - convo.pendingSince;
+  return age >= 0 && age < CONVERSATION_COVER_MS - COVER_MARGIN_MS;
+}
+
+/**
+ * The conversation as a message it is not covered for goes out: marked
+ * with the send time (the first since the last reply, while that can still
+ * be the charge), so a reply lost after the server charged is not read
+ * later as "nothing paid".
+ */
+export function markPending(convo: CompanionConversation, now: number = Date.now()): CompanionConversation {
+  return mayBePaid(convo, now) ? convo : { ...convo, pendingSince: now };
+}
+
+/**
+ * The conversation with no send pending: after a refusal for the balance
+ * (402 / soft cap). That refusal comes before any debit, and a send that
+ * had been charged would have made this one free — so nothing is paid.
+ */
+export function withoutPending(convo: CompanionConversation): CompanionConversation {
+  return {
+    conversationId: convo.conversationId,
+    messages: convo.messages,
+    ...(typeof convo.chargedAt === 'number' ? { chargedAt: convo.chargedAt } : {}),
+  };
+}
+
+/**
+ * The conversation's `chargedAt` after a reply. `charged`: this message
+ * took the conversation's charge — the 24 hours start now.
+ * `conversationPaid`: it was free, the conversation being paid already;
+ * when this device was not counting it as covered, the live charge is the
+ * last one it saw (if that is still inside the server's 24 hours — the
+ * page reads the window as closing a few minutes early) or else the send
+ * whose reply was lost (`pendingSince`; p9 R09 — the free retry used to
+ * stay "not covered" for the whole day, priced and gated on every
+ * message). The earliest of those counts, so the window is never read as
+ * running later than it does. Knowing neither, nothing is assumed. An
+ * older server that reports nothing is read as having charged a message
+ * the conversation was not covered for.
  */
 export function chargedAtAfterReply(
-  convo: Pick<CompanionConversation, 'messages' | 'chargedAt'>,
-  charged: boolean | undefined,
+  convo: Pick<CompanionConversation, 'messages' | 'chargedAt' | 'pendingSince'>,
+  reply: { charged?: boolean; conversationPaid?: boolean },
   wasCovered: boolean,
   now: number = Date.now(),
 ): number | undefined {
-  if (charged === true) return now;
-  if (charged === undefined && !wasCovered) return now;
+  if (reply.charged === true) return now;
+  if (reply.conversationPaid === true && !wasCovered) {
+    const live = [convo.chargedAt, convo.pendingSince].filter(
+      (at): at is number => typeof at === 'number' && at <= now && now - at < CONVERSATION_COVER_MS,
+    );
+    if (live.length > 0) return Math.min(...live);
+  }
+  if (reply.charged === undefined && reply.conversationPaid === undefined && !wasCovered) return now;
   return convo.chargedAt;
+}
+
+/** The conversation once a reply has landed: the reply added, the thread bounded, the charge dated, no send pending. */
+export function afterReply(
+  base: CompanionConversation,
+  messages: CompanionMessage[],
+  reply: { charged?: boolean; conversationPaid?: boolean },
+  wasCovered: boolean,
+  now: number = Date.now(),
+): CompanionConversation {
+  const chargedAt = chargedAtAfterReply(base, reply, wasCovered, now);
+  return {
+    conversationId: base.conversationId,
+    // The in-memory thread is held to what is stored (p9 R23), so a long
+    // visit reads like a reload.
+    messages: messages.slice(-MAX_STORED_MESSAGES),
+    ...(typeof chargedAt === 'number' ? { chargedAt } : {}),
+  };
 }
 
 function isMessage(m: unknown): m is CompanionMessage {
@@ -141,11 +236,18 @@ export function loadConversation(userId: string | null | undefined, persona: Com
     const conversationId = typeof parsed.conversationId === 'string' && UUID_RE.test(parsed.conversationId)
       ? parsed.conversationId
       : newConversationId();
-    const chargedAt = typeof parsed.chargedAt === 'number' && Number.isFinite(parsed.chargedAt) ? parsed.chargedAt : undefined;
-    return chargedAt === undefined ? { conversationId, messages } : { conversationId, messages, chargedAt };
+    return { conversationId, messages, ...timesOf(parsed) };
   } catch {
     return empty();
   }
+}
+
+/** A stored conversation's `chargedAt` and `pendingSince`, when they are numbers. */
+function timesOf(p: Partial<CompanionConversation>): Pick<CompanionConversation, 'chargedAt' | 'pendingSince'> {
+  return {
+    ...(typeof p.chargedAt === 'number' && Number.isFinite(p.chargedAt) ? { chargedAt: p.chargedAt } : {}),
+    ...(typeof p.pendingSince === 'number' && Number.isFinite(p.pendingSince) ? { pendingSince: p.pendingSince } : {}),
+  };
 }
 
 export function saveConversation(userId: string, persona: CompanionPersona, convo: CompanionConversation): void {
@@ -153,7 +255,7 @@ export function saveConversation(userId: string, persona: CompanionPersona, conv
     const trimmed: CompanionConversation = {
       conversationId: convo.conversationId,
       messages: convo.messages.slice(-MAX_STORED_MESSAGES),
-      ...(typeof convo.chargedAt === 'number' ? { chargedAt: convo.chargedAt } : {}),
+      ...timesOf(convo),
     };
     window.localStorage.setItem(historyKey(userId, persona), JSON.stringify(trimmed));
   } catch {
@@ -188,8 +290,9 @@ export function saveDailyCount(userId: string, today: string, n: number): void {
  * The card on the Tarot companion and the conversation about it. One
  * conversation id per drawn card, so the server charges "Read this card"
  * once and every follow-up for 24 hours is free, as its cost line says
- * (p8 F02/F10). Kept per account while that charge covers it, so leaving
- * the page does not lose a conversation that is paid for.
+ * (p8 F02/F10). Kept per account while that charge covers it — or may
+ * (an opener or follow-up whose reply was lost: `pendingSince`, p9 R09) —
+ * so leaving the page does not lose a conversation that is paid for.
  */
 export interface TarotCompanionSession {
   cardId: number;
@@ -216,10 +319,14 @@ export function loadTarotSession(userId: string | null | undefined, now: number 
         ? {
             conversationId: c.conversationId,
             messages: c.messages.filter(isMessage).map(toMessage),
-            ...(typeof c.chargedAt === 'number' ? { chargedAt: c.chargedAt } : {}),
+            ...timesOf(c),
           }
         : null;
-    if (!conversation || typeof p.cardId !== 'number' || !conversationCovered(conversation, now)) {
+    if (
+      !conversation ||
+      typeof p.cardId !== 'number' ||
+      (!conversationCovered(conversation, now) && !mayBePaid(conversation, now))
+    ) {
       window.localStorage.removeItem(tarotSessionKey(userId));
       return null;
     }

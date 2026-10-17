@@ -113,6 +113,14 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const [isSaved, setIsSaved] = useState(false);
   /** The saved row of the reading on screen, so an AI reading generated after the save is attached to it. */
   const savedIdRef = useRef<string | null>(null);
+  /**
+   * The table whose save is on its way, by reading id. Set before the
+   * insert's await: `isSaved` renders only once the insert has answered, so
+   * the second tap of a double tap (6–120 ms later) found it false and saved
+   * the table again — a second Library row, and the XP, the ad check and the
+   * rate prompt run twice (p9 R11; the tarot reveal's guard).
+   */
+  const savingRef = useRef<string | null>(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [deckCards, setDeckCards] = useState<number[]>([]);
@@ -468,28 +476,45 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     return shareTable(firstUp >= 0 ? firstUp : 0);
   };
 
+  /**
+   * Save the table on screen — once. A table already saved, or whose save is
+   * on its way, is a no-op: both are checked in refs, which a second tap
+   * reads before `isSaved` has rendered.
+   */
   const handleSaveReading = async () => {
-    if (!user || drawnCards.length === 0) return;
-    if (isSaved) return;
-    const res = await tarotReadings.insertReturningId({
-      userId: user.id,
-      // The reader's own calendar day, as the tarot save stamps it: the UTC
-      // day filed a reading saved before 09:00 in Tokyo under the day before,
-      // and an evening one in the Americas under the day after (p8 F47).
-      date: localDateStr(),
-      spreadType: currentSlug,
-      focusArea: selectedFocus,
-      cards: toSavedCards(drawnCards, getPositionLabel),
-      interpretation: aiInterpretation ?? undefined,
-      question: question.trim() || undefined,
-      saved: true,
-    });
+    const readingId = readingIdRef.current;
+    if (!user || drawnCards.length === 0 || !readingId) return;
+    if (isSaved || savedIdRef.current || savingRef.current === readingId) return;
+    savingRef.current = readingId;
+    let res: Awaited<ReturnType<typeof tarotReadings.insertReturningId>>;
+    try {
+      res = await tarotReadings.insertReturningId({
+        userId: user.id,
+        // The reader's own calendar day, as the tarot save stamps it: the UTC
+        // day filed a reading saved before 09:00 in Tokyo under the day before,
+        // and an evening one in the Americas under the day after (p8 F47).
+        date: localDateStr(),
+        spreadType: currentSlug,
+        focusArea: selectedFocus,
+        cards: toSavedCards(drawnCards, getPositionLabel),
+        interpretation: aiInterpretation ?? undefined,
+        question: question.trim() || undefined,
+        saved: true,
+      });
+    } finally {
+      if (savingRef.current === readingId) savingRef.current = null;
+    }
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
       return;
     }
-    savedIdRef.current = res.data.id;
-    setIsSaved(true);
+    // The row belongs to the table it was saved from. A reader who dealt
+    // another table while the insert ran has that one on screen: it is not
+    // saved, and an AI reading for it must not land on this row.
+    if (readingIdRef.current === readingId) {
+      savedIdRef.current = res.data.id;
+      setIsSaved(true);
+    }
     toast(t('readings.toasts.readingSaved'), 'success');
     // awardXP reports 'reading_saved' to the achievements itself.
     awardXP(user.id, 'reading_saved').then(() => refreshProfile());

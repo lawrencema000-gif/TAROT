@@ -1,0 +1,594 @@
+{
+ "/v1/search?name=福岡&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1863963,
+    "name": "福岡",
+    "latitude": 35.87773,
+    "longitude": 139.54678,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "埼玉県",
+    "admin2": "ふじみ野市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 2130326,
+    "name": "福岡",
+    "latitude": 40.27857,
+    "longitude": 141.32318,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "岩手県",
+    "admin2": "二戸市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 8476725,
+    "name": "福岡",
+    "latitude": 40.797,
+    "longitude": 140.49498,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "青森県",
+    "admin2": "五所川原市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11078729,
+    "name": "福岡",
+    "latitude": 35.29145,
+    "longitude": 139.97533,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "千葉県",
+    "admin2": "君津市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 10181499,
+    "name": "福岡",
+    "latitude": 31.49911,
+    "longitude": 130.90314,
+    "feature_code": "PPLL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "鹿児島県",
+    "admin2": "曽於郡",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11175517,
+    "name": "福岡",
+    "latitude": 32.61923,
+    "longitude": 130.75891,
+    "feature_code": "PPLL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "熊本県",
+    "admin2": "宇城市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11225855,
+    "name": "福岡",
+    "latitude": 32.93684,
+    "longitude": 131.1453,
+    "feature_code": "PPLL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "熊本県",
+    "admin2": "阿蘇市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11248419,
+    "name": "福岡",
+    "latitude": 32.4688,
+    "longitude": 130.12367,
+    "feature_code": "PPLL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "熊本県",
+    "admin2": "天草市",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=福岡市&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1863967,
+    "name": "福岡市",
+    "latitude": 33.6,
+    "longitude": 130.41667,
+    "feature_code": "PPLA",
+    "population": 1612392,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "福岡県",
+    "admin2": "Fukuoka-shi",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 13494452,
+    "name": "福岡市役所西側ふれあい広場",
+    "latitude": 33.59,
+    "longitude": 130.40111,
+    "feature_code": "PRK",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "福岡県",
+    "admin2": "Fukuoka-shi",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=福岡都&count=20&language=ja": {
+  "generationtime_ms": 0.15366077
+ },
+ "/v1/search?name=京都&count=20&language=ja": {
+  "generationtime_ms": 0.05555153
+ },
+ "/v1/search?name=京都市&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1857910,
+    "name": "京都市",
+    "latitude": 35.02107,
+    "longitude": 135.75385,
+    "feature_code": "PPLA",
+    "population": 1463723,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "京都府",
+    "admin2": "京都市",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=京都都&count=20&language=ja": {
+  "generationtime_ms": 0.16224384
+ },
+ "/v1/search?name=静岡&count=20&language=ja": {
+  "generationtime_ms": 0.1654625
+ },
+ "/v1/search?name=静岡市&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1851717,
+    "name": "静岡市",
+    "latitude": 34.98333,
+    "longitude": 138.38333,
+    "feature_code": "PPLA",
+    "population": 693389,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "静岡県",
+    "admin2": "静岡市",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=静岡都&count=20&language=ja": {
+  "generationtime_ms": 0.16570091
+ },
+ "/v1/search?name=神戸&count=20&language=ja": {
+  "results": [
+   {
+    "id": 9638912,
+    "name": "神戸",
+    "latitude": 34.71284,
+    "longitude": 136.48032,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "三重県",
+    "admin2": "津市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 10468745,
+    "name": "神戸",
+    "latitude": 35.19228,
+    "longitude": 138.71513,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "静岡県",
+    "admin2": "富士市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 10631906,
+    "name": "神戸",
+    "latitude": 35.39741,
+    "longitude": 139.28767,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "神奈川県",
+    "admin2": "伊勢原市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11034562,
+    "name": "神戸",
+    "latitude": 35.85293,
+    "longitude": 139.72574,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "埼玉県",
+    "admin2": "川口市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 1907252,
+    "name": "神戸",
+    "latitude": 35.34653,
+    "longitude": 139.28802,
+    "feature_code": "PPLL",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "神奈川県",
+    "admin2": "平塚市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 11791001,
+    "name": "神戸",
+    "latitude": 34.87827,
+    "longitude": 136.57639,
+    "feature_code": "PPLX",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "三重県",
+    "admin2": "鈴鹿市",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=神戸市&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1859171,
+    "name": "神戸市",
+    "latitude": 34.6913,
+    "longitude": 135.183,
+    "feature_code": "PPLA",
+    "population": 1525152,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "兵庫県",
+    "admin2": "神戸市",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=神戸都&count=20&language=ja": {
+  "generationtime_ms": 0.09191036
+ },
+ "/v1/search?name=東京&count=20&language=ja": {
+  "generationtime_ms": 0.13124943
+ },
+ "/v1/search?name=東京市&count=20&language=ja": {
+  "generationtime_ms": 0.13971329
+ },
+ "/v1/search?name=東京都&count=20&language=ja": {
+  "results": [
+   {
+    "id": 1850147,
+    "name": "東京都",
+    "latitude": 35.6895,
+    "longitude": 139.69171,
+    "feature_code": "PPLC",
+    "population": 9733276,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "東京都",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=名古屋&count=5&language=ja": {
+  "results": [
+   {
+    "id": 1856057,
+    "name": "名古屋市",
+    "latitude": 35.18147,
+    "longitude": 136.9064,
+    "feature_code": "PPLA",
+    "population": 2332176,
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "愛知県",
+    "admin2": "名古屋市",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 6301826,
+    "name": "名古屋飛行場",
+    "latitude": 35.25722,
+    "longitude": 136.92635,
+    "feature_code": "AIRP",
+    "country_code": "JP",
+    "country": "日本",
+    "admin1": "愛知県",
+    "admin2": "西春日井郡",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ },
+ "/v1/search?name=京都&count=20&language=en": {
+  "generationtime_ms": 0.18811226
+ },
+ "/v1/search?name=福岡&count=20&language=en": {
+  "generationtime_ms": 0.14579296
+ },
+ "/v1/search?name=부산&count=20&language=ko": {
+  "results": [
+   {
+    "id": 6890280,
+    "name": "Pusan",
+    "latitude": 36.3809,
+    "longitude": 128.3681,
+    "feature_code": "PPL",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "경상북도",
+    "admin2": "의성군",
+    "timezone": "Asia/Seoul"
+   },
+   {
+    "id": 6899394,
+    "name": "Pusan",
+    "latitude": 35.13951,
+    "longitude": 128.46481,
+    "feature_code": "PPL",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "경상남도",
+    "admin2": "창원시",
+    "timezone": "Asia/Seoul"
+   },
+   {
+    "id": 11169440,
+    "name": "부산",
+    "latitude": 35.29562,
+    "longitude": 126.73647,
+    "feature_code": "PPL",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "전라남도",
+    "admin2": "장성군",
+    "timezone": "Asia/Seoul"
+   },
+   {
+    "id": 1838525,
+    "name": "부산",
+    "latitude": 37.04463,
+    "longitude": 128.06786,
+    "feature_code": "MT",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "충청북도",
+    "admin2": "충주시",
+    "timezone": "Asia/Seoul"
+   }
+  ]
+ },
+ "/v1/search?name=부산시&count=20&language=ko": {
+  "generationtime_ms": 0.20062923
+ },
+ "/v1/search?name=부산광역시&count=20&language=ko": {
+  "results": [
+   {
+    "id": 1838524,
+    "name": "부산광역시",
+    "latitude": 35.10168,
+    "longitude": 129.03004,
+    "feature_code": "PPLA",
+    "population": 3285147,
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "부산광역시",
+    "timezone": "Asia/Seoul"
+   }
+  ]
+ },
+ "/v1/search?name=부산특별시&count=20&language=ko": {
+  "generationtime_ms": 0.34880638
+ },
+ "/v1/search?name=대구&count=20&language=ko": {
+  "results": [
+   {
+    "id": 6363423,
+    "name": "대구",
+    "latitude": 38.72445,
+    "longitude": 127.64274,
+    "feature_code": "PPL",
+    "country_code": "KP",
+    "country": "조선민주주의인민공화국",
+    "admin1": "강원도",
+    "timezone": "Asia/Pyongyang"
+   },
+   {
+    "id": 6394540,
+    "name": "대구",
+    "latitude": 34.32341,
+    "longitude": 126.69866,
+    "feature_code": "PPL",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "전라남도",
+    "admin2": "완도군",
+    "timezone": "Asia/Seoul"
+   },
+   {
+    "id": 11841377,
+    "name": "대구",
+    "latitude": 35.02869,
+    "longitude": 127.42997,
+    "feature_code": "PPL",
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "전라남도",
+    "admin2": "순천시",
+    "timezone": "Asia/Seoul"
+   }
+  ]
+ },
+ "/v1/search?name=대구시&count=20&language=ko": {
+  "generationtime_ms": 0.09536743
+ },
+ "/v1/search?name=대구광역시&count=20&language=ko": {
+  "results": [
+   {
+    "id": 1835329,
+    "name": "대구광역시",
+    "latitude": 35.87028,
+    "longitude": 128.59111,
+    "feature_code": "PPLA",
+    "population": 2365523,
+    "country_code": "KR",
+    "country": "대한민국",
+    "admin1": "대구광역시",
+    "timezone": "Asia/Seoul"
+   }
+  ]
+ },
+ "/v1/search?name=대구특별시&count=20&language=ko": {
+  "generationtime_ms": 0.28443336
+ },
+ "/v1/search?name=대구&count=20&language=en": {
+  "generationtime_ms": 0.16713142
+ },
+ "/v1/search?name=青岛&count=20&language=zh": {
+  "results": [
+   {
+    "id": 11827472,
+    "name": "青岛",
+    "latitude": 39.32908,
+    "longitude": 121.73279,
+    "feature_code": "PPL",
+    "country_code": "CN",
+    "country": "中国",
+    "admin1": "辽宁",
+    "admin2": "大连市",
+    "timezone": "Asia/Shanghai"
+   },
+   {
+    "id": 1797930,
+    "name": "青岛",
+    "latitude": 36.48861,
+    "longitude": 120.98836,
+    "feature_code": "ISL",
+    "country_code": "CN",
+    "country": "中国",
+    "admin1": "山东",
+    "timezone": "Asia/Shanghai"
+   },
+   {
+    "id": 8427987,
+    "name": "青岛",
+    "latitude": 37.52453,
+    "longitude": 122.16283,
+    "feature_code": "ISL",
+    "country_code": "CN",
+    "country": "中国",
+    "admin1": "山东",
+    "timezone": "Asia/Shanghai"
+   }
+  ]
+ },
+ "/v1/search?name=青岛市&count=20&language=zh": {
+  "results": [
+   {
+    "id": 1797929,
+    "name": "青岛市",
+    "latitude": 36.06488,
+    "longitude": 120.38042,
+    "feature_code": "PPLA2",
+    "population": 7172451,
+    "country_code": "CN",
+    "country": "中国",
+    "admin1": "山东",
+    "admin2": "青岛市",
+    "timezone": "Asia/Shanghai"
+   }
+  ]
+ },
+ "/v1/search?name=青岛&count=20&language=en": {
+  "generationtime_ms": 0.08273125
+ },
+ "/v1/search?name=Fukuoka&count=5&language=en": {
+  "results": [
+   {
+    "id": 1863967,
+    "name": "Fukuoka",
+    "latitude": 33.6,
+    "longitude": 130.41667,
+    "feature_code": "PPLA",
+    "population": 1612392,
+    "country_code": "JP",
+    "country": "Japan",
+    "admin1": "Fukuoka",
+    "admin2": "Fukuoka City",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 1863963,
+    "name": "Fukuoka",
+    "latitude": 35.87773,
+    "longitude": 139.54678,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "Japan",
+    "admin1": "Saitama",
+    "admin2": "Fujimino-shi",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 1863964,
+    "name": "Fukuoka",
+    "latitude": 35.56667,
+    "longitude": 137.45,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "Japan",
+    "admin1": "Gifu",
+    "admin2": "Nakatsugawa Shi",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 1863965,
+    "name": "Fukuoka",
+    "latitude": 35.41667,
+    "longitude": 134.6,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "Japan",
+    "admin1": "Hyōgo",
+    "admin2": "Mikata-gun",
+    "timezone": "Asia/Tokyo"
+   },
+   {
+    "id": 1863966,
+    "name": "Fukuoka",
+    "latitude": 34.9,
+    "longitude": 137.15,
+    "feature_code": "PPL",
+    "country_code": "JP",
+    "country": "Japan",
+    "admin1": "Aichi",
+    "admin2": "Okazaki-shi",
+    "timezone": "Asia/Tokyo"
+   }
+  ]
+ }
+}

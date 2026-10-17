@@ -4843,7 +4843,8 @@
       "saveFailed": "Couldn’t save your profile — check your connection and try again.",
       "birthDateRequired": "Add your birth date — every chart is cast from it.",
       "nameRequired": "Add a name so we know what to call you.",
-      "pickCity": "Pick your birth city from the list so your charts use the right place."
+      "pickCity": "Pick your birth city from the list so your charts use the right place.",
+      "chartPending": "Profile updated. Your chart couldn’t be updated yet — it will be the next time you open Horoscope."
     },
     "untitled": "Your profile",
     "elements": {
@@ -6219,6 +6220,9 @@
     },
     "periodWeekly": "Weekly",
     "periodMonthly": "Monthly",
+    "savedHoroscopeLabel": "{{sign}} · {{period}}",
+    "cardReversed": "{{name}} (Reversed)",
+    "cardReversedShort": "{{name}} (R)",
     "aiReading": "AI reading",
     "openReading": "Open {{name}} from {{date}}",
     "deleteReading": "Delete {{name}}",
@@ -10012,6 +10016,7 @@
     "themeLabel": "Theme",
     "carePracticeLabel": "One practice",
     "rewriteLetter": "Write me another letter",
+    "nextLetterHint": "Your next letter will read the moods you log from here.",
     "patternLabel": "This week",
     "heaviestDayLabel": "Heaviest day",
     "lightestDayLabel": "Lightest day",
@@ -10406,6 +10411,7 @@
     "placeholder": "Ask the companion…",
     "thinking": "thinking…",
     "sendFailed": "Couldn’t reach your companion — check your connection and send again.",
+    "sendRejected": "This message couldn’t be sent. Start a new conversation and send it again.",
     "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
     "dailyRemaining": "{{remaining}} messages left today",
     "personas": {
@@ -11149,6 +11155,7 @@
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
     "aiFailed": "Couldn’t reach the oracle — check your connection and ask again.",
+    "sendRejected": "This question couldn’t be sent. Draw a new card to start a new conversation.",
     "thinking": "The oracle is thinking…",
     "cardReversed": "{{name}} (reversed)",
     "readCta": "Read this card",

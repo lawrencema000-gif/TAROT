@@ -5,7 +5,8 @@ import { Button, Input, ChipGroup, toast, ListRow, ListRowGroup } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useT } from '../../i18n/useT';
-import type { Goal } from '../../types';
+import { syncChartWithProfile } from '../horoscope/birthZone';
+import type { Goal, UserProfile } from '../../types';
 
 /**
  * The one edit-profile form.
@@ -149,8 +150,20 @@ export function EditProfileForm({ onCancel, onSaved }: EditProfileFormProps) {
         toast(t('app:profile.toasts.saveFailed', { defaultValue: 'Couldn’t save your profile — check your connection and try again.' }), 'error');
         return;
       }
+      // Every chart screen and the natal report read the stored chart, cast
+      // from these fields. A corrected birth date, time or place used to
+      // leave it as it was (p9 R30), and so did a zone saved over a chart
+      // cast in another (R29): it is checked against what was just saved
+      // and recast when it differs.
+      const chart = await syncChartWithProfile({ ...profile, ...updates } as Partial<UserProfile>);
       await refreshProfile();
-      toast(t('app:profile.profileUpdated'), 'success');
+      if (chart === 'failed') {
+        toast(t('app:profile.toasts.chartPending', {
+          defaultValue: 'Profile updated. Your chart couldn’t be updated yet — it will be the next time you open Horoscope.',
+        }), 'info');
+      } else {
+        toast(t('app:profile.profileUpdated'), 'success');
+      }
       onSaved?.();
     } finally {
       setSaving(false);

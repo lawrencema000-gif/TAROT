@@ -600,19 +600,26 @@ export function NatalChartReportPage() {
               maxLength={80}
               className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-cosmic-rose/40"
             />
-            <div className="flex gap-2">
+            {/* A native date or time input keeps its own width as a flex item
+                (Chromium: 166 and 134px); side by side they need 308px, and
+                the box is 300px at 390 and 270px at 360, so the time field
+                stuck out and the page scrolled sideways (p9 R33). Each now
+                starts at its own width and the row wraps when the two do not
+                fit — the time takes the next line, both full width — and
+                min-w-0 lets neither hold the box wider than the screen. */}
+            <div className="flex flex-wrap gap-2">
               <input
                 type="date"
                 value={partnerBirthDate}
                 onChange={(e) => setPartnerBirthDate(e.target.value)}
-                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
+                className="min-w-0 flex-[2_1_auto] bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
               <input
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
                 placeholder={t('natalReport.optional', { defaultValue: 'optional' })}
-                className="bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
+                className="min-w-0 flex-[1_1_auto] bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
             </div>
             <Button
@@ -657,7 +664,8 @@ export function NatalChartReportPage() {
             </p>
             {partnerAspects.slice(0, 8).map((a, i) => (
               <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
-                <span className="min-w-0 break-words">
+                {/* A label, broken between phrases: 「…火星がトラ／イン」 broke inside the word in ja (p9 R33). */}
+                <span className="min-w-0 break-words keep-phrases">
                   {/* Names whose planet is whose (F31): the row was coloured
                       spans once, then one string that said only "Venus trine Mars". */}
                   {t('natalReport.crossAspectRow', {

@@ -11,11 +11,12 @@ import { Section } from '../ui/Section';
 import { SpreadGlyph } from '../icons/SpreadGlyph';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDal, tarotReadings as tarotReadingsDal } from '../../dal';
-import { localizeCardName, localizeCardNameSync } from '../../i18n/localizeCard';
+import { localizeCard } from '../../i18n/localizeCard';
 import { localizeSignName } from '../../i18n/localizeNames';
 import { getPlayingCard } from '../../data/cartomancy';
 import { localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import { calendarDay } from '../readings/tarot/readingDates';
+import { canonicalCardName, cardIdFromName } from '../readings/tarot/cardSlug';
 import {
   SavedReadingSheet,
   isPlayingReading,
@@ -25,11 +26,85 @@ import {
 } from '../readings/tarot/SavedReadingSheet';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
+import type { TarotCard } from '../../types';
 import type { ZodiacSign } from '../../types/astrology';
 
 interface SavedSheetProps {
   open: boolean;
   onClose: () => void;
+}
+
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+/*
+ * How a saved item is named, shared with the Library's Saved and AI Readings
+ * tabs (LibrarySection), so the two lists cannot drift apart again: this
+ * sheet was copied from the Library and kept its English "(R)" and " - ".
+ */
+
+/** Every shape a saved card has been written in: a reading's row, an AI reading's, a saved card's. */
+export interface SavedCardRef {
+  cardId?: number;
+  id?: number;
+  cardName?: string;
+  name?: string;
+}
+
+/**
+ * A saved card's name in the reader's language, by its id. The id is the
+ * card; the stored name may not be in the reader's language: the
+ * pre-Phase-7 client and the Android v1.2.0 app saved the name on screen
+ * (女帝, ワンドの9), and an English-name lookup handed that back as it was —
+ * an English Library listed 女帝 while the sheet the row opened, resolved by
+ * id, said The Empress (p9 R14). The stored name is read only for a row
+ * without an id (an English one still finds it).
+ */
+export function savedCardName(card: SavedCardRef, playing: boolean): string {
+  const id = typeof card.cardId === 'number' ? card.cardId : typeof card.id === 'number' ? card.id : undefined;
+  const stored = card.cardName ?? card.name ?? '';
+  if (playing) {
+    const pc = id !== undefined ? getPlayingCard(id) : undefined;
+    return pc ? localizePlayingCard(pc).name : stored;
+  }
+  const tarotId = id !== undefined && id >= 0 && id <= 77 ? id : cardIdFromName(stored);
+  if (tarotId === undefined) return stored;
+  // The corpus is read by id, so the lazily loaded deck is not needed.
+  return localizeCard({ id: tarotId, name: canonicalCardName(tarotId) } as TarotCard).name;
+}
+
+/**
+ * A saved reading's card line, as its row shows it: the first three names,
+ * a reversal marked and the names joined as the reader's language writes
+ * them, then "+N". It was `${name} (R)` joined with ", " in every
+ * language, beside the 逆位置 of a saved card on the same sheet (p9 R16).
+ */
+export function savedCardLine(t: TFn, cards: Array<{ name: string; reversed?: boolean }>): string {
+  const shown = cards
+    .slice(0, 3)
+    .map((c) => (c.reversed ? t('library.cardReversedShort', { name: c.name, defaultValue: '{{name}} (R)' }) : c.name))
+    .join(t('journal.cardSeparator', { defaultValue: ', ' }));
+  return cards.length > 3 ? `${shown} +${cards.length - 3}` : shown;
+}
+
+/** A saved card's label: its name, and the reversal in the reader's words. */
+export function savedCardLabel(t: TFn, name: string, reversed: boolean | undefined): string {
+  return reversed ? t('library.cardReversed', { name, defaultValue: '{{name}} (Reversed)' }) : name;
+}
+
+/** A saved horoscope's label: its sign and period, joined as the reader's language joins them (not " - "). */
+export function savedHoroscopeLabel(t: TFn, content: { zodiacSign?: string; period?: string } | null): string {
+  const raw = content?.zodiacSign ?? '';
+  // Stored as 'gemini' or 'Gemini'.
+  const sign = raw ? localizeSignName((raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()) as ZodiacSign) : '';
+  const p = (content?.period ?? '').toLowerCase();
+  const period = !p || p === 'today' || p === 'daily'
+    ? t('library.periodDaily', { defaultValue: 'Daily' })
+    : p === 'weekly' || p === 'week'
+      ? t('library.periodWeekly', { defaultValue: 'Weekly' })
+      : p === 'monthly' || p === 'month'
+        ? t('library.periodMonthly', { defaultValue: 'Monthly' })
+        : content?.period ?? '';
+  return sign ? t('library.savedHoroscopeLabel', { sign, period, defaultValue: '{{sign}} · {{period}}' }) : period;
 }
 
 /** As many of each kind as the Library's first page. */
@@ -69,12 +144,11 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
   const load = useCallback(async () => {
     if (!user) return;
     setStatus('loading');
+    // The card names need no deck: savedCardName reads them by id from the
+    // locale's corpus, which is in memory with the language.
     const [readingsRes, highlightsRes] = await Promise.all([
       tarotReadingsDal.listSaved(user.id, { limit: LIMIT }),
       savedHighlightsDal.listRawForUser(user.id, { limit: LIMIT }),
-      // The deck index the card names are read through (a lazy chunk):
-      // in memory before the rows render, or they would stay English.
-      localizeCardName('The Fool').catch(() => ''),
     ]);
     if (!readingsRes.ok && !highlightsRes.ok) {
       setStatus('error');
@@ -91,6 +165,14 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
     void load();
   }, [open, load]);
 
+  // The reading opens in a Sheet of its own beside the list, and closes with
+  // it. Android Back closes the shell's overlay (`open` → false): the list
+  // went and the reading stayed up over the screen underneath, and the next
+  // Back, finding no overlay, exited the app with it still drawn (p9 R25).
+  useEffect(() => {
+    if (!open) setSelected(null);
+  }, [open]);
+
   const cartoReady = useCartomancyCorpus(readings.some((r) => isPlayingReading(r)));
 
   /** The day as the reader's calendar names it (calendarDay: a date-only value is that day, not UTC midnight). */
@@ -101,39 +183,18 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
 
   const cardNames = (r: SavedReading): string => {
     const playing = isPlayingReading(r);
-    const names = (r.cards ?? []).map((c) => {
-      if (playing) {
-        const pc = c.cardId !== undefined ? getPlayingCard(c.cardId) : undefined;
-        return pc ? localizePlayingCard(pc).name : c.cardName;
-      }
-      return localizeCardNameSync(c.cardName);
-    });
-    const shown = names.slice(0, 3).map((n, i) => `${n}${r.cards[i]?.reversed ? ' (R)' : ''}`).join(', ');
-    return names.length > 3 ? `${shown} +${names.length - 3}` : shown;
+    return savedCardLine(t, (r.cards ?? []).map((c) => ({ name: savedCardName(c, playing), reversed: c.reversed })));
   };
 
   const cards = highlights.filter((h) => h.highlight_type === 'tarot');
   const horoscopes = highlights.filter((h) => h.highlight_type === 'horoscope');
 
   const cardLabel = (h: SavedHighlight) => {
-    const content = h.content as { card?: { name?: string }; reversed?: boolean };
-    const name = content.card?.name ? localizeCardNameSync(content.card.name) : '';
-    return content.reversed ? `${name} (${t('readings.revealView.reversed')})` : name;
+    const content = h.content as { card?: SavedCardRef; reversed?: boolean } | null;
+    return savedCardLabel(t, content?.card ? savedCardName(content.card, false) : '', content?.reversed);
   };
 
-  const horoscopeLabel = (h: SavedHighlight) => {
-    const content = h.content as { zodiacSign?: string; period?: string };
-    const raw = content.zodiacSign ?? '';
-    // Stored as 'gemini' or 'Gemini'.
-    const sign = raw ? localizeSignName((raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()) as ZodiacSign) : '';
-    const p = (content.period ?? '').toLowerCase();
-    const period = p === 'weekly' || p === 'week'
-      ? t('library.periodWeekly', { defaultValue: 'Weekly' })
-      : p === 'monthly' || p === 'month'
-        ? t('library.periodMonthly', { defaultValue: 'Monthly' })
-        : t('library.periodDaily', { defaultValue: 'Daily' });
-    return sign ? `${sign} - ${period}` : period;
-  };
+  const horoscopeLabel = (h: SavedHighlight) => savedHoroscopeLabel(t, h.content as { zodiacSign?: string; period?: string } | null);
 
   const empty = status === 'ready' && readings.length === 0 && cards.length === 0 && horoscopes.length === 0;
   // On /readings the Library is a tab of the page underneath.

@@ -7,6 +7,13 @@ import {
   historyKey,
   conversationCovered,
   chargedAtAfterReply,
+  mayBePaid,
+  markPending,
+  withoutPending,
+  afterReply,
+  historyToSend,
+  MAX_SENT_MESSAGES,
+  MAX_STORED_MESSAGES,
   CONVERSATION_COVER_MS,
   legacyCompanionOffer,
   declineLegacyCompanion,
@@ -81,11 +88,87 @@ describe('p8 F40 — a conversation is covered for 24 hours from its charge, the
   });
 
   it('a reply that reports a charge starts the 24 hours; a free one keeps the charge it rode on', () => {
-    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, true, true, now)).toBe(now);
-    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, false, true, now)).toBe(5);
+    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, { charged: true }, true, now)).toBe(now);
+    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, { charged: false, conversationPaid: true }, true, now)).toBe(5);
     // An older server that says nothing: a message the conversation was not covered for was charged.
-    expect(chargedAtAfterReply({ messages: msg }, undefined, false, now)).toBe(now);
-    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, undefined, true, now)).toBe(5);
+    expect(chargedAtAfterReply({ messages: msg }, {}, false, now)).toBe(now);
+    expect(chargedAtAfterReply({ messages: msg, chargedAt: 5 }, {}, true, now)).toBe(5);
+    // Nothing charged and nothing paid (the spend could not be reached): still not covered.
+    expect(chargedAtAfterReply({ messages: msg }, { charged: false, conversationPaid: false }, false, now)).toBeUndefined();
+  });
+});
+
+describe('p9 R09 — a reply lost after the charge: the free retry is covered, and is not held at the gate', () => {
+  const msg = [{ role: 'user' as const, content: 'x', timestamp: 0 }];
+  const now = Date.UTC(2026, 9, 17, 12);
+  const MIN = 60_000;
+
+  it('the retry that reports the conversation already paid dates the 24 hours from the lost send', () => {
+    const sent = now - 2 * MIN;
+    const at = chargedAtAfterReply({ messages: [], pendingSince: sent }, { charged: false, conversationPaid: true }, false, now);
+    expect(at).toBe(sent);
+    // …and the conversation it produces is covered: no price, no gate on the next message.
+    const next = afterReply({ conversationId: A, messages: [], pendingSince: sent }, msg, { charged: false, conversationPaid: true }, false, now);
+    expect(next.chargedAt).toBe(sent);
+    expect(next.pendingSince).toBeUndefined();
+    expect(conversationCovered({ ...next, messages: msg }, now)).toBe(true);
+  });
+
+  it('an earlier charge still inside the server’s 24 hours is the one that counts (never moved later)', () => {
+    // Seen 23 h 57 min ago: the page reads it as lapsed (5-minute margin) while the server's session lives on.
+    const old = now - CONVERSATION_COVER_MS + 3 * MIN;
+    const at = chargedAtAfterReply({ messages: msg, chargedAt: old, pendingSince: now - MIN }, { charged: false, conversationPaid: true }, false, now);
+    expect(at).toBe(old);
+    expect(conversationCovered({ messages: msg, chargedAt: at }, now)).toBe(false);
+  });
+
+  it('not knowing when it was paid, nothing is assumed (priced as before)', () => {
+    expect(chargedAtAfterReply({ messages: msg }, { charged: false, conversationPaid: true }, false, now)).toBeUndefined();
+    // A mark older than the 24 hours cannot be the live charge.
+    expect(chargedAtAfterReply({ messages: msg, pendingSince: now - 25 * HOUR }, { charged: false, conversationPaid: true }, false, now)).toBeUndefined();
+  });
+
+  it('a send is marked once (the first since the last reply), the mark can pay for 24 hours, and a balance refusal clears it', () => {
+    const c = { conversationId: A, messages: msg };
+    const marked = markPending(c, now);
+    expect(marked.pendingSince).toBe(now);
+    expect(markPending(marked, now + 5 * MIN).pendingSince).toBe(now);
+    expect(mayBePaid(marked, now + HOUR)).toBe(true);
+    expect(mayBePaid(marked, now + 24 * HOUR)).toBe(false);
+    expect(markPending(marked, now + 25 * HOUR).pendingSince).toBe(now + 25 * HOUR);
+    expect(mayBePaid(c, now)).toBe(false);
+    expect(withoutPending({ ...marked, chargedAt: 7 })).toEqual({ conversationId: A, messages: msg, chargedAt: 7 });
+  });
+
+  it('the mark survives a reload, and a Tarot session whose opener may be paid is kept (it used to be dropped)', () => {
+    const t0 = Date.now();
+    saveConversation(A, 'sage', { conversationId: B, messages: msg, pendingSince: t0 - MIN });
+    expect(loadConversation(A, 'sage').pendingSince).toBe(t0 - MIN);
+    saveTarotSession(A, { cardId: 17, reversed: false, conversation: { conversationId: B, messages: [], pendingSince: t0 - MIN } });
+    const s = loadTarotSession(A, t0);
+    expect(s?.cardId).toBe(17);
+    expect(s?.conversation.pendingSince).toBe(t0 - MIN);
+    expect(loadTarotSession(A, t0 + 25 * HOUR)).toBeNull();
+  });
+});
+
+describe('p9 R23 — every request carries a bounded window of the thread', () => {
+  const thread = (n: number) => Array.from({ length: n }, (_, i) => ({ role: (i % 2 ? 'assistant' : 'user') as 'user' | 'assistant', content: `m${i}`, timestamp: i }));
+
+  it('a thread at the stored cap plus ten exchanges and a new message (101) is sent as its last 40, newest last', () => {
+    const sent = historyToSend(thread(101));
+    expect(sent).toHaveLength(MAX_SENT_MESSAGES);
+    expect(MAX_SENT_MESSAGES).toBeLessThanOrEqual(100);
+    expect(sent[sent.length - 1]).toEqual({ role: 'user', content: 'm100' });
+    expect(historyToSend(thread(3))).toHaveLength(3);
+  });
+
+  it('each message stays within the function’s 4,000 characters, and the thread in memory is held to the stored cap', () => {
+    const long = [{ role: 'assistant' as const, content: 'x'.repeat(5000), timestamp: 1 }, { role: 'user' as const, content: 'q', timestamp: 2 }];
+    expect(historyToSend(long)[0].content).toHaveLength(4000);
+    const next = afterReply({ conversationId: A, messages: [], chargedAt: 1 }, thread(MAX_STORED_MESSAGES + 3), { charged: false, conversationPaid: true }, true);
+    expect(next.messages).toHaveLength(MAX_STORED_MESSAGES);
+    expect(next.messages[0].content).toBe('m3');
   });
 });
 

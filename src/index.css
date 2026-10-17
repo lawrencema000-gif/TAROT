@@ -759,7 +759,22 @@
      breaking. :where() holds all of it at zero specificity: a component's
      own utility (truncate, whitespace-nowrap, break-words) still wins.
      `.keep-phrases` opts in any other short label (a span under a card, a
-     tile caption). */
+     tile caption).
+
+     The three properties inherit, so the body copy inside a control — a
+     paragraph, or a line clamped to a count — is set back to the default
+     first (p9 R26): phrase breaking reached the description of every
+     clickable card and the meta line of every ListRow, and needed a third
+     line where line-clamp-2 shows two (「7日連続記録を保ち、/スピリチュアル
+     な鍛錬を…」 at 360px). Text inside a heading or an opted-in label keeps
+     its phrases, and an element that is itself a label (an eyebrow
+     paragraph, a clamped .keep-phrases span) matches the rules below too,
+     which come later at the same zero specificity and win. */
+  :where(html:lang(ja), html:lang(zh), html:lang(ko)) :where(button, [role="button"], [role="tab"], label, summary) :where(p, [class*="line-clamp-"]):not(:where(h1, h2, h3, h4, h5, h6, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) *) {
+    word-break: normal;
+    line-break: auto;
+    overflow-wrap: normal;
+  }
   :where(html:lang(ja)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
     word-break: auto-phrase;
     line-break: strict;

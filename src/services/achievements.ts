@@ -196,20 +196,27 @@ export async function markAchievementNotified(
  * Tell the server something happened. The call is only a trigger
  * (migration 20261003000018): the server re-derives every badge from its own
  * records — the XP ledger award_xp writes, the ritual rows, quiz_results, the
- * profile — so repeating a call changes nothing, `increment` is ignored, and
- * an unlock happens (and pays its XP) once.
+ * profile (its xp, level and streak are server-written) — so repeating a call
+ * changes nothing, `increment` is ignored, and an unlock happens (and pays
+ * its XP) once. A Premium badge (is_premium_only) unlocks only while the
+ * member is Premium; its progress counts either way.
  *
  * Facts only the device sees are kept as claims and need `value`:
  *  - reading facts — the spread id (spread_types_used), the card's canonical
  *    English name (specific_card_drawn), the playing-card spread slug, and the
  *    bare celtic_cross / cartomancy / new-year / witching-hour reports — count
  *    once matched to the reading's own reading_complete XP row, so report
- *    them for the reading awardXP(user, 'reading_complete') was called for;
+ *    them for the reading awardXP(user, 'reading_complete') was called for,
+ *    once per deal: one XP row is one reading of one deck (tarot or playing
+ *    cards), each fact counts once per reading, and two readings seconds
+ *    apart each count (no time-window dedupe);
  *  - morning_ritual / evening_ritual count once matched to the ritual's
  *    ritual_complete XP row;
  *  - views (cards_explored with the card id, zodiac_signs_viewed with the
  *    sign id, cartomancy_lesson_complete with the lesson slug) count once per
- *    distinct value, at a bounded number per UTC day.
+ *    distinct value, at a bounded number per UTC day. (A cards_explored with
+ *    no value is the released v1.2.0 build's report: one unnamed card, under
+ *    the same daily bound. Send the id.)
  * Only badges unlocked by this call come back.
  */
 export async function checkAchievementProgress(
@@ -297,7 +304,8 @@ export async function checkSpecificCardAchievement(userId: string, cardName: str
  * Value reporters for the badges that count WHICH thing, not how many times.
  * Each sends the stable value the server compares against the seed
  * (20260127070447); a bare checkAchievementProgress call with no value cannot
- * advance these badges (20261003000018 ignores it).
+ * advance a set or a card badge (20261003000018 ignores it), and a bare card
+ * view counts only as one unnamed card (the v1.2.0 build's report).
  *
  * Counter activities (reading_complete, reading_saved, horoscope_viewed,
  * quiz_complete, journal_entry, ritual_complete, community_*) are counted

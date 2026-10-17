@@ -106,8 +106,11 @@ export function YearAheadReportPage() {
   const loadData = useCallback(async () => {
     setLoadingData(true);
     setError(null);
+    // The year this page unlocked (the unlock's reference): the function
+    // checks that year's row, so a reader who bought it in an earlier year
+    // as well is served, not refused (p9 R06).
     const { data: resp, error: err } = await supabase.functions.invoke('astrology-year-ahead', {
-      body: {},
+      body: { year: currentYear },
     });
     setLoadingData(false);
     if (err) {
@@ -127,7 +130,7 @@ export function YearAheadReportPage() {
       return;
     }
     setData(payload);
-  }, []);
+  }, [currentYear]);
 
   useEffect(() => {
     if (unlocked && !data && !loadingData) loadData();

@@ -4639,7 +4639,8 @@
       "saveFailed": "无法保存你的资料，请检查网络连接后重试。",
       "birthDateRequired": "请添加你的出生日期——每一张星盘都由它排出。",
       "nameRequired": "请添加一个名字，让我们知道该怎么称呼你。",
-      "pickCity": "请从列表中选择你的出生城市，这样你的星盘才会使用正确的地点。"
+      "pickCity": "请从列表中选择你的出生城市，这样你的星盘才会使用正确的地点。",
+      "chartPending": "资料已更新。你的星盘暂时未能更新，下次打开星座运势时会自动更新。"
     },
     "untitled": "你的资料",
     "elements": {
@@ -5844,19 +5845,19 @@
         "description": "表达与接收爱的五种方式",
         "sections": [
           {
-            "title": "肯定的话语",
+            "title": "肯定的言语",
             "content": "口头的称赞、鼓励、感谢，最让人感到被爱。"
           },
           {
-            "title": "行动的付出",
+            "title": "服务的行动",
             "content": "行动胜过言语——帮上一个忙，就把心意说出来了。"
           },
           {
-            "title": "礼物",
+            "title": "接受礼物",
             "content": "不在大小，在那份心意——用心挑过的礼物，是\"我有想到你\"的信号。"
           },
           {
-            "title": "高质量时光",
+            "title": "优质时光",
             "content": "专心相处、一起经历有意义的事，会让人真切感到被珍惜。"
           },
           {
@@ -6031,6 +6032,9 @@
     },
     "periodWeekly": "每周",
     "periodMonthly": "每月",
+    "savedHoroscopeLabel": "{{sign}} · {{period}}",
+    "cardReversed": "{{name}}（逆位）",
+    "cardReversedShort": "{{name}}（逆位）",
     "aiReading": "AI 解读",
     "openReading": "打开 {{date}} 的{{name}}",
     "deleteReading": "删除{{name}}",
@@ -10018,6 +10022,7 @@
     "themeLabel": "主题",
     "carePracticeLabel": "一个练习",
     "rewriteLetter": "再写一封给我",
+    "nextLetterHint": "下一封信会读你接下来记录的心境。",
     "patternLabel": "本周",
     "heaviestDayLabel": "最沉重的一天",
     "lightestDayLabel": "最轻松的一天",
@@ -10386,6 +10391,7 @@
     "placeholder": "向灵伴发问…",
     "thinking": "思考中……",
     "sendFailed": "无法连接灵伴，请检查网络连接后重新发送。",
+    "sendRejected": "这条消息无法发送，请开始新对话后重新发送。",
     "dailyLimitReached": "今日消息已达上限——明天再来",
     "dailyRemaining": "今日剩余 {{remaining}} 条",
     "personas": {
@@ -11129,6 +11135,7 @@
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
     "aiFailed": "无法连接神谕，请检查网络连接后再问一次。",
+    "sendRejected": "这个问题无法发送，请抽一张新牌，开始新的对话。",
     "thinking": "神谕正在思考…",
     "cardReversed": "{{name}}（逆位）",
     "readCta": "解读这张牌",

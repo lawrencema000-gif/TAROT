@@ -183,7 +183,8 @@ export function QuickReadingPage() {
   /** The server is still reading an earlier send of this same request; this screen waits for it. */
   const [stillReading, setStillReading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
-  const [error, setError] = useState<QuickFailure | null>(null);
+  /** Why the last press brought no reading, and the request (its exact body) it was about. */
+  const [lastFailure, setLastFailure] = useState<{ kind: QuickFailure; body: string } | null>(null);
   const [context, setContext] = useState<OracleContext>('general');
   const { tryConsume, EarnSheet } = useMoonstoneSpend('quick-reading');
   /**
@@ -259,8 +260,8 @@ export function QuickReadingPage() {
     });
   }, [context, t]);
 
-  /** One press: the balance gate (for a new request), the request, and what came back. */
-  const read = useCallback(async () => {
+  /** The request the form makes as it stands — the question, its lens and deck, and the reader's signals. */
+  const bodyNow = useCallback(() => {
     const sunSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
     const userContext = {
       zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
@@ -278,8 +279,23 @@ export function QuickReadingPage() {
           lens: lensLabel(context),
           question: question.trim(),
         }).slice(0, 500);
-    const body = { question: sent, userContext, deck };
+    return { question: sent, userContext, deck };
+  }, [question, profile, context, deck, t, lensLabel]);
+  /**
+   * The failure panel and the "Try again" label speak for the request they
+   * are about (p9 R10). Once the question, lens or deck is changed, pressing
+   * the button is a new reading — new id, the gate, a new 50 — so the
+   * promise that "Try again returns the same reading at no extra cost" goes
+   * and the button reads "Draw and read" above the price. Changed back, the
+   * unanswered request (and its free retry) is the one on screen again.
+   */
+  const error = lastFailure && lastFailure.body === JSON.stringify(bodyNow()) ? lastFailure.kind : null;
+
+  /** One press: the balance gate (for a new request), the request, and what came back. */
+  const read = useCallback(async () => {
+    const body = bodyNow();
     const signature = JSON.stringify(body);
+    const setError = (kind: QuickFailure | null) => setLastFailure(kind ? { kind, body: signature } : null);
     if (attempt.current?.body !== signature) {
       const ok = await tryConsume();
       if (!ok) return;
@@ -336,7 +352,7 @@ export function QuickReadingPage() {
     }
     attempt.current = null;
     setResult(payload);
-  }, [question, profile, tryConsume, context, deck, t, lensLabel]);
+  }, [bodyNow, tryConsume]);
 
   const submit = useCallback(async () => {
     // Re-entrancy is decided synchronously, before the gate is awaited (F08).
@@ -354,7 +370,7 @@ export function QuickReadingPage() {
   const reset = () => {
     attempt.current = null;
     setResult(null);
-    setError(null);
+    setLastFailure(null);
     setQuestion('');
   };
 

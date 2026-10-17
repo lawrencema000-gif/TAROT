@@ -27,6 +27,7 @@
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
+import { findYearAheadUnlock, type UnlockDb } from "./unlock.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -55,7 +56,13 @@ const ASPECTS: { type: AspectType; angle: number; maxOrb: number }[] = [
   { type: "sextile",     angle: 60,  maxOrb: 1.5 },
 ];
 
-const RequestSchema = z.object({});
+const RequestSchema = z.object({
+  /**
+   * The calendar year the page unlocked (the reader's local year, the
+   * unlock's `reference`). Optional: a page from before p9 R06 sends `{}`.
+   */
+  year: z.number().int().optional(),
+});
 type Request = z.infer<typeof RequestSchema>;
 
 interface YearAheadEvent {
@@ -197,23 +204,32 @@ Deno.serve(handler<Request, YearAheadResponse>({
   methods: ["POST"],
   rateLimit: { max: 6, windowMs: 60_000 },
   requestSchema: RequestSchema,
-  run: async (ctx) => {
+  run: async (ctx, body) => {
+    const now = new Date();
     // Unlock check — the client gates this too, but server-side we defend
-    // against a curl-wielding user.
-    const { data: unlock } = await ctx.supabase
-      .from("report_unlocks")
-      .select("id")
-      .eq("user_id", ctx.userId!)
-      .eq("report_key", "year-ahead")
-      .maybeSingle();
-    // Premium includes every report; a subscriber needs no unlock row.
-    const { data: prof } = await ctx.supabase
-      .from("profiles")
-      .select("is_premium")
-      .eq("id", ctx.userId!)
-      .maybeSingle();
-    if (!unlock && !prof?.is_premium) {
-      throw new AppError("REPORT_NOT_UNLOCKED", "Unlock the Year Ahead report first", 402);
+    // against a curl-wielding user. The unlock is per calendar year, so a
+    // reader can hold several rows: the check is for the year the page
+    // unlocked, and never errors on a second one (p9 R06, see ./unlock.ts).
+    const [unlock, { data: prof, error: profErr }] = await Promise.all([
+      findYearAheadUnlock(ctx.supabase as unknown as UnlockDb, ctx.userId!, { year: body.year, now }),
+      // Premium includes every report; a subscriber needs no unlock row.
+      ctx.supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", ctx.userId!)
+        .maybeSingle(),
+    ]);
+    if (profErr) ctx.log.warn("year_ahead.profile_lookup_failed", { err: profErr.message });
+    if (!prof?.is_premium) {
+      if (!unlock.ok) {
+        // Not "not unlocked": a reader who paid must not be told to pay.
+        ctx.log.error("year_ahead.unlock_lookup_failed", { err: unlock.error });
+        throw new AppError("UNLOCK_CHECK_FAILED", "Could not check the Year Ahead unlock", 503);
+      }
+      if (!unlock.unlocked) {
+        ctx.log.info("year_ahead.not_unlocked", { year: body.year ?? null, outOfWindow: unlock.outOfWindow });
+        throw new AppError("REPORT_NOT_UNLOCKED", "Unlock the Year Ahead report first", 402);
+      }
     }
 
     const { data: chartRow } = await ctx.supabase
@@ -244,7 +260,6 @@ Deno.serve(handler<Request, YearAheadResponse>({
     type EventKey = string;
     const activeEvents = new Map<EventKey, YearAheadEvent>();
     const finalized: YearAheadEvent[] = [];
-    const now = new Date();
 
     for (let d = 0; d <= 365; d++) {
       const date = new Date(now);

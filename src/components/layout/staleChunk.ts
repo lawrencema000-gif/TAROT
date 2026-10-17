@@ -16,8 +16,10 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
  * F44). So a reload happens only when it can land: the browser says it is
  * online AND the server answers a probe for the failed file (or, when the
  * message names no file, for /version.json). An answer of any kind proves
- * the reload will reach the new index; no answer means the failure stays in
- * the app, as the route's or the overlay's error card, with the shell intact.
+ * the reload will reach the new index. No answer means the network is down:
+ * a lazy screen then waits for it, with the shell intact, and imports again
+ * once the server answers (lazyWithReload); a listener's failure stays where
+ * it happened.
  *
  * main.tsx's listeners never see the failures that matter most: React.lazy
  * catches the rejected import itself and hands it to the nearest error
@@ -34,6 +36,9 @@ const KEY = 'arcana_stale_chunk_reloaded';
 const WINDOW_MS = 2 * 60 * 1000;
 /** How long the reachability probe may take before the network counts as down. */
 const PROBE_TIMEOUT_MS = 4000;
+/** While a screen waits for the connection: the first re-probe, doubling up to the last. */
+const REPROBE_FIRST_MS = 2000;
+const REPROBE_MAX_MS = 30_000;
 
 const STALE_CHUNK_RE =
   /not a valid JavaScript MIME type|Importing a module script failed|Failed to load module script|Failed to fetch dynamically imported module|error loading dynamically imported module|Unable to preload CSS/i;
@@ -110,7 +115,29 @@ export function reloadForStaleChunk(reason: unknown, now: number = Date.now()): 
   return true;
 }
 
-let pending: Promise<boolean> | null = null;
+/**
+ * What a failed-module error comes to: a reload has started; the server
+ * cannot be reached (the network is down); or the error stays where it
+ * happened (not a module failure, or a second one inside the window).
+ */
+type Recovery = 'reloading' | 'unreachable' | 'surface';
+
+let pending: Promise<Recovery> | null = null;
+
+function recover(reason: unknown, fetchImpl: typeof fetch): Promise<Recovery> {
+  if (!isStaleChunkMessage(messageOf(reason))) return Promise.resolve('surface');
+  if (pending) return pending;
+  const run = canReachServer(reason, fetchImpl).then((reachable): Recovery =>
+    !reachable ? 'unreachable' : reloadForStaleChunk(reason) ? 'reloading' : 'surface',
+  );
+  pending = run;
+  void run.then((outcome) => {
+    // A reload in progress keeps the answer; anything else lets the next
+    // failure probe afresh.
+    if (outcome !== 'reloading') pending = null;
+  });
+  return run;
+}
 
 /**
  * The one entry point: a failed-module error, from any listener or lazy
@@ -120,16 +147,7 @@ let pending: Promise<boolean> | null = null;
  * screen and its preloads at once reloads once.
  */
 export function recoverFromStaleChunk(reason: unknown, fetchImpl: typeof fetch = fetch): Promise<boolean> {
-  if (!isStaleChunkMessage(messageOf(reason))) return Promise.resolve(false);
-  if (pending) return pending;
-  const run = canReachServer(reason, fetchImpl).then((reachable) => reachable && reloadForStaleChunk(reason));
-  pending = run;
-  void run.then((reloading) => {
-    // A reload in progress keeps the answer; anything else lets the next
-    // failure probe afresh.
-    if (!reloading) pending = null;
-  });
-  return run;
+  return recover(reason, fetchImpl).then((outcome) => outcome === 'reloading');
 }
 
 /** Test seam: forget a shared probe. */
@@ -138,21 +156,71 @@ export function __resetStaleChunkProbe(): void {
 }
 
 /**
- * `React.lazy` that reloads the page when the chunk is gone after a deploy.
- * While the reload is under way the import never settles, so the Suspense
- * fallback stays up rather than an error card flashing first. Any other
- * failure — the network is down, or a second stale failure inside the
- * window — still throws, into the nearest error boundary.
+ * Resolves once the server answers a probe for the failed file again: as
+ * soon as the browser says it is back online, and on a doubling timer for a
+ * connection that is down without saying so (a probe while the browser is
+ * offline costs nothing: canReachServer answers false without a request).
  */
+function untilReachable(reason: unknown): Promise<void> {
+  return new Promise((resolve) => {
+    let delay = REPROBE_FIRST_MS;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let probing = false;
+    let done = false;
+    const schedule = () => {
+      timer = setTimeout(probe, delay);
+      delay = Math.min(delay * 2, REPROBE_MAX_MS);
+    };
+    const probe = async () => {
+      if (done || probing) return;
+      probing = true;
+      if (timer) clearTimeout(timer);
+      const reachable = await canReachServer(reason);
+      probing = false;
+      if (done) return;
+      if (!reachable) {
+        schedule();
+        return;
+      }
+      done = true;
+      window.removeEventListener('online', probe);
+      resolve();
+    };
+    window.addEventListener('online', probe);
+    schedule();
+  });
+}
+
+/**
+ * The import, recovering what can be recovered. A stale chunk reloads the
+ * page (and the import never settles, so the Suspense fallback stays up
+ * rather than an error card flashing first). With the network down the
+ * screen waits — its Suspense fallback up, the shell around it working —
+ * until the server answers, then imports again: React.lazy keeps a
+ * rejection for good and never calls the factory again, so a screen that
+ * failed offline used to stay an error card for the rest of the session,
+ * its "Reload this screen" re-rendering the same error (p9 R24). A browser
+ * that kept the failed module answers the second import with the same
+ * error, now reachable: that reloads, and the reload lands. Anything else —
+ * a module that loads but throws, a second stale failure inside the window
+ * — throws into the nearest error boundary.
+ */
+async function loadRecovering<T>(factory: () => Promise<T>): Promise<T> {
+  for (;;) {
+    try {
+      return await factory();
+    } catch (err) {
+      const outcome = await recover(err, fetch);
+      if (outcome === 'reloading') return new Promise<T>(() => {});
+      if (outcome === 'surface' || typeof window === 'undefined') throw err;
+      await untilReachable(err);
+    }
+  }
+}
+
+/** `React.lazy` that recovers its chunk: reloads after a deploy, waits out a dropped connection (loadRecovering). */
 export function lazyWithReload<T extends ComponentType<any>>( // eslint-disable-line @typescript-eslint/no-explicit-any
   factory: () => Promise<{ default: T }>,
 ): LazyExoticComponent<T> {
-  return lazy(() =>
-    factory().catch(async (err: unknown) => {
-      if (await recoverFromStaleChunk(err)) {
-        return new Promise<{ default: T }>(() => {});
-      }
-      throw err;
-    }),
-  );
+  return lazy(() => loadRecovering(factory));
 }

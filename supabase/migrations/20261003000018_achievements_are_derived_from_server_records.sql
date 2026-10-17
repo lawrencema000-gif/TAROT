@@ -1,6 +1,6 @@
 /*
   # Achievements are derived from what the server recorded, not from what a
-  # session says (p7 #113, p8 recheck O#113 + K1)
+  # session says (p7 #113, p8 recheck O#113 + K1, p9 R01-R03)
 
   check_achievement_progress(p_user_id, p_activity_type, p_increment, p_value)
   is client-callable, and 20261003000004 still let the session pick the
@@ -19,13 +19,20 @@
   progress of the member's locked badges from server records, so repeating a
   call changes nothing, and an unlock happens (and pays) once:
 
-    level_reached / total_xp / streak_achieved / rank_achieved
-        profiles (server-written), as in 20261003000004.
+    level_reached / total_xp / rank_achieved / streak_achieved
+        profiles.level, .xp and .streak. All three are server-written: §0
+        adds xp and seeker_rank to the profile guard, which never covered
+        them, so a member could PATCH profiles.xp = 999999 and be level 50
+        after the next award_xp (p9). award_xp and achievement_pay_xp are
+        the only writers of xp, and they set app.server_write.
     reading_complete, reading_saved, journal_entry, quiz_complete,
     horoscope_viewed, ritual_complete
         the XP ledger (xp_activities, written only by award_xp under its
         per-day ceilings), counted with those ceilings per UTC day so a
         pre-ceiling flood cannot count either (ritual: 2 a day, 017).
+        award_xp is how a session reports its own activity, so these badges
+        are exactly as trustworthy as the XP itself: they never run ahead of
+        the ceilings (20 readings a UTC day).
     weekend_ritual
         distinct weekends among the dates of the ritual rows the ritual awards
         were paid for (each ritual_complete row paired with the member's latest
@@ -39,10 +46,23 @@
     birthday_login
         the profile's birth date is today in the profile's time zone, or this
         call reports birthday_login and the UTC date is within a day of it
-        (every local date is within a day of UTC).
+        (every local date is within a day of UTC) — and that birth date has
+        stood for 30 days: profiles.birth_date_set_at, stamped by a trigger
+        whenever birth_date changes (a session cannot set it; NULL = set
+        before this migration). Moving the birth date to today, reporting and
+        moving it back earns nothing (p9 R01).
     quiz_types_complete
-        the member's quiz_results rows: distinct quiz_type among the listed
-        types.
+        distinct quiz_type among the listed types, from the member's
+        quiz_results rows that the ledger recorded: each row (dated by the
+        server on insert, §0c) paired with its own quiz_complete row
+        (award_xp) within 10 minutes. The member writes quiz_results
+        directly, so five bare inserts used to be Quiz Master (p9 R01);
+        types recorded before this migration are kept (§4c).
+
+  A badge marked is_premium_only unlocks only while is_user_premium() is
+  true; the badge card already shows it as "Premium" to a free member. Its
+  progress still counts, so a member who upgrades unlocks what their
+  readings already reached on the next call (p9 R01).
 
   Two kinds of activity leave no server record of their own, so the client's
   report is kept as a claim (public.achievement_reports, server-only):
@@ -54,14 +74,24 @@
     cartomancy_joker_drawn, new_year_reading, witching_hour_reading — and
     ritual facts — morning_ritual, evening_ritual. A claim counts only once it
     is matched to the ledger row of the reading (or ritual) it describes: a
-    reading_complete (ritual_complete) row written within 5 minutes of it,
-    each row matched at most once per badge slot (one spread per reading; one
-    count per card per reading; a ritual is morning OR evening). The claim and
-    the award are separate requests in either order; claims wait 10 minutes
-    for their row. So progress is bounded by readings and rituals the ledger
-    saw (20 readings, 2 rituals a UTC day), and a bare call matches nothing.
-    new_year_reading is also checked against the row's time: some time zone
-    must be on 1 January then.
+    reading_complete (ritual_complete) row written within 5 minutes of it.
+    One row is one reading:
+      - each fact counts once per reading: one spread, one count per card,
+        one celtic cross, witching-hour or new-year report; a ritual is
+        morning OR evening;
+      - a reading is tarot or playing cards, not both: a row a tarot fact
+        (spread, celtic cross, card) was matched to takes no playing-card
+        fact, and the reverse (witching hour and new year belong to either).
+        One bare row used to carry the facts of both decks at once (p9 R01).
+    The claim and the award are separate requests in either order; claims
+    wait 10 minutes for their row. There is no clock dedupe: two genuine
+    readings seconds apart each have their own row and each counts (p9 R02;
+    a claim identical to one made in the last 30 s used to be dropped). A
+    repeated claim can only take a row no claim of its slot has used. So
+    progress is bounded by readings and rituals the ledger saw (20 readings,
+    2 rituals a UTC day), and a bare call matches nothing. new_year_reading
+    is also checked against the row's time: some time zone must be on
+    1 January then.
 
     Views — cards_explored (card id 0-77), zodiac_signs_viewed (sign id),
     cartomancy_lesson_complete (lesson slug). Nothing but the device sees a
@@ -69,10 +99,34 @@
     counts once, and at most one fewer than the smallest target of its badges
     is accepted per UTC day (21 cards, 11 signs, 11 lessons) — later values
     wait and are accepted on later days, so honest progress is only delayed.
+    v1.2.0 reports a card view without the card (TarotSection, 3ab370d0):
+    that is one view of an unnamed card, accepted under the same daily
+    ceiling, while the kind holds fewer reports than its largest target (78)
+    — what 20261003000004 counted, no faster than named views (p9 R03).
 
   Invalid values are ignored without error. Unknown activity types run a
-  full re-derivation and change nothing else. Old clients (v1.2.0 passes
-  three arguments) keep working: the signature and result are unchanged.
+  full re-derivation and change nothing else. The signature and result are
+  unchanged, so v1.2.0's three-argument call keeps working: its card views,
+  celtic cross, witching-hour and new-year reports count as above; its bare
+  spread report has never moved a set (20261003000004), and its card badges
+  have not moved since 20261003000003 revoked its direct table writes — they
+  move again once the member updates.
+
+  ## What stays the device's word (owner decision)
+  The server never sees a deal, a quiz or a view. So check_achievement_progress
+  alone (and every table a member may write) raises no XP on day 1, but a
+  session that also calls award_xp — the XP API, under its ceilings — can
+  still say which cards and spread each of up to 20 readings a UTC day had,
+  at which local hour, and which quiz each of up to 10 quiz_complete awards
+  was (quizzes are scored on the device). A fresh non-premium account can
+  so reach in one UTC day the reading and quiz badges an honest member could
+  earn with those readings and quizzes, faster than luck would deal the
+  cards (Lucky Seven, Fools Journey, Tower Moment, Night Seeker, the
+  playing-card badges, Quiz Master). Each badge pays once. Measured on
+  PGlite with every RPC a session may call: xp 0 -> 2065 and 17 badges on
+  day 1, against 2665 and 21 badges (Premium badges and Cosmic Birthday
+  among them) before p9. The remedy is a server-side deal (the server picks
+  and records the cards), a change to the reading flow.
 
   ## What was earned stays
   Unlocked badges are left as they are. For a badge still locked whose
@@ -86,6 +140,138 @@
   Every REVOKE names PUBLIC, anon and authenticated (20260817020000).
 */
 
+-- ── 0. The profile fields the badges read are the server's ────────────────
+-- 0a. xp and seeker_rank join the guarded columns. 20260928000001's body,
+--     plus xp and seeker_rank (update) and xp, seeker_rank, level and
+--     last_ritual_date (insert: a session's new row starts at the start).
+CREATE OR REPLACE FUNCTION public.protect_profile_premium_fields()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  -- Service role, webhooks, triggers fired without a user: pass.
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF NOT public.is_admin() THEN
+    -- Entitlements: never from a user session.
+    NEW.is_premium := OLD.is_premium;
+    NEW.is_ad_free := OLD.is_ad_free;
+
+    -- Gamification and the counts: only the app's own server functions,
+    -- which mark their transaction. A client UPDATE through PostgREST
+    -- cannot set the marker.
+    IF current_setting('app.server_write', true) IS DISTINCT FROM 'on' THEN
+      NEW.xp := OLD.xp;
+      NEW.level := OLD.level;
+      NEW.seeker_rank := OLD.seeker_rank;
+      NEW.streak := OLD.streak;
+      NEW.last_ritual_date := OLD.last_ritual_date;
+      NEW.total_readings := OLD.total_readings;
+      NEW.total_journal_entries := OLD.total_journal_entries;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+COMMENT ON FUNCTION public.protect_profile_premium_fields() IS
+  'Guards server-managed profile columns against user-session writes. '
+  'Entitlements (is_premium, is_ad_free) are never writable from a session; '
+  'xp, level, seeker_rank, streak, last_ritual_date, total_readings and '
+  'total_journal_entries are writable only inside a server function that sets '
+  'the transaction-local marker app.server_write = on (award_xp, '
+  'achievement_pay_xp, the ritual streak).';
+
+CREATE OR REPLACE FUNCTION public.protect_profile_premium_fields_insert()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  -- Allow service_role / server-side calls (the signup trigger)
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Non-admin users get safe defaults
+  IF NOT public.is_admin() THEN
+    NEW.is_premium := false;
+    NEW.is_ad_free := false;
+    NEW.xp := 0;
+    NEW.level := 1;
+    NEW.seeker_rank := 'Novice Seeker';
+    NEW.streak := 0;
+    NEW.last_ritual_date := NULL;
+    NEW.total_readings := 0;
+    NEW.total_journal_entries := 0;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+-- 0b. When the birth date was last set (Cosmic Birthday reads it).
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS birth_date_set_at timestamptz;
+
+COMMENT ON COLUMN public.profiles.birth_date_set_at IS
+  'When birth_date last changed (server clock). Stamped by the '
+  'profiles_birth_date_set_at trigger on every write, whatever the request '
+  'says; NULL = set before 20261003000018 (or never set).';
+
+CREATE OR REPLACE FUNCTION public.profiles_stamp_birth_date_set_at()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    NEW.birth_date_set_at := CASE WHEN NEW.birth_date IS NULL THEN NULL ELSE now() END;
+  ELSIF NEW.birth_date IS DISTINCT FROM OLD.birth_date THEN
+    NEW.birth_date_set_at := CASE WHEN NEW.birth_date IS NULL THEN NULL ELSE now() END;
+  ELSE
+    -- Saving the same birth date (any profile edit) keeps its age.
+    NEW.birth_date_set_at := OLD.birth_date_set_at;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.profiles_stamp_birth_date_set_at() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS profiles_birth_date_set_at ON public.profiles;
+CREATE TRIGGER profiles_birth_date_set_at
+  BEFORE INSERT OR UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.profiles_stamp_birth_date_set_at();
+
+-- 0c. A quiz result a session writes is dated by the server (Quiz Master
+--     pairs it with its quiz_complete award by this time). The app never
+--     sends completed_at; members cannot update their rows.
+CREATE OR REPLACE FUNCTION public.quiz_results_completed_now()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL THEN
+    NEW.completed_at := now();
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.quiz_results_completed_now() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS quiz_results_completed_now ON public.quiz_results;
+CREATE TRIGGER quiz_results_completed_now
+  BEFORE INSERT ON public.quiz_results
+  FOR EACH ROW EXECUTE FUNCTION public.quiz_results_completed_now();
+
 -- ── 1. The claims the server keeps ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.achievement_reports (
   id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -95,6 +281,9 @@ CREATE TABLE IF NOT EXISTS public.achievement_reports (
   -- specific_card_drawn, 'ritual_time' for morning/evening.
   slot        text NOT NULL,
   value       text NOT NULL DEFAULT '',
+  -- Reading facts: 'tarot' or 'playing_cards' (NULL: either, or not a
+  -- reading). One ledger row takes the facts of one deck.
+  family      text,
   reported_at timestamptz NOT NULL DEFAULT now(),
   -- Reading and ritual facts: the xp_activities row the claim was matched to.
   event_id    uuid,
@@ -106,9 +295,13 @@ CREATE INDEX IF NOT EXISTS achievement_reports_user_slot_idx
   ON public.achievement_reports (user_id, slot, reported_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS achievement_reports_event_once
   ON public.achievement_reports (user_id, slot, event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS achievement_reports_user_event_idx
+  ON public.achievement_reports (user_id, event_id) WHERE event_id IS NOT NULL;
+-- A named view counts once; v1.2.0's unnamed card views ('') are bounded by
+-- check_achievement_progress instead.
 CREATE UNIQUE INDEX IF NOT EXISTS achievement_reports_view_once
   ON public.achievement_reports (user_id, kind, value)
-  WHERE kind IN ('cards_explored', 'zodiac_signs_viewed', 'cartomancy_lesson_complete');
+  WHERE kind IN ('cards_explored', 'zodiac_signs_viewed', 'cartomancy_lesson_complete') AND value <> '';
 
 ALTER TABLE public.achievement_reports ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.achievement_reports FROM PUBLIC, anon, authenticated;
@@ -117,8 +310,9 @@ GRANT ALL ON public.achievement_reports TO service_role;
 COMMENT ON TABLE public.achievement_reports IS
   'Client reports the achievements cannot derive on their own (reading/ritual '
   'facts, views). Written only by check_achievement_progress(); a reading or '
-  'ritual fact counts once matched to its xp_activities row (event_id); a view '
-  'counts once accepted (accepted_on).';
+  'ritual fact counts once matched to its xp_activities row (event_id; one row '
+  'takes one deck''s facts, each fact once); a view counts once accepted '
+  '(accepted_on).';
 
 -- ── 2. Re-derivation ───────────────────────────────────────────────────────
 -- Same signature and result as 20261003000004, so CREATE OR REPLACE keeps
@@ -152,6 +346,10 @@ DECLARE
     'cartomancy_reading_complete', 'cartomancy_spread_types_used', 'cartomancy_romany_complete',
     'cartomancy_wish_card_drawn', 'cartomancy_joker_drawn', 'new_year_reading', 'witching_hour_reading',
     'morning_ritual', 'evening_ritual'];
+  -- The facts that say which deck a reading used.
+  c_tarot_kinds CONSTANT text[] := ARRAY['spread_types_used', 'celtic_cross_complete', 'specific_card_drawn'];
+  c_cards_kinds CONSTANT text[] := ARRAY['cartomancy_reading_complete', 'cartomancy_spread_types_used',
+    'cartomancy_romany_complete', 'cartomancy_wish_card_drawn', 'cartomancy_joker_drawn'];
   c_view_kinds CONSTANT text[] := ARRAY['cards_explored', 'zodiac_signs_viewed', 'cartomancy_lesson_complete'];
 
   v_type      text := CASE WHEN p_activity_type = 'xp_earned' THEN 'total_xp'
@@ -160,6 +358,7 @@ DECLARE
   v_class     text;      -- 'event' | 'view' | NULL (anything else)
   v_valid     boolean := true;
   v_slot      text;
+  v_family    text;
   v_utc_today date := (now() AT TIME ZONE 'UTC')::date;
   v_profile   record;
   v_local     date;
@@ -169,11 +368,16 @@ DECLARE
   v_weekends  integer := 0;
   v_full_moon boolean := false;
   v_quiz      text[] := ARRAY[]::text[];
+  v_listed    text[] := ARRAY[]::text[];
+  v_quiz_old  text[] := ARRAY[]::text[];
+  v_used      uuid[] := ARRAY[]::uuid[];
+  v_q         record;
   v_c         record;
   v_ev        uuid;
   v_k         text;
   v_limit     integer;
   v_taken     integer;
+  v_cap       integer;
   v_a         record;
   v_t         text;
   v_target    integer;
@@ -210,15 +414,19 @@ BEGIN
       WHEN v_type = 'specific_card_drawn' THEN 'card:' || v_value
       WHEN v_type IN ('morning_ritual', 'evening_ritual') THEN 'ritual_time'
       ELSE v_type END;
+    v_family := CASE
+      WHEN v_type = ANY (c_tarot_kinds) THEN 'tarot'
+      WHEN v_type = ANY (c_cards_kinds) THEN 'playing_cards' END;
   ELSIF v_type = ANY (c_view_kinds) THEN
     v_class := 'view';
     v_valid := CASE
-      WHEN v_value IS NULL THEN false
+      -- v1.2.0 opens a card from the deck grid without naming it (p9 R03)
+      WHEN v_value IS NULL THEN v_type = 'cards_explored'
       WHEN v_type = 'cards_explored' THEN
         CASE WHEN v_value ~ '^[0-9]{1,2}$' THEN v_value::int BETWEEN 0 AND 77 ELSE false END
       WHEN v_type = 'zodiac_signs_viewed' THEN lower(v_value) = ANY (c_signs)
       ELSE v_value = ANY (c_lessons) END;
-    IF v_valid AND v_type = 'cards_explored' THEN v_value := (v_value::int)::text; END IF;
+    IF v_valid AND v_type = 'cards_explored' THEN v_value := COALESCE((v_value::int)::text, ''); END IF;
     IF v_valid AND v_type = 'zodiac_signs_viewed' THEN v_value := lower(v_value); END IF;
     v_slot := v_type;
   END IF;
@@ -232,10 +440,11 @@ BEGIN
   PERFORM public.initialize_user_achievements(p_user_id);
 
   SELECT COALESCE(p.level, 1) AS level, COALESCE(p.xp, 0) AS xp, COALESCE(p.streak, 0) AS streak,
-         p.birth_date, p.timezone
+         p.birth_date, p.birth_date_set_at, p.timezone
     INTO v_profile
     FROM public.profiles p WHERE p.id = p_user_id;
   IF NOT FOUND THEN RETURN; END IF;
+  v_premium := public.is_user_premium(p_user_id);
 
   -- ── Keep the claim ──
   IF v_class = 'event' THEN
@@ -246,29 +455,41 @@ BEGIN
           WHERE a.is_active AND ua.unlocked_at IS NULL
             AND a.unlock_condition->>'activity_type' = v_type
             AND (v_type <> 'specific_card_drawn' OR a.unlock_condition->>'card' = v_value))
-       -- the same report twice in 30 s is one report (a retry, a double tap)
-       AND NOT EXISTS (
-         SELECT 1 FROM public.achievement_reports r
-          WHERE r.user_id = p_user_id AND r.kind = v_type AND r.value = v_value
-            AND r.reported_at > now() - interval '30 seconds')
        -- a loop of reports with nothing to match is not stored without bound
        AND (SELECT count(*) FROM public.achievement_reports r
              WHERE r.user_id = p_user_id AND r.kind = v_type AND r.event_id IS NULL) < 50
     THEN
-      INSERT INTO public.achievement_reports (user_id, kind, slot, value)
-      VALUES (p_user_id, v_type, v_slot, v_value);
+      -- No clock dedupe (p9 R02): a second reading seconds later is its own
+      -- claim and finds its own row; a repeat can take only a row no claim
+      -- of its slot has used.
+      INSERT INTO public.achievement_reports (user_id, kind, slot, value, family)
+      VALUES (p_user_id, v_type, v_slot, v_value, v_family);
     END IF;
-  ELSIF v_class = 'view' THEN
+  ELSIF v_class = 'view' AND v_value <> '' THEN
     INSERT INTO public.achievement_reports (user_id, kind, slot, value)
     VALUES (p_user_id, v_type, v_slot, v_value)
     ON CONFLICT DO NOTHING;
+  ELSIF v_class = 'view' THEN
+    -- An unnamed card (v1.2.0): one more view while a badge of the kind is
+    -- locked, and only while the kind holds fewer reports than its largest
+    -- target, so the rows stay bounded. The daily ceiling below applies.
+    SELECT MAX(GREATEST(COALESCE((a.unlock_condition->>'target')::int, 1), 1)) INTO v_cap
+      FROM public.achievements a
+      JOIN public.user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = p_user_id
+     WHERE a.is_active AND ua.unlocked_at IS NULL AND a.unlock_condition->>'activity_type' = v_type;
+    IF v_cap IS NOT NULL AND (SELECT count(*) FROM public.achievement_reports r
+                               WHERE r.user_id = p_user_id AND r.kind = v_type) < v_cap THEN
+      INSERT INTO public.achievement_reports (user_id, kind, slot, value)
+      VALUES (p_user_id, v_type, v_slot, '');
+    END IF;
   END IF;
 
   -- ── Settle the claims ──
   -- Reading and ritual facts: match each waiting claim to the closest ledger
-  -- row of its activity within 5 minutes that its slot has not used yet.
+  -- row of its activity within 5 minutes that its slot has not used yet and
+  -- that holds no fact of the other deck.
   FOR v_c IN
-    SELECT r.id, r.kind, r.slot, r.reported_at
+    SELECT r.id, r.kind, r.slot, r.family, r.reported_at
       FROM public.achievement_reports r
      WHERE r.user_id = p_user_id AND r.event_id IS NULL AND r.kind = ANY (c_event_kinds)
      ORDER BY r.reported_at, r.id
@@ -279,9 +500,14 @@ BEGIN
        AND x.activity_type = CASE WHEN v_c.kind IN ('morning_ritual', 'evening_ritual')
                                   THEN 'ritual_complete' ELSE 'reading_complete' END
        AND x.created_at BETWEEN v_c.reported_at - interval '5 minutes' AND v_c.reported_at + interval '5 minutes'
+       -- each fact once per reading (ritual)
        AND NOT EXISTS (
          SELECT 1 FROM public.achievement_reports o
           WHERE o.user_id = p_user_id AND o.slot = v_c.slot AND o.event_id = x.id)
+       -- one reading, one deck
+       AND (v_c.family IS NULL OR NOT EXISTS (
+         SELECT 1 FROM public.achievement_reports o
+          WHERE o.user_id = p_user_id AND o.event_id = x.id AND o.family <> v_c.family))
        -- some time zone must be on 1 January when the reading was recorded
        AND (v_c.kind <> 'new_year_reading'
             OR '01-01' IN (to_char((x.created_at AT TIME ZONE 'UTC') - interval '12 hours', 'MM-DD'),
@@ -318,13 +544,15 @@ BEGIN
 
   -- ── Server facts (a claim or view report re-derives only its own kinds) ──
   IF v_class IS NULL THEN
-    v_premium := public.is_user_premium(p_user_id);
     BEGIN
       v_local := (now() AT TIME ZONE COALESCE(NULLIF(v_profile.timezone, ''), 'UTC'))::date;
     EXCEPTION WHEN OTHERS THEN
       v_local := v_utc_today;
     END;
-    v_bday := to_char(v_profile.birth_date, 'MM-DD');
+    -- The birthday counts once the birth date has stood for 30 days (p9 R01).
+    v_bday := CASE WHEN v_profile.birth_date_set_at IS NULL
+                     OR v_profile.birth_date_set_at <= now() - interval '30 days'
+                   THEN to_char(v_profile.birth_date, 'MM-DD') END;
 
     SELECT COALESCE(jsonb_object_agg(z.t, z.n), '{}'::jsonb) INTO v_counts
       FROM (
@@ -362,8 +590,40 @@ BEGIN
                      + c_synodic, c_synodic) - c_synodic / 2) < 1.5)
       INTO v_full_moon;
 
-    SELECT COALESCE(array_agg(DISTINCT q.quiz_type), ARRAY[]::text[]) INTO v_quiz
-      FROM public.quiz_results q WHERE q.user_id = p_user_id;
+    -- Quiz types: a quiz_results row (the member writes it) counts once the
+    -- ledger recorded that quiz — paired with its own quiz_complete row
+    -- within 10 minutes, each row paired once. Only while such a badge is
+    -- locked; types from before this migration are its legacy_seen (§4c).
+    SELECT COALESCE(array_agg(DISTINCT t), ARRAY[]::text[]) INTO v_listed
+      FROM public.achievements a
+      JOIN public.user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = p_user_id
+      CROSS JOIN LATERAL jsonb_array_elements_text(COALESCE(a.unlock_condition->'types', '[]'::jsonb)) t
+     WHERE a.is_active AND ua.unlocked_at IS NULL AND a.unlock_condition->>'activity_type' = 'quiz_types_complete';
+    SELECT COALESCE(array_agg(DISTINCT s), ARRAY[]::text[]) INTO v_quiz_old
+      FROM public.achievements a
+      JOIN public.user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = p_user_id
+      CROSS JOIN LATERAL jsonb_array_elements_text(COALESCE(ua.metadata->'legacy_seen', '[]'::jsonb)) s
+     WHERE a.is_active AND ua.unlocked_at IS NULL AND a.unlock_condition->>'activity_type' = 'quiz_types_complete';
+    FOR v_q IN
+      SELECT q.quiz_type, q.completed_at
+        FROM public.quiz_results q
+       WHERE q.user_id = p_user_id AND q.quiz_type = ANY (v_listed) AND q.completed_at IS NOT NULL
+       ORDER BY q.completed_at
+    LOOP
+      -- a type already counted (or kept from before) takes no ledger row
+      CONTINUE WHEN v_q.quiz_type = ANY (v_quiz) OR v_q.quiz_type = ANY (v_quiz_old);
+      SELECT x.id INTO v_ev
+        FROM public.xp_activities x
+       WHERE x.user_id = p_user_id AND x.activity_type = 'quiz_complete'
+         AND x.created_at BETWEEN v_q.completed_at - interval '10 minutes' AND v_q.completed_at + interval '10 minutes'
+         AND NOT (x.id = ANY (v_used))
+       ORDER BY abs(extract(epoch FROM (x.created_at - v_q.completed_at))), x.created_at
+       LIMIT 1;
+      IF v_ev IS NOT NULL THEN
+        v_used := v_used || v_ev;
+        v_quiz := v_quiz || v_q.quiz_type;
+      END IF;
+    END LOOP;
   END IF;
 
   -- ── Re-derive the locked badges; unlock and pay once ──
@@ -373,13 +633,13 @@ BEGIN
     v_paid := false;
     IF v_pass > 1 THEN
       SELECT COALESCE(p.level, 1) AS level, COALESCE(p.xp, 0) AS xp, COALESCE(p.streak, 0) AS streak,
-             p.birth_date, p.timezone
+             p.birth_date, p.birth_date_set_at, p.timezone
         INTO v_profile
         FROM public.profiles p WHERE p.id = p_user_id;
     END IF;
 
     FOR v_a IN
-      SELECT a.id, a.name, a.xp_reward, a.rarity, a.unlock_condition, ua.id AS ua_id,
+      SELECT a.id, a.name, a.xp_reward, a.rarity, a.unlock_condition, a.is_premium_only, ua.id AS ua_id,
              ua.progress AS cur_progress, COALESCE(ua.metadata, '{}'::jsonb) AS meta
         FROM public.achievements a
         JOIN public.user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = p_user_id
@@ -430,7 +690,9 @@ BEGIN
       ELSIF v_t = 'quiz_types_complete' THEN
         SELECT COALESCE(array_agg(t), ARRAY[]::text[]) INTO v_types
           FROM jsonb_array_elements_text(COALESCE(v_a.unlock_condition->'types', '[]'::jsonb)) t;
-        v_progress := (SELECT count(*)::int FROM unnest(v_types) t WHERE t = ANY (v_quiz));
+        SELECT COALESCE(array_agg(s), ARRAY[]::text[]) INTO v_seen
+          FROM jsonb_array_elements_text(COALESCE(v_a.meta->'legacy_seen', '[]'::jsonb)) s;
+        v_progress := (SELECT count(*)::int FROM unnest(v_types) t WHERE t = ANY (v_quiz) OR t = ANY (v_seen));
         v_target   := GREATEST(cardinality(v_types), 1);
       ELSIF v_t = ANY (c_view_kinds) THEN
         SELECT count(*)::int INTO v_progress FROM public.achievement_reports r
@@ -463,7 +725,9 @@ BEGIN
 
       -- A type the server cannot derive keeps its row as it is.
       CONTINUE WHEN v_progress IS NULL;
-      v_unlock   := v_progress >= v_target;
+      -- A Premium badge unlocks while the member is Premium (p9 R01); its
+      -- progress counts either way.
+      v_unlock   := v_progress >= v_target AND (NOT COALESCE(v_a.is_premium_only, false) OR v_premium);
       v_progress := LEAST(GREATEST(v_progress, 0), v_target);
 
       IF v_unlock THEN
@@ -497,10 +761,11 @@ GRANT EXECUTE ON FUNCTION public.check_achievement_progress(uuid, text, integer,
 
 COMMENT ON FUNCTION public.check_achievement_progress(uuid, text, integer, text) IS
   'Re-derives the caller''s locked badges from server records and unlocks (and '
-  'pays) each once. p_increment is ignored; p_activity_type/p_value only add a '
-  'claim for facts the server cannot see (achievement_reports), which counts once '
-  'matched to its ledger row (reading/ritual facts) or accepted (views). '
-  'Idempotent: repeating a call changes nothing.';
+  'pays) each once; a Premium badge only while the member is Premium. '
+  'p_increment is ignored; p_activity_type/p_value only add a claim for facts '
+  'the server cannot see (achievement_reports), which counts once matched to its '
+  'ledger row (reading/ritual facts: one row is one reading of one deck) or '
+  'accepted (views, a daily ceiling). Idempotent: repeating a call changes nothing.';
 
 -- ── 3. check_level_milestones: one re-derivation ──────────────────────────
 CREATE OR REPLACE FUNCTION public.check_level_milestones(
@@ -533,6 +798,7 @@ DO $$
 DECLARE
   v_views   integer;
   v_credits integer;
+  v_quizzes integer;
 BEGIN
   -- 4a. 20261003000004's recorded view values become accepted views (valid
   --     values only; accepted on a day that counts toward no limit).
@@ -603,6 +869,25 @@ BEGIN
            'witching_hour_reading', 'morning_ritual', 'evening_ritual');
   GET DIAGNOSTICS v_credits = ROW_COUNT;
 
-  RAISE NOTICE 'achievements derived: % recorded view values kept, % locked client-reported badges credited',
-    v_views, v_credits;
+  -- 4c. Quiz Master: the quiz types a member recorded before this migration
+  --     (their quiz_results rows, and 20261003000004's reported types) stay
+  --     theirs; a quiz from now on counts once the ledger recorded it (§2).
+  UPDATE public.user_achievements ua
+     SET metadata = COALESCE(ua.metadata, '{}'::jsonb) || jsonb_build_object('legacy_seen', COALESCE((
+           SELECT jsonb_agg(DISTINCT s.t ORDER BY s.t) FROM (
+             SELECT q.quiz_type AS t FROM public.quiz_results q WHERE q.user_id = ua.user_id
+             UNION
+             SELECT jsonb_array_elements_text(
+               CASE WHEN jsonb_typeof(ua.metadata->'seen') = 'array' THEN ua.metadata->'seen' ELSE '[]'::jsonb END)
+           ) s), '[]'::jsonb)),
+         updated_at = now()
+    FROM public.achievements a
+   WHERE a.id = ua.achievement_id
+     AND ua.unlocked_at IS NULL
+     AND a.unlock_condition->>'activity_type' = 'quiz_types_complete'
+     AND NOT (COALESCE(ua.metadata, '{}'::jsonb) ? 'legacy_seen');
+  GET DIAGNOSTICS v_quizzes = ROW_COUNT;
+
+  RAISE NOTICE 'achievements derived: % recorded view values kept, % locked client-reported badges credited, % quiz badges kept their quiz history',
+    v_views, v_credits, v_quizzes;
 END $$;

@@ -4639,7 +4639,8 @@
       "saveFailed": "프로필을 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "birthDateRequired": "생년월일을 입력해 주세요 — 모든 차트는 생년월일을 바탕으로 만들어져요.",
       "nameRequired": "어떻게 불러 드릴지 알 수 있도록 이름을 입력해 주세요.",
-      "pickCity": "차트에 정확한 장소가 쓰이도록 목록에서 출생 도시를 골라 주세요."
+      "pickCity": "차트에 정확한 장소가 쓰이도록 목록에서 출생 도시를 골라 주세요.",
+      "chartPending": "프로필이 업데이트됐어요. 차트는 아직 업데이트하지 못했어요 — 다음에 별자리 운세를 열 때 업데이트돼요."
     },
     "untitled": "당신의 프로필",
     "elements": {
@@ -5848,11 +5849,11 @@
             "content": "말로 건네는 칭찬, 격려, 고마움의 표현이 가장 크게 사랑받는 느낌으로 다가와요."
           },
           {
-            "title": "돕는 행동",
+            "title": "봉사의 행동",
             "content": "말보다 행동이 크다는 것처럼—도움을 주는 움직임 하나가, 그 마음을 전해요."
           },
           {
-            "title": "선물",
+            "title": "선물 받기",
             "content": "크기보다 마음—한 번 생각하고 고른 선물이 \"네 생각을 했다\"는 신호가 돼요."
           },
           {
@@ -6031,6 +6032,9 @@
     },
     "periodWeekly": "주간",
     "periodMonthly": "월간",
+    "savedHoroscopeLabel": "{{sign}} · {{period}}",
+    "cardReversed": "{{name}}(역방향)",
+    "cardReversedShort": "{{name}}(역방향)",
     "aiReading": "AI 리딩",
     "openReading": "{{date}}의 {{name}} 열기",
     "deleteReading": "{{name}} 삭제",
@@ -10018,6 +10022,7 @@
     "themeLabel": "주제",
     "carePracticeLabel": "한 가지 연습",
     "rewriteLetter": "다른 편지 쓰기",
+    "nextLetterHint": "다음 편지는 앞으로 기록할 무드를 읽고 써요.",
     "patternLabel": "이번 주",
     "heaviestDayLabel": "가장 무거웠던 날",
     "lightestDayLabel": "가장 가벼웠던 날",
@@ -10386,6 +10391,7 @@
     "placeholder": "컴패니언에게 물어보세요…",
     "thinking": "생각 중…",
     "sendFailed": "컴패니언에게 닿지 못했어요 — 연결을 확인하고 다시 보내 주세요.",
+    "sendRejected": "이 메시지는 보낼 수 없었어요. 새 대화를 시작하고 다시 보내 주세요.",
     "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
     "dailyRemaining": "오늘 {{remaining}}개 남음",
     "personas": {
@@ -11129,6 +11135,7 @@
     "composerPlaceholder": "이어 물어보기…",
     "seedMessage": "방금 {{card}}를 뽑았어요. 지금 이것이 무엇을 가리키는지 함께 머물며 살펴보게 도와줘요.",
     "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요.",
+    "sendRejected": "이 질문은 보낼 수 없었어요. 새 카드를 뽑아 새 대화를 시작해 주세요.",
     "thinking": "오라클이 생각하는 중…",
     "cardReversed": "{{name}}(역방향)",
     "readCta": "이 카드 읽기",

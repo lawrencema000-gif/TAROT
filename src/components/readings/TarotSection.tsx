@@ -8,7 +8,7 @@ import { useGamification } from '../../context/GamificationContext';
 import { tarotReadings } from '../../dal';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { shareOrDownloadCard } from '../../utils/shareCard';
-import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
+import { encodeReading, buildShareUrl, shareLocaleQuery } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
 import { DeckLibrary } from './DeckLibrary';
 import { generatePremiumReading, tarotCardToReadingCard, MAX_AI_TAROT_CARDS } from '../../services/readingInterpretation';
@@ -818,7 +818,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   /**
    * Share one card from the detail sheet: its image, its first keyword, and
    * its page — by id, so a localized name (ワンドの5, 太陽) still links to
-   * the card rather than to `/tarot-meanings/5` or the hub.
+   * the card rather than to `/tarot-meanings/5` or the hub. The link names
+   * the sharer's language (`?hl=`), as a reading's does: the text was
+   * Japanese and the page it linked opened in English for a signed-out
+   * friend (p9 R13).
    */
   const handleShareCard = (card: TarotCard, reversed: boolean) =>
     shareOnce(async () => {
@@ -826,7 +829,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         defaultValue: '{{name}} — {{keyword}}. Read the card on Arcana: {{url}}',
         name: card.name,
         keyword: card.keywords?.[0] ?? '',
-        url: `https://tarotlife.app${cardMeaningPath(card.id)}`,
+        url: `https://tarotlife.app${cardMeaningPath(card.id)}${shareLocaleQuery()}`,
       });
       const outcome = await shareOrDownloadCard(
         {
@@ -874,11 +877,13 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * Save the reading on screen — once. The bookmark used to insert a row
    * on every tap (and re-run the XP, the ad check and the rate prompt), so
    * a second tap or a double tap during the insert left two copies in the
-   * Library. A save in flight or already made is a no-op.
+   * Library. A save in flight or already made is a no-op — read from refs
+   * as well as `isSaved`, which renders only after the insert has answered
+   * (savedIdRef is set in the same tick the insert returns).
    */
   const handleSaveReading = async () => {
     if (!user || drawnCards.length === 0) return;
-    if (isSaved || savingRef.current) return;
+    if (isSaved || savedIdRef.current || savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
     const res = await tarotReadings.insertReturningId(savedRow(aiInterpretation));

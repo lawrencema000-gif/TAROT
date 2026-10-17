@@ -14,6 +14,7 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { SoulmatePortrait } from '../components/soulmate/SoulmatePortrait';
 import { AspectGlyph } from '../components/soulmate/AspectGlyph';
 import { aiFailureOf } from '../components/reports/aiReading';
+import { birthZoneOf } from '../components/horoscope/birthZone';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -223,7 +224,8 @@ export function SoulmateScorePage() {
           setNeedsChart(true);
           return;
         }
-        const timezone = profile.birthTz || profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        // The birth place's zone, not the phone's (p8 F21).
+        const { tz: timezone } = await birthZoneOf(profile);
         const chartMode = profile.birthTime ? 'exact' : 'unknown';
         const cast = await supabase.functions.invoke('astrology-compute-natal', {
           body: {

@@ -17,6 +17,7 @@ import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18
 import { getLocale } from '../i18n/config';
 import { ct, useContentOverlay } from '../i18n/contentOverlay';
 import { useInterpretations } from '../hooks/useAstrology';
+import { fallbackZone, useBirthTzBackfill } from '../components/horoscope/birthZone';
 
 /** Types living on other surfaces — hub cards link out. Routes match App.tsx. */
 const LINKED: Record<string, { route: string; noteKey: string; note: string }> = {
@@ -57,6 +58,9 @@ export function ChartSuitePage() {
   const navigate = useNavigate();
   const { t } = useT('app');
   const { profile } = useAuth();
+  // An account set up before p8 F21 gets its birth-place zone derived,
+  // its chart recast in it, and the zone stored — once.
+  useBirthTzBackfill();
   const [params, setParams] = useSearchParams();
   const selectedKey = params.get('type');
   const selected: ChartTypeInfo | null = CHART_TYPES.find((c) => c.key === selectedKey) ?? null;
@@ -95,7 +99,9 @@ export function ChartSuitePage() {
           birthUtc: profile?.birthUtc ?? null,
           lat: profile?.birthLat ?? null,
           lon: profile?.birthLon ?? null,
-          timezone: profile?.birthTz ?? profile?.timezone ?? null,
+          // The birth place's zone (p8 F21): the backfill above derives and
+          // stores it for an account set up before it existed.
+          timezone: profile?.birthTz || fallbackZone(profile),
         },
       }));
       if (!error) { setResp({ type: 'natal', chart: (data?.data?.chart ?? data?.chart) as NatalChart }); }

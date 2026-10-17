@@ -319,7 +319,7 @@ function ZodiacWheel() {
             </>
           ) : (
             <>
-              <span className="text-gold"><SunIcon size={28} /></span>
+              <span className="text-gold"><SunIcon size={28} aria-hidden /></span>
               <div className="heading-display-md text-mystic-100">{t('zodiac.theZodiac')}</div>
               <div className="text-caption text-mystic-400">{t('zodiac.tapToExplore')}</div>
             </>
@@ -372,7 +372,7 @@ const FEATURES = [
 ] as const;
 const BENTO_ICONS: Record<(typeof FEATURES)[number]['key'], ReactNode> = {
   tarot: <TarotCardIcon className="w-6 h-6" />,
-  horoscope: <SunIcon size={24} />,
+  horoscope: <SunIcon size={24} aria-hidden />,
   journal: <PenLine className="w-6 h-6" strokeWidth={1.6} />,
   quizzes: <ListChecks className="w-6 h-6" strokeWidth={1.6} />,
   streaks: <Flame className="w-6 h-6" strokeWidth={1.6} />,
@@ -402,7 +402,7 @@ const RITUAL_STEPS = [
   { n: '03', key: 'journal' },
 ] as const;
 const RITUAL_ICONS: Record<(typeof RITUAL_STEPS)[number]['key'], ReactNode> = {
-  horoscope: <SunIcon size={28} />,
+  horoscope: <SunIcon size={28} aria-hidden />,
   card: <TarotCardIcon className="w-7 h-7" />,
   journal: <PenLine className="w-7 h-7" strokeWidth={1.6} />,
 };

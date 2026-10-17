@@ -15,6 +15,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { failedBeforeCharge } from '../components/reports/aiReading';
 import { paidFailureOf, sendPaid, type PaidFailure } from '../components/oracle/paidRequest';
+import { birthZoneOf } from '../components/horoscope/birthZone';
 
 /**
  * Partner Compatibility — real synastry under the hood.
@@ -142,10 +143,13 @@ export function PartnerCompatPage() {
     let synastry: SynastryResult | null = null;
     if (paid) {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      // The member's own birth is read in their birth place's zone (p8 F21);
+      // a partner's birth place is not asked for, so theirs stays the device's.
+      const myTimezone = profile && myBirth === profile.birthDate ? (await birthZoneOf(profile)).tz : timezone;
       const body = {
         myBirthDate: myBirth,
         myBirthTime: myBirthTime || undefined,
-        myTimezone: timezone,
+        myTimezone,
         partnerBirthDate: partnerBirth,
         partnerBirthTime: partnerBirthTime || undefined,
         partnerTimezone: timezone,

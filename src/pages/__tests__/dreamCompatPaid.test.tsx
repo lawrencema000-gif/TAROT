@@ -259,6 +259,23 @@ describe('Partner compatibility (p8 R1)', () => {
     expect(bodyOf('partner-synastry-adhoc', 0).requestId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
+  it('reads the member’s own birth in their birth place’s zone and the partner’s in the device’s (p8 F21)', async () => {
+    const p = PROFILE as Record<string, unknown>;
+    p.birthTz = 'Asia/Tokyo';
+    try {
+      invoke.mockImplementation(() => later({ data: { data: SYNASTRY }, error: null }));
+      const { container } = mount(<PartnerCompatPage />);
+      await waitFor(() => expect((container.querySelectorAll('input[type="date"]')[0] as HTMLInputElement).value).toBe('1991-03-08'));
+      fillPartnerBirth(container);
+      fireEvent.click(screen.getByRole('button', { name: /Reveal our compatibility/ }));
+      await screen.findByRole('button', { name: /Share this match/ }, { timeout: 3000 });
+      expect(bodyOf('partner-synastry-adhoc', 0).myTimezone).toBe('Asia/Tokyo');
+      expect(bodyOf('partner-synastry-adhoc', 0).partnerTimezone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+    } finally {
+      delete p.birthTz;
+    }
+  });
+
   it('a lost answer: an error that says the retry is free, and Try again is the same request, ungated — never a silent partial result', async () => {
     invoke.mockImplementationOnce(() => later(lost()));
     invoke.mockImplementationOnce(() => later({ data: { data: SYNASTRY }, error: null }));

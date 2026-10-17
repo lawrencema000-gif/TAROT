@@ -1300,19 +1300,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logError('auth.signOut.clearCache', 'Cache clear failed', { error: e });
     }
 
-    // 7. Delete the pre-scoping, device-global private caches (mood diary,
-    //    Companion conversations). Their writer is unknowable, so they are
-    //    never read or uploaded; the per-account caches that replaced them
-    //    are scoped by user id and stay for that account's next sign-in.
+    // 7. The pre-scoping, device-global private caches (the mood diary's
+    //    `arcana_mood_diary_v1`, the Companion's `arcana_companion_v1_*`)
+    //    are NOT deleted here. They are the only copy of what the live app
+    //    saved before those moved to the account, and nothing records whose
+    //    they are, so they wait on the device until an account that opens
+    //    the diary or the Companion is asked whether they are its own;
+    //    claimed, they move into that account and the device copy goes
+    //    (p8 F33). Only the old build's daily message counters, which hold
+    //    no content, are dropped.
     try {
-      const [{ clearLegacyMoodCache }, { clearLegacyCompanionCache }] = await Promise.all([
-        import('../data/moodDiary'),
-        import('../components/companion/companionHistory'),
-      ]);
-      clearLegacyMoodCache();
-      clearLegacyCompanionCache();
+      const { clearLegacyCompanionCounters } = await import('../components/companion/companionHistory');
+      clearLegacyCompanionCounters();
     } catch (e) {
-      logError('auth.signOut.clearLegacyCaches', 'Legacy cache clear failed', { error: e });
+      logError('auth.signOut.clearLegacyCaches', 'Legacy counter clear failed', { error: e });
     }
 
     logInfo('auth.signOut.complete', 'Sign out complete');

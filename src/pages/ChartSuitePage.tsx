@@ -132,7 +132,12 @@ export function ChartSuitePage() {
         <PageHeader
           eyebrow={t('chartSuite.eyebrow', { defaultValue: 'Chart Library' })}
           title={t('chartSuite.title', { defaultValue: 'Every sky, every angle' })}
-          subtitle={t('chartSuite.subtitle', { defaultValue: 'Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.' })}
+          // The count is the list's own length, so adding a chart can't
+          // leave the lede promising one fewer (P7 F62/F90).
+          subtitle={t('chartSuite.subtitle', {
+            defaultValue: '{{n}} ways to read a moment — from the chart you were born with to the sky above you right now.',
+            n: CHART_TYPES.length,
+          })}
           divider
         />
         {/* One line per chart: the name, its one-line tagline, and — for the

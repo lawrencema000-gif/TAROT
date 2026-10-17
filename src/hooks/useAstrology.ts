@@ -181,8 +181,10 @@ interface GeoResult {
 
 async function geocodeClientFallback(query: string): Promise<GeoResult[]> {
   const encoded = encodeURIComponent(query);
+  // featureType=settlement: a birth place is a city, town, village or ward —
+  // without it "Springfield, Atlantis" came back as two streets in France.
   const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1`,
+    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1&featureType=settlement`,
     { headers: { 'User-Agent': 'Arcana-Astrology-App/1.0' } }
   );
   if (!res.ok) return [];

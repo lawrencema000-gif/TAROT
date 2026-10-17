@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Share2, Heart, Briefcase, Feather, BookOpen, Compass, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Heart, Briefcase, Feather, BookOpen, Compass, User, Loader2 } from 'lucide-react';
 import { KeywordRow, Paper, Tabs, Tag, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getPlayingCardBySlug, isCourtCard, isJoker, PLAYING_CARDS_ALL } from '../../data/cartomancy';
 import type { PlayingCard } from '../../types/cartomancy';
 import { PlayingCardFace } from './PlayingCardFace';
+import { RunIn } from './CartomancyResultParts';
 
 /**
  * One playing card, close up: the face at 224/256 px, its name and
@@ -25,11 +26,13 @@ export interface CartomancyCardDetailProps {
   /** Walk to another card; omit to hide the prev/next row. */
   onNavigate?: (card: PlayingCard) => void;
   onShare?: (card: PlayingCard, reversed: boolean) => void;
+  /** A share image is rendering (the section's one-at-a-time share): the control waits. */
+  sharing?: boolean;
 }
 
 type DetailTab = 'meaning' | 'love' | 'career' | 'advice' | 'person' | 'reflect';
 
-export function CartomancyCardDetail({ card: source, reversed = false, localize, sequence = PLAYING_CARDS_ALL, onNavigate, onShare }: CartomancyCardDetailProps) {
+export function CartomancyCardDetail({ card: source, reversed = false, localize, sequence = PLAYING_CARDS_ALL, onNavigate, onShare, sharing = false }: CartomancyCardDetailProps) {
   const { t } = useT('app');
   const [activeTab, setActiveTab] = useState<DetailTab>('meaning');
   const card = useMemo(() => localize(source), [source, localize]);
@@ -68,10 +71,16 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
           <button
             type="button"
             onClick={() => onShare(source, reversed)}
-            aria-label={t('readings.revealView.share', { defaultValue: 'Share this reading' })}
+            disabled={sharing}
+            aria-busy={sharing || undefined}
+            aria-label={
+              sharing
+                ? t('readings.revealView.sharing', { defaultValue: 'Preparing the share image' })
+                : t('readings.revealView.share', { defaultValue: 'Share this reading' })
+            }
             className="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-mystic-300 transition-colors duration-fast [@media(hover:hover)]:[&:hover:not(:active)]:text-mystic-100 active:text-mystic-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
           >
-            <Share2 className="w-5 h-5" />
+            {sharing ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <Share2 className="w-5 h-5" aria-hidden />}
           </button>
         ) : (
           <span />
@@ -114,7 +123,7 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
 
       <div className="text-center space-y-2">
         <EyebrowLabel>{suitLabel}</EyebrowLabel>
-        <h2 className="heading-display-lg heading-strong text-mystic-100">{card.name}</h2>
+        <h2 className="heading-display-lg heading-strong text-mystic-100 lining-nums">{card.name}</h2>
       </div>
 
       <KeywordRow keywords={card.keywords} />
@@ -158,7 +167,7 @@ export function CartomancyCardDetail({ card: source, reversed = false, localize,
                         const other = getPlayingCardBySlug(combo.with);
                         return (
                           <li key={combo.with} className="reading-copy">
-                            <strong>{other ? localize(other).name : combo.with}.</strong> {combo.meaning}
+                            <RunIn head={<strong>{other ? localize(other).name : combo.with}</strong>}>{combo.meaning}</RunIn>
                           </li>
                         );
                       })}

@@ -10024,6 +10024,20 @@
       "tooFew": "再记录几天，看看会浮现出怎样的规律。"
     }
   },
+  "moodDiary": {
+    "legacyTitle": "这台设备上保存的心境记录",
+    "legacyBody": "在心境记录转存到账号之前，旧版本的 Arcana 在这台设备上保存了 {{count}} 天的心境。如果是你的，请把它们加入你的记录；如果不是，它们会留在这台设备上，留给记录它们的人。",
+    "legacyBody_one": "在心境记录转存到账号之前，旧版本的 Arcana 在这台设备上保存了 {{count}} 天的心境。如果是你的，请把它加入你的记录；如果不是，它会留在这台设备上，留给记录它的人。",
+    "legacyBody_other": "在心境记录转存到账号之前，旧版本的 Arcana 在这台设备上保存了 {{count}} 天的心境。如果是你的，请把它们加入你的记录；如果不是，它们会留在这台设备上，留给记录它们的人。",
+    "legacyClaim": "加入我的记录",
+    "legacyClaim_one": "加入我的记录",
+    "legacyClaim_other": "加入我的记录",
+    "legacyDecline": "不是我的",
+    "legacyClaimed": "已将 {{count}} 天加入你的记录",
+    "legacyClaimed_one": "已将 {{count}} 天加入你的记录",
+    "legacyClaimed_other": "已将 {{count}} 天加入你的记录",
+    "legacyClaimFailed": "暂时无法加入你的记录。它们仍保存在这台设备上——请稍后再试。"
+  },
   "compat": {
     "title": "伴侣契合",
     "intro": "把 MBTI 认知功能契合与占星元素契合结合起来，看看你们在哪里合拍、在哪里摩擦、以及成长的边缘在哪里。请为双方各填至少一项（MBTI 或出生日期）。",
@@ -10074,7 +10088,7 @@
     "adjustmentsLabel": "试试这些调整",
     "elementLabel": "元素",
     "colorLabel": "颜色",
-    "placement": "把这些调整放在房间的{{dir}}（从入口朝向看）。",
+    "placement": "从入口往里看，把这些调整放在房间的{{dir}}。",
     "shareSubtitle": "需要照料",
     "areas": {
       "wealth": {
@@ -10357,7 +10371,18 @@
         "intro": "温暖、具身、直觉。看见问题背后的那个人。以同样的分量给出智慧与实修。"
       }
     },
-    "balanceChangedRetry": "你的余额已变动，请重新发送消息。"
+    "balanceChangedRetry": "你的余额已变动，请重新发送消息。",
+    "renewNotice": "这段对话的24小时已经过去。你的下一条消息将开始新的24小时。",
+    "legacyTitle": "这台设备上保存的对话",
+    "legacyBody": "在灵伴转存到账号之前，旧版本的 Arcana 在这台设备上保存了与{{personas}}的对话。如果是你的，请把它们加入你的对话；如果不是，它们会留在这台设备上，留给进行这些对话的人。",
+    "legacyBody_one": "在灵伴转存到账号之前，旧版本的 Arcana 在这台设备上保存了与{{personas}}的一段对话。如果是你的，请把它加入你的对话；如果不是，它会留在这台设备上，留给进行这段对话的人。",
+    "legacyBody_other": "在灵伴转存到账号之前，旧版本的 Arcana 在这台设备上保存了与{{personas}}的对话。如果是你的，请把它们加入你的对话；如果不是，它们会留在这台设备上，留给进行这些对话的人。",
+    "legacyClaim": "加入我的对话",
+    "legacyClaim_one": "加入我的对话",
+    "legacyClaim_other": "加入我的对话",
+    "legacyDecline": "不是我的",
+    "legacyClaimed": "已加入你的对话",
+    "legacyClaimFailed": "暂时无法加入。它们仍保存在这台设备上——请稍后再试。"
   },
   "advisors": {
     "title": "顾问",
@@ -11053,7 +11078,10 @@
         "9": "我可以依靠哪些隐藏的力量？"
       }
     },
-    "stillReading": "仍在解读…"
+    "stillReading": "仍在解读…",
+    "lensLabel": "焦点",
+    "errorSpent": "这个问题已经解读过一次，那次解读已无法再显示。",
+    "errorSpentNew": "点击「抽牌并解读」将开始一次新的解读，按常规扣费。"
   },
   "tarotCompanion": {
     "title": "塔罗伴侣",
@@ -11069,7 +11097,9 @@
     "thinking": "神谕正在思考…",
     "cardReversed": "{{name}}（逆位）",
     "readCta": "解读这张牌",
-    "readPrompt": "请神谕与你一起解读这张牌。"
+    "readPrompt": "请神谕与你一起解读这张牌。",
+    "balanceChangedRetry": "你的余额已变动，请再试一次。",
+    "renewNotice": "这段对话的24小时已经过去。你的下一个问题将开始新的24小时。"
   },
   "journalCoach": {
     "askCta": "向日记教练提问",
@@ -11264,7 +11294,8 @@
     "gengNote": "各派对庚年的四化说法不一。我们采用中州派的排法（阳禄、武权、阴科、同忌），这也是大多数现代命盘所用的；《紫微斗数全书》一系则定为同科、相忌。",
     "lede": "十二宫、十四主星、四化——依你的农历出生日期与时辰排布。",
     "noTimeNote": "没有出生时间时，我们默认为正午（午时）。星曜格局依然成立，但你的命宫可能会有所移动。",
-    "lifePalaceIn": "命宫在{{branch}}"
+    "lifePalaceIn": "命宫在{{branch}}",
+    "lunarDate": "农历 {{date}}"
   },
   "mansions": {
     "title": "二十八宿",
@@ -11284,8 +11315,7 @@
     "lede": "月亮行经的二十八宿：一宿值今日，一宿属于你出生之时。",
     "nothingAvoided": "没有特别需要避忌的事。",
     "nothingFavoured": "通书在此没有记载宜做之事——这一天适合守着小事，不宜开始新事。",
-    "sukuyoAfter": "两者都有真实的传承；它们回答的问题略有不同，所以我们分开呈现，而不是替你选一个。",
-    "sukuyoBefore": "日本的宿曜道传统算法不同——依据你的农历出生月与日，而不是连续的值日循环——它把你归入",
+    "sukuyo": "日本的宿曜道传统算法不同——依据你的农历出生月与日，而不是连续的值日循环——它把你归入<gold>{{mansion}}</gold>。两者都有真实的传承；它们回答的问题略有不同，所以我们分开呈现，而不是替你选一个。",
     "sukuyoEyebrow": "宿曜 · 日本的解读",
     "seasonElement": "{{season}} · {{element}}"
   },
@@ -11788,7 +11818,7 @@
   "chartSuite": {
     "eyebrow": "星盘库",
     "title": "每一片天空，每一个角度",
-    "subtitle": "十三种解读一个时刻的方式——从你出生时的星盘，到此刻你头顶的天空。",
+    "subtitle": "{{n}}种解读一个时刻的方式——从你出生时的星盘，到此刻你头顶的天空。",
     "needBirth": "在个人资料中添加你的出生日期，才能排出这张星盘。",
     "addBirth": "添加我的出生信息",
     "castFailed": "无法排出这张星盘，请检查网络连接后重试。",
@@ -11921,6 +11951,7 @@
     "waitStill": "还在绘制中——通常需要一分钟左右",
     "stillPainting": "还在绘制中。一分钟后点击「显示我的画像」即可领取——不会再次扣费。",
     "connectionDropped": "绘制过程中连接中断了。点击「显示我的画像」即可领取——不会重复扣费。",
+    "collectLater": "暂时无法领取你的画像。请一分钟后再点击「显示我的画像」——费用已经支付过了，不会再次扣费。",
     "expired": "那幅画像已无法再次显示。请重新绘制一幅。",
     "failedNotCharged": "画像未能绘制，你的月光石没有被扣除。请稍后再试。",
     "collect": "显示我的画像",
@@ -12624,6 +12655,7 @@
       "previousNone": "没有上一张",
       "previousShort": "上一张",
       "readWithDeck": "在一次解读中，亲手为自己抽出这张牌。",
+      "runIn": "{{head}}：{{body}}",
       "sameSuit": "同花色的其他牌",
       "timing": "时机",
       "withOtherCards": "与其他牌的组合"

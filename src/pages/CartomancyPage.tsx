@@ -7,7 +7,8 @@ import { PlayingCardIcon } from '../components/ui/NavIcons';
 import { SuitGlyph } from '../components/cartomancy/SuitGlyph';
 import { PlayingCardIcon as JokerIcon } from '../components/ui/NavIcons';
 import { CartomancyCardDetail } from '../components/cartomancy/CartomancyCardDetail';
-import { cartoCardOfTheDay, loadLessonsDone } from '../components/cartomancy/cartoFlow';
+import { cartoCardOfTheDay } from '../components/cartomancy/cartoFlow';
+import { useLessonsDone } from '../components/cartomancy/useLessonsDone';
 import { CARTO_LESSONS, CARTO_SPREADS, PLAYING_CARDS_ALL } from '../data/cartomancy';
 import { CARTO_CARD_COUNT, CARTO_LESSON_COUNT } from '../data/counts';
 import type { CartoSpread, PlayingCard } from '../types/cartomancy';
@@ -49,7 +50,8 @@ function CartomancyPageBody() {
   const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const spreads = useMemo(() => CARTO_SPREADS.map((s) => localizeCartoSpread(s, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [done] = useState(() => loadLessonsDone());
+  // This account's ticks (p8 F52: the device's used to pass to the next reader).
+  const { done } = useLessonsDone();
   const [detail, setDetail] = useState<{ card: PlayingCard; reversed: boolean } | null>(null);
 
   const today = localDateStr();

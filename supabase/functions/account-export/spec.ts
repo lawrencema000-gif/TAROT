@@ -46,6 +46,11 @@ export const EXPORT_SPECS: ExportSpec[] = [
   own("advisor_interest"),
   own("subscriptions"),
   own("user_preferences"),
+  // Progress and the claims behind it: badges, the XP ledger, and (from
+  // 20261003000018; [] until it is pushed) the reports the badges count.
+  own("user_achievements"),
+  own("xp_activities"),
+  own("achievement_reports"),
 ];
 
 /** A table this database does not have (yet): PostgREST's PGRST205, or Postgres's 42P01. */

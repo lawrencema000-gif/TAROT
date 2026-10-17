@@ -14,6 +14,8 @@ const adConfig = vi.hoisted(() => ({
   stats: null as { rewardedRemaining: number } | null,
   /** The stats the NEXT fetch brings back (the account the session now belongs to). */
   next: null as { rewardedRemaining: number } | null,
+  /** The network is down: a fetch hands back the cached config, as adConfig.ts does. */
+  offline: false,
   fetches: 0,
 }));
 
@@ -50,7 +52,8 @@ vi.mock('./adConfig', () => ({
     invalidate: () => {},
     fetchConfig: () => {
       adConfig.fetches += 1;
-      if (adConfig.next) adConfig.stats = adConfig.next;
+      // Each answer is a new object, as JSON from the server is.
+      if (adConfig.next && !adConfig.offline) adConfig.stats = { ...adConfig.next };
       return Promise.resolve(adConfig.stats ? { dailyStats: adConfig.stats } : null);
     },
     getAdUnitId: () => 'test-unit',
@@ -81,6 +84,7 @@ beforeEach(() => {
   invoke.mockReset();
   adConfig.stats = null;
   adConfig.next = null;
+  adConfig.offline = false;
   adConfig.fetches = 0;
 });
 
@@ -198,6 +202,21 @@ describe('rewardedAdsService across a change of account (p8 F07)', () => {
     expect(rewardedAdsService.getCreditsRemaining()).toBe(0);
     expect(await rewardedAdsService.showRewardedAd()).toBe('daily-cap');
     expect(adConfig.fetches).toBe(before);
+  });
+
+  it('B’s config cannot be fetched (offline): unknown, not A’s cached 0', async () => {
+    const { rewardedAdsService } = await serviceAfterSixthAd();
+    adConfig.offline = true;
+    adConfig.next = { rewardedRemaining: 6 };
+    rewardedAdsService.setUserId('user-B');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(rewardedAdsService.getCreditsRemaining()).toBeNull();
+    expect(await rewardedAdsService.canWatchAd()).toBe(true);
+    // Back online: the next read fetches B's own count.
+    adConfig.offline = false;
+    rewardedAdsService.getCreditsRemaining();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(rewardedAdsService.getCreditsRemaining()).toBe(6);
   });
 
   it('B really capped: its own config says 0, and the ad is not offered', async () => {

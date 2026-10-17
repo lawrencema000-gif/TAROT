@@ -287,7 +287,12 @@ describe('card of the day and saved rows', () => {
 describe('per-viewer storage', () => {
   const stub = () => {
     const m = new Map<string, string>();
-    return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) };
+    return {
+      map: m,
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+      removeItem: (k: string) => void m.delete(k),
+    };
   };
 
   it('round-trips the settings and tolerates garbage', () => {
@@ -300,13 +305,36 @@ describe('per-viewer storage', () => {
     expect(loadCartoSettings(null)).toEqual(DEFAULT_CARTO_SETTINGS);
   });
 
-  it('ticks and unticks lessons', () => {
+  it('ticks and unticks lessons, per account (p8 F52)', () => {
     const store = stub();
-    expect(loadLessonsDone(store).size).toBe(0);
-    setLessonDone('the-four-suits', true, store);
-    expect(loadLessonsDone(store).has('the-four-suits')).toBe(true);
-    setLessonDone('the-four-suits', false, store);
-    expect(loadLessonsDone(store).has('the-four-suits')).toBe(false);
+    expect(loadLessonsDone('user-a', store).size).toBe(0);
+    setLessonDone('the-four-suits', true, 'user-a', store);
+    expect(loadLessonsDone('user-a', store).has('the-four-suits')).toBe(true);
+    expect(store.map.has('arcana_carto_lessons:user-a')).toBe(true);
+    // the next account on the phone starts from its own (empty) list
+    expect(loadLessonsDone('user-b', store).size).toBe(0);
+    setLessonDone('the-four-suits', false, 'user-a', store);
+    expect(loadLessonsDone('user-a', store).has('the-four-suits')).toBe(false);
+    // signed out: the device's own list
+    setLessonDone('red-and-black', true, null, store);
+    expect([...loadLessonsDone(null, store)]).toEqual(['red-and-black']);
+    expect(loadLessonsDone(null, null).size).toBe(0);
+  });
+
+  it('adopts the device’s ticks once, into the first account that has none, and never into a second', () => {
+    const store = stub();
+    store.setItem('arcana_carto_lessons', JSON.stringify(['the-four-suits', 'the-court-cards']));
+    expect([...loadLessonsDone('user-a', store)].sort()).toEqual(['the-court-cards', 'the-four-suits']);
+    expect(store.map.has('arcana_carto_lessons')).toBe(false);
+    expect(JSON.parse(store.map.get('arcana_carto_lessons:user-a')!).sort()).toEqual(['the-court-cards', 'the-four-suits']);
+    expect(loadLessonsDone('user-b', store).size).toBe(0);
+    // an account that already has its own list keeps it: no adoption over it
+    store.setItem('arcana_carto_lessons', JSON.stringify(['timing']));
+    expect([...loadLessonsDone('user-a', store)].sort()).toEqual(['the-court-cards', 'the-four-suits']);
+    expect(store.map.get('arcana_carto_lessons')).toBe(JSON.stringify(['timing']));
+    // garbage reads as nothing ticked
+    store.setItem('arcana_carto_lessons:user-c', '{not json');
+    expect(loadLessonsDone('user-c', store).size).toBe(0);
   });
 });
 

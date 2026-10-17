@@ -10,6 +10,17 @@ import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { aiFailureOf } from '../components/reports/aiReading';
+import {
+  newConversationId,
+  conversationCovered,
+  chargedAtAfterReply,
+  loadTarotSession,
+  saveTarotSession,
+  clearTarotSession,
+  type CompanionConversation,
+  type CompanionMessage,
+} from '../components/companion/companionHistory';
 import type { TarotCard } from '../types';
 
 /**
@@ -23,44 +34,92 @@ import type { TarotCard } from '../types';
  * one paid step (50 Moonstones, debited by the server) — starts only on
  * "Read this card". It used to start on mount, so merely visiting the page
  * (or coming back to it, or tapping "New card") charged the reader.
+ *
+ * Each drawn card is one conversation with its own conversationId, sent
+ * with the opener and every follow-up: the server charges the opener once
+ * and every follow-up for 24 hours is free, as the cost line says. Without
+ * it each request was charged on its own — every follow-up cost 50, and a
+ * short balance read as "Could not reach the oracle" (p8 F02/F10/O#21).
+ * The conversation is kept for the account while that charge covers it.
  */
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+type ReplyOutcome =
+  | { ok: true; reply: string; charged?: boolean }
+  | { ok: false; balance: boolean };
 
 export function TarotCompanionPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
+  const userId = user?.id ?? null;
   const [card, setCard] = useState<{ card: TarotCard; reversed: boolean } | null>(null);
   const [drawing, setDrawing] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  /** The conversation about the card on screen. A new card is a new conversation (a new id). */
+  const [convo, setConvo] = useState<CompanionConversation>(() => ({ conversationId: newConversationId(), messages: [] }));
+  const messages = convo.messages;
   const [draft, setDraft] = useState('');
+  /** A press is being handled — through the balance gate and the reply. */
+  const [busy, setBusy] = useState(false);
+  /** The request is out: the "thinking" line shows. */
   const [sending, setSending] = useState(false);
+  /**
+   * Set synchronously on a press, before the balance gate is awaited: a
+   * second tap on "Read this card" (or a second send) while the first is
+   * handled is ignored. A double tap used to open — and pay for — two
+   * conversations (p8 F11, O#21).
+   */
+  const inFlight = useRef(false);
+  /** The conversation on screen, for a reply that lands after "New card". */
+  const shownConversation = useRef(convo.conversationId);
+  useEffect(() => {
+    shownConversation.current = convo.conversationId;
+  }, [convo.conversationId]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('tarot-companion-session');
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('tarot-companion-session');
 
   const draw = useCallback(async () => {
     setDrawing(true);
-    setMessages([]);
     const deck = await getAllTarotCards();
-    const seed = `${user?.id || 'anon'}:${Date.now()}`;
+    const seed = `${userId || 'anon'}:${Date.now()}`;
     const [drawn] = drawSeededCards(1, seed, deck);
     // small delay for the shuffle feel
     await new Promise((r) => setTimeout(r, 600));
     setCard(drawn);
+    // A new card is a new conversation: a new id, and nothing charged until it is read.
+    setConvo({ conversationId: newConversationId(), messages: [] });
+    setDraft('');
+    if (userId) clearTarotSession(userId);
     setDrawing(false);
-  }, [user?.id]);
+  }, [userId]);
 
-  useEffect(() => { draw(); }, [draw]);
+  // The conversation this account is still inside (its charge covers it)
+  // comes back as it was; otherwise a fresh card. Neither sends anything.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const saved = loadTarotSession(userId);
+      if (saved) {
+        const deck = await getAllTarotCards();
+        const found = deck.find((c) => c.id === saved.cardId);
+        if (cancelled) return;
+        if (found) {
+          setCard({ card: found, reversed: saved.reversed });
+          setConvo(saved.conversation);
+          return;
+        }
+      }
+      if (!cancelled) await draw();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, draw]);
 
   // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  const callAi = async (history: ChatMessage[]) => {
+  const callAi = async (conversationId: string, history: CompanionMessage[]): Promise<ReplyOutcome> => {
     const sunSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
     const userContext = {
       zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
@@ -69,57 +128,136 @@ export function TarotCompanionPage() {
       displayName: profile?.displayName,
     };
     const { data, error } = await supabase.functions.invoke('ai-companion-chat', {
-      body: { persona: 'oracle', history, userContext },
+      body: {
+        persona: 'oracle',
+        conversationId,
+        history: history.map((m) => ({ role: m.role, content: m.content })),
+        userContext,
+      },
     });
-    if (error) return null;
-    const payload = (data?.data ?? data) as { reply?: string } | null;
-    return payload?.reply ?? null;
+    if (error) {
+      // Short of Moonstones / over today's AI limit is not a connection
+      // problem: the caller reopens the gate, which shows the Earn sheet.
+      const failure = await aiFailureOf(error);
+      return { ok: false, balance: failure === 'insufficient' || failure === 'soft-cap' };
+    }
+    const payload = (data?.data ?? data) as { reply?: string; charged?: boolean } | null;
+    return payload?.reply ? { ok: true, reply: payload.reply, charged: payload.charged } : { ok: false, balance: false };
   };
 
-  const sendInitial = async (drawn: { card: TarotCard; reversed: boolean }) => {
-    // 50 ms charge for the session opener. Premium = no debit; soft cap
-    // counts one slot. Follow-ups in the same conversation are free.
-    if (sending) return;
-    const ok = await tryConsume();
-    if (!ok) return;
-    const label = drawn.reversed
-      ? t('tarotCompanion.cardReversed', { name: drawn.card.name, defaultValue: '{{name}} (reversed)' })
-      : drawn.card.name;
-    const seed: ChatMessage = {
-      role: 'user',
-      content: t('tarotCompanion.seedMessage', {
-        defaultValue: 'I just drew {{card}}. Help me sit with what it might be pointing to right now.',
-        card: label,
-      }) as string,
-    };
-    setMessages([seed]);
+  /**
+   * Send `asked` (the thread with the new user message) and settle it: the
+   * reply joins the conversation and is kept for the account; anything else
+   * takes the message back out. Returns whether a reply came.
+   */
+  const exchange = async (
+    drawn: { card: TarotCard; reversed: boolean },
+    base: CompanionConversation,
+    asked: CompanionConversation,
+    wasCovered: boolean,
+  ): Promise<ReplyOutcome> => {
+    setConvo(asked);
     setSending(true);
-    const reply = await callAi([seed]);
+    const res = await callAi(base.conversationId, asked.messages);
     setSending(false);
-    if (!reply) {
-      await refund();
-      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Could not reach the oracle' }), 'error');
-      return;
+    const shown = shownConversation.current === base.conversationId;
+    if (res.ok) {
+      const next: CompanionConversation = {
+        ...asked,
+        messages: [...asked.messages, { role: 'assistant', content: res.reply, timestamp: Date.now() }],
+        chargedAt: chargedAtAfterReply(base, res.charged, wasCovered),
+      };
+      // Kept even if the page was left or a new card drawn meanwhile: it is paid for.
+      if (userId && (shown || !loadTarotSession(userId))) {
+        saveTarotSession(userId, { cardId: drawn.card.id, reversed: drawn.reversed, conversation: next });
+      }
+      if (shown) setConvo(next);
+      return res;
     }
-    setMessages([seed, { role: 'assistant', content: reply }]);
+    if (shown) setConvo(base);
+    return res;
+  };
+
+  const sendInitial = async () => {
+    if (!card || inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    const drawn = card;
+    try {
+      // The opener is the conversation's one charge (premium: no debit;
+      // the soft cap counts one slot). Check the balance first.
+      const ok = await tryConsume();
+      if (!ok) return;
+      const label = drawn.reversed
+        ? t('tarotCompanion.cardReversed', { name: drawn.card.name, defaultValue: '{{name}} (reversed)' })
+        : drawn.card.name;
+      const seed: CompanionMessage = {
+        role: 'user',
+        content: t('tarotCompanion.seedMessage', {
+          defaultValue: 'I just drew {{card}}. Help me sit with what it might be pointing to right now.',
+          card: label,
+        }) as string,
+        timestamp: Date.now(),
+      };
+      const base = convo;
+      const res = await exchange(drawn, base, { ...base, messages: [seed] }, false);
+      if (res.ok) return;
+      if (res.balance) {
+        if (await tryConsume()) {
+          toast(t('tarotCompanion.balanceChangedRetry', { defaultValue: 'Your balance changed — try again.' }), 'info');
+        }
+        return;
+      }
+      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Couldn’t reach the oracle — check your connection and ask again.' }), 'error');
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
   };
 
   const handleSend = async () => {
-    if (!draft.trim() || sending) return;
     const text = draft.trim();
-    setDraft('');
-    const next: ChatMessage = { role: 'user', content: text };
-    const updated = [...messages, next];
-    setMessages(updated);
-    setSending(true);
-    const reply = await callAi(updated);
-    setSending(false);
-    if (!reply) {
-      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Could not reach the oracle' }), 'error');
-      return;
+    if (!text || !card || inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    const drawn = card;
+    const base = convo;
+    const wasCovered = conversationCovered(base);
+    try {
+      // Follow-ups are free while the opener's charge covers the
+      // conversation (24 hours). After that the next message is charged:
+      // the price is on screen and the balance is checked first.
+      if (!wasCovered) {
+        const ok = await tryConsume();
+        if (!ok) return;
+      }
+      setDraft('');
+      const res = await exchange(
+        drawn,
+        base,
+        { ...base, messages: [...base.messages, { role: 'user', content: text, timestamp: Date.now() }] },
+        wasCovered,
+      );
+      if (res.ok) return;
+      // Not answered: the question goes back in the composer and out of the thread.
+      if (shownConversation.current === base.conversationId) setDraft((cur) => cur || text);
+      if (res.balance) {
+        // Refused before any debit: the gate opens the Earn sheet with the
+        // balance or the soft-cap reset — not "could not reach the oracle".
+        if (await tryConsume()) {
+          toast(t('tarotCompanion.balanceChangedRetry', { defaultValue: 'Your balance changed — try again.' }), 'info');
+        }
+        return;
+      }
+      toast(t('tarotCompanion.aiFailed', { defaultValue: 'Couldn’t reach the oracle — check your connection and ask again.' }), 'error');
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
     }
-    setMessages([...updated, { role: 'assistant', content: reply }]);
   };
+
+  /** Whether the next follow-up is covered by the opener's charge. */
+  const covered = conversationCovered(convo);
 
   return (
     <Page spacing="sm">
@@ -127,7 +265,7 @@ export function TarotCompanionPage() {
         icon={<Sparkles />}
         title={t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
         action={
-          <Button variant="ghost" size="sm" onClick={draw} disabled={drawing} className="gap-1">
+          <Button variant="ghost" size="sm" onClick={draw} disabled={drawing || busy} className="gap-1">
             <Shuffle className="w-3 h-3" />
             {t('tarotCompanion.redraw', { defaultValue: 'New card' })}
           </Button>
@@ -200,10 +338,25 @@ export function TarotCompanionPage() {
               maxLength={2000}
               className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 min-h-[44px] text-mystic-100 text-ui placeholder-mystic-500 focus:outline-none focus:border-gold/40"
             />
-            <Button variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
+            <Button variant="primary" onClick={handleSend} disabled={busy || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
               <Send className="w-4 h-4" aria-hidden />
             </Button>
           </div>
+          {/* When the next follow-up is the one charged — the opener's 24
+              hours are over, or no charge was seen — the price is on
+              screen before it goes. */}
+          {!covered && !sending && (
+            <div className="mt-3 space-y-1">
+              {typeof convo.chargedAt === 'number' && (
+                <p className="text-meta text-mystic-300">
+                  {t('tarotCompanion.renewNotice', {
+                    defaultValue: 'The 24 hours this conversation covered have passed. Your next question starts a new 24 hours.',
+                  })}
+                </p>
+              )}
+              <MoonstoneCostLine wording="conversation" />
+            </div>
+          )}
         </Card>
       )}
 
@@ -216,7 +369,7 @@ export function TarotCompanionPage() {
               <p className="text-ui text-mystic-400">
                 {t('tarotCompanion.readPrompt', { defaultValue: 'Ask the oracle to read this card with you.' })}
               </p>
-              <Button variant="gold" onClick={() => void sendInitial(card)} className="mt-3">
+              <Button variant="gold" onClick={() => void sendInitial()} disabled={busy} className="mt-3">
                 <Sparkles className="w-4 h-4 mr-2" aria-hidden />
                 {t('tarotCompanion.readCta', { defaultValue: 'Read this card' })}
               </Button>

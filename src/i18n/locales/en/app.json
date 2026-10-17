@@ -10007,6 +10007,20 @@
       "tooFew": "Log a few more days to see a pattern emerge."
     }
   },
+  "moodDiary": {
+    "legacyTitle": "Mood days saved on this device",
+    "legacyBody": "An earlier version of Arcana saved {{count}} mood days on this device, before the diary moved to your account. If they’re yours, add them to your diary. If not, they stay here for whoever logged them.",
+    "legacyBody_one": "An earlier version of Arcana saved {{count}} mood day on this device, before the diary moved to your account. If it’s yours, add it to your diary. If not, it stays here for whoever logged it.",
+    "legacyBody_other": "An earlier version of Arcana saved {{count}} mood days on this device, before the diary moved to your account. If they’re yours, add them to your diary. If not, they stay here for whoever logged them.",
+    "legacyClaim": "Add them to my diary",
+    "legacyClaim_one": "Add it to my diary",
+    "legacyClaim_other": "Add them to my diary",
+    "legacyDecline": "Not mine",
+    "legacyClaimed": "{{count}} days added to your diary",
+    "legacyClaimed_one": "{{count}} day added to your diary",
+    "legacyClaimed_other": "{{count}} days added to your diary",
+    "legacyClaimFailed": "Couldn’t add them to your diary right now. They’re still on this device — try again in a moment."
+  },
   "compat": {
     "title": "Partner compatibility",
     "intro": "Combines MBTI cognitive-function fit with astrology elemental compatibility to show you where you click, where you rub, and where the growth edges live. Enter what you know about each side — at least one from each.",
@@ -10057,7 +10071,7 @@
     "adjustmentsLabel": "Try these adjustments",
     "elementLabel": "Element",
     "colorLabel": "Colour",
-    "placement": "Place these adjustments in the {{dir}} of your room (oriented from the entry door).",
+    "placement": "Place these adjustments in the {{dir}} area of your room, as seen from the entry door.",
     "shareSubtitle": "Needs attention",
     "areas": {
       "wealth": {
@@ -10354,7 +10368,18 @@
         "intro": "Warm, embodied, intuitive. Tracks the person behind the question. Offers practices as often as wisdom."
       }
     },
-    "balanceChangedRetry": "Your balance changed — send your message again."
+    "balanceChangedRetry": "Your balance changed — send your message again.",
+    "renewNotice": "The 24 hours this conversation covered have passed. Your next message starts a new 24 hours.",
+    "legacyTitle": "Conversations saved on this device",
+    "legacyBody": "An earlier version of Arcana saved conversations with {{personas}} on this device, before the Companion moved to your account. If they’re yours, add them to your conversations. If not, they stay here for whoever had them.",
+    "legacyBody_one": "An earlier version of Arcana saved a conversation with {{personas}} on this device, before the Companion moved to your account. If it’s yours, add it to your conversations. If not, it stays here for whoever had it.",
+    "legacyBody_other": "An earlier version of Arcana saved conversations with {{personas}} on this device, before the Companion moved to your account. If they’re yours, add them to your conversations. If not, they stay here for whoever had them.",
+    "legacyClaim": "Add them to my conversations",
+    "legacyClaim_one": "Add it to my conversations",
+    "legacyClaim_other": "Add them to my conversations",
+    "legacyDecline": "Not mine",
+    "legacyClaimed": "Added to your conversations",
+    "legacyClaimFailed": "Couldn’t add them right now. They’re still on this device — try again in a moment."
   },
   "advisors": {
     "title": "Advisors",
@@ -11050,7 +11075,10 @@
         "9": "What hidden strength can I lean on?"
       }
     },
-    "stillReading": "Still reading…"
+    "stillReading": "Still reading…",
+    "lensLabel": "Focus",
+    "errorSpent": "This question was already read once, and that reading can’t be shown again.",
+    "errorSpentNew": "Draw and read starts a new reading, charged as usual."
   },
   "tarotCompanion": {
     "title": "Tarot companion",
@@ -11066,7 +11094,9 @@
     "thinking": "The oracle is thinking…",
     "cardReversed": "{{name}} (reversed)",
     "readCta": "Read this card",
-    "readPrompt": "Ask the oracle to read this card with you."
+    "readPrompt": "Ask the oracle to read this card with you.",
+    "balanceChangedRetry": "Your balance changed — try again.",
+    "renewNotice": "The 24 hours this conversation covered have passed. Your next question starts a new 24 hours."
   },
   "journalCoach": {
     "askCta": "Ask the journal coach",
@@ -11247,7 +11277,8 @@
     "gengNote": "Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌), which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.",
     "lede": "Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.",
     "noTimeNote": "Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.",
-    "lifePalaceIn": "命宮 in {{branch}}"
+    "lifePalaceIn": "命宮 in {{branch}}",
+    "lunarDate": "農曆 {{date}}"
   },
   "mansions": {
     "title": "The Lunar Mansions",
@@ -11267,8 +11298,7 @@
     "lede": "The twenty-eight lodges the Moon passes through: one governs today, one was yours at birth.",
     "nothingAvoided": "Nothing particular to avoid.",
     "nothingFavoured": "The almanacs record nothing favoured here — a day to keep small rather than start.",
-    "sukuyoAfter": "Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you.",
-    "sukuyoBefore": "The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in",
+    "sukuyo": "The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in <gold>{{mansion}}</gold>. Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you.",
     "sukuyoEyebrow": "Sukuyō · the Japanese reading",
     "seasonElement": "{{season}}, {{element}}"
   },
@@ -11579,7 +11609,7 @@
   "chartSuite": {
     "eyebrow": "Chart Library",
     "title": "Every sky, every angle",
-    "subtitle": "Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.",
+    "subtitle": "{{n}} ways to read a moment — from the chart you were born with to the sky above you right now.",
     "needBirth": "Add your birth date in your profile to cast this chart.",
     "addBirth": "Add my birth details",
     "castFailed": "Couldn’t cast this chart — check your connection and try again.",
@@ -11712,6 +11742,7 @@
     "waitStill": "Still painting — this usually takes about a minute",
     "stillPainting": "Still painting. Tap “Show my portrait” in a minute to collect it — you won’t be charged again.",
     "connectionDropped": "The connection dropped while painting. Tap “Show my portrait” to collect it — you won’t be charged twice.",
+    "collectLater": "Your portrait couldn’t be collected just now. Tap “Show my portrait” again in a minute — it is paid for, and you won’t be charged again.",
     "expired": "That portrait can’t be shown again. Paint a new one.",
     "failedNotCharged": "The portrait couldn’t be painted, and your Moonstones weren’t charged. Try again in a moment.",
     "collect": "Show my portrait",
@@ -12415,6 +12446,7 @@
       "previousNone": "No previous card",
       "previousShort": "Previous",
       "readWithDeck": "Draw this card for yourself in a reading.",
+      "runIn": "{{head}}. {{body}}",
       "sameSuit": "The rest of the suit",
       "timing": "Timing",
       "withOtherCards": "With other cards"

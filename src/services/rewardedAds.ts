@@ -344,28 +344,34 @@ class RewardedAdsService {
   /** Fetch ad-config for the current account and trust its daily stats once it lands. */
   private refreshStats(): Promise<void> {
     if (this.statsRefresh) return this.statsRefresh;
-    const epoch = this.accountEpoch;
-    const run = (async () => {
-      try {
-        // A fetch already in flight was begun for the previous account (or
-        // none): let it finish, then fetch again for this one.
-        await adConfigService.fetchConfig().catch(() => null);
-        if (epoch !== this.accountEpoch) return;
-        adConfigService.invalidate();
-        const config = await adConfigService.fetchConfig();
-        if (epoch !== this.accountEpoch || !config) return;
-        this.statsEpoch = epoch;
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('rewarded:credits', { detail: this.getCreditsRemaining() }));
-        }
-      } catch {
-        // Stays unknown; the next read tries again.
-      } finally {
-        if (this.statsRefresh === run) this.statsRefresh = null;
-      }
-    })();
+    const run: Promise<void> = this.fetchStatsFor(this.accountEpoch).finally(() => {
+      if (this.statsRefresh === run) this.statsRefresh = null;
+    });
     this.statsRefresh = run;
     return run;
+  }
+
+  private async fetchStatsFor(epoch: number): Promise<void> {
+    try {
+      // A fetch already in flight was begun for the previous account (or
+      // none): let it finish, then fetch again for this one.
+      await adConfigService.fetchConfig().catch(() => null);
+      if (epoch !== this.accountEpoch) return;
+      const cached = adConfigService.getDailyStats();
+      adConfigService.invalidate();
+      const config = await adConfigService.fetchConfig();
+      if (epoch !== this.accountEpoch || !config) return;
+      // A failed fetch hands back the cached config — still the previous
+      // account's figures. Stay unknown; the next read tries again.
+      const fresh = adConfigService.getDailyStats();
+      if (cached !== null && fresh === cached) return;
+      this.statsEpoch = epoch;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('rewarded:credits', { detail: this.getCreditsRemaining() }));
+      }
+    } catch {
+      // Stays unknown; the next read tries again.
+    }
   }
 
   /**

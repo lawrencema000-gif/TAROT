@@ -5,6 +5,8 @@ import { LearnEntryTemplate, LearnEntryNotFound, type LearnEntryFact, type Learn
 import { getAstroEntry, astrologyEntries, type AstroCategory, type AstroEntry } from '../data/astrologyLearn';
 import { learnEnumLabel, learnPlanetName, learnSignName, localizeAstroEntry, useLearnOverlay } from '../i18n/learnOverlay';
 import { setPageMeta } from '../utils/seo';
+import { useAuth } from '../context/AuthContext';
+import { reportZodiacSignViewed } from '../services/achievements';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
 import { ASPECT_GLYPHS, isAspectGlyphKey } from '../components/icons/AspectGlyphs';
@@ -90,6 +92,17 @@ export function AstrologyEntryPage() {
     });
     window.scrollTo(0, 0);
   }, [source]);
+
+  // Zodiac Scholar counts the distinct sign pages a member has read. The
+  // server keeps the set (20261003000018), so a reload or a revisit is
+  // harmless; signed-out visitors report nothing.
+  const { user } = useAuth();
+  const viewerId = user?.id ?? null;
+  const signSlug = source?.category === 'sign' ? source.slug : null;
+  useEffect(() => {
+    if (!viewerId || !signSlug) return;
+    void reportZodiacSignViewed(viewerId, signSlug);
+  }, [viewerId, signSlug]);
 
   if (!source) {
     return (

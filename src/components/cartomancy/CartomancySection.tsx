@@ -9,10 +9,10 @@ import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '.
 import { useAuth } from '../../context/AuthContext';
 import { useGamification } from '../../context/GamificationContext';
 import { tarotReadings } from '../../dal';
-import { shareOrDownloadCard } from '../../utils/shareCard';
-import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
 import { combinationHitsToLines, generatePremiumReading, playingCardToReadingCard } from '../../services/readingInterpretation';
+import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
 import { getZodiacSign } from '../../utils/zodiac';
+import { localDateStr } from '../../utils/localDate';
 import { adsService } from '../../services/ads';
 import { awardXP } from '../../services/levelSystem';
 import { checkAchievementProgress } from '../../services/achievements';
@@ -25,6 +25,7 @@ import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { TarotShuffleView } from '../readings/tarot/TarotShuffleView';
 import { TarotSelectView } from '../readings/tarot/TarotSelectView';
 import { FOCUS_AREA_I18N_KEY, type FocusArea } from '../readings/tarot/types';
+import { newReadingId } from '../readings/tarot/readingId';
 import { CARTO_SPREADS, getPlayingCard, getPlayingCardBySlug } from '../../data/cartomancy';
 import type { CartoSpread, PlayingCard } from '../../types/cartomancy';
 import { CartomancyFocusView } from './CartomancyFocusView';
@@ -34,15 +35,14 @@ import { CartomancySettingsSheet } from './CartomancySettingsSheet';
 import {
   cartoAchievementEvents,
   cartoCombinations,
+  cartoCombinationsForAI,
   cartoDeckIds,
-  cartoPositionLabel,
   cartoPositionsForAI,
   cartoSpreadFeature,
   cartoSpreadOrDefault,
+  cartoTableLabel,
   cartoVerdict,
   dealCards,
-  getDailyReadingCount,
-  incrementDailyReadingCount,
   loadCartoSettings,
   saveCartoSettings,
   shuffleIds,
@@ -53,6 +53,7 @@ import {
   type DealtCard,
 } from './cartoFlow';
 import { CartomancyCorpusGate } from './CartomancyCorpusGate';
+import { sharePlayingReading, useShareOnce } from './shareReading';
 
 /*
  * The playing-card reading flow: home (pick a spread) → focus and question →
@@ -117,7 +118,21 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const [deckCards, setDeckCards] = useState<number[]>([]);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  /**
+   * The table on screen, by id: minted when its cards are dealt and sent as
+   * the requestId of every AI request for it, so generate-reading treats a
+   * second request for the same table as a free replay, never a second
+   * charge (readingId.ts; the tarot reveal's p8 F09, on this table too).
+   */
+  const readingIdRef = useRef<string | null>(null);
+  /**
+   * The table whose AI reading is on its way. Set before the first await
+   * (the balance check), so a second tap is ignored before `loadingAI` has
+   * rendered: a double tap used to send two requests, each charged.
+   */
+  const aiInFlightRef = useRef<string | null>(null);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
+  const { sharing, shareOnce } = useShareOnce();
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
   const [dailyReadingCount, setDailyReadingCount] = useState(0);
@@ -151,10 +166,13 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const variantCount = spread.layout.kind === 'row' ? spread.layout.variant?.cardCount ?? null : null;
   const cardCount = drawCount !== null && (drawCount === spread.cardCount || drawCount === variantCount) ? drawCount : spread.cardCount;
 
+  // The free tier's count belongs to the account, and is the one tarot keeps
+  // (services/offline, p8 F52): read again when the account changes.
+  const userId = user?.id ?? null;
   useEffect(() => {
     let live = true;
     Promise.all([
-      getDailyReadingCount(),
+      getDailyReadingCount(userId),
       isNative() ? rewardedAdsService.canWatchAd().catch(() => false) : Promise.resolve(false),
     ]).then(([count, canWatch]) => {
       if (!live) return;
@@ -165,7 +183,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     return () => {
       live = false;
     };
-  }, []);
+  }, [userId]);
 
   useEffect(
     () => () => {
@@ -359,8 +377,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setDrawnCards(dealCards(cards, settings.reversals));
 
     (async () => {
-      await incrementDailyReadingCount();
-      setDailyReadingCount(await getDailyReadingCount());
+      await incrementDailyReadingCount(userId);
+      setDailyReadingCount(await getDailyReadingCount(userId));
       if (!profile?.isPremium) {
         const target = CARTO_SPREADS.find((s) => s.slug === currentSlug);
         if (target && !target.free && hasTemporaryAccess[currentSlug]) {
@@ -377,6 +395,10 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       }
     })();
 
+    // A new table: its own id, and no AI request of its own yet (one still
+    // running for the last table answers into nothing).
+    readingIdRef.current = newReadingId();
+    setLoadingAI(false);
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
@@ -405,57 +427,45 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
 
   // The five-card Yes or No numbers its cards: the spread names three positions.
   const getPositionLabel = (index: number): string =>
-    cardCount !== spread.cardCount
-      ? t('readings.selectView.cardN', { n: index + 1, defaultValue: 'Card {{n}}' })
-      : cartoPositionLabel(spread, index, (n) => t('readings.positions.generic', { index: n }));
+    cartoTableLabel(
+      spread,
+      cardCount,
+      index,
+      (n) => t('readings.selectView.cardN', { n, defaultValue: 'Card {{n}}' }),
+      (n) => t('readings.positions.generic', { index: n }),
+    );
 
   const focusForAI: CartoFocus = selectedFocus === 'Love' ? 'love' : selectedFocus === 'Career' || selectedFocus === 'Money' ? 'career' : 'general';
   const tableCards = drawnCards.map((d) => d.card);
   const verdict = useMemo(() => (drawnCards.length ? cartoVerdict(spread, tableCards) : null), [spread, drawnCards]); // eslint-disable-line react-hooks/exhaustive-deps
   const combinations = useMemo(() => (drawnCards.length ? cartoCombinations(spread, tableCards) : []), [spread, drawnCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const shareCard = async (featured: DealtCard) => {
-    const card = localize(featured.card);
-    const shareUrl = buildShareUrl(
-      encodeReading({
-        spreadSlug: currentSlug,
-        cards: drawnCards.map((d) => ({ id: d.card.id, reversed: d.reversed })),
-        question: question || undefined,
-        date: new Date().toISOString(),
-        kind: 'playing',
-      }),
-    );
-    const shareText = `${t('cartomancy.shareText', { defaultValue: 'My {{spread}} playing-card reading on Arcana', spread: spread.name })}\n${shareUrl}`;
-    const outcome = await shareOrDownloadCard(
-      {
-        variant: 'cartomancy',
-        cardSlug: featured.card.slug,
-        cardName: card.name,
-        suit: featured.card.suit,
-        rank: featured.card.rank,
-        color: featured.card.color,
-        orientation: featured.reversed ? 'reversed' : 'upright',
-        keyword: card.keywords[0] ?? '',
-        spreadName: spread.name,
-        eyebrow: t('cartomancy.title', { defaultValue: 'Playing cards' }),
-      },
-      `arcana-reading-${currentSlug}.png`,
-      shareText,
-    );
-    if (outcome === 'downloaded') toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
-    else if (outcome === 'failed') {
-      try {
-        await navigator.clipboard?.writeText(shareText);
-        toast(t('common:actions.copied', { defaultValue: 'Copied.' }), 'success');
-      } catch {
-        toast(t('common:actions.shareFailed', { defaultValue: 'Couldn’t share. Try again.' }), 'error');
-      }
-    }
-  };
+  /**
+   * Share the table: its link, with card `featured` on the image. One share
+   * at a time (useShareOnce): the reveal's button and the card detail's both
+   * come through here, and a second tap while the image renders does
+   * nothing (p8 O#78). It used to start a second render and a second sheet.
+   */
+  const shareTable = (featured: number) =>
+    shareOnce(async () => {
+      if (drawnCards.length === 0) return;
+      await sharePlayingReading(
+        {
+          spreadSlug: currentSlug,
+          spreadName: spread.name,
+          cards: drawnCards.map((d) => ({ card: d.card, reversed: d.reversed })),
+          featured,
+          question: question.trim() || undefined,
+          date: new Date().toISOString(),
+          localize,
+        },
+        t,
+      );
+    });
 
-  const handleShareReading = async () => {
-    if (drawnCards.length === 0) return;
-    await shareCard(drawnCards.find((c) => c.revealed) ?? drawnCards[0]);
+  const handleShareReading = () => {
+    const firstUp = drawnCards.findIndex((c) => c.revealed);
+    return shareTable(firstUp >= 0 ? firstUp : 0);
   };
 
   const handleSaveReading = async () => {
@@ -463,7 +473,10 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     if (isSaved) return;
     const res = await tarotReadings.insertReturningId({
       userId: user.id,
-      date: new Date().toISOString().split('T')[0],
+      // The reader's own calendar day, as the tarot save stamps it: the UTC
+      // day filed a reading saved before 09:00 in Tokyo under the day before,
+      // and an evening one in the Americas under the day after (p8 F47).
+      date: localDateStr(),
       spreadType: currentSlug,
       focusArea: selectedFocus,
       cards: toSavedCards(drawnCards, getPositionLabel),
@@ -489,11 +502,23 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   };
 
   const handleGetAIInterpretation = async () => {
-    if (!user || drawnCards.length === 0) return;
-    const ok = await tryConsumeAi();
-    if (!ok) return;
+    const readingId = readingIdRef.current;
+    if (!user || drawnCards.length === 0 || !readingId) return;
+    // This table's reading is already on its way: a second tap does nothing.
+    // Checked and set before the first await (see aiInFlightRef).
+    if (aiInFlightRef.current === readingId) return;
+    // Already here (the reader went back to the card meanings): show it again, free.
+    if (aiInterpretation) {
+      setShowAIInterpretation(true);
+      return;
+    }
+    aiInFlightRef.current = readingId;
     setLoadingAI(true);
     try {
+      // The chip shows a free reader the price; the server debits it. The
+      // hook opens the earn sheet when the balance will not cover it.
+      const ok = await tryConsumeAi();
+      if (!ok) return;
       const result = await generatePremiumReading({
         cards: drawnCards.map((d) => playingCardToReadingCard(d.card, d.reversed)),
         spreadType: currentSlug,
@@ -503,11 +528,17 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         goals: profile?.goals,
         deck: 'playing',
         positions: cartoPositionsForAI(drawnCards.map((_, i) => getPositionLabel(i))),
-        combinations: combinationHitsToLines(combinations),
+        // The table-wide findings first: the server reads six (p8 O#60).
+        combinations: combinationHitsToLines(cartoCombinationsForAI(combinations)),
         verdict: verdictLine(verdict),
         jokers: settings.jokers,
         reversals: settings.reversals,
+        // The table's id, not a fresh one per call: a repeat of this request
+        // is the same request to the server, answered without a second charge.
+        requestId: readingId,
       });
+      // The reader dealt another table meanwhile: this text is not its reading.
+      if (readingIdRef.current !== readingId) return;
       if (result.fallback === true) {
         // Every AI provider failed and the server sent the cards' own
         // meanings instead, refunding the charge: not shown or saved as
@@ -538,17 +569,30 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     } catch (error) {
       await refundAi();
       console.error('Failed to generate AI interpretation:', error);
+      if (readingIdRef.current !== readingId) return;
+      // The server's error, said in words (generatePremiumReading throws the
+      // envelope's message, not its code); never the raw text. The mapping
+      // the tarot reveal uses.
       const raw = error instanceof Error ? error.message : '';
-      const message = raw.includes('INSUFFICIENT_BALANCE')
+      const message = /INSUFFICIENT_BALANCE|enough Moonstones/i.test(raw)
         ? t('readings.toasts.aiInsufficient')
         : // generate-reading answers 429 DAILY_LIMIT_REACHED with the message
           // "Daily reading limit reached" (readingInterpretation throws the message)
-          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit/i.test(raw)
+          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit|today's AI limit/i.test(raw)
           ? t('readings.toasts.aiLimit')
-          : t('readings.toasts.aiFailed');
+          : // 409 REQUEST_IN_FLIGHT: an earlier request for this table (one the
+            // connection dropped) is still being written. It was charged once;
+            // asking again returns it without a second charge.
+            /REQUEST_IN_FLIGHT|still being worked on/i.test(raw)
+            ? t('readings.revealView.aiStillWriting', {
+                defaultValue: 'Your AI interpretation is still being written. Try again in a few seconds — you won’t be charged twice.',
+              })
+            : t('readings.toasts.aiFailed');
       toast(message, 'error');
     } finally {
-      setLoadingAI(false);
+      if (aiInFlightRef.current === readingId) aiInFlightRef.current = null;
+      // A newer table has its own state (reset when it was dealt).
+      if (readingIdRef.current === readingId) setLoadingAI(false);
     }
   };
 
@@ -599,6 +643,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         focus={focusForAI}
         allRevealed={allRevealed}
         isSaved={isSaved}
+        sharing={sharing}
         isPremium={!!profile?.isPremium}
         cardBackUrl={profile?.card_back_url}
         significator={significator}
@@ -712,7 +757,10 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
             localize={localize}
             sequence={drawnCards.length > 1 ? tableCards : undefined}
             onNavigate={drawnCards.length > 1 ? (card) => setSelectedIndex(drawnCards.findIndex((d) => d.card.id === card.id)) : undefined}
-            onShare={() => shareCard(selected)}
+            onShare={() => {
+              if (selectedIndex !== null) void shareTable(selectedIndex);
+            }}
+            sharing={sharing}
           />
         )}
       </Sheet>

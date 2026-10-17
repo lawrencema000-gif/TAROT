@@ -19,19 +19,26 @@ const TODAY = '2026-10-17';
 
 /**
  * Node 25 ships its own (file-less, broken) localStorage over jsdom's; give
- * the code a real one. Items are own enumerable properties, as in a browser,
- * because appStorage.keys() lists them with Object.keys(localStorage).
+ * the code a real one. Its items are listed by Object.keys(localStorage), as
+ * in a browser, because appStorage.keys() reads them that way.
  */
 function memoryStorage(): Storage {
-  const methods = {
-    get length() { return Object.keys(this).length; },
-    key(i: number) { return Object.keys(this)[i] ?? null; },
-    getItem(k: string) { return Object.prototype.hasOwnProperty.call(this, k) ? (this as Record<string, string>)[k] : null; },
-    setItem(k: string, v: string) { (this as Record<string, string>)[k] = String(v); },
-    removeItem(k: string) { delete (this as Record<string, string>)[k]; },
-    clear() { for (const k of Object.keys(this)) delete (this as Record<string, string>)[k]; },
+  const items = new Map<string, string>();
+  const api: Storage = {
+    get length() { return items.size; },
+    key: (i: number) => [...items.keys()][i] ?? null,
+    getItem: (k: string) => items.get(k) ?? null,
+    setItem: (k: string, v: string) => void items.set(k, String(v)),
+    removeItem: (k: string) => void items.delete(k),
+    clear: () => items.clear(),
   };
-  return Object.create(methods) as Storage;
+  return new Proxy(api, {
+    ownKeys: () => [...items.keys()],
+    getOwnPropertyDescriptor: (_target, k) =>
+      typeof k === 'string' && items.has(k)
+        ? { value: items.get(k), enumerable: true, configurable: true, writable: true }
+        : undefined,
+  });
 }
 
 beforeEach(() => {

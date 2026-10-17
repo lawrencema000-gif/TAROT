@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useContentOverlay, ct } from '../i18n/contentOverlay';
+import { localizeHanzi, hanziLang, hanziUnlessShown } from '../i18n/localizeHanzi';
 import { setPageMeta } from '../utils/seo';
 
 /**
@@ -29,11 +30,19 @@ export function ZiweiPage() {
   // The ziwei.* strings live in app.json; the common namespace this page
   // used to read left every label English in ja/ko/zh.
   const { t } = useT(['app', 'common']);
-  const hanziLocale = getLocale() === 'zh' || getLocale() === 'ja';
+  // The chart's hanzi in the reader's script: 天机 / 化禄 / 命宫 in Chinese,
+  // 官禄宮 / 化権 in Japanese, the traditional forms in English and Korean.
+  const locale = getLocale();
+  const lang = hanziLang(locale);
+  const hz = (s: string) => localizeHanzi(s, locale);
   const { profile } = useAuth();
   // Star, palace, transformation and bureau prose from the `ziwei` content
   // module, keyed by star / palace / kind / bureau id; English until loaded.
-  const { overlay } = useContentOverlay('ziwei');
+  const { overlay, ready } = useContentOverlay('ziwei');
+  const title = t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' }) as string;
+  const lede = t('ziwei.lede', { defaultValue: 'Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.' }) as string;
+  // 紫微斗数 is the title itself in Chinese and Japanese.
+  const ledeHanzi = hanziUnlessShown('紫微斗數', locale, [title, lede]);
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(profile?.birthTime ?? '');
   const [submitted, setSubmitted] = useState(!!profile?.birthDate);
@@ -65,12 +74,16 @@ export function ZiweiPage() {
     <Page spacing="md">
       <PageHeader
         eyebrow={t('ziwei.eyebrow', { defaultValue: 'Chinese astrology' })}
-        title={t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' })}
+        title={title}
         subtitle={
           <span className="block text-meta text-mystic-400">
-            <span lang="zh-Hant">紫微斗數</span>
-            {' · '}
-            {t('ziwei.lede', { defaultValue: 'Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.' })}
+            {ledeHanzi && (
+              <>
+                <span lang={lang}>{ledeHanzi}</span>
+                {' · '}
+              </>
+            )}
+            {lede}
           </span>
         }
         onBack={() => navigate(-1)}
@@ -119,9 +132,12 @@ export function ZiweiPage() {
                 <div className="space-y-0.5">
                   <div className="text-gold text-meta">{chart.bureauCn}</div>
                   <div className="text-mystic-200 text-meta tabular-nums">
-                    農曆 {chart.lunar.isLeapMonth ? '閏' : ''}{chart.lunar.month}/{chart.lunar.day}
+                    {t('ziwei.lunarDate', {
+                      defaultValue: '農曆 {{date}}',
+                      date: `${chart.lunar.isLeapMonth ? hz('閏') : ''}${chart.lunar.month}/${chart.lunar.day}`,
+                    })}
                   </div>
-                  <div className="text-mystic-400 text-meta">{chart.yearStemCn}年 · {chart.hourBranchCn}時</div>
+                  <div className="text-mystic-400 text-meta">{hz(`${chart.yearStemCn}年 · ${chart.hourBranchCn}時`)}</div>
                   {lifePalace && (
                     <div className="text-mystic-400 text-meta pt-1">
                       {t('ziwei.lifePalaceIn', { defaultValue: '命宮 in {{branch}}', branch: lifePalace.branchCn })}
@@ -154,7 +170,7 @@ export function ZiweiPage() {
               const star = STAR_MEANINGS[tr.star];
               return (
                 <div key={tr.kind} className="text-ui">
-                  <span className="text-gold">{star?.cn ?? tr.star} {meta.cn}</span>
+                  <span className="text-gold">{hz(`${star?.cn ?? tr.star} ${meta.cn}`)}</span>
                   <span className="text-mystic-400"> · {ct(overlay, `transformations.${tr.kind}.name`, meta.en)}</span>
                   <p className="reading-copy mt-1">{ct(overlay, `transformations.${tr.kind}.text`, meta.text)}</p>
                 </div>
@@ -174,6 +190,14 @@ export function ZiweiPage() {
             {chart.palaces.map((p) => {
               const open = openPalace === p.key;
               const meaning = PALACE_MEANINGS[p.key];
+              // The traditional term in the reader's script (命宮, 官禄宮;
+              // 命宫 in Chinese), then the overlay's name for it: a gloss in
+              // English, Japanese and Korean (Life, 自分自身, 명궁), which
+              // Chinese doesn't need because its overlay name is the term
+              // itself (P7 F22/F78). The gloss waits for the overlay, so a
+              // CJK reader never sees the English one flash.
+              const term = hz(p.cn);
+              const gloss = ready ? (meaning ? ct(overlay, `palaces.${p.key}.name`, meaning.en) : p.en) : '';
               return (
                 <Disclosure
                   key={p.key}
@@ -182,27 +206,15 @@ export function ZiweiPage() {
                   onOpenChange={(next) => setOpenPalace(next ? p.key : null)}
                   icon={<span className="block w-5 text-mystic-500">{p.branchCn}</span>}
                   label={
-                    // In Chinese and Japanese the localized palace name IS the
-                    // hanzi term (命宫 / 命宮), so printing p.cn beside it read
-                    // twice; Korean and English keep the hanzi plus a gloss.
-                    hanziLocale ? (
-                      <>
-                        <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>
-                          {meaning ? ct(overlay, `palaces.${p.key}.name`, p.cn) : p.cn}
-                        </span>
-                        {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · {getLocale() === 'zh' ? '身宫' : '身宮'}</span>}
-                      </>
-                    ) : (
-                      <>
-                        <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
-                        <span className="text-mystic-400 text-meta"> {meaning ? ct(overlay, `palaces.${p.key}.name`, meaning.en) : p.en}</span>
-                        {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · 身宮</span>}
-                      </>
-                    )
+                    <>
+                      <span className={p.isLife ? 'text-gold' : 'text-mystic-100'} lang={lang}>{term}</span>
+                      {gloss && gloss !== term && <span className="text-mystic-400 text-meta"> {gloss}</span>}
+                      {p.isBody && <span className="text-cosmic-violet-ink text-meta" lang={lang}> · {hz('身宮')}</span>}
+                    </>
                   }
                   meta={
                     p.stars.length === 0 ? '—' : p.stars.map((s) => (
-                      <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{s.cn} </span>
+                      <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{hz(s.cn)} </span>
                     ))
                   }
                   contentClassName="pl-7 space-y-3"
@@ -213,7 +225,7 @@ export function ZiweiPage() {
                     if (!sm) return null;
                     return (
                       <p key={s.key} className="reading-copy">
-                        <span className="text-gold">{sm.cn} · {ct(overlay, `stars.${s.key}.title`, sm.title)}</span> — {ct(overlay, `stars.${s.key}.text`, sm.text)}
+                        <span className="text-gold">{hz(sm.cn)} · {ct(overlay, `stars.${s.key}.title`, sm.title)}</span> — {ct(overlay, `stars.${s.key}.text`, sm.text)}
                       </p>
                     );
                   })}

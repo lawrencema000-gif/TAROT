@@ -16,8 +16,8 @@ import {
   type YesNoOutcome,
 } from '../../data/cartomancy';
 import { spreadTypeToFeature, type PremiumFeature } from '../../services/premium';
+import { cartoLessonsKey } from '../../services/offline';
 import { drawSeededCards } from '../../utils/cardDraw';
-import { appStorage } from '../../lib/appStorage';
 import { localDateStr } from '../../utils/localDate';
 
 /**
@@ -52,12 +52,15 @@ export const DEFAULT_CARTO_SETTINGS: CartoSettings = { jokers: false, reversals:
 export interface KeyValueStore {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 function browserStore(): KeyValueStore | null {
   try {
     const store = typeof window !== 'undefined' ? window.localStorage : undefined;
-    return store && typeof store.getItem === 'function' && typeof store.setItem === 'function' ? store : null;
+    return store && typeof store.getItem === 'function' && typeof store.setItem === 'function' && typeof store.removeItem === 'function'
+      ? store
+      : null;
   } catch {
     return null;
   }
@@ -143,6 +146,29 @@ export function cartoPositionLabel(spread: CartoSpread | null, index: number, fa
 }
 
 /**
+ * What position `index` of a table of `dealt` cards is called — one rule for
+ * the live table, a saved reading and a shared link. The spread's own name
+ * (pass the localized spread); but a table dealt with a different number of
+ * cards than the spread names (the five-card Yes or No of a three-position
+ * spread) is numbered card by card ("Card 4"): three named positions and
+ * then two numbered ones read as a spread the reader never laid, and the
+ * names of the three-card positions say things ("if the first two disagree,
+ * decides the lean") that are not true of five. A spread the data no longer
+ * has is "Position n". Never the label a saved row stored, which is frozen
+ * in the language it was saved in.
+ */
+export function cartoTableLabel(
+  spread: CartoSpread | null,
+  dealt: number,
+  index: number,
+  numbered: (n: number) => string,
+  generic: (n: number) => string,
+): string {
+  if (spread && spread.cardCount !== dealt) return numbered(index + 1);
+  return cartoPositionLabel(spread, index, generic);
+}
+
+/**
  * The premium feature a spread sits behind, or null when it is free.
  * `spreadTypeToFeature` is the product's table (services/premium.ts) and
  * lists the nine carto-* slugs; a spread added to the data before it is
@@ -204,6 +230,20 @@ export function verdictLine(verdict: CartoVerdict | null): string | undefined {
 /** Everything the tables say about the cards on this spread. */
 export function cartoCombinations(spread: CartoSpread, cards: PlayingCard[]): CombinationHit[] {
   return findCombinations(cards, spread.layout, { suitMajorityMin: spread.suitMajorityMin });
+}
+
+/**
+ * The hits in the order the AI request sends them (CartomancySection →
+ * combinationHitsToLines, which keeps six). The reader's list ends with the
+ * suit and colour majorities, after every same-rank set, neighbour rule and
+ * pairing; on any table with six other findings — every Romany, most Wish
+ * and Nine-Card Square tables — the model never heard "8 of 21 are Spades",
+ * the season's subject the Romany's method has the reader name first, nor
+ * "5 of 9 are red". The table-wide findings (two at most) go first; the
+ * rest keep the reader's order. The reader's own list is not reordered.
+ */
+export function cartoCombinationsForAI(hits: CombinationHit[]): CombinationHit[] {
+  return [...hits.filter((hit) => hit.kind === 'majority'), ...hits.filter((hit) => hit.kind !== 'majority')];
 }
 
 export interface CombinationLine {
@@ -419,6 +459,32 @@ export function joinSentences(parts: string[]): string {
   return out;
 }
 
+/**
+ * How many leading sentences of card `index`'s meaning the summary has
+ * already quoted (cartoSynthesis): two for a lone card, one each for the
+ * first three cards of a table, none after that. The tarot result's rule
+ * (readingText.summarySentencesFrom), for the same reason.
+ */
+export function cartoSummarySentencesFrom(index: number, count: number): number {
+  if (count === 1) return 2;
+  return index < 3 ? 1 : 0;
+}
+
+/**
+ * A card's section under the summary: it continues where the summary
+ * stopped, so no sentence is printed twice. `short` is the next two
+ * sentences after the ones the summary quoted (empty when nothing is left:
+ * a one-card reading whose meaning is two sentences long); `more` says the
+ * meaning runs on past them, for the "Read the full meaning" fold. The
+ * playing-card result printed the summary's sentences again under every
+ * card: a one-card reading showed the same paragraph twice (p8 F17).
+ */
+export function cartoSectionText(text: string, index: number, count: number): { short: string; more: boolean } {
+  const sentences = sentencesOf(text);
+  const taken = cartoSummarySentencesFrom(index, count);
+  return { short: joinSentences(sentences.slice(taken, taken + 2)), more: sentences.length > taken + 2 };
+}
+
 /** "Four of Clubs: …" — how a summary sentence is led by its card's name; the result passes the locale's form. */
 const defaultLead = (name: string, sentence: string) => `${name}: ${sentence}`;
 
@@ -426,7 +492,8 @@ const defaultLead = (name: string, sentence: string) => `${name}: ${sentence}`;
  * The summary of the cards on the table, as the tarot result builds its
  * own (readingText.synthesisFor): for one card its first two sentences; for
  * more, one sentence per card for the first three, led by the card's name
- * when the sentence does not already say it. Pass localized cards.
+ * when the sentence does not already say it. Pass localized cards. Each
+ * card's section then starts after what this quoted (cartoSectionText).
  */
 export function cartoSynthesis(
   cards: Array<{ card: PlayingCard; reversed: boolean }>,
@@ -434,10 +501,14 @@ export function cartoSynthesis(
   lead: (name: string, sentence: string) => string = defaultLead,
 ): string {
   if (cards.length === 0) return '';
-  if (cards.length === 1) return firstSentences(cartoMainMeaning(cards[0].card, cards[0].reversed, focus).text, 2);
+  const quoted = (index: number) => {
+    const { card, reversed } = cards[index];
+    return firstSentences(cartoMainMeaning(card, reversed, focus).text, cartoSummarySentencesFrom(index, cards.length));
+  };
+  if (cards.length === 1) return quoted(0);
   return joinSentences(
-    cards.slice(0, 3).map(({ card, reversed }) => {
-      const first = firstSentences(cartoMainMeaning(card, reversed, focus).text, 1);
+    cards.slice(0, 3).map(({ card }, i) => {
+      const first = quoted(i);
       return first.toLowerCase().includes(card.name.toLowerCase()) ? first : lead(card.name, first);
     }),
   );
@@ -508,14 +579,19 @@ export function cartoCardOfTheDay(userId: string | null | undefined, date: strin
 }
 
 // ---------------------------------------------------------------------------
-// Lessons (per viewer)
+// Lessons (per account)
 // ---------------------------------------------------------------------------
 
-export const CARTO_LESSONS_KEY = 'arcana_carto_lessons';
+/**
+ * The device's key: a signed-out viewer's ticks, and everyone's before the
+ * ticks were kept per account. Signed in, ticks live under
+ * `cartoLessonsKey(userId)` (services/offline.ts); one device used to show
+ * the last reader's "4 of 12 lessons done" to the next account (p8 F52).
+ */
+export const CARTO_LESSONS_KEY = cartoLessonsKey(null);
 
-export function loadLessonsDone(store: KeyValueStore | null = browserStore()): Set<string> {
+function parseLessons(raw: string | null): Set<string> {
   try {
-    const raw = store ? store.getItem(CARTO_LESSONS_KEY) : null;
     const parsed: unknown = raw ? JSON.parse(raw) : [];
     return new Set(Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === 'string') : []);
   } catch {
@@ -523,50 +599,53 @@ export function loadLessonsDone(store: KeyValueStore | null = browserStore()): S
   }
 }
 
-export function setLessonDone(slug: string, done: boolean, store: KeyValueStore | null = browserStore()): Set<string> {
-  const next = loadLessonsDone(store);
+/**
+ * The lessons this account has ticked (the device's when signed out). The
+ * first read for an account that has none adopts the device's ticks, once:
+ * they were made on this phone before ticks were kept per account (or while
+ * signed out), and the device key is removed so no other account adopts
+ * them too.
+ */
+export function loadLessonsDone(userId?: string | null, store: KeyValueStore | null = browserStore()): Set<string> {
+  if (!store) return new Set();
+  try {
+    const key = cartoLessonsKey(userId);
+    const own = store.getItem(key);
+    if (own !== null || !userId) return parseLessons(own);
+    const device = store.getItem(CARTO_LESSONS_KEY);
+    if (device === null) return new Set();
+    try {
+      store.setItem(key, device);
+      store.removeItem(CARTO_LESSONS_KEY);
+    } catch {
+      // private mode: read the device's ticks this time, adopt them next time
+    }
+    return parseLessons(device);
+  } catch {
+    return new Set();
+  }
+}
+
+export function setLessonDone(
+  slug: string,
+  done: boolean,
+  userId?: string | null,
+  store: KeyValueStore | null = browserStore(),
+): Set<string> {
+  const next = loadLessonsDone(userId, store);
   if (done) next.add(slug);
   else next.delete(slug);
   try {
-    store?.setItem(CARTO_LESSONS_KEY, JSON.stringify([...next]));
+    store?.setItem(cartoLessonsKey(userId), JSON.stringify([...next]));
   } catch {
     // private mode
   }
   return next;
 }
 
-// ---------------------------------------------------------------------------
-// The free tier's daily allowance — shared with tarot (TarotSection.tsx:48-83)
-// ---------------------------------------------------------------------------
-
-const DAILY_READINGS_KEY = 'arcana_daily_readings';
-const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
-
-export async function getDailyReadingCount(): Promise<number> {
-  try {
-    const today = localDateStr();
-    const storedDate = await appStorage.get(DAILY_READINGS_DATE_KEY);
-    if (storedDate !== today) {
-      await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-      await appStorage.set(DAILY_READINGS_KEY, '0');
-      return 0;
-    }
-    return parseInt((await appStorage.get(DAILY_READINGS_KEY)) || '0', 10);
-  } catch {
-    return 0;
-  }
-}
-
-export async function incrementDailyReadingCount(): Promise<void> {
-  try {
-    const today = localDateStr();
-    await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-    const current = await getDailyReadingCount();
-    await appStorage.set(DAILY_READINGS_KEY, (current + 1).toString());
-  } catch {
-    // silent
-  }
-}
+// The free tier's daily allowance is counted in services/offline.ts
+// (getDailyReadingCount / incrementDailyReadingCount, per account), the one
+// count TarotSection and CartomancySection share.
 
 // ---------------------------------------------------------------------------
 // Saved readings

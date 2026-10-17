@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
+import { localizeHanzi, hanziLang, hanziUnlessShown } from '../i18n/localizeHanzi';
 import { setPageMeta } from '../utils/seo';
 import { shareFile } from '../utils/nativeShare';
 
@@ -54,6 +55,11 @@ export function AuspiciousDatesPage() {
   const intentionBlurb = (k: Intention) => ct(auspOverlay, `intentions.${k}.blurb`, INTENTIONS[k].blurb);
   const mansionTitle = (d: DayScore) =>
     ct(mansionsOverlay, `mansions.${d.mansion.key}.title`, MANSION_MEANINGS[d.mansion.key]?.title ?? '');
+  // The data's hanzi in the reader's script: 毕 beside the title 毕宿 in
+  // Chinese, 参 beside 参宿 in Japanese, never the traditional 畢 / 參 (P7 F32).
+  const locale = getLocale();
+  const lang = hanziLang(locale);
+  const glyph = (d: DayScore) => localizeHanzi(d.mansion.cn, locale);
   /** A reason in the reader's language, built from its code (the English `text` is the ICS fallback). */
   const reasonText = (r: DayReason, d: DayScore): string => {
     let activity = '';
@@ -62,8 +68,12 @@ export function AuspiciousDatesPage() {
       const list = ctList(mansionsOverlay, `mansions.${r.activity.mansionKey}.${r.activity.list}`, en);
       activity = (list[r.activity.index] ?? '').toLowerCase();
     }
-    return t(`dates.reasons.${r.code}`, { defaultValue: REASON_EN[r.code], mansion: d.mansion.cn, activity }) as string;
+    return t(`dates.reasons.${r.code}`, { defaultValue: REASON_EN[r.code], mansion: glyph(d), activity }) as string;
   };
+  const title = t('dates.title', { defaultValue: 'Pick a good day' }) as string;
+  const lede = t('dates.lede', { defaultValue: 'Zeri — choosing the day for a thing' }) as string;
+  // The title or lede already says 擇日 in Chinese (择日), Japanese (択日) and Korean (擇日).
+  const ledeHanzi = hanziUnlessShown('擇日', locale, [title, lede]);
   const [intention, setIntention] = useState<Intention>('wedding');
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -92,7 +102,10 @@ export function AuspiciousDatesPage() {
   // the web it downloads. Only a failure needs saying: the share sheet or
   // the browser's download already show where the file went.
   const download = async () => {
-    const ics = toICS(best, intention, { title: intentionLabel(intention), reason: reasonText });
+    // The event SUMMARY names the mansion by its data glyph; hand toICS the
+    // reader's script so the file says 毕, as the screen does.
+    const days = best.map((d) => ({ ...d, mansion: { ...d.mansion, cn: glyph(d) } }));
+    const ics = toICS(days, intention, { title: intentionLabel(intention), reason: reasonText });
     const blob = new Blob([ics], { type: ICS_MIME });
     const fileName = `arcana-${intention}-dates.ics`;
     const outcome = await shareFile(blob, fileName, ICS_MIME, { title: intentionLabel(intention) });
@@ -115,8 +128,8 @@ export function AuspiciousDatesPage() {
         open={open}
         onOpenChange={(next) => setExpanded(next ? d.date : null)}
         icon={
-          <span className={`block text-title ${tone === 'good' ? 'text-gold' : 'text-coral'}`} style={{ fontFamily: 'serif' }} lang="zh-Hant">
-            {d.mansion.cn}
+          <span className={`block text-title ${tone === 'good' ? 'text-gold' : 'text-coral'}`} style={{ fontFamily: 'serif' }} lang={lang}>
+            {glyph(d)}
           </span>
         }
         label={
@@ -147,13 +160,17 @@ export function AuspiciousDatesPage() {
     <Page spacing="md">
       <PageHeader
         eyebrow={t('dates.eyebrow', { defaultValue: 'Chinese date selection' })}
-        title={t('dates.title', { defaultValue: 'Pick a good day' })}
+        title={title}
         subtitle={
           <>
             <span className="block text-meta text-mystic-400 mb-1">
-              <span lang="zh-Hant">擇日</span>
-              {' · '}
-              {t('dates.lede', { defaultValue: 'Zeri — choosing the day for a thing' })}
+              {ledeHanzi && (
+                <>
+                  <span lang={lang}>{ledeHanzi}</span>
+                  {' · '}
+                </>
+              )}
+              {lede}
             </span>
             {t('dates.intro', {
               defaultValue:
@@ -179,7 +196,7 @@ export function AuspiciousDatesPage() {
               selected={intention === k}
               onSelect={() => { setIntention(k); setExpanded(null); }}
             >
-              <span style={{ fontFamily: 'serif' }} lang="zh-Hant">{INTENTIONS[k].cn}</span> {intentionLabel(k)}
+              <span style={{ fontFamily: 'serif' }} lang={lang}>{localizeHanzi(INTENTIONS[k].cn, locale)}</span> {intentionLabel(k)}
             </Chip>
           ))}
         </div>

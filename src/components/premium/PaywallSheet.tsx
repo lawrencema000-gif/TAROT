@@ -507,6 +507,16 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
           .then((confirmed) => {
             if (!confirmed) {
               console.warn('[Paywall] DB premium flag did not propagate within 60s — webhook may be delayed');
+              return;
+            }
+            // Premium Patron is derived from profiles.is_premium on the
+            // server, so the report sent right after the purchase usually
+            // lands before the webhook. Report again once it is confirmed,
+            // so the celebration is not left for some later screen.
+            if (user) {
+              import('../../services/achievements').then(({ checkAchievementProgress }) => {
+                checkAchievementProgress(user.id, 'premium_upgrade');
+              });
             }
           })
           .catch(() => {/* swallow — UI is already correct */});

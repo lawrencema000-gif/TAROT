@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { ListRow, ListRowGroup, Page, PageHeader, Progress } from '../components/ui';
-import { loadLessonsDone } from '../components/cartomancy/cartoFlow';
+import { useLessonsDone } from '../components/cartomancy/useLessonsDone';
 import { CARTO_LESSONS } from '../data/cartomancy';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -13,7 +13,8 @@ import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusG
 
 /**
  * /cartomancy/guide — the twelve lessons in reading order, with the ticks
- * this viewer has earned (localStorage; a convenience, not a record).
+ * this account has earned (localStorage, per account; a convenience, not a
+ * record).
  */
 function CartomancyGuidePageBody() {
   const { t } = useT('app');
@@ -22,7 +23,7 @@ function CartomancyGuidePageBody() {
   // re-read the corpus when it lands: the page stays mounted through a language change
   const corpusReady = useCartomancyCorpus();
   const lessons = useMemo(() => CARTO_LESSONS.map((l) => localizeCartoLesson(l, locale)), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [done] = useState(() => loadLessonsDone());
+  const { done } = useLessonsDone();
   const doneCount = lessons.filter((l) => done.has(l.slug)).length;
 
   // Open at the top: the hub's rows sit far down its page, and the app has

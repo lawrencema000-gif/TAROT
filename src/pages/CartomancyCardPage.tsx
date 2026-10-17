@@ -14,6 +14,7 @@ import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayin
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { CartomancyCorpusGate } from '../components/cartomancy/CartomancyCorpusGate';
+import { RunIn } from '../components/cartomancy/CartomancyResultParts';
 
 /**
  * /cartomancy/cards/:slug — one card's meaning, public.
@@ -122,7 +123,7 @@ function CartomancyCardPageBody() {
       <PageHeader
         as="h1"
         eyebrow={suitLabel}
-        title={card.name}
+        title={<span className="lining-nums">{card.name}</span>}
         backHref="/cartomancy/cards"
         onBack={(e) => {
           e.preventDefault();
@@ -159,14 +160,20 @@ function CartomancyCardPageBody() {
                     const other = getPlayingCardBySlug(combo.with);
                     return (
                       <li key={combo.with} className="reading-copy">
-                        {other ? (
-                          <Link to={`/cartomancy/cards/${other.slug}`} className="font-semibold">
-                            {localize(other).name}
-                          </Link>
-                        ) : (
-                          <strong>{combo.with}</strong>
-                        )}
-                        . {combo.meaning}
+                        {/* The locale's run-in punctuation, not a Latin ". " (p8 F86: 「ハートのクイーン. 愛し方の…」). */}
+                        <RunIn
+                          head={
+                            other ? (
+                              <Link to={`/cartomancy/cards/${other.slug}`} className="font-semibold">
+                                {localize(other).name}
+                              </Link>
+                            ) : (
+                              <strong>{combo.with}</strong>
+                            )
+                          }
+                        >
+                          {combo.meaning}
+                        </RunIn>
                       </li>
                     );
                   })}

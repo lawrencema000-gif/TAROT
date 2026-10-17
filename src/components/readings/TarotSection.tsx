@@ -29,7 +29,6 @@ import { rewardedAdsService } from '../../services/rewardedAds';
 import { spreadTypeToFeature, FREE_TIER, FREE_CATALOGUE_CARD_LIMIT, type PremiumFeature } from '../../services/premium';
 import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
-import { appStorage } from '../../lib/appStorage';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { allSpreads, getSpreadBySlug, getSpreadLayout, type SpreadLayoutPosition } from '../../data/tarotSpreads';
 import { SPREAD_LAYOUTS } from '../icons/SpreadGlyph';
@@ -41,6 +40,9 @@ import { TarotHomeView } from './tarot/TarotHomeView';
 import { FOCUS_AREA_I18N_KEY, type FocusArea, type PickerSpread } from './tarot/types';
 import { newReadingId } from './tarot/readingId';
 import { localDateStr } from '../../utils/localDate';
+// The free tier's 3-a-day count belongs to the account (shared with the
+// playing-card section), so signing out and back in does not reset it.
+import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
 
 /*
  * The reading flow: home → focus → shuffle → select → reveal.
@@ -61,42 +63,12 @@ import { localDateStr } from '../../utils/localDate';
  * arrive from the builder through router state.
  */
 
-const DAILY_READINGS_KEY = 'arcana_daily_readings';
-const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
-
 /** The spread the home hero always draws. */
 const DAILY_SPREAD = 'single';
 
 /** How long the deck shuffles on its own before it settles. A cut ends it sooner. */
 const SHUFFLE_MS = 2000;
 
-async function getDailyReadingCount(): Promise<number> {
-  try {
-    // Local date: the free-tier daily counter should reset at the
-    // user's midnight, not at UTC midnight (4pm US-West / 9am Tokyo).
-    const today = localDateStr();
-    const storedDate = await appStorage.get(DAILY_READINGS_DATE_KEY);
-    if (storedDate !== today) {
-      await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-      await appStorage.set(DAILY_READINGS_KEY, '0');
-      return 0;
-    }
-    return parseInt((await appStorage.get(DAILY_READINGS_KEY)) || '0', 10);
-  } catch {
-    return 0;
-  }
-}
-
-async function incrementDailyReadingCount(): Promise<void> {
-  try {
-    const today = localDateStr();
-    await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-    const current = await getDailyReadingCount();
-    await appStorage.set(DAILY_READINGS_KEY, (current + 1).toString());
-  } catch {
-    // silent
-  }
-}
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 
@@ -304,11 +276,22 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const rewardedRef = useRef(false);
 
   useEffect(() => {
-    getDailyReadingCount().then(setDailyReadingCount);
     if (isNative()) {
       rewardedAdsService.canWatchAd().then(setCanWatchAd);
     }
   }, []);
+
+  // Re-read on an account switch: the count is per account.
+  const userId = user?.id ?? null;
+  useEffect(() => {
+    let alive = true;
+    getDailyReadingCount(userId).then((n) => {
+      if (alive) setDailyReadingCount(n);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
 
   useEffect(
     () => () => {
@@ -663,8 +646,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     );
 
     (async () => {
-      await incrementDailyReadingCount();
-      setDailyReadingCount(await getDailyReadingCount());
+      await incrementDailyReadingCount(user?.id);
+      setDailyReadingCount(await getDailyReadingCount(user?.id));
 
       if (!profile?.isPremium) {
         if (!spread.free && hasTemporaryAccess[currentSpread]) {
@@ -761,7 +744,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       toast(t('readings.toasts.imageSaved', { defaultValue: 'Image saved to your downloads' }), 'success');
     } else if (outcome === 'failed') {
       try {
-        await navigator.clipboard?.writeText(fallbackText);
+        // No clipboard (an insecure context, an old WebView) is a failure,
+        // not "Copied".
+        if (!navigator.clipboard) throw new Error('no clipboard');
+        await navigator.clipboard.writeText(fallbackText);
         toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
       } catch {
         toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');

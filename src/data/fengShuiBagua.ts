@@ -21,6 +21,13 @@ export interface BaguaAreaInfo {
   name: string;
   element: string;
   color: string;
+  /**
+   * Where the area sits, as a bare lowercase position seen from the entry
+   * door ('back-left', 'central'): fengshui.placement supplies the room and
+   * the door ("in the {{dir}} area of your room, as seen from the entry
+   * door"), so a value that named them too read "in the Centre of the room
+   * of your room" (P7 F28/F68).
+   */
   direction: string;
   /** One-sentence definition of the life area */
   meaning: string;
@@ -37,7 +44,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Wealth / Abundance',
     element: 'Wood',
     color: 'Purple / Gold',
-    direction: 'Back-left from the front door',
+    direction: 'back-left',
     meaning: 'Your relationship with material flow — money, abundance, possessions that sustain you.',
     adjustments: [
       'Place a healthy green plant (especially jade or money tree) in this corner',
@@ -52,7 +59,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Fame / Reputation',
     element: 'Fire',
     color: 'Red',
-    direction: 'Back-center',
+    direction: 'back-centre',
     meaning: 'How you are seen, what you are known for, your public presence and recognition.',
     adjustments: [
       'Red and orange accents — candles, textiles, artwork',
@@ -67,7 +74,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Relationships / Love',
     element: 'Earth',
     color: 'Pink / Red / White',
-    direction: 'Back-right',
+    direction: 'back-right',
     meaning: 'Partnership, intimate relationships, the quality of bonded connection in your life.',
     adjustments: [
       'Items in pairs — two candles, two pillows, paired artwork',
@@ -82,7 +89,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Family / Ancestry',
     element: 'Wood',
     color: 'Green',
-    direction: 'Middle-left',
+    direction: 'middle-left',
     meaning: 'Your biological family, ancestors, your roots — the lineage you carry forward.',
     adjustments: [
       'Wooden furniture or decor, plants',
@@ -97,7 +104,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Health / Centre',
     element: 'Earth',
     color: 'Yellow / Earth tones',
-    direction: 'Centre of the room',
+    direction: 'central',
     meaning: 'The literal and metaphorical centre of your life — wellbeing, vitality, grounding.',
     adjustments: [
       'Keep this area especially clear and spacious',
@@ -112,7 +119,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Creativity / Children',
     element: 'Metal',
     color: 'White / Metallic',
-    direction: 'Middle-right',
+    direction: 'middle-right',
     meaning: 'Creative output, projects you birth, any literal or figurative children.',
     adjustments: [
       'White, gray, or metallic accents',
@@ -127,7 +134,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Knowledge / Wisdom',
     element: 'Earth',
     color: 'Blue / Black / Green',
-    direction: 'Front-left',
+    direction: 'front-left',
     meaning: 'Study, wisdom, self-cultivation, the pursuit of understanding.',
     adjustments: [
       'Books — especially a small library or reading nook',
@@ -142,7 +149,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Career / Path',
     element: 'Water',
     color: 'Black / Dark Blue',
-    direction: 'Front-center',
+    direction: 'front-centre',
     meaning: 'Your work, your life purpose, the path you are walking.',
     adjustments: [
       'Dark blue or black accents',
@@ -157,7 +164,7 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
     name: 'Helpful People / Travel',
     element: 'Metal',
     color: 'Gray / White / Silver',
-    direction: 'Front-right',
+    direction: 'front-right',
     meaning: 'Mentors, allies, the universe sending help to you. Also travel and expanded horizons.',
     adjustments: [
       'Gray, silver, or white accents',

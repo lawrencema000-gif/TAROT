@@ -113,6 +113,8 @@ function CornerIndex({ card, paper }: { card: PlayingCard; paper: boolean }) {
             fontFamily={DISPLAY_FONT}
             fontWeight={600}
             fontSize={22}
+            // Lining figures: the display serif's default old-style "10" read as "IO".
+            style={{ fontVariantNumeric: 'lining-nums' }}
             fill="currentColor"
             stroke="none"
           >

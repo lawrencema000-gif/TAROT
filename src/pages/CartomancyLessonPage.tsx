@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ChevronRight } from 'lucide-react';
 import { Button, EyebrowLabel, ListRow, ListRowGroup, Paper, Section, toast } from '../components/ui';
 import { LearnEntryNotFound, LearnEntryTemplate } from '../components/learn/LearnEntryTemplate';
 import { CardGrid } from '../components/cartomancy/CardGrid';
-import { loadLessonsDone, setLessonDone } from '../components/cartomancy/cartoFlow';
+import { useLessonsDone } from '../components/cartomancy/useLessonsDone';
 import { CARTO_LESSONS, getCartoLesson, getPlayingCardBySlug } from '../data/cartomancy';
 import type { PlayingCard } from '../types/cartomancy';
 import { useAuth } from '../context/AuthContext';
@@ -34,7 +34,8 @@ function CartomancyLessonPageBody() {
   const localize = useCallback((card: PlayingCard) => localizePlayingCard(card, locale), [locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
   const source = slug ? getCartoLesson(slug) : null;
   const lesson = useMemo(() => (source ? localizeCartoLesson(source, locale) : null), [source, locale, corpusReady]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [done, setDone] = useState(() => loadLessonsDone());
+  // This account's ticks (p8 F52: the device's used to pass to the next reader).
+  const { done, setDone } = useLessonsDone();
   const isDone = source ? done.has(source.slug) : false;
 
   const prev = source ? CARTO_LESSONS.find((l) => l.order === source.order - 1) ?? null : null;
@@ -74,7 +75,7 @@ function CartomancyLessonPageBody() {
 
   const toggleDone = () => {
     const nextDone = !isDone;
-    setDone(setLessonDone(source.slug, nextDone));
+    setDone(source.slug, nextDone);
     if (nextDone) {
       toast(t('cartomancy.guide.markedDone', { defaultValue: 'Lesson marked as done' }), 'success');
       if (user) checkAchievementProgress(user.id, 'cartomancy_lesson_complete', 1, source.slug);

@@ -156,7 +156,11 @@ export function FengShuiPage() {
                 'Add your birth year + gender to compute your personal Kua number — the basis of Eight Mansions feng shui. We\'ll show your 4 favourable + 4 unfavourable directions for placing the bed, desk, and front door.',
             })}
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          {/* One field per row on a phone: half of a 390px card left the
+              select's option ~105px beside the chevron, so 選択またはスキップ
+              read 選択またはスキッ (P7 F85), and en/ko filled it exactly.
+              Full width gives every language room. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="fengshui-birth-year" className="block text-ui font-medium text-mystic-300 mb-2">
                 {t('fengshui.birthYearLabel', { defaultValue: 'Birth year' })}
@@ -313,8 +317,10 @@ export function FengShuiPage() {
                 ))}
               </ul>
               <p className="reading-meta mt-4">
+                {/* `direction` is a bare position ('back-left', 左奥); the
+                    sentence names the room and the door (P7 F28/F68). */}
                 {t('fengshui.placement', {
-                  defaultValue: 'Place these adjustments in the {{dir}} of your room (oriented from the entry door).',
+                  defaultValue: 'Place these adjustments in the {{dir}} area of your room, as seen from the entry door.',
                   dir: baguaText(reading.focusArea, 'direction'),
                 })}
               </p>

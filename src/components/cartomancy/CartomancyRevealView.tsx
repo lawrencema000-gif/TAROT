@@ -1,19 +1,19 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Brain, Loader2 } from 'lucide-react';
-import { Button, Chip, EyebrowLabel, KeywordRow, ReadingProse, ResultSheet, Tag, Disclosure } from '../ui';
+import { ChevronLeft, Bookmark, BookmarkCheck, Brain } from 'lucide-react';
+import { Button, Chip, EyebrowLabel, ResultSheet, Tag } from '../ui';
 import { useT } from '../../i18n/useT';
-import { getLocale } from '../../i18n/config';
 import { flipHaptics } from '../../utils/haptics';
 import { cardBackSrc } from '../../utils/imageUrl';
 import type { CartoSpread, PlayingCard, PlayingSuit } from '../../types/cartomancy';
-import { getPlayingCard, type CombinationHit } from '../../data/cartomancy';
-import { localizeCombinationHit, localizedYesNoLabel } from '../../i18n/localizePlayingCard';
+import type { CombinationHit } from '../../data/cartomancy';
 import { PlayingCardFace } from './PlayingCardFace';
 import { SuitGlyph } from './SuitGlyph';
 import { CartomancyLayout, tileFor } from './CartomancyLayout';
 import { FlipTile, FLIP_MS, FLIP_SETTLE_MS, FLIP_STAGGER_MS } from './FlipTile';
-import { cartoMainMeaning, cartoSummary, combinationLines, firstSentences, splitAiReading, verdictTone, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
+import { AiInterpretationChip } from '../readings/tarot/AiInterpretationChip';
+import { CartoAiSections, CartoCardSections, CartoCombinationList, CartoVerdictSummary, ICON_BUTTON, ShareIconButton } from './CartomancyResultParts';
+import { cartoSummary, type CartoFocus, type CartoVerdict, type DealtCard } from './cartoFlow';
 
 /**
  * The reveal: the table on navy, then the reading on paper.
@@ -22,9 +22,11 @@ import { cartoMainMeaning, cartoSummary, combinationLines, firstSentences, split
  * result) with the playing deck's own table (CartomancyLayout) and a
  * ResultSheet for the result: glyph → "Your question" → title → ✦ ✦ ✦ →
  * verdict pill (Wish, Yes or No) → Reading summary → one section per
- * position (keywords, a short meaning, the full meaning folded) → the
- * combinations the tables found → a Reflect panel → the actions → the
- * cartomancy Disclaimer. Pure presentation: every handler is the section's.
+ * position (keywords, the sentences after the summary's, the full meaning
+ * folded) → the combinations the tables found → a Reflect panel → the
+ * actions → the cartomancy Disclaimer. The verdict, the sections and the
+ * combinations are CartomancyResultParts, which the Library's saved reading
+ * prints too. Pure presentation: every handler is the section's.
  */
 
 export interface CartomancyRevealViewProps {
@@ -37,6 +39,8 @@ export interface CartomancyRevealViewProps {
   focus: CartoFocus;
   allRevealed: boolean;
   isSaved: boolean;
+  /** A share image is rendering: the share control waits (one tap, one share). */
+  sharing: boolean;
   isPremium: boolean;
   cardBackUrl: string | null | undefined;
   significator: PlayingCard | null;
@@ -60,17 +64,6 @@ export interface CartomancyRevealViewProps {
   onNewReading: () => void;
 }
 
-const ICON_BUTTON =
-  'w-11 h-11 inline-flex items-center justify-center rounded-full transition-[background-color,transform] duration-fast ' +
-  '[@media(hover:hover)]:[&:hover:not(:active)]:bg-mystic-800 motion-safe:active:scale-90 disabled:opacity-40 ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50';
-
-const VERDICT_FILL = {
-  yes: 'bg-ink-teal text-paper',
-  no: 'bg-ink-coral text-paper',
-  between: 'bg-ink-gold text-paper',
-} as const;
-
 export function CartomancyRevealView(props: CartomancyRevealViewProps) {
   const { t } = useT('app');
   const {
@@ -81,6 +74,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     focus,
     allRevealed,
     isSaved,
+    sharing,
     isPremium,
     cardBackUrl,
     significator,
@@ -226,66 +220,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
   );
   const summaryHeading = t('common:resultSheet.summaryHeading', { defaultValue: 'Reading summary' });
 
-  const meaningFor = (card: PlayingCard, reversed: boolean): { short: string; full: string; extra: ReactNode[] } => {
-    const { text: main, focused } = cartoMainMeaning(card, reversed, focus);
-    const short = firstSentences(main, 2);
-    const extra: ReactNode[] = [];
-    if (focused && reversed && card.meaningReversed) {
-      extra.push(
-        <p key="rev" className="reading-copy">
-          <strong>{reversedLabel}.</strong> {card.meaningReversed}
-        </p>,
-      );
-    }
-    if (!focused && card.adviceMeaning) {
-      extra.push(
-        <p key="advice" className="reading-copy">
-          <strong>{t('cartomancy.card.advice', { defaultValue: 'Advice' })}.</strong> {card.adviceMeaning}
-        </p>,
-      );
-    }
-    if (card.timing) {
-      extra.push(
-        <p key="timing" className="reading-copy">
-          <strong>{t('cartomancy.card.timing', { defaultValue: 'Timing' })}.</strong> {card.timing}
-        </p>,
-      );
-    }
-    return { short, full: main, extra };
-  };
-
-  const verdictBlock = verdict && (
-    <div className="text-center">
-      <span className={`inline-flex items-center rounded-full px-5 py-2 text-ui font-semibold ${VERDICT_FILL[verdictTone(verdict)]}`}>
-        {verdict.kind === 'yes-no'
-          ? localizedYesNoLabel(spread.slug, verdict.outcome.result, verdict.outcome.label)
-          : verdict.outcome.label}
-      </span>
-      <p className="mt-2 text-meta text-ink-muted">
-        {verdict.kind === 'yes-no'
-          ? [
-              t('cartomancy.verdict.redCount', {
-                defaultValue: '{{reds}} of {{total}} cards red',
-                reds: verdict.outcome.reds,
-                total: verdict.outcome.total,
-              }),
-              verdict.outcome.qualifier ? t('cartomancy.verdict.dependsOnPerson', { defaultValue: 'depends on a person or on time' }) : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')
-          : verdict.outcome.wishIndex !== null
-            ? t('cartomancy.verdict.wishOnTable', { defaultValue: 'The Nine of Hearts is on the table' })
-            : t('cartomancy.verdict.heartsSpades', {
-                defaultValue: '{{hearts}} Hearts, {{spades}} Spades',
-                hearts: verdict.outcome.hearts,
-                spades: verdict.outcome.spades,
-              })}
-      </p>
-    </div>
-  );
-
   const aiOn = showAIInterpretation && !!aiInterpretation;
-  const aiSections = aiOn ? splitAiReading(aiInterpretation!).sections : [];
 
   return (
     <div className="space-y-6">
@@ -298,15 +233,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
           {t('readings.back')}
         </button>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onShare}
-            disabled={!allRevealed}
-            aria-label={t('readings.revealView.share', { defaultValue: 'Share this reading' })}
-            className={`${ICON_BUTTON} text-mystic-300`}
-          >
-            <Share2 className="w-5 h-5" aria-hidden />
-          </button>
+          <ShareIconButton onShare={onShare} sharing={sharing} disabled={!allRevealed} />
           <button
             type="button"
             onClick={onSave}
@@ -322,7 +249,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
 
       <div className="text-center space-y-2">
         <p className="font-display-eyebrow text-mystic-400">{focusLabel || t('cartomancy.title', { defaultValue: 'Playing cards' })}</p>
-        <h2 className="heading-display-md text-mystic-100">{spread.name}</h2>
+        <h2 className="heading-display-md text-mystic-100 lining-nums">{spread.name}</h2>
         {significator && (
           <div className="flex justify-center">
             <Tag tone="neutral" size="md">
@@ -358,22 +285,9 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
             ) : aiInterpretation ? (
               <Chip variant="outline" size="sm" onClick={() => onToggleAI(true)} icon={<Brain />} label={t('readings.revealView.aiInterpretation')} />
             ) : (
-              <Chip
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!loadingAI) onGetAIInterpretation();
-                }}
-                disabled={loadingAI}
-                icon={loadingAI ? <Loader2 className="animate-spin" /> : <Brain />}
-                label={
-                  loadingAI
-                    ? t('readings.revealView.generating')
-                    : isPremium
-                      ? t('readings.revealView.getAIInsight')
-                      : t('readings.revealView.premiumAI')
-                }
-              />
+              // The price is on the chip for a reader who pays it: it used to
+              // say "Premium AI" and spend 50 Moonstones on the first tap (p8 F50).
+              <AiInterpretationChip isPremium={isPremium} loading={loadingAI} onClick={onGetAIInterpretation} />
             )}
           </div>
 
@@ -387,94 +301,23 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
             headingLevel="h2"
           >
             <div className="space-y-7">
-              {verdict && (
-                <section className="space-y-5 text-center">
-                  {verdictBlock}
-                  <div>
-                    <h3 className="heading-display-md heading-strong text-ink text-center">{summaryHeading}</h3>
-                    <p className="reading-lede mx-auto mt-3">{summary}</p>
-                  </div>
-                </section>
-              )}
+              {verdict && <CartoVerdictSummary spread={spread} verdict={verdict} summary={summary} heading={summaryHeading} />}
 
               {/* With an AI reading on screen its body takes the place of the
                   card sections, as on the tarot result; the cards stay one
                   tap away ("Show card meanings" or the faces above). */}
               {aiOn ? (
-                aiSections.length > 0 && (
-                  <div className="space-y-5">
-                    {aiSections.map((section, i) => (
-                      <div key={i}>
-                        {section.heading && <h3 className="text-ui font-semibold text-ink">{section.heading}</h3>}
-                        {section.body && <ReadingProse text={section.body} lede={false} className={section.heading ? 'mt-1' : ''} />}
-                      </div>
-                    ))}
-                  </div>
-                )
+                <CartoAiSections text={aiInterpretation!} />
               ) : (
-              <div className="divide-y divide-paper-hairline">
-                {drawnCards.map((drawn, i) => {
-                  const card = localize(drawn.card);
-                  const { short, full, extra } = meaningFor(card, drawn.reversed);
-                  return (
-                    <section key={i} className="py-5 first:pt-0 space-y-3">
-                      <div className="flex items-start gap-4">
-                        <button
-                          type="button"
-                          onClick={() => onCardClick(i)}
-                          aria-label={t('readings.revealView.openCard', { name: card.name, defaultValue: 'Open {{name}}' })}
-                          className="w-12 shrink-0 rounded-inset overflow-hidden [&>svg]:w-full [&>svg]:h-auto [&>svg]:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-gold/50"
-                        >
-                          <PlayingCardFace card={drawn.card} detail="quiet" surface="paper" reversed={drawn.reversed} />
-                        </button>
-                        <div className="min-w-0 flex-1">
-                          <EyebrowLabel tone="ink" align="left" className="block">
-                            {getPositionLabel(i)}
-                          </EyebrowLabel>
-                          <h3 className="heading-display-md heading-strong text-ink mt-1 text-balance">
-                            {card.name}
-                            {drawn.reversed && <span className="ml-2 text-meta font-sans font-medium tracking-normal text-ink-coral">{reversedLabel}</span>}
-                          </h3>
-                        </div>
-                      </div>
-                      <KeywordRow keywords={card.keywords} align="start" />
-                      <p className="reading-copy">{short}</p>
-                      {(full !== short || extra.length > 0) && (
-                        <Disclosure surface="paper" variant="row" lazy label={t('cartomancy.result.readFull', { defaultValue: 'Read the full meaning' })}>
-                          <div className="space-y-3">
-                            {full !== short && <p className="reading-copy">{full}</p>}
-                            {extra}
-                          </div>
-                        </Disclosure>
-                      )}
-                    </section>
-                  );
-                })}
-              </div>
+                <CartoCardSections
+                  cards={drawnCards.map((drawn) => ({ source: drawn.card, card: localize(drawn.card), reversed: drawn.reversed }))}
+                  focus={focus}
+                  positionLabel={getPositionLabel}
+                  onCardClick={onCardClick}
+                />
               )}
 
-              {combinations.length > 0 && (
-                <section className="border-t border-paper-hairline pt-6">
-                  <h3 className="heading-display-md heading-strong text-ink">{t('cartomancy.result.combinations', { defaultValue: 'Combinations' })}</h3>
-                  <p className="reading-meta mt-1">{t('cartomancy.result.combinationsLede', { defaultValue: 'What the tables say about these cards together.' })}</p>
-                  <ul className="mt-4 space-y-4">
-                    {combinationLines(
-                      combinations,
-                      (hit) => localizeCombinationHit(hit),
-                      (id) => {
-                        const card = getPlayingCard(id);
-                        return card ? localize(card).name : '';
-                      },
-                      getLocale(),
-                    ).map((line) => (
-                      <li key={line.key}>
-                        <p className="text-ui font-semibold text-ink">{line.label}</p>
-                        <p className="reading-copy mt-0.5">{line.meaning}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+              <CartoCombinationList hits={combinations} localize={localize} />
 
               {drawnCards[0] && (
                 <aside className="rounded-control border border-paper-hairline p-5 text-center">

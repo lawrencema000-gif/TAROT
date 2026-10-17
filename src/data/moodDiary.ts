@@ -113,15 +113,22 @@ export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
  *
  *  - every read and write names the account (`arcana_mood_diary_v2:<uid>`),
  *    so one account can never see, pre-fill or upload another's days;
- *  - the legacy unscoped cache is never read, uploaded or shown. Nothing in
- *    it records who wrote it, so it cannot be attributed safely; sign-out
- *    deletes it (AuthContext → clearLegacyMoodCache).
+ *  - the legacy unscoped cache is never read into an account silently.
+ *    Nothing in it records who wrote it — but it is the only copy of every
+ *    diary the live app (web, Android v1.2.0) kept, so it is not deleted
+ *    unseen either: the diary ASKS the account that opens it whether those
+ *    days are its own (`legacyMoodOffer`). Claimed, they move into that
+ *    account's cache — from where the sync uploads them — and the device
+ *    copy is deleted (`claimLegacyMood`); declined, they stay on the device
+ *    for whoever logged them and that account is not asked again
+ *    (`declineLegacyMood`). Sign-out no longer deletes them (p8 F33).
  *
  * An account's own cache survives sign-out on purpose: a day saved offline
  * and not yet synced is uploaded the next time THAT account loads the diary.
  */
 const LEGACY_STORAGE_KEY = 'arcana_mood_diary_v1';
 const STORAGE_PREFIX = 'arcana_mood_diary_v2:';
+const LEGACY_DECLINED_PREFIX = 'arcana_mood_legacy_declined:';
 
 /** The cache key for one account. Exported for tests and sign-out tooling. */
 export function moodStorageKey(userId: string): string {
@@ -190,7 +197,7 @@ export function replaceLocalMoodEntries(userId: string, entries: MoodEntry[]): v
   writeCache(userId, trimmed, 'replaceLocalMoodEntries');
 }
 
-/** Delete the pre-scoping, device-global cache. Called on sign-out. */
+/** Delete the pre-scoping, device-global cache. Only after its days were claimed by an account. */
 export function clearLegacyMoodCache(): void {
   if (typeof window === 'undefined') return;
   try {
@@ -199,6 +206,70 @@ export function clearLegacyMoodCache(): void {
     /* storage unavailable — nothing to clear */
   }
 }
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The days the old build kept on this device (`arcana_mood_diary_v1`), one per date, oldest first. */
+export function loadLegacyMoodEntries(): MoodEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const byDate = new Map<string, MoodEntry>();
+    for (const e of parsed) {
+      if (!e || typeof e.date !== 'string' || !DATE_RE.test(e.date) || !isMoodCategory(e.category)) continue;
+      if (typeof e.intensity !== 'number' || !Number.isFinite(e.intensity)) continue;
+      const entry: MoodEntry = {
+        date: e.date,
+        category: e.category,
+        intensity: Math.min(5, Math.max(1, Math.round(e.intensity))) as MoodEntry['intensity'],
+        savedAt: typeof e.savedAt === 'number' && Number.isFinite(e.savedAt) ? e.savedAt : Date.parse(`${e.date}T12:00:00`),
+        ...(typeof e.note === 'string' && e.note.trim() ? { note: e.note } : {}),
+      };
+      const prev = byDate.get(entry.date);
+      if (!prev || entry.savedAt >= prev.savedAt) byDate.set(entry.date, entry);
+    }
+    return [...byDate.values()].sort((a, b) => (a.date > b.date ? 1 : -1));
+  } catch {
+    return [];
+  }
+}
+
+function legacyDeclinedKey(userId: string): string {
+  return LEGACY_DECLINED_PREFIX + userId;
+}
+
+/**
+ * The old device-global days this account should be asked about: all of
+ * them, unless this account already said they are not its own.
+ */
+export function legacyMoodOffer(userId: string | null | undefined): MoodEntry[] {
+  if (typeof window === 'undefined' || !userId) return [];
+  try {
+    if (window.localStorage.getItem(legacyDeclinedKey(userId))) return [];
+  } catch {
+    return [];
+  }
+  return loadLegacyMoodEntries();
+}
+
+/** This account says the old days are not its own: never ask it again; leave them for whoever logged them. */
+export function declineLegacyMood(userId: string): void {
+  try {
+    window.localStorage.setItem(legacyDeclinedKey(userId), '1');
+  } catch {
+    /* storage unavailable — the question comes back next time */
+  }
+}
+
+/*
+ * Claiming (MoodDiaryPage): the old days the account's record lacks — or
+ * holds an older copy of — are uploaded (pendingMoodUploads against the
+ * record), and only once the record has them is the device copy deleted
+ * (clearLegacyMoodCache). Offline, nothing moves and the question stays.
+ */
 
 /** Merge two sets by date; `preferred` wins a tie. */
 export function mergeMoodEntries(preferred: MoodEntry[], other: MoodEntry[]): MoodEntry[] {

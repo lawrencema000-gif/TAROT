@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, AlertCircle } from 'lucide-react';
 import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast, EyebrowLabel, EmptyState, Disclaimer } from '../components/ui';
@@ -13,6 +13,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { SoulmatePortrait } from '../components/soulmate/SoulmatePortrait';
 import { AspectGlyph } from '../components/soulmate/AspectGlyph';
+import { aiFailureOf } from '../components/reports/aiReading';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -171,34 +172,54 @@ export function SoulmateScorePage() {
     return !Number.isNaN(d.getTime()) && d.getFullYear() > 1900;
   }, [partnerBirthDate]);
 
-  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('soulmate-score');
+  const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('soulmate-score');
+  /**
+   * Set synchronously on the press, before the balance gate is awaited: a
+   * second press while the first is handled is ignored (a double tap passed
+   * the gate twice and was charged twice). `loading` disables the button
+   * for the same span.
+   */
+  const computing = useRef(false);
+  /**
+   * The comparison last sent without a score back: its id and exact body.
+   * The same partner again is a retry of it — the server charges a request
+   * id at most once and replays the answer — so it skips the gate. A score
+   * that arrived clears it: comparing again is a new reading.
+   */
+  const scoreAttempt = useRef<{ id: string; body: string } | null>(null);
 
   const handleCompute = async () => {
-    if (!canSubmit) return;
-    const ok = await tryConsume();
-    if (!ok) return;
+    if (!canSubmit || computing.current) return;
+    computing.current = true;
     setLoading(true);
     setNeedsChart(false);
     try {
-      const synastry = () =>
-        supabase.functions.invoke('astrology-synastry', {
-          body: {
-            partnerBirthDate,
-            partnerBirthTime: partnerBirthTime || undefined,
-            // Use the user's own timezone as a proxy for the partner's
-            // timezone — same convention as PartnerCompatPage. Without
-            // this the edge function treats the partner's birth time as
-            // UTC, which drifts Moon ~5° (sometimes a sign over).
-            partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-            partnerName: partnerName || undefined,
-          },
-        });
+      const body = {
+        partnerBirthDate,
+        partnerBirthTime: partnerBirthTime || undefined,
+        // Use the user's own timezone as a proxy for the partner's
+        // timezone — same convention as PartnerCompatPage. Without
+        // this the edge function treats the partner's birth time as
+        // UTC, which drifts Moon ~5° (sometimes a sign over).
+        partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        partnerName: partnerName || undefined,
+      };
+      const signature = JSON.stringify(body);
+      if (scoreAttempt.current?.body !== signature) {
+        const ok = await tryConsume();
+        if (!ok) return;
+        scoreAttempt.current = { id: crypto.randomUUID(), body: signature };
+      }
+      const requestId = scoreAttempt.current.id;
+      const synastry = () => supabase.functions.invoke('astrology-synastry', { body: { ...body, requestId } });
       let { data, error } = await synastry();
       // The comparison needs the user's stored natal chart, which is only
       // written once the chart has been cast. A member who has never opened
-      // their chart gets it cast here from the profile, then one retry.
+      // their chart gets it cast here from the profile, then one retry
+      // (the server refunded the first try, so the retry is charged once).
       if (error && (await functionErrorCode(error)) === 'NATAL_CHART_MISSING') {
         if (!profile?.birthDate || profile.birthLat == null || profile.birthLon == null) {
+          scoreAttempt.current = null;
           setNeedsChart(true);
           return;
         }
@@ -215,13 +236,22 @@ export function SoulmateScorePage() {
           },
         });
         if (cast.error) {
+          scoreAttempt.current = null;
           setNeedsChart(true);
           return;
         }
         ({ data, error } = await synastry());
       }
       if (error) {
-        await refund();
+        const failure = await aiFailureOf(error);
+        if (failure === 'insufficient' || failure === 'soft-cap') {
+          // Refused before the debit: the gate opens the Earn sheet.
+          scoreAttempt.current = null;
+          await tryConsume();
+          return;
+        }
+        // Answered once and no longer replayable: the next press is a new reading.
+        if ((await functionErrorCode(error)) === 'REQUEST_ALREADY_USED') scoreAttempt.current = null;
         toast(
           t('soulmate.computeFailed', { defaultValue: "Couldn't compute. Check your connection and try again." }),
           'error',
@@ -234,23 +264,23 @@ export function SoulmateScorePage() {
       } | null;
       const aspects = payload?.crossAspects ?? [];
       if (aspects.length === 0) {
-        await refund();
         toast(
           t('soulmate.noAspects', { defaultValue: 'No significant aspects found. Try adding a birth time.' }),
           'error',
         );
         return;
       }
+      scoreAttempt.current = null;
       const { score, vibe, harmonies, frictions } = scoreAspects(aspects);
       setResult({ score, vibe, harmonies, frictions, hasTime: !!payload?.hasTime });
     } catch (e) {
-      await refund();
       console.error('[Soulmate] compute failed:', e);
       toast(
         t('soulmate.computeFailed', { defaultValue: "Couldn't compute. Check your connection and try again." }),
         'error',
       );
     } finally {
+      computing.current = false;
       setLoading(false);
     }
   };
@@ -342,6 +372,11 @@ export function SoulmateScorePage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
+            {/* A portrait already paid for is collected here, on its own —
+                never behind a new, charged score (p8 F37, O#11). */}
+            <div className="mb-4 empty:hidden">
+              <SoulmatePortrait pendingOnly />
+            </div>
             <Card padding="lg">
               <div className="space-y-4">
                 <div>

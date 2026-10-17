@@ -26,6 +26,13 @@ const WAIT_STEP_1_MS = 10_000;
 const WAIT_STEP_2_MS = 30_000;
 /** How long one tap keeps collecting an in-flight portrait before handing back to the user. */
 const COLLECT_FOR_MS = 3 * 60_000;
+/**
+ * Requests one tap may send. ai-soulmate-portrait allows 5 per caller in 5
+ * minutes, and the paint itself is one of them; each "still painting"
+ * answer is held ~20 s server-side. Three sends collect for about a minute
+ * and leave room under the limit for the next tap (p8 F38).
+ */
+const MAX_SENDS_PER_TAP = 3;
 /** A paint attempt the server may still hold a portrait for (its replay store keeps two days). */
 const PENDING_TTL_MS = 24 * 60 * 60_000;
 
@@ -55,10 +62,11 @@ const SIGN_LOVE: Record<ZodiacSign, string> = {
 const isSign = (v: string): v is ZodiacSign => (SIGNS as readonly string[]).includes(v);
 
 /** A paint attempt in progress: the same requestId makes a retry free (server replay, p7 #11/#31). */
-interface PendingPaint { requestId: string; vibe: Vibe; at: number }
+export interface PendingPaint { requestId: string; vibe: Vibe; at: number }
 
 const pendingKey = (uid: string) => `arcana:soulmate-portrait:pending:${uid}`;
-function loadPending(uid: string | undefined): PendingPaint | null {
+/** This account's paint attempt that has not brought a portrait back yet, if any. */
+export function loadPendingPortrait(uid: string | undefined): PendingPaint | null {
   if (!uid) return null;
   try {
     const raw = localStorage.getItem(pendingKey(uid));
@@ -89,16 +97,124 @@ function newRequestId(): string {
   return `${hex(8)}-${hex(4)}-4${hex(3)}-a${hex(3)}-${hex(12)}`;
 }
 
-/** The edge envelope's error code, or null when the request never got an answer (network). */
-async function errorCode(error: unknown): Promise<string | null> {
+/**
+ * The edge envelope's `{ status, code, details }`; null when the request got
+ * no readable answer (network, or a gateway page that is not the function's
+ * envelope) — then the painting may still be running.
+ */
+async function errorEnvelope(error: unknown): Promise<{ status: number; code: string; details?: Record<string, unknown> } | null> {
   const ctx = (error as { context?: unknown } | null)?.context;
-  if (!ctx || typeof (ctx as Response).json !== 'function') return null;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  const status = typeof (ctx as Response).status === 'number' ? (ctx as Response).status : 0;
   try {
-    const body = await (ctx as Response).clone().json();
-    return (body as { error?: { code?: string } })?.error?.code ?? 'UNKNOWN';
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown; details?: Record<string, unknown> } };
+    const code = body?.error?.code;
+    return typeof code === 'string' ? { status, code, details: body.error?.details } : null;
   } catch {
-    return 'UNKNOWN';
+    return null;
   }
+}
+
+/**
+ * Refusals that come before the spend step (rate limit, AI paused, the AI
+ * daily ceiling, the Premium soft cap, an expired session): they charge
+ * nothing — and say nothing about an earlier charge of the same attempt.
+ */
+const BEFORE_SPEND = new Set(['RATE_LIMITED', 'AI_DISABLED', 'AI_DAILY_LIMIT', 'AI_SOFT_CAP', 'UNAUTHORIZED']);
+
+/** What one tap on Paint / Show my portrait came to. */
+export type PaintOutcome =
+  /** The portrait. */
+  | { kind: 'painted'; data: PortraitData }
+  /** The server is still painting it after this tap's sends: kept, collected free later. */
+  | { kind: 'in-flight' }
+  /** No answer: the painting may still be running. Kept. */
+  | { kind: 'dropped' }
+  /** Refused before the spend while this attempt may already be paid for: kept, nothing new charged. */
+  | { kind: 'held' }
+  /** A new attempt refused before the spend: nothing was charged. */
+  | { kind: 'refused'; code: string }
+  /** A new attempt refused for its balance: nothing was charged. */
+  | { kind: 'insufficient' }
+  /** Painted once, and no longer replayable. */
+  | { kind: 'expired' }
+  /** The run failed after the debit: the server refunded it. */
+  | { kind: 'failed' };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** The server's `retryAfterMs`, kept within 1–10 s; 3 s when it sends none. */
+function retryWaitMs(retryAfterMs: unknown): number {
+  const ms = Number(retryAfterMs);
+  return Number.isFinite(ms) ? Math.min(10_000, Math.max(1_000, ms)) : 3_000;
+}
+
+/**
+ * Paint — or collect — one attempt. The same requestId is sent again while
+ * the server answers REQUEST_IN_FLIGHT, waiting as long as it asks between
+ * sends and never more than MAX_SENDS_PER_TAP. `resumed`: the attempt was
+ * sent before (an earlier tap), so it may already be paid for — a refusal
+ * before the spend step then keeps it instead of reporting "not charged".
+ * Exported for tests.
+ */
+export async function runPaintAttempt(
+  attempt: PendingPaint,
+  resumed: boolean,
+  invoke: (body: { vibe: Vibe; requestId: string }) => Promise<{ data: unknown; error: unknown }> = (body) =>
+    supabase.functions.invoke('ai-soulmate-portrait', { body }),
+  wait: (ms: number) => Promise<unknown> = sleep,
+  now: () => number = Date.now,
+): Promise<PaintOutcome> {
+  const started = now();
+  let paidMaybe = resumed;
+  for (let sends = 1; ; sends++) {
+    const { data, error } = await invoke({ vibe: attempt.vibe, requestId: attempt.requestId });
+    if (!error) {
+      const payload = ((data as { data?: unknown } | null)?.data ?? data) as PortraitData | null;
+      return payload?.image ? { kind: 'painted', data: payload } : { kind: 'failed' };
+    }
+    const env = await errorEnvelope(error);
+    if (!env) return { kind: 'dropped' };
+    if (env.code === 'REQUEST_IN_FLIGHT') {
+      // The server holds this attempt's charge and is still painting.
+      paidMaybe = true;
+      if (sends >= MAX_SENDS_PER_TAP || now() - started >= COLLECT_FOR_MS) return { kind: 'in-flight' };
+      await wait(retryWaitMs(env.details?.retryAfterMs));
+      continue;
+    }
+    if (BEFORE_SPEND.has(env.code) || env.status === 429) {
+      return paidMaybe ? { kind: 'held' } : { kind: 'refused', code: env.code };
+    }
+    if (env.code === 'INSUFFICIENT_BALANCE' || env.status === 402) return { kind: 'insufficient' };
+    if (env.code === 'REQUEST_ALREADY_USED') return { kind: 'expired' };
+    // Thrown inside the run (the image model failed, no birth date): refunded.
+    return { kind: 'failed' };
+  }
+}
+
+/**
+ * Attempts being painted or collected in this session, by requestId. A
+ * card that mounts again — "Score another", leaving the page and coming
+ * back — waits on the same request instead of sending another, and a
+ * portrait that arrived while no card was on screen is shown from here
+ * without a request.
+ */
+const running = new Map<string, Promise<PaintOutcome>>();
+/** The portrait this session last showed each account, so a remount shows it again. */
+const shown = new Map<string, PortraitData>();
+
+/** Forget this session's attempts and portraits (tests; a session starts empty). */
+export function resetPortraitSession(): void {
+  running.clear();
+  shown.clear();
+}
+
+function runShared(attempt: PendingPaint, resumed: boolean): Promise<PaintOutcome> {
+  let work = running.get(attempt.requestId);
+  if (!work) {
+    work = runPaintAttempt(attempt, resumed);
+    running.set(attempt.requestId, work);
+  }
+  return work;
 }
 
 /**
@@ -115,16 +231,29 @@ async function errorCode(error: unknown): Promise<string | null> {
  * collects the SAME portrait — the server serves it from its replay store
  * and never charges twice (p7 #11). The request is never aborted from here:
  * an abort cannot stop the painting, it only lost the result.
+ *
+ * `pendingOnly`: the card at the top of the Soulmate score page, shown only
+ * while an attempt is unfinished (or what it painted). A paid portrait is
+ * collected there without computing — and paying for — a new score (p8
+ * F37, O#11).
  */
-export function SoulmatePortrait() {
+export function SoulmatePortrait({ pendingOnly = false }: { pendingOnly?: boolean } = {}) {
   const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('soulmate-portrait', { cost: PORTRAIT_COST });
   const { user } = useAuth();
   const { t } = useT('app');
   const [vibe, setVibe] = useState<Vibe>('romantic');
-  const [data, setData] = useState<PortraitData | null>(null);
+  const [data, setData] = useState<PortraitData | null>(() => (user?.id ? shown.get(user.id) ?? null : null));
   const [loading, setLoading] = useState(false);
+  /** A tap is being handled — from the press, through the gate, until it settles. */
+  const [busy, setBusy] = useState(false);
+  /**
+   * Set synchronously on the press, before the balance gate is awaited: a
+   * second tap while the first is handled is ignored. A double tap used to
+   * pass the gate twice and start — and pay for — two paintings.
+   */
+  const busyRef = useRef(false);
   const [waitStep, setWaitStep] = useState<0 | 1 | 2>(0);
-  const [pending, setPending] = useState<PendingPaint | null>(() => loadPending(user?.id));
+  const [pending, setPending] = useState<PendingPaint | null>(() => loadPendingPortrait(user?.id));
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -133,7 +262,8 @@ export function SoulmatePortrait() {
   }, []);
 
   useEffect(() => {
-    setPending(loadPending(user?.id));
+    setPending(loadPendingPortrait(user?.id));
+    setData(user?.id ? shown.get(user.id) ?? null : null);
   }, [user?.id]);
 
   // Step the waiting copy while a request is in flight.
@@ -155,65 +285,96 @@ export function SoulmatePortrait() {
     if (mounted.current) setPending(p);
   }, [user?.id]);
 
-  const paint = async () => {
-    // Resume the attempt in progress (free — the server replays it), or start a new one.
-    let attempt = pending;
-    if (!attempt) {
-      const ok = await tryConsume();
-      if (!ok) return;
-      attempt = { requestId: newRequestId(), vibe, at: Date.now() };
-      remember(attempt);
-    }
+  /** Wait for an attempt's work, then say what it came to. */
+  const settle = useCallback(async (attempt: PendingPaint, work: Promise<PaintOutcome>) => {
     setLoading(true);
-    const started = Date.now();
-    try {
-      for (;;) {
-        const { data: res, error } = await supabase.functions.invoke('ai-soulmate-portrait', {
-          body: { vibe: attempt.vibe, requestId: attempt.requestId },
-        });
-        if (!error) {
-          const payload = (res?.data ?? res) as PortraitData;
-          if (payload?.image && !mounted.current) {
-            // Painted while the user was elsewhere: keep the attempt, so the
-            // next visit collects this portrait from the server for free.
-            return;
-          }
-          remember(null);
-          if (payload?.image) {
-            setData(payload);
-          } else {
-            toast(t('soulmatePortrait.failed', { defaultValue: 'The portrait couldn’t be painted — try again.' }), 'error');
-          }
-          return;
-        }
-        const code = await errorCode(error);
-        if (code === 'REQUEST_IN_FLIGHT' && Date.now() - started < COLLECT_FOR_MS) {
-          // Still painting server-side (it waited ~20 s for it); keep collecting.
-          continue;
-        }
-        if (code === 'REQUEST_IN_FLIGHT') {
-          toast(t('soulmatePortrait.stillPainting', { defaultValue: 'Still painting. Tap “Show my portrait” in a minute to collect it — you won’t be charged again.' }), 'info');
-          return;
-        }
-        if (code === null) {
-          // No answer: the painting may still be running. Keep the attempt so
-          // the next tap collects it instead of paying again.
-          toast(t('soulmatePortrait.connectionDropped', { defaultValue: 'The connection dropped while painting. Tap “Show my portrait” to collect it — you won’t be charged twice.' }), 'error');
-          return;
-        }
-        remember(null);
-        if (code === 'INSUFFICIENT_BALANCE') {
-          toast(t('soulmatePortrait.notEnough', { defaultValue: 'Not enough Moonstones' }), 'error');
-        } else if (code === 'REQUEST_ALREADY_USED') {
-          toast(t('soulmatePortrait.expired', { defaultValue: 'That portrait can’t be shown again. Paint a new one.' }), 'error');
-        } else {
-          // The server refunds a paint that fails.
-          toast(t('soulmatePortrait.failedNotCharged', { defaultValue: 'The portrait couldn’t be painted, and your Moonstones weren’t charged. Try again in a moment.' }), 'error');
-        }
-        return;
+    const outcome = await work;
+    if (!mounted.current) {
+      // Off screen. A portrait waits for the next card (and the attempt
+      // stays, so a reload collects it from the server for free). Anything
+      // that ends the attempt ends it now — a refunded attempt must not come
+      // back as "already paid for".
+      if (outcome.kind !== 'painted') running.delete(attempt.requestId);
+      if (outcome.kind !== 'painted' && outcome.kind !== 'in-flight' && outcome.kind !== 'dropped' && outcome.kind !== 'held') {
+        savePending(user?.id, null);
       }
+      return;
+    }
+    running.delete(attempt.requestId);
+    setLoading(false);
+    switch (outcome.kind) {
+      case 'painted':
+        remember(null);
+        if (user?.id) shown.set(user.id, outcome.data);
+        setData(outcome.data);
+        return;
+      case 'in-flight':
+        toast(t('soulmatePortrait.stillPainting', { defaultValue: 'Still painting. Tap “Show my portrait” in a minute to collect it — you won’t be charged again.' }), 'info');
+        return;
+      case 'dropped':
+        toast(t('soulmatePortrait.connectionDropped', { defaultValue: 'The connection dropped while painting. Tap “Show my portrait” to collect it — you won’t be charged twice.' }), 'error');
+        return;
+      case 'held':
+        // Rate limit or the AI pause, before any new charge: the paid attempt stays.
+        toast(t('soulmatePortrait.collectLater', { defaultValue: 'Your portrait couldn’t be collected just now. Tap “Show my portrait” again in a minute — it is paid for, and you won’t be charged again.' }), 'info');
+        return;
+      case 'refused':
+        remember(null);
+        if (outcome.code === 'AI_SOFT_CAP') {
+          await tryConsume();
+          return;
+        }
+        toast(t('soulmatePortrait.failedNotCharged', { defaultValue: 'The portrait couldn’t be painted, and your Moonstones weren’t charged. Try again in a moment.' }), 'error');
+        return;
+      case 'insufficient':
+        remember(null);
+        // The gate opens the Earn sheet with the balance.
+        if (await tryConsume()) toast(t('soulmatePortrait.notEnough', { defaultValue: 'Not enough Moonstones' }), 'error');
+        return;
+      case 'expired':
+        remember(null);
+        toast(t('soulmatePortrait.expired', { defaultValue: 'That portrait can’t be shown again. Paint a new one.' }), 'error');
+        return;
+      case 'failed':
+        // The server refunds a paint that fails.
+        remember(null);
+        toast(t('soulmatePortrait.failedNotCharged', { defaultValue: 'The portrait couldn’t be painted, and your Moonstones weren’t charged. Try again in a moment.' }), 'error');
+        return;
+    }
+  }, [remember, t, tryConsume, user?.id]);
+
+  // An attempt this session is still painting (or painted while no card was
+  // on screen): wait on it, rather than send another request.
+  useEffect(() => {
+    if (!pending) return;
+    const work = running.get(pending.requestId);
+    if (!work || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    void settle(pending, work).finally(() => {
+      busyRef.current = false;
+      if (mounted.current) setBusy(false);
+    });
+  }, [pending, settle]);
+
+  const paint = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      // Resume the attempt in progress (free — the server replays it), or start a new one.
+      let attempt = pending;
+      const resumed = !!attempt;
+      if (!attempt) {
+        const ok = await tryConsume();
+        if (!ok) return;
+        attempt = { requestId: newRequestId(), vibe, at: Date.now() };
+        remember(attempt);
+      }
+      await settle(attempt, runShared(attempt, resumed));
     } finally {
-      if (mounted.current) setLoading(false);
+      busyRef.current = false;
+      if (mounted.current) setBusy(false);
     }
   };
 
@@ -225,6 +386,11 @@ export function SoulmatePortrait() {
     a.download = `arcana-soulmate-portrait.${mime === 'image/png' ? 'png' : 'jpg'}`;
     a.click();
     toast(t('soulmatePortrait.saved', { defaultValue: 'Saved' }), 'success');
+  };
+
+  const repaint = () => {
+    if (user?.id) shown.delete(user.id);
+    setData(null);
   };
 
   /** The symbol's label, localized: Descendant is a key; the planets have names. */
@@ -289,6 +455,9 @@ export function SoulmatePortrait() {
         ? t('soulmatePortrait.waitStill', { defaultValue: 'Still painting — this usually takes about a minute' })
         : null;
 
+  // The pending card shows only while there is something to collect (or what was collected).
+  if (pendingOnly && !pending && !loading && !data) return <>{EarnSheet}</>;
+
   return (
     <Card padding="lg" className="space-y-3">
       <div className="flex items-center gap-2">
@@ -298,17 +467,19 @@ export function SoulmatePortrait() {
 
       {!data && (
         <>
-          <p className="text-ui text-mystic-300">
-            {t('soulmatePortrait.intro', { defaultValue: 'An illustrated portrait of the qualities your chart reaches for in love — painted from your Descendant, Venus, Mars, and Moon. Symbolic art, not a photo of a real person.' })}
-          </p>
+          {!pendingOnly && (
+            <p className="text-ui text-mystic-300">
+              {t('soulmatePortrait.intro', { defaultValue: 'An illustrated portrait of the qualities your chart reaches for in love — painted from your Descendant, Venus, Mars, and Moon. Symbolic art, not a photo of a real person.' })}
+            </p>
+          )}
           {!pending && (
             <div className="flex flex-wrap gap-1.5">
               {VIBES.map((v) => (
-                <Chip key={v.key} label={t(`soulmatePortrait.vibe.${v.key}`, { defaultValue: v.label })} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" disabled={loading} />
+                <Chip key={v.key} label={t(`soulmatePortrait.vibe.${v.key}`, { defaultValue: v.label })} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" disabled={loading || busy} />
               ))}
             </div>
           )}
-          <Button variant="gold" fullWidth onClick={paint} disabled={loading}>
+          <Button variant="gold" fullWidth onClick={paint} disabled={loading || busy}>
             {loading
               ? t('soulmatePortrait.painting', { defaultValue: 'Painting your portrait…' })
               : pending
@@ -361,9 +532,11 @@ export function SoulmatePortrait() {
             <Button variant="outline" className="flex-1" onClick={download}>
               <Download className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.save', { defaultValue: 'Save the image' })}
             </Button>
-            <Button variant="ghost" className="flex-1" onClick={() => setData(null)}>
-              <RefreshCw className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.repaint', { defaultValue: 'Paint it again' })}
-            </Button>
+            {!pendingOnly && (
+              <Button variant="ghost" className="flex-1" onClick={repaint}>
+                <RefreshCw className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.repaint', { defaultValue: 'Paint it again' })}
+              </Button>
+            )}
           </div>
 
           <p className="text-caption text-mystic-500 italic">

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Sparkles, TrendingUp, TrendingDown, Minus, Mail, BookOpen } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { Sparkles, TrendingUp, TrendingDown, Minus, Mail, BookOpen, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, toast, PageHeader, EmptyState, ReadingProse, Page, Chip, Tag, EyebrowLabel, Section } from '../components/ui';
 import { MoodGlyph } from '../components/journal/MoodGlyphs';
@@ -19,12 +19,17 @@ import {
   pendingMoodUploads,
   entryToYValue,
   derivePattern,
+  legacyMoodOffer,
+  loadLegacyMoodEntries,
+  declineLegacyMood,
+  clearLegacyMoodCache,
   type MoodCategory,
   type MoodEntry,
   type MoodPattern,
   type DayOfWeek,
 } from '../data/moodDiary';
 import * as moodEntriesDal from '../dal/moodEntries';
+import { aiFailureOf } from '../components/reports/aiReading';
 // Import localDateStr DIRECTLY from utils — going through the moodDiary
 // re-export caused Vite's tree-shaker to drop the symbol from the
 // MoodDiaryPage chunk in production builds, producing a runtime
@@ -41,6 +46,18 @@ type Stage = 'log' | 'history';
 type SyncState = 'syncing' | 'synced' | 'local';
 
 const LETTER_MIN_DAYS = 3;
+
+/** The `error.code` a function answered with (a FunctionsHttpError keeps the Response on `context`). */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
 
 interface MoodLetter {
   letter: string;
@@ -85,48 +102,101 @@ export function MoodDiaryPage() {
     }
   };
 
-  // Local first (instant), then the record. The local copy is THIS
-  // account's cache only (data/moodDiary.ts scopes it by user id), so the
-  // days uploaded here are days this account wrote on this device while the
-  // table was unreachable — never another account's history.
+  /**
+   * The record, then this account's cache: the account's own days the
+   * table lacks are uploaded, and the merged set becomes the cache. The
+   * local copy is THIS account's cache only (data/moodDiary.ts scopes it by
+   * user id), so the days uploaded here are days this account wrote on this
+   * device while the table was unreachable — never another account's.
+   */
+  const syncRecord = async (userId: string, isCancelled: () => boolean) => {
+    const local = loadMoodEntries(userId);
+    const res = await moodEntriesDal.listForUser(userId);
+    if (isCancelled()) return;
+    if (!res.ok) {
+      setSyncState('local');
+      return;
+    }
+    const remote = res.data;
+    const pending = pendingMoodUploads(local, remote);
+    let uploaded = true;
+    if (pending.length > 0) {
+      const up = await moodEntriesDal.upsertMany(userId, pending);
+      if (isCancelled()) return;
+      uploaded = up.ok;
+    }
+    const merged = mergeMoodEntries(pending, remote);
+    replaceLocalMoodEntries(userId, merged);
+    adopt(merged);
+    setSyncState(uploaded ? 'synced' : 'local');
+  };
+
+  /**
+   * Days the old build kept on this device (one device-global key, writer
+   * unknown) that this account has not answered for yet. They are offered,
+   * never taken: the account says whether they are its own (p8 F33).
+   */
+  const [legacyDays, setLegacyDays] = useState<MoodEntry[]>([]);
+  const [claiming, setClaiming] = useState(false);
+  const claimingRef = useRef(false);
+
+  // Local first (instant), then the record.
   useEffect(() => {
     let cancelled = false;
     // A fresh account starts from a blank form, not the last one's pick.
     setSelected(null);
     setIntensity(3);
     setNote('');
-    const local = loadMoodEntries(user?.id);
-    adopt(local);
+    adopt(loadMoodEntries(user?.id));
+    setLegacyDays(legacyMoodOffer(user?.id));
     if (!user) {
       setSyncState('local');
       return;
     }
-    const userId = user.id;
-    (async () => {
-      const res = await moodEntriesDal.listForUser(userId);
-      if (cancelled) return;
-      if (!res.ok) {
-        setSyncState('local');
-        return;
-      }
-      const remote = res.data;
-      const pending = pendingMoodUploads(local, remote);
-      let uploaded = true;
-      if (pending.length > 0) {
-        const up = await moodEntriesDal.upsertMany(userId, pending);
-        if (cancelled) return;
-        uploaded = up.ok;
-      }
-      const merged = mergeMoodEntries(pending, remote);
-      replaceLocalMoodEntries(userId, merged);
-      adopt(merged);
-      setSyncState(uploaded ? 'synced' : 'local');
-    })();
+    void syncRecord(user.id, () => cancelled);
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  /**
+   * "They're mine": upload the old days the record lacks (or holds an older
+   * copy of), and only once it has them delete the device copy. Offline,
+   * nothing moves and the question stays, so a day is never lost between
+   * the two.
+   */
+  const claimLegacy = async () => {
+    if (!user || claimingRef.current) return;
+    const userId = user.id;
+    claimingRef.current = true;
+    setClaiming(true);
+    try {
+      const legacy = loadLegacyMoodEntries();
+      const remote = await moodEntriesDal.listForUser(userId);
+      const up = remote.ok
+        ? await moodEntriesDal.upsertMany(userId, pendingMoodUploads(legacy, remote.data))
+        : remote;
+      if (!up.ok) {
+        toast(t('moodDiary.legacyClaimFailed', { defaultValue: 'Couldn’t add them to your diary right now. They’re still on this device — try again in a moment.' }), 'error');
+        return;
+      }
+      clearLegacyMoodCache();
+      setLegacyDays([]);
+      toast(t('moodDiary.legacyClaimed', { count: legacy.length, defaultValue: '{{count}} days added to your diary' }), 'success');
+      await syncRecord(userId, () => false);
+    } finally {
+      claimingRef.current = false;
+      setClaiming(false);
+    }
+  };
+
+  /** "Not mine": this account is not asked again; the days stay on the device for whoever logged them. */
+  const declineLegacy = () => {
+    if (!user) return;
+    declineLegacyMood(user.id);
+    setLegacyDays([]);
+  };
 
   const save = async () => {
     if (!selected) {
@@ -184,7 +254,22 @@ export function MoodDiaryPage() {
     return derivePattern(allEntries);
   }, [allEntries]);
 
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('mood-letter');
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('mood-letter');
+  /**
+   * Set synchronously on the press, before the balance gate is awaited, so
+   * a second press while the gate RPC is in flight is ignored — a double
+   * tap was two letters and two charges. The button is disabled for the
+   * same span (generatingLetter is set with it).
+   */
+  const writing = useRef(false);
+  /**
+   * The letter request last sent without a letter back: its id and exact
+   * body. Pressing again with the same entries is a retry of it — the
+   * server charges it at most once and replays the letter — so it skips the
+   * gate (a charged first attempt can leave the balance under the cost).
+   * A letter that arrived clears it: "Write me another letter" is a new one.
+   */
+  const letterAttempt = useRef<{ id: string; body: string } | null>(null);
 
   const daysToLetter = Math.max(0, LETTER_MIN_DAYS - allEntries.length);
   const letterProgress = daysToLetter === 1
@@ -192,12 +277,12 @@ export function MoodDiaryPage() {
     : t('mood.letterProgress', { defaultValue: '{{n}} more days until your letter', n: daysToLetter });
 
   const handleGenerateLetter = async () => {
+    if (writing.current) return;
     if (allEntries.length < LETTER_MIN_DAYS) {
       toast(t('mood.needMoreForLetter', { defaultValue: 'Log at least 3 days for a weekly letter.' }), 'error');
       return;
     }
-    const ok = await tryConsume();
-    if (!ok) return;
+    writing.current = true;
     setGeneratingLetter(true);
     try {
       const recent = [...allEntries]
@@ -209,31 +294,49 @@ export function MoodDiaryPage() {
           intensity: e.intensity,
           note: e.note,
         }));
-
-      const { data, error } = await supabase.functions.invoke('ai-mood-letter', {
-        body: {
-          entries: recent,
-          userContext: {
-            displayName: profile?.displayName || undefined,
-            // The app's language, not the device's: a Japanese UI on an
-            // English phone gets a Japanese letter.
-            locale: getLocale(),
-          },
+      const body = {
+        entries: recent,
+        userContext: {
+          displayName: profile?.displayName || undefined,
+          // The app's language, not the device's: a Japanese UI on an
+          // English phone gets a Japanese letter.
+          locale: getLocale(),
         },
+      };
+      const signature = JSON.stringify(body);
+      if (letterAttempt.current?.body !== signature) {
+        const ok = await tryConsume();
+        if (!ok) return;
+        letterAttempt.current = { id: crypto.randomUUID(), body: signature };
+      }
+      const { data, error } = await supabase.functions.invoke('ai-mood-letter', {
+        body: { ...body, requestId: letterAttempt.current.id },
       });
-      if (error) throw error;
+      if (error) {
+        const failure = await aiFailureOf(error);
+        if (failure === 'insufficient' || failure === 'soft-cap') {
+          // Refused before the debit: re-read the gate, which opens the Earn sheet.
+          letterAttempt.current = null;
+          await tryConsume();
+          return;
+        }
+        // Answered once and no longer replayable: the next press is a new letter.
+        if ((await functionErrorCode(error)) === 'REQUEST_ALREADY_USED') letterAttempt.current = null;
+        throw error;
+      }
       // Unwrap { data, correlationId } envelope.
       const payload = (data as { data?: MoodLetter })?.data ?? (data as MoodLetter);
       if (!payload?.letter) throw new Error('empty letter');
+      letterAttempt.current = null;
       setLetter(payload);
     } catch (e) {
-      await refund();
       console.warn('[Mood] letter generation failed:', e);
       toast(
         t('mood.letterFailed', { defaultValue: 'Couldn’t write your letter right now. Try again in a moment.' }),
         'error',
       );
     } finally {
+      writing.current = false;
       setGeneratingLetter(false);
     }
   };
@@ -266,6 +369,36 @@ export function MoodDiaryPage() {
           title={t('mood.title', { defaultValue: 'Daily mood' })}
           subtitle={t('mood.introShort', { defaultValue: 'Pick the shape of today and how strongly it landed.' })}
         />
+
+        {/* Days an earlier version kept on this device, writer unknown:
+            asked about, never taken (p8 F33). Only the count is shown
+            until the account says they are its own. */}
+        {legacyDays.length > 0 && (
+          <Card padding="lg" role="region" aria-labelledby="mood-legacy-title">
+            <div className="flex items-start gap-3">
+              <History className="w-5 h-5 text-gold shrink-0 mt-0.5" aria-hidden />
+              <div className="flex-1 min-w-0 space-y-3">
+                <h2 id="mood-legacy-title" className="heading-display-md heading-strong text-mystic-100">
+                  {t('moodDiary.legacyTitle', { defaultValue: 'Mood days saved on this device' })}
+                </h2>
+                <p className="text-ui text-mystic-300 leading-relaxed">
+                  {t('moodDiary.legacyBody', {
+                    count: legacyDays.length,
+                    defaultValue: 'An earlier version of Arcana saved {{count}} mood days on this device, before the diary moved to your account. If they’re yours, add them to your diary. If not, they stay here for whoever logged them.',
+                  })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="gold" size="sm" onClick={claimLegacy} disabled={claiming} loading={claiming}>
+                    {t('moodDiary.legacyClaim', { count: legacyDays.length, defaultValue: 'Add them to my diary' })}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={declineLegacy} disabled={claiming}>
+                    {t('moodDiary.legacyDecline', { defaultValue: 'Not mine' })}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Insight card — surfaces a real pattern derived from the
             last 14 entries. Appears only when we have ≥3 logged days

@@ -93,6 +93,24 @@ const MUST_TRIP = [
   'この世からいなくなりたい',
   '飛び降りようと思う',
   '我想跳楼',
+  // p9 R00/R19: plain first-person statements the F01 narrowing stopped
+  // tripping, and phrasings no pattern had covered
+  "I'm going to go jump off a bridge tonight",
+  'I’m gonna go jump off the roof',
+  "I've decided to jump off the building",
+  'I have decided to jump in front of a train',
+  'I have a plan to end it tonight',
+  "I'm planning to end it this weekend",
+  'nobody would miss me if I was gone',
+  'No one would even notice if I’m gone',
+  'nobody would care if I died',
+  'everyone would be better off without me',
+  'the world would be better without me',
+  'ビルから飛び降りたい',
+  '屋上から飛び降りる',
+  '電車に飛び込みたい',
+  '한강에서 뛰어내릴 거야',
+  '옥상에서 뛰어내리고 싶어',
 ];
 
 const MUST_STAY_FALSE = [
@@ -133,6 +151,16 @@ const MUST_STAY_FALSE = [
   '宿題を全部終わらせたい',
   '今日中に全部終わらせたい',
   '跳楼价大甩卖',
+  // p9 R15: the ja/ko descriptions of the same cards
+  '愚者は崖から飛び降りようとしています。',
+  '愚者のカードでは、若者が崖から飛び降りる寸前です',
+  '塔のカードでは二人が塔から落ちています。',
+  '바보 카드는 절벽에서 뛰어내리려는 모습이에요.',
+  '탑 카드에서 두 사람이 탑에서 떨어지고 있어요.',
+  '塔牌上两个人从塔上跳下来。',
+  // …and relationship/decision talk next to the widened English helpers
+  'I’ve decided to end it with him',
+  'nobody would miss me at the party, so I stayed home',
 ];
 
 describe('detectCrisis', () => {

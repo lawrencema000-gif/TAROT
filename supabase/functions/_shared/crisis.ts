@@ -40,6 +40,17 @@
  * writer as its subject ("I'm going to jump off…", "I keep thinking about
  * dying", or "…myself"); "end my" needs a life; 終わりにしたい needs 人生 /
  * 命 / 自分 / 全部; この世から needs 消えたい / いなくなりたい.
+ *
+ * 2026-10-17 (p9 R00/R19/R15): the subject rule was too narrow — "I'm going
+ * to go jump off a bridge tonight", "I've decided to jump off the building",
+ * "I have a plan to end it tonight" and "nobody would miss me if I was gone"
+ * returned false. Intent and decision words ("go", "decided", "plan to")
+ * count as helpers again, and the "nobody would miss me / better off without
+ * me" phrasings are covered. The ja/ko jump patterns matched the bare verb
+ * (飛び降りよう, 뛰어내리려는), which is how a card is described; they now need
+ * a desire, intention or decision, or a real-world place (a roof, a bridge,
+ * the tracks). A moderator can publish a flagged post since 20261003000014,
+ * so where a phrasing stays ambiguous, it still trips.
  */
 
 // Apostrophe: straight, typographic, or dropped ("dont", "cant").
@@ -54,10 +65,15 @@ const CLAUSE_END = "\\s*(?:[.!?…,;:)]|\\n|$)";
 // about", "I feel like", "I'm about to" — and nothing else, so "I think the
 // Fool is about to jump" stays false.
 const I_SUBJECT = "\\b(?:i|im|i['’](?:m|ll|d|ve))";
+// p9 R00/R19: "I'm going to go jump off a bridge tonight" and "I've decided
+// to jump off the building" stopped tripping after F01 because "go" and
+// "decided" were not helpers; the decision and intent words are now.
 const HELPERS =
   "(?:am|will|would|could|might|should|shall|must|can|have|been|really|just|honestly|seriously|literally|" +
-  "still|actually|almost|nearly|so|going|gonna|about|want|wanna|wanted|need|plan|planning|feel|feeling|like|" +
-  "keep|kept|thinking|think|thought|dream|dreaming|tempted|ready|try|tried|trying|considering|contemplating|to|of)";
+  "still|actually|almost|nearly|so|going|gonna|about|want|wanna|wanted|need|plan|planning|planned|feel|feeling|like|" +
+  "keep|kept|thinking|think|thought|dream|dreaming|tempted|ready|try|tried|trying|considering|contemplating|to|of|" +
+  "go|gone|decided|decide|deciding|intend|intending|intended|finally|probably|definitely|totally|already|" +
+  "eventually|soon|prepared|preparing|willing|get|getting|got|start|starting|started|hope|hoping|wish|wishing)";
 const FIRST_PERSON = `${I_SUBJECT}(?:\\s+${HELPERS}){0,6}\\s+`;
 // …or a clause that starts with the intent and no subject: "Gonna jump off
 // a bridge.", "…so done, about to step in front of a train".
@@ -76,8 +92,17 @@ export const CRISIS_PATTERNS: RegExp[] = [
   // end it all, end my life, end everything, ending it all — but not "end my
   // relationship" or "end everything with him" (p8 F01)
   /\bend(?:ing)?\s+(?:my\s+(?:own\s+)?(?:life|existence|suffering)|it\s+all(?!\s+with\b)|everything(?!\s+with\b))\b/i,
-  // "going to end it", "want to end it" — but not "end it with him"
-  /\b(?:going\s+to|gonna|want\s+to|wanna|about\s+to)\s+end\s+it\b(?!\s+with\b)/i,
+  // "going to end it", "want to end it", "a plan to end it tonight", "I've
+  // decided to end it" — but not "end it with him" (p9 R00: plans and
+  // decisions were missing)
+  /\b(?:going\s+to|gonna|want\s+to|wanna|about\s+to|plan(?:ning|ned)?\s+to|decided\s+to|ready\s+to|prepared\s+to|i['’]ll|i\s+will)\s+end\s+it\b(?!\s+with\b)/i,
+  // "nobody would miss me", "no one would care if I died / was gone", "the
+  // world would be better without me" (p9: no pattern covered them)
+  // (…"miss me" that ends the clause or goes on "if I…", "anyway", "when
+  // I'm gone" — not "nobody would miss me at the party")
+  /\b(?:no\s*one|nobody|noone)\s+(?:would|will|['’]d)\s+(?:even\s+|really\s+)?(?:miss\s+me(?=\s*(?:[.!?…,;:)]|\n|$)|\s+(?:if|anyway|when\s+i)\b)|notice\s+(?:if\s+i|i['’]?m\s+gone))/i,
+  /\b(?:no\s*one|nobody|noone)\s+(?:would|will|['’]d)\s+(?:even\s+|really\s+)?care\s+if\s+i\s+(?:died|was\s+dead|were\s+dead|was\s+gone|were\s+gone|disappeared|killed\s+my\s*self)\b/i,
+  /\b(?:world|everyone|everybody|my\s+family)\s+(?:would\s+be|['’]d\s+be|is)\s+better\s+(?:off\s+)?without\s+me\b/i,
   /\b(?:take|taking)\s+my\s+(?:own\s+)?life\b/i,
   // don't / do not want to be alive | exist | be here (anymore)
   new RegExp(`\\b${DONT}\\s+want\\s+to\\s+(?:be\\s+alive|exist|be\\s+here)\\b`, "i"),
@@ -141,8 +166,12 @@ export const CRISIS_PATTERNS: RegExp[] = [
   /死にたい|死にたく|しにたい|シニタイ|死のうと|死んでしまいたい|死んじゃいたい/,
   /消えたい|消えてしまいたい|消えてなくなりたい|いなくなりたい/,
   /自殺|自死|自傷|リスカ|リストカット|オーバードーズ|首を吊|首吊り|首をつ[るり]/,
-  // (not 清水の舞台から飛び降りる, "take the plunge")
-  /(?<!舞台から)飛び降り(?:たい|る|よう|て)|身投げ|命を絶/,
+  // Jumping: a desire, an intention or a decision, or a real-world place —
+  // not the Fool about to jump from his cliff (愚者は崖から飛び降りようとして
+  // いる) nor 清水の舞台から飛び降りる, "take the plunge" (p9 R15)
+  /飛び降りたい|飛び降りたく|飛び降りようと(?:思|考え)|飛び降りる(?:つもり|しかない|ことにした|と決め)|飛び降りて(?:死に|死ぬ|しまいたい|楽に)/,
+  /(?:屋上|ビル|マンション|橋|歩道橋|ホーム|ベランダ|窓)から飛び降り|(?:電車|線路|ホーム)に飛び込(?:みたい|もう|む)/,
+  /身投げ|命を絶/,
   /生きていたくない|生きてたくない|生きたくない|生きる(?:の|こと)が(?:つらい|辛い|しんどい)/,
   /生きて(?:いる|る)?意味(?:が|は)?(?:ない|無い|わからない)|生きる意味(?:が|は)?(?:ない|無い)/,
   /楽になりたい/,
@@ -156,7 +185,10 @@ export const CRISIS_PATTERNS: RegExp[] = [
   // ── Korean ──
   /죽고\s*싶|죽어\s*버리고\s*싶|죽으려고/,
   /자살|자해|극단적\s*(?:선택|인\s*선택)/,
-  /목을\s*매|뛰어\s*내리|투신|손목을\s*긋|약을\s*(?:다\s*)?먹고\s*죽/,
+  // Jumping: wanting, intending or deciding to, or a real-world place — not
+  // the Fool card about to jump from its cliff (절벽에서 뛰어내리려는 모습) (p9 R15)
+  /목을\s*매|투신|손목을\s*긋|약을\s*(?:다\s*)?먹고\s*죽/,
+  /뛰어\s*내리고\s*싶|뛰어\s*내릴\s*(?:거|까|래|게|생각)|뛰어\s*내리려고\s*(?:해|했|한|하고)|(?:옥상|다리|건물|아파트|한강|베란다|창문)에서\s*뛰어\s*내리/,
   /살고\s*싶지\s*않|살기\s*싫|살\s*이유가\s*없|사는\s*게\s*의미가\s*없|사라지고\s*싶|삶을\s*끝내|생을\s*마감/,
 
   // ── Chinese (simplified and traditional) ──

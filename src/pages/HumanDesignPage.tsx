@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Trans } from 'react-i18next';
 import { Calendar, Clock, Compass, Target, Share2 } from 'lucide-react';
 import {
   Card, Button, Input, toast, Page, PageHeader, Section, Disclosure, Tag,
@@ -6,10 +7,10 @@ import {
 } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
+import { useContentOverlay } from '../i18n/contentOverlay';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { HD_TYPES } from '../data/humanDesign';
-import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesignCases';
+import { hdBodyName, localizeHumanDesign } from '../data/humanDesignReading';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
@@ -42,7 +43,11 @@ async function functionErrorCode(error: unknown): Promise<string | null> {
  * signature / not-self, authority, strengths, challenges, affirmation) and
  * the instrument on the canvas beneath it (bodygraph, channels, activations,
  * strategy-in-practice cases, the decision script). Type names come from
- * humanDesign.types.<type>.name, which every locale carries.
+ * humanDesign.types.<type>.name, which every locale carries; everything else
+ * the result reads out (the type copy, the cases, the scripts, and the
+ * strategy / signature / not-self / authority text the function returns in
+ * English) comes through the 'humanDesign' content overlay, keyed by the
+ * chart's Type and Authority (src/data/humanDesignReading.ts).
  */
 
 type Stage = 'input' | 'loading' | 'result';
@@ -78,6 +83,10 @@ interface HdChart {
 export function HumanDesignPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  // The result's text in ja/ko/zh. Fetched from the first render, so it is
+  // in memory long before a chart comes back; until it is, the result waits
+  // on the computing state rather than flash the English.
+  const { overlay, ready } = useContentOverlay('humanDesign');
   const [stage, setStage] = useState<Stage>('input');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
@@ -172,7 +181,10 @@ export function HumanDesignPage() {
     setShowActivations(false);
   };
 
-  if (stage === 'input' || stage === 'loading') {
+  /** Computing, or the chart is in and its text is still downloading. */
+  const waiting = stage === 'loading' || (stage === 'result' && !ready);
+
+  if (stage === 'input' || waiting) {
     return (
       <Page spacing="md">
         <PageHeader
@@ -218,10 +230,10 @@ export function HumanDesignPage() {
           size="lg"
           fullWidth
           onClick={runCalc}
-          disabled={stage === 'loading'}
-          loading={stage === 'loading'}
+          disabled={waiting}
+          loading={waiting}
         >
-          {stage === 'loading'
+          {waiting
             ? t('humanDesign.computing', { defaultValue: 'Computing your bodygraph…' })
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
         </Button>
@@ -233,10 +245,13 @@ export function HumanDesignPage() {
   }
 
   if (stage === 'result' && chart) {
-    const key = typeKey(chart.type);
-    const typeInfo = HD_TYPES[key];
-    const typeContent = typeInfo ?? {
-      name: chart.type,
+    // The reading in the reader's language: the type copy, the cases and the
+    // script from the overlay, and the function's English strategy /
+    // signature / not-self / authority looked up by the chart's Type and
+    // Authority (each falls back to what the function sent).
+    const text = localizeHumanDesign(chart, overlay);
+    const key = text.typeKey;
+    const typeContent = text.info ?? {
       summary: '',
       strengths: [],
       challenges: [],
@@ -246,23 +261,27 @@ export function HumanDesignPage() {
     };
     // The locale's name for the type (humanDesign.types.<key>.name exists in
     // en/ja/ko/zh); the edge function's English display string is the fallback.
-    const typeName = t(`humanDesign.types.${key}.name`, { defaultValue: chart.type }) as string;
-    const cases = TYPE_CASES[key] ?? [];
-    const script = AUTHORITY_SCRIPTS[chart.authority as Authority];
+    const typeName = key ? (t(`humanDesign.types.${key}.name`, { defaultValue: chart.type }) as string) : chart.type;
+    const { cases, script } = text;
 
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
           title: typeName,
           subtitle: `${t('humanDesign.profileLabel', { defaultValue: 'Profile' })} ${chart.profile}`,
-          tagline: chart.strategy,
-          affirmation: typeContent.affirmation || chart.signature,
+          tagline: text.strategy,
+          affirmation: typeContent.affirmation || text.signature,
           brand: t('share.brand.humanDesign', { defaultValue: 'Human Design' }) as string,
         });
         const out = await shareOrDownload(
           blob,
-          `arcana-human-design-${key}.png`,
-          `My Human Design: ${typeName} (${chart.profile}). Strategy: ${chart.strategy}.`,
+          `arcana-human-design-${key ?? 'chart'}.png`,
+          t('humanDesign.shareText', {
+            defaultValue: 'My Human Design: {{type}} ({{profile}}). Strategy: {{strategy}}.',
+            type: typeName,
+            profile: chart.profile,
+            strategy: text.strategy,
+          }) as string,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
@@ -286,7 +305,7 @@ export function HumanDesignPage() {
           }
           title={typeName}
           summaryHeading={t('humanDesign.strategyLabel', { defaultValue: 'Your strategy' })}
-          summary={chart.strategy}
+          summary={text.strategy}
           disclaimer="general"
         >
           <div className="space-y-7">
@@ -295,7 +314,7 @@ export function HumanDesignPage() {
               <span className="text-ink font-medium tabular-nums">{chart.profile}</span>
               {' · '}
               {t('humanDesign.authorityLabel', { defaultValue: 'Authority' })}{' '}
-              <span className="text-ink font-medium">{chart.authority}</span>
+              <span className="text-ink font-medium">{text.authority}</span>
             </p>
 
             {typeContent.summary && <p className="reading-copy">{withEmphasis(typeContent.summary)}</p>}
@@ -306,22 +325,22 @@ export function HumanDesignPage() {
                 <EyebrowLabel tone="ink" align="left" className="block">
                   {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
                 </EyebrowLabel>
-                <p className="font-display font-semibold text-title text-ink-teal mt-1">{chart.signature}</p>
+                <p className="font-display font-semibold text-title text-ink-teal mt-1">{text.signature}</p>
               </div>
               <div>
                 <EyebrowLabel tone="ink" align="left" className="block">
                   {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
                 </EyebrowLabel>
-                <p className="font-display font-semibold text-title text-ink-coral mt-1">{chart.notSelfTheme}</p>
+                <p className="font-display font-semibold text-title text-ink-coral mt-1">{text.notSelfTheme}</p>
               </div>
             </div>
 
             {/* Authority */}
             <section>
               <h3 className="heading-display-md heading-strong text-ink mb-2">
-                {t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}
+                {t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority: {{authority}}', authority: text.authority })}
               </h3>
-              <p className="reading-copy">{chart.authorityExplanation}</p>
+              <p className="reading-copy">{text.authorityExplanation}</p>
             </section>
 
             {/* Strengths / Challenges */}
@@ -355,8 +374,14 @@ export function HumanDesignPage() {
                 <AffirmationPanel text={typeContent.affirmation} />
                 {typeContent.tarotPairing && (
                   <p className="reading-meta text-center">
-                    {t('humanDesign.tarotPairingLabel', { defaultValue: 'Tarot pairing' })}:{' '}
-                    <span className="text-ink">{typeContent.tarotPairing}</span>
+                    {/* The label's punctuation is the locale's (「：」 in ja/zh). */}
+                    <Trans
+                      t={t}
+                      i18nKey="humanDesign.tarotPairing"
+                      defaults="Tarot pairing: <v>{{cards}}</v>"
+                      values={{ cards: typeContent.tarotPairing }}
+                      components={{ v: <span className="text-ink" /> }}
+                    />
                   </p>
                 )}
               </div>
@@ -415,6 +440,7 @@ export function HumanDesignPage() {
             tint="text-gold"
             gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
             lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
+            bodyName={(body) => hdBodyName(body, overlay)}
           />
           <ActivationList
             title={t('humanDesign.designLabel', { defaultValue: 'Design (unconscious) — 88° of solar arc before birth' }) as string}
@@ -422,6 +448,7 @@ export function HumanDesignPage() {
             tint="text-cosmic-blue-ink"
             gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
             lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
+            bodyName={(body) => hdBodyName(body, overlay)}
           />
         </Disclosure>
 
@@ -461,7 +488,7 @@ export function HumanDesignPage() {
                   </div>
                   <p className="text-meta text-gold italic flex items-start gap-1.5">
                     <SparkleFourPoint size={10} className="mt-1 shrink-0" />
-                    <span>{t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}</span>
+                    <span>{t('humanDesign.signatureFelt', { defaultValue: 'Signature felt: {{signature}}', signature: c.signature })}</span>
                   </p>
                   {i < cases.length - 1 && (
                     <div className="h-px bg-mystic-800/50 mt-3" aria-hidden />
@@ -528,23 +555,18 @@ function withEmphasis(text: string): React.ReactNode[] {
   );
 }
 
-// Map the edge fn's display-cased type string back to the type-info
-// lookup key used by the localised HD_TYPES dictionary.
-function typeKey(display: string): keyof typeof HD_TYPES {
-  switch (display) {
-    case 'Manifestor': return 'manifestor';
-    case 'Generator': return 'generator';
-    case 'Manifesting Generator': return 'manifesting-generator';
-    case 'Projector': return 'projector';
-    case 'Reflector': return 'reflector';
-    default: return 'generator';
-  }
-}
-
 // ─── Activation list ─────────────────────────────────────────────
 function ActivationList({
-  title, activations, tint, gateLabel, lineLabel,
-}: { title: string; activations: Activation[]; tint: string; gateLabel: string; lineLabel: string }) {
+  title, activations, tint, gateLabel, lineLabel, bodyName,
+}: {
+  title: string;
+  activations: Activation[];
+  tint: string;
+  gateLabel: string;
+  lineLabel: string;
+  /** The activation's body (Sun, Earth, NorthNode, …) as the reader calls it. */
+  bodyName: (body: string) => string;
+}) {
   return (
     <div>
       <p className={`font-display-eyebrow mb-2 ${tint}`}>{title}</p>
@@ -554,7 +576,7 @@ function ActivationList({
             key={`${a.body}-${a.gate}-${a.line}`}
             className="flex items-center justify-between py-1 border-b border-mystic-800/40 last:border-b-0 text-meta"
           >
-            <span className="text-mystic-300">{a.body}</span>
+            <span className="text-mystic-300">{bodyName(a.body)}</span>
             <span className="text-mystic-200 tabular-nums">
               <span className="text-mystic-500">{gateLabel}</span> <span className="text-gold">{a.gate}</span>
               <span className="text-mystic-500 mx-1">·</span>

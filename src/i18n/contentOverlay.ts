@@ -41,6 +41,8 @@ export const CONTENT_MODULES = [
   'wisdom',
   'runes',
   'pets',
+  'humanDesign',
+  'compat',
 ] as const;
 
 export type ContentModule = (typeof CONTENT_MODULES)[number];
@@ -64,6 +66,8 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     wisdom: () => import('./locales/ja/content-wisdom.json'),
     runes: () => import('./locales/ja/content-runes.json'),
     pets: () => import('./locales/ja/content-pets.json'),
+    humanDesign: () => import('./locales/ja/content-humanDesign.json'),
+    compat: () => import('./locales/ja/content-compat.json'),
   },
   ko: {
     interpretations: () => import('./locales/ko/content-interpretations.json'),
@@ -79,6 +83,8 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     wisdom: () => import('./locales/ko/content-wisdom.json'),
     runes: () => import('./locales/ko/content-runes.json'),
     pets: () => import('./locales/ko/content-pets.json'),
+    humanDesign: () => import('./locales/ko/content-humanDesign.json'),
+    compat: () => import('./locales/ko/content-compat.json'),
   },
   zh: {
     interpretations: () => import('./locales/zh/content-interpretations.json'),
@@ -94,6 +100,8 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     wisdom: () => import('./locales/zh/content-wisdom.json'),
     runes: () => import('./locales/zh/content-runes.json'),
     pets: () => import('./locales/zh/content-pets.json'),
+    humanDesign: () => import('./locales/zh/content-humanDesign.json'),
+    compat: () => import('./locales/zh/content-compat.json'),
   },
 };
 

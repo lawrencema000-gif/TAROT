@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Share2, Heart, Users, AlertCircle, RefreshCw } from 'lucide-react';
+import { Share2, Heart, Users, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Card, Button, Input, Page, PageHeader, Progress, Tag, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useContentOverlay } from '../i18n/contentOverlay';
+import { localizeAspectName } from '../i18n/localizeNames';
+import { isAspectType } from '../lib/chart';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -9,7 +12,14 @@ import {
   mbtiCompatScore,
   type MbtiType,
 } from '../data/partnerCompat';
-import { COMPOSITE_PAIRING_READINGS } from '../data/humanDesignCases';
+import {
+  compatPlanetName,
+  compositeInsights,
+  compositeReading,
+  compositeTitle,
+  localizeInterpretation,
+  mbtiNote,
+} from '../data/compatReading';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
@@ -39,6 +49,11 @@ import { birthZoneOf } from '../components/horoscope/birthZone';
  * until it is answered — a retry of the same pair is the server's free
  * replay — and a failed synastry says what happened instead of quietly
  * showing an MBTI-only result for a reading that may have been charged.
+ *
+ * Language: the function answers in English. Planet and aspect names come
+ * from localizeNames; each interpretation, the composite readings and the
+ * MBTI note come through the 'compat' content overlay, keyed by the
+ * function's own aspect key or flavour (src/data/compatReading.ts).
  */
 
 type Stage = 'input' | 'result';
@@ -79,13 +94,19 @@ interface SynastryResult {
 
 interface CompleteResult {
   synastry: SynastryResult | null;
-  mbti: { score: number; myType: MbtiType; partnerType: MbtiType; note: string } | null;
+  /** The note is read at render (mbtiNote), so it follows the reader's language. */
+  mbti: { score: number; myType: MbtiType; partnerType: MbtiType } | null;
   overallScore: number;
 }
+
+/** The elemental blend's keys, as the element labels name them. */
+const ELEMENT_LABEL_KEY = { fire: 'Fire', earth: 'Earth', air: 'Air', water: 'Water' } as const;
 
 export function PartnerCompatPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  // The reading's text in ja/ko/zh, fetched while the form is filled in.
+  const { overlay, ready } = useContentOverlay('compat');
   const [stage, setStage] = useState<Stage>('input');
   const [myMbti, setMyMbti] = useState<MbtiType | ''>('');
   const [partnerMbti, setPartnerMbti] = useState<MbtiType | ''>('');
@@ -196,7 +217,6 @@ export function PartnerCompatPage() {
         score,
         myType: myMbti,
         partnerType: partnerMbti,
-        note: buildMbtiNote(myMbti, partnerMbti),
       };
     }
 
@@ -387,10 +407,22 @@ export function PartnerCompatPage() {
     );
   }
 
+  if (stage === 'result' && result && !ready) {
+    // The reading's text is still downloading: wait for it rather than
+    // flash the English (it is usually in memory long before a result).
+    return (
+      <div className="flex justify-center py-24">
+        <Loader2 className="w-7 h-7 text-gold animate-spin" aria-label={t('compat.computing', { defaultValue: 'Computing the aspects…' }) as string} />
+      </div>
+    );
+  }
+
   if (stage === 'result' && result) {
     const scoreColor = result.overallScore >= 80 ? 'text-teal'
       : result.overallScore >= 60 ? 'text-gold'
       : 'text-coral';
+    const note = result.mbti ? mbtiNote(result.mbti.myType, result.mbti.partnerType, overlay) : '';
+    const firstAspect = result.synastry?.crossAspects[0];
 
     const handleShare = async () => {
       try {
@@ -398,12 +430,21 @@ export function PartnerCompatPage() {
           title: `${result.overallScore}%`,
           subtitle: t('compat.compatibilityLabel', { defaultValue: 'Compatibility' }) as string,
           tagline: result.synastry
-            ? `${result.synastry.harmoniousCount} harmonious · ${result.synastry.challengingCount} challenging · ${result.synastry.intenseCount} intense aspects`
+            ? (t('compat.shareTagline', {
+                defaultValue: '{{harmonious}} harmonious · {{challenging}} challenging · {{intense}} intense aspects',
+                harmonious: result.synastry.harmoniousCount,
+                challenging: result.synastry.challengingCount,
+                intense: result.synastry.intenseCount,
+              }) as string)
             : `${myMbti || ''}${myMbti && partnerMbti ? ' × ' : ''}${partnerMbti || ''}`,
-          affirmation: result.synastry?.crossAspects[0]?.interpretation ?? (result.mbti?.note || ''),
+          affirmation: firstAspect ? localizeInterpretation(firstAspect, overlay) : note,
           brand: t('share.brand.partnerCompat', { defaultValue: 'Partner compatibility' }) as string,
         });
-        const out = await shareOrDownload(blob, 'arcana-compatibility.png', `Our compatibility: ${result.overallScore}%`);
+        const out = await shareOrDownload(
+          blob,
+          'arcana-compatibility.png',
+          t('compat.shareText', { defaultValue: 'Our compatibility: {{score}}%', score: result.overallScore }) as string,
+        );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
@@ -483,17 +524,19 @@ export function PartnerCompatPage() {
                 <Card key={i} padding="md">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-ui font-medium text-mystic-200">
-                      {t('compat.myPlanet', { defaultValue: 'Your' })} {a.myPlanet}
+                      {t('compat.myPlanet', { defaultValue: 'Your {{planet}}', planet: compatPlanetName(a.myPlanet) })}
                     </span>
                     <Tag tone={flavourTone} className="capitalize">
-                      {a.type}
+                      {isAspectType(a.type) ? localizeAspectName(a.type) : a.type}
                     </Tag>
                     <span className="text-ui font-medium text-mystic-200">
-                      {t('compat.partnerPlanet', { defaultValue: "Partner's" })} {a.partnerPlanet}
+                      {t('compat.partnerPlanet', { defaultValue: 'Partner’s {{planet}}', planet: compatPlanetName(a.partnerPlanet) })}
                     </span>
-                    <span className="text-meta text-mystic-400 ml-auto">orb {a.orb.toFixed(1)}°</span>
+                    <span className="text-meta text-mystic-400 ml-auto">
+                      {t('compat.orb', { defaultValue: 'orb {{deg}}°', deg: a.orb.toFixed(1) })}
+                    </span>
                   </div>
-                  <ReadingProse text={a.interpretation} lede={false} />
+                  <ReadingProse text={localizeInterpretation(a, overlay)} lede={false} />
                 </Card>
               );
             })}
@@ -510,10 +553,11 @@ export function PartnerCompatPage() {
               {(['fire', 'earth', 'air', 'water'] as const).map((el) => {
                 const pct = result.synastry!.elementalBlend[el];
                 const tone = el === 'fire' ? 'coral' : el === 'earth' ? 'teal' : el === 'air' ? 'blue' : 'violet';
+                const name = t(`horoscope.birthChartView.elements.${ELEMENT_LABEL_KEY[el]}`, { defaultValue: ELEMENT_LABEL_KEY[el] }) as string;
                 return (
                   <div key={el} className="flex items-center gap-3">
-                    <span className="text-meta capitalize text-mystic-400 w-14">{el}</span>
-                    <Progress value={pct} size="md" tone={tone} label={el} className="flex-1" />
+                    <span className="text-meta capitalize text-mystic-400 w-14">{name}</span>
+                    <Progress value={pct} size="md" tone={tone} label={name} className="flex-1" />
                     <span className="text-meta text-mystic-400 w-10 text-right">{pct}%</span>
                   </div>
                 );
@@ -526,7 +570,7 @@ export function PartnerCompatPage() {
             Surfaces "you as a unit" readings on top of the per-aspect
             synastry. */}
         {result.synastry && result.synastry.crossAspects.length > 0 && (() => {
-          const insights = computeCompositeInsights(result.synastry);
+          const insights = compositeInsights(result.synastry.crossAspects);
           if (insights.length === 0) return null;
           return (
             <Card padding="lg" className="border-cosmic-rose/25">
@@ -542,8 +586,12 @@ export function PartnerCompatPage() {
               <div className="space-y-3">
                 {insights.map((ins, i) => (
                   <div key={i}>
-                    <p className="text-ui text-cosmic-rose font-medium mb-0.5">{ins.pairing}</p>
-                    <ReadingProse text={ins.reading} lede={false} />
+                    <p className="text-ui text-cosmic-rose font-medium mb-0.5">
+                      {ins.planets
+                        ? `${compatPlanetName(ins.planets[0])} ↔ ${compatPlanetName(ins.planets[1])}`
+                        : compositeTitle(ins.key, overlay)}
+                    </p>
+                    <ReadingProse text={compositeReading(ins.key, overlay)} lede={false} />
                   </div>
                 ))}
               </div>
@@ -560,7 +608,7 @@ export function PartnerCompatPage() {
               </h3>
               <span className="text-lg font-display text-gold">{result.mbti.score}%</span>
             </div>
-            <ReadingProse text={result.mbti.note} lede={false} />
+            <ReadingProse text={note} lede={false} />
           </Card>
         )}
 
@@ -578,64 +626,6 @@ export function PartnerCompatPage() {
   }
 
   return null;
-}
-
-/**
- * Derive composite-chart-style observations from the cross-aspect data.
- * Looks for the named planet pairings in the lookup table and surfaces
- * the matched ones. Returns up to 5 most-impactful insights.
- */
-function computeCompositeInsights(synastry: SynastryResult): { pairing: string; reading: string }[] {
-  const insights: { pairing: string; reading: string }[] = [];
-  const seen = new Set<string>();
-
-  for (const a of synastry.crossAspects) {
-    const pair = [a.myPlanet, a.partnerPlanet].sort().join('-');
-    if (seen.has(pair)) continue;
-
-    // Direct pairings
-    if (COMPOSITE_PAIRING_READINGS[pair]) {
-      insights.push({ pairing: pair.replace('-', ' ↔ '), reading: COMPOSITE_PAIRING_READINGS[pair] });
-      seen.add(pair);
-      continue;
-    }
-
-    // Saturn aspects (any conjunction with Saturn) — heavy commitment energy.
-    if ((a.myPlanet === 'Saturn' || a.partnerPlanet === 'Saturn') && a.type === 'conjunction') {
-      if (!seen.has('Saturn-strong')) {
-        insights.push({ pairing: 'Saturn binding', reading: COMPOSITE_PAIRING_READINGS['Saturn-conjunct'] });
-        seen.add('Saturn-strong');
-      }
-    }
-
-    // Pluto contacts to personal planets — transformational.
-    if ((a.myPlanet === 'Pluto' || a.partnerPlanet === 'Pluto') &&
-        ['Sun', 'Moon', 'Venus'].includes(a.myPlanet === 'Pluto' ? a.partnerPlanet : a.myPlanet) &&
-        a.type === 'conjunction') {
-      if (!seen.has('Pluto-strong')) {
-        insights.push({ pairing: 'Pluto contact', reading: COMPOSITE_PAIRING_READINGS['Pluto-strong'] });
-        seen.add('Pluto-strong');
-      }
-    }
-
-    if (insights.length >= 5) break;
-  }
-  return insights;
-}
-
-function buildMbtiNote(me: MbtiType, partner: MbtiType): string {
-  const sameN = me[1] === partner[1];
-  const sameTF = me[2] === partner[2];
-  if (me === partner) {
-    return `You share the same type (${me}). Deep understanding, natural resonance — watch for a shared blind spot neither of you catches.`;
-  }
-  if (sameN && !sameTF) {
-    return `You perceive the world similarly (both ${me[1] === 'N' ? 'intuitive' : 'sensing'}) but decide differently (${me[2]} vs ${partner[2]}). One of the classic strong-pairing patterns.`;
-  }
-  if (!sameN) {
-    return `You perceive very differently — one concrete (S), one abstract (N). High-potential pairing if you both stay curious about how the other sees the world.`;
-  }
-  return `You share both perception and judgment functions. Similar worldview — also similar blind spots.`;
 }
 
 export default PartnerCompatPage;

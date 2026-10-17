@@ -2,13 +2,16 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sprout, Share2, ArrowLeft, RotateCcw } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse, AffirmationPanel, Disclaimer } from '../components/ui';
+import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse, AffirmationPanel, Disclaimer, Skeleton } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useContentOverlay, type ContentOverlay } from '../i18n/contentOverlay';
 import {
   LOVE_TREE_QUIZ,
   ATTACHMENT_INFO,
   ATTACHMENT_STYLE_OF,
   attachmentFromStyle,
+  localizeAttachment,
+  localizeLoveTreeItem,
   scoreLoveTree,
   type Attachment,
 } from '../data/loveTree';
@@ -35,6 +38,10 @@ import { supabase } from '../lib/supabase';
  * density derived from attachment type. Shareable result card hooks
  * into the common `shareOrDownloadCard` utility with a `quote`
  * variant.
+ *
+ * The twelve statements and the four readings come from the 'loveTree'
+ * content overlay in Japanese, Korean and Chinese (src/data/loveTree.ts);
+ * the quiz and the result wait for it rather than flash the English.
  */
 
 type Stage = 'intro' | 'quiz' | 'result';
@@ -47,10 +54,26 @@ const LIKERT: Array<{ value: number; label: string }> = [
   { value: 5, label: 'Strongly agree' },
 ];
 
+/** While the overlay downloads (first visit in ja/ko/zh): a resting shape, not English. */
+function OverlayLoading({ label }: { label: string }) {
+  return (
+    <Page spacing="md">
+      <div role="status" aria-busy="true" aria-label={label} className="space-y-3">
+        <Skeleton height={160} />
+        <Skeleton height={48} />
+        <Skeleton height={48} />
+        <Skeleton height={48} />
+      </div>
+    </Page>
+  );
+}
+
 export function LoveTreePage() {
   const { t } = useT('app');
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
+  const { overlay, ready } = useContentOverlay('loveTree');
+  const loadingLabel = t('common:actions.loading', { defaultValue: 'Loading…' }) as string;
   const [stage, setStage] = useState<Stage>('intro');
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -156,7 +179,7 @@ export function LoveTreePage() {
   };
 
   const shareAttachment = async (attachment: Attachment) => {
-    const info = ATTACHMENT_INFO[attachment];
+    const info = localizeAttachment(attachment, overlay);
     const shareText = t('loveTree.shareText', {
       defaultValue: 'My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at arcana.app/love-tree',
       title: info.title,
@@ -187,9 +210,11 @@ export function LoveTreePage() {
 
   // ── Saved tree (a return visit) ────────────────────────────────
   if (stage === 'intro' && savedAttachment && !retaking) {
+    if (!ready) return <OverlayLoading label={loadingLabel} />;
     return (
       <AttachmentResult
         attachment={savedAttachment}
+        overlay={overlay}
         eyebrow={t('loveTree.yourTree', { defaultValue: 'Your tree' })}
         onBack={() => navigate(-1)}
         onRetake={handleRestart}
@@ -245,7 +270,9 @@ export function LoveTreePage() {
 
   // ── Quiz stage ─────────────────────────────────────────────────
   if (stage === 'quiz') {
+    if (!ready) return <OverlayLoading label={loadingLabel} />;
     const item = LOVE_TREE_QUIZ[index];
+    const statement = localizeLoveTreeItem(item, overlay);
     return (
       <Page spacing="md">
         <div className="flex items-center justify-between">
@@ -275,14 +302,16 @@ export function LoveTreePage() {
           >
             <Card padding="lg" className="text-center">
               <p className="font-display-eyebrow mb-2">
-                {t(`loveTree.dimensions.${item.dimension}`, { defaultValue: item.dimension })}
+                {item.dimension === 'anxiety'
+                  ? t('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })
+                  : t('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}
               </p>
               <p className="heading-display-md text-mystic-100 text-balance">
-                {t(`loveTree.items.${item.id}`, { defaultValue: item.prompt })}
+                {statement}
               </p>
             </Card>
 
-            <div className="space-y-2" role="group" aria-label={t(`loveTree.items.${item.id}`, { defaultValue: item.prompt }) as string}>
+            <div className="space-y-2" role="group" aria-label={statement}>
               {LIKERT.map((opt) => (
                 <button
                   key={opt.value}
@@ -307,6 +336,7 @@ export function LoveTreePage() {
 
   // ── Result stage ───────────────────────────────────────────────
   if (!result) return null;
+  if (!ready) return <OverlayLoading label={loadingLabel} />;
 
   return (
     <motion.div
@@ -316,6 +346,7 @@ export function LoveTreePage() {
     >
       <AttachmentResult
         attachment={result.attachment}
+        overlay={overlay}
         scores={{ anxiety: result.anxiety, avoidance: result.avoidance }}
         eyebrow={t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
         onBack={() => navigate(-1)}
@@ -334,6 +365,7 @@ export function LoveTreePage() {
  */
 function AttachmentResult({
   attachment,
+  overlay,
   scores,
   eyebrow,
   onBack,
@@ -342,6 +374,8 @@ function AttachmentResult({
   t,
 }: {
   attachment: Attachment;
+  /** The 'loveTree' overlay: the reading in the member's language. */
+  overlay: ContentOverlay | null;
   scores?: { anxiety: number; avoidance: number };
   eyebrow: string;
   /** The header's back arrow leaves the page; Retake is the button below. */
@@ -350,20 +384,16 @@ function AttachmentResult({
   onShare: () => void;
   t: (key: string, opts?: Record<string, unknown>) => unknown;
 }) {
-  const info = ATTACHMENT_INFO[attachment];
+  const info = localizeAttachment(attachment, overlay);
   const tx = (key: string, opts?: Record<string, unknown>) => t(key, opts) as string;
   return (
     <ResultLayout
       onBack={onBack}
       backLabel={tx('common:actions.back', { defaultValue: 'Back' })}
       eyebrow={eyebrow}
-      verdict={tx(`loveTree.attachment.${attachment}.title`, { defaultValue: info.title })}
-      subtitle={
-        <span className="italic">
-          {tx(`loveTree.attachment.${attachment}.archetype`, { defaultValue: info.archetype })}
-        </span>
-      }
-      summary={tx(`loveTree.attachment.${attachment}.summary`, { defaultValue: info.summary })}
+      verdict={info.title}
+      subtitle={<span className="italic">{info.archetype}</span>}
+      summary={info.summary}
       actions={
         <>
           <Button variant="outline" onClick={onRetake} className="flex-1">
@@ -395,7 +425,7 @@ function AttachmentResult({
         </p>
         <ul className="reading-copy space-y-2 list-disc pl-5">
           {info.strengths.map((s, i) => (
-            <li key={i}>{tx(`loveTree.attachment.${attachment}.strengths.${i}`, { defaultValue: s })}</li>
+            <li key={i}>{s}</li>
           ))}
         </ul>
       </Card>
@@ -406,7 +436,7 @@ function AttachmentResult({
         </p>
         <ul className="reading-copy space-y-2 list-disc pl-5">
           {info.growth.map((g, i) => (
-            <li key={i}>{tx(`loveTree.attachment.${attachment}.growth.${i}`, { defaultValue: g })}</li>
+            <li key={i}>{g}</li>
           ))}
         </ul>
       </Card>
@@ -415,13 +445,10 @@ function AttachmentResult({
         <p className="font-display-eyebrow mb-2">
           {tx('loveTree.inLoveLabel', { defaultValue: 'In love' })}
         </p>
-        <ReadingProse text={tx(`loveTree.attachment.${attachment}.inLove`, { defaultValue: info.inLove })} lede={false} />
+        <ReadingProse text={info.inLove} lede={false} />
       </Card>
 
-      <AffirmationPanel
-        surface="canvas"
-        text={tx(`loveTree.attachment.${attachment}.affirmation`, { defaultValue: info.affirmation })}
-      />
+      <AffirmationPanel surface="canvas" text={info.affirmation} />
     </ResultLayout>
   );
 }

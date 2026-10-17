@@ -9,6 +9,7 @@
 
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
+import { logWarn } from '../utils/telemetry';
 import type { BaziResult, BaziPhase1Deepening } from '../data/bazi';
 import type { BaziDeepResult, Gender } from '../data/baziDeep';
 
@@ -33,7 +34,40 @@ export interface InterpretResponse {
   ok: boolean;
   reading?: BaziAIReading;
   cached?: boolean;
-  error?: string;
+  /**
+   * Why there is no reading, as a stable code: the function's envelope
+   * `error.code` (PREMIUM_REQUIRED, RATE_LIMITED, AI_DISABLED, AI_DAILY_LIMIT,
+   * AI_SOFT_CAP, AI_FAILED, …) or one of this client's own: NOT_SIGNED_IN,
+   * NETWORK (no response), HTTP (a status with no envelope code),
+   * BAD_RESPONSE (not JSON), EMPTY_READING (ok without a reading), NO_DETAIL
+   * (ok: false without a code). The panel words the failure from this and the
+   * status, never from English text (see readingFailure).
+   */
+  code?: string;
+  /** The HTTP status when there was a response. */
+  status?: number;
+  /** English diagnostic for the log only; never shown to the reader. */
+  detail?: string;
+}
+
+/** The failures the reading panel words differently (bazi.ai.errors.<failure>). */
+export type BaziReadingFailure = 'signIn' | 'premium' | 'rateLimit' | 'dailyLimit' | 'unavailable' | 'generic';
+
+/** Sort a failed response into the case the reader is told about, by its code and status. */
+export function readingFailure(res: Pick<InterpretResponse, 'code' | 'status'>): BaziReadingFailure {
+  const { code, status } = res;
+  if (code === 'NOT_SIGNED_IN' || code === 'UNAUTHORIZED' || status === 401) return 'signIn';
+  if (code === 'PREMIUM_REQUIRED' || status === 403) return 'premium';
+  if (code === 'AI_DAILY_LIMIT' || code === 'AI_SOFT_CAP') return 'dailyLimit';
+  if (code === 'RATE_LIMITED' || status === 429) return 'rateLimit';
+  if (code === 'AI_DISABLED' || code === 'AI_NOT_CONFIGURED' || status === 503) return 'unavailable';
+  return 'generic';
+}
+
+/** A failed response: the code and status the panel reads, and the English kept for the log. */
+function failure(code: string, detail: string, status?: number): InterpretResponse {
+  logWarn('bazi-interpret', detail, { code, status });
+  return { ok: false, code, status, detail };
 }
 
 export async function generateBaziReading(args: {
@@ -49,7 +83,7 @@ export async function generateBaziReading(args: {
 
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData.session?.access_token;
-  if (!token) return { ok: false, error: 'Not signed in' };
+  if (!token) return failure('NOT_SIGNED_IN', 'Not signed in');
 
   const body = {
     birthDate,
@@ -122,22 +156,30 @@ export async function generateBaziReading(args: {
 
   const supabaseUrl = (import.meta as unknown as { env: Record<string, string> }).env.VITE_SUPABASE_URL;
   const url = `${supabaseUrl}/functions/v1/bazi-interpret`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    return failure('NETWORK', `No response: ${e instanceof Error ? e.message : String(e)}`);
+  }
 
   if (!res.ok) {
+    // The handler's error envelope: { error: { code, message }, correlationId }.
+    let code: string | null = null;
     let message = `HTTP ${res.status}`;
     try {
-      const j = await res.json();
-      message = j?.error?.message || message;
-    } catch { /* */ }
-    return { ok: false, error: message };
+      const j = (await res.json()) as { error?: { code?: unknown; message?: unknown } };
+      if (typeof j?.error?.code === 'string') code = j.error.code;
+      if (typeof j?.error?.message === 'string' && j.error.message) message = j.error.message;
+    } catch { /* not JSON: the status is all there is */ }
+    return failure(code ?? 'HTTP', message, res.status);
   }
 
   // Unwrap the standard handler envelope. The bazi-interpret edge fn
@@ -149,33 +191,29 @@ export async function generateBaziReading(args: {
   // back to the raw shape for any caller that returns the legacy flat
   // payload (none currently, but keeps this resilient to handler
   // refactors).
-  let parsed: { data?: InterpretResponse; correlationId?: string } | InterpretResponse;
+  type Payload = { ok?: boolean; reading?: BaziAIReading; cached?: boolean; error?: unknown; code?: unknown };
+  let parsed: { data?: Payload; correlationId?: string } | Payload;
   try {
     parsed = await res.json();
   } catch (e) {
-    return { ok: false, error: `Server returned a non-JSON response: ${e instanceof Error ? e.message : String(e)}` };
+    return failure('BAD_RESPONSE', `Server returned a non-JSON response: ${e instanceof Error ? e.message : String(e)}`, res.status);
   }
-  const unwrapped = (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data)
+  const unwrapped: Payload | undefined = (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data)
     ? parsed.data
-    : (parsed as InterpretResponse);
+    : (parsed as Payload);
 
   // Defensive: the edge function should always return either ok=true with
-  // a reading object, or ok=false with an error string. If neither holds,
-  // surface a specific message instead of the empty-fallback in the UI
-  // ("Failed to generate reading"). This guards against truncated edge
-  // function responses (e.g. wall-clock timeout mid-write) that can leave
-  // the response shape malformed.
-  if (unwrapped?.ok && !unwrapped.reading) {
-    return {
-      ok: false,
-      error: 'The AI returned successfully but the reading was empty. This usually means the edge function timed out — please try again.',
-    };
+  // a reading object, or ok=false with an error. If neither holds, say why
+  // instead of an empty panel. This guards against truncated edge function
+  // responses (e.g. wall-clock timeout mid-write) that can leave the
+  // response shape malformed.
+  if (unwrapped?.ok && unwrapped.reading) {
+    return { ok: true, reading: unwrapped.reading, cached: unwrapped.cached };
   }
-  if (unwrapped?.ok === false && !unwrapped.error) {
-    return {
-      ok: false,
-      error: 'AI generation failed without a specific error. Please try again — if it keeps failing, the AI provider may be overloaded.',
-    };
+  if (unwrapped?.ok) {
+    return failure('EMPTY_READING', 'The AI returned successfully but the reading was empty (likely an edge-function timeout).', res.status);
   }
-  return unwrapped;
+  const code = typeof unwrapped?.code === 'string' ? unwrapped.code : null;
+  const detail = typeof unwrapped?.error === 'string' ? unwrapped.error : 'AI generation failed without a specific error.';
+  return failure(code ?? 'NO_DETAIL', detail, res.status);
 }

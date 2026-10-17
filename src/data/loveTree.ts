@@ -11,7 +11,14 @@
  *
  * This is a self-knowledge tool, not a clinical diagnosis. Copy makes
  * that distinction explicit at the result stage.
+ *
+ * The English here is the source of truth. Japanese, Korean and Chinese come
+ * from the 'loveTree' content overlay (src/i18n/locales/<lng>/
+ * content-loveTree.json, shaped like `loveTreeCorpus()` below): screens read
+ * the statements through `localizeLoveTreeItem` and a style's reading
+ * through `localizeAttachment`, and a string the overlay lacks stays English.
  */
+import { ct, ctEntry, type ContentOverlay } from '../i18n/contentOverlay';
 
 export type Attachment = 'secure' | 'anxious' | 'avoidant' | 'fearful';
 
@@ -166,6 +173,45 @@ export const ATTACHMENT_INFO: Record<Attachment, AttachmentInfo> = {
     tree: { trunkLean: 3, branchSpread: 'split', leafDensity: 0.55, rootDepth: 'medium', accentColor: '#c084fc' },
   },
 };
+
+/** The fields of a style's reading a member reads (the tree's shape is not text). */
+export const ATTACHMENT_TEXT_FIELDS = ['title', 'archetype', 'summary', 'strengths', 'growth', 'inLove', 'affirmation'] as const;
+
+/**
+ * The English corpus of the 'loveTree' overlay: the twelve statements by item
+ * id, and each style's reading by its key. Keys are ids, never English text.
+ */
+export function loveTreeCorpus(): {
+  items: Record<string, string>;
+  attachment: Record<Attachment, Pick<AttachmentInfo, (typeof ATTACHMENT_TEXT_FIELDS)[number]>>;
+} {
+  const items: Record<string, string> = {};
+  for (const item of LOVE_TREE_QUIZ) items[item.id] = item.prompt;
+  const attachment = {} as Record<Attachment, Pick<AttachmentInfo, (typeof ATTACHMENT_TEXT_FIELDS)[number]>>;
+  for (const key of Object.keys(ATTACHMENT_INFO) as Attachment[]) {
+    const info = ATTACHMENT_INFO[key];
+    attachment[key] = {
+      title: info.title,
+      archetype: info.archetype,
+      summary: info.summary,
+      strengths: [...info.strengths],
+      growth: [...info.growth],
+      inLove: info.inLove,
+      affirmation: info.affirmation,
+    };
+  }
+  return { items, attachment };
+}
+
+/** A statement in the reader's language (English where the overlay has none). */
+export function localizeLoveTreeItem(item: LoveTreeItem, overlay: ContentOverlay | null | undefined): string {
+  return ct(overlay, `items.${item.id}`, item.prompt);
+}
+
+/** A style's reading in the reader's language; the tree's shape is unchanged. */
+export function localizeAttachment(attachment: Attachment, overlay: ContentOverlay | null | undefined): AttachmentInfo {
+  return ctEntry(ATTACHMENT_INFO[attachment], overlay, `attachment.${attachment}`, ATTACHMENT_TEXT_FIELDS);
+}
 
 /**
  * Score answers → attachment type.

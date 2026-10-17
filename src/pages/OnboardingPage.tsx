@@ -39,6 +39,33 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * A consent box: a real checkbox, named by its sentence. Both used to be
+ * <button>s around a drawn box, so a screen reader heard "button" and never
+ * whether the age/Terms confirmation or the marketing opt-in was on (p9
+ * Q12). The native input carries the role, the checked state and Space to
+ * toggle; the drawn box only shows them, focus ring included.
+ */
+function ConsentCheckbox({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
+  return (
+    <label className="w-full min-h-[44px] flex items-start gap-3 text-left py-2 cursor-pointer">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+      />
+      <span
+        aria-hidden
+        className="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 border-mystic-600 [@media(hover:hover)]:hover:border-mystic-500 peer-checked:bg-gold peer-checked:border-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-mystic-950"
+      >
+        {checked && <Check className="w-3 h-3 text-mystic-900" />}
+      </span>
+      <span className="text-meta text-mystic-400 leading-snug">{label}</span>
+    </label>
+  );
+}
+
 interface OnboardingPageProps {
   onComplete: () => void;
   onSwitchToSignIn: () => void;
@@ -372,39 +399,17 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     {t('createAccount.passwordRule', { defaultValue: 'At least 8 characters, with letters and numbers.' })}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => setSubscribedToNewsletter(!subscribedToNewsletter)}
-                    className="w-full flex items-start gap-3 text-left py-2"
-                  >
-                    <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      subscribedToNewsletter
-                        ? 'bg-gold border-gold'
-                        : 'border-mystic-600 hover:border-mystic-500'
-                    }`}>
-                      {subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
-                    </div>
-                    <span className="text-meta text-mystic-400 leading-snug">
-                      {t('createAccount.newsletter')}
-                    </span>
-                  </button>
+                  <ConsentCheckbox
+                    checked={subscribedToNewsletter}
+                    onChange={setSubscribedToNewsletter}
+                    label={t('createAccount.newsletter')}
+                  />
 
-                  <button
-                    type="button"
-                    onClick={() => setAgeConfirmed(!ageConfirmed)}
-                    className="w-full flex items-start gap-3 text-left py-2"
-                  >
-                    <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      ageConfirmed
-                        ? 'bg-gold border-gold'
-                        : 'border-mystic-600 hover:border-mystic-500'
-                    }`}>
-                      {ageConfirmed && <Check className="w-3 h-3 text-mystic-900" />}
-                    </div>
-                    <span className="text-meta text-mystic-400 leading-snug">
-                      {t('createAccount.ageConfirm')}
-                    </span>
-                  </button>
+                  <ConsentCheckbox
+                    checked={ageConfirmed}
+                    onChange={setAgeConfirmed}
+                    label={t('createAccount.ageConfirm')}
+                  />
 
                   <Button
                     variant="gold"

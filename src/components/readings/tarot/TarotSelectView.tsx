@@ -81,9 +81,21 @@ export function TarotSelectView({
         </p>
       </div>
 
-      {/* The spread's positions, waiting. */}
+      {/* The spread's positions, waiting. Each column is wider than its
+          card so the name under it has room AND a gutter (p9 Q03): 74 px
+          (4.625rem) columns, 10 px apart. The widest Japanese phrase, six
+          characters (「伸ばしている」, 72 px), fits a column, so names
+          break between phrases, not inside a word (p8 F84); and the text
+          of two neighbouring names never comes closer than 8 px — the
+          worst pair, "Challenge or" (72 px) beside "Subconscious" (80 px,
+          one word, spilling 3 px each side), keeps 84 − 76 = 8 px. The
+          names used to be widened INTO the gap (76 px boxes on a 76 px
+          pitch), and neighbours ran together: "Challenge orSubconscious".
+          Four columns take 4 × 74 + 3 × 10 = 326 px, inside the 328 px a
+          360 px screen leaves. Every size is in rem, so it all scales with
+          the reading size together. */}
       <div
-        className="flex justify-center gap-3 flex-wrap"
+        className="flex justify-center gap-x-2.5 gap-y-3 flex-wrap"
         role="list"
         aria-label={t('readings.selectView.positions', { defaultValue: 'Your spread' })}
       >
@@ -91,7 +103,7 @@ export function TarotSelectView({
           const cardId = selectedIndices[i];
           const filled = cardId !== undefined;
           return (
-            <div key={i} className="flex flex-col items-center gap-1.5 w-16" role="listitem">
+            <div key={i} className="flex flex-col items-center gap-1.5 w-[4.625rem]" role="listitem">
               {filled ? (
                 <button
                   type="button"
@@ -111,11 +123,11 @@ export function TarotSelectView({
                 />
               )}
               {/* Breaks between phrases, not inside a word (keep-phrases: ja
-                  auto-phrase, ko keep-all), over the card's width plus half
-                  of each gap (76 px, the column pitch): a six-character
-                  phrase like 「伸ばしている」 does not fit the card's 64 px,
-                  so 「魂が手を伸/ばしている/先」 broke inside 伸ばす (p8 F84). */}
-              <span className={`keep-phrases -mx-1.5 text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
+                  auto-phrase, ko keep-all), over the column's full width —
+                  never beyond it: a six-character phrase like 「伸ばしている」
+                  does not fit the card's 64 px, so 「魂が手を伸/ばしている/先」
+                  broke inside 伸ばす (p8 F84). */}
+              <span className={`keep-phrases w-full text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
             </div>
           );
         })}

@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo, memo } from 'react';
 import { Calendar, Clock, Lock, Crown, Compass, Palette, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, Page, PageHeader, Progress, Section, ResultSheet, AffirmationPanel } from '../components/ui';
+import { Card, Button, Input, toast, Page, PageHeader, Progress, Section, ResultSheet, AffirmationPanel, CardSkeleton } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { useContentOverlay } from '../i18n/contentOverlay';
+import { hanziLang } from '../i18n/localizeHanzi';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
@@ -10,19 +13,17 @@ import {
   computeBazi,
   deepenBazi,
   todaysLuckyColor,
-  DAY_MASTER_INFO,
-  TEN_GOD_INFO,
   ELEMENT_PRODUCES,
   ELEMENT_CONTROLS,
   type BaziResult,
   type FiveElement,
 } from '../data/bazi';
 import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
+import { baziText, pillarLabel, stemLabel, branchLabel } from '../data/baziReading';
 import { LuckPillarTimeline } from '../components/charts/LuckPillarTimeline';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
-import { tArray } from '../utils/tArray';
 import { BaziAIReadingPanel } from '../components/bazi/BaziAIReading';
-import { determineStructure, STRUCTURE_MEANINGS, STRUCTURE_INTRO } from '../data/baziStructure';
+import { determineStructure, STRUCTURE_MEANINGS } from '../data/baziStructure';
 
 type Stage = 'input' | 'result';
 
@@ -107,6 +108,10 @@ export const ElementGlyph = memo(function ElementGlyph({
 export function BaziPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  // The result's text in ja/ko/zh (src/data/baziReading.ts). Fetched from the
+  // first render, so it is in memory long before the pillars are cast; until
+  // it is, the result waits rather than flash the English.
+  const { overlay, ready } = useContentOverlay('bazi');
   const [showPaywall, setShowPaywall] = useState(false);
   const depthEnabled = useFeatureFlag('bazi-depth');
   const [stage, setStage] = useState<Stage>('input');
@@ -211,20 +216,29 @@ export function BaziPage() {
     );
   }
 
-  if (stage === 'result' && result) {
-    const dayMasterInfo = DAY_MASTER_INFO[result.dayMaster];
-    const key = result.dayMaster;
+  if (stage === 'result' && result && !ready) {
+    return (
+      <Page spacing="sm">
+        <p className="sr-only" role="status">{t('bazi.casting', { defaultValue: 'Casting your four pillars…' })}</p>
+        <CardSkeleton />
+        <CardSkeleton />
+      </Page>
+    );
+  }
 
-    const localized = (path: string, fallback: string) =>
-      t(`bazi.dayMasters.${key}.${path}`, { defaultValue: fallback }) as string;
-    const name = localized('name', dayMasterInfo.name);
-    const archetype = localized('archetype', dayMasterInfo.archetype);
-    const summary = localized('summary', dayMasterInfo.summary);
-    const strengths = tArray(t, `bazi.dayMasters.${key}.strengths`, dayMasterInfo.strengths);
-    const challenges = tArray(t, `bazi.dayMasters.${key}.challenges`, dayMasterInfo.challenges);
-    const thriving = localized('thriving', dayMasterInfo.thriving);
-    const struggling = localized('struggling', dayMasterInfo.struggling);
-    const affirmation = localized('affirmation', dayMasterInfo.affirmation);
+  if (stage === 'result' && result) {
+    const key = result.dayMaster;
+    // Every text below is read through the 'bazi' overlay by the chart's own
+    // keys; the stems, branches and classical names are glyphs in the
+    // reader's script (hanzi in zh/ja/ko, romanized stems in English).
+    const locale = getLocale();
+    const tx = baziText(overlay, locale);
+    const glyphLang = locale === 'en' ? undefined : hanziLang(locale);
+    const elementName = (el: FiveElement) => t(`bazi.elements.${el}`, { defaultValue: el }) as string;
+    const pillarName = (p: 'year' | 'month' | 'day' | 'hour') =>
+      t(`bazi.pillarNames.${p}`, { defaultValue: `${p.charAt(0).toUpperCase()}${p.slice(1)} pillar` }) as string;
+
+    const { name, archetype, summary, strengths, challenges, thriving, struggling, affirmation } = tx.dayMaster(key);
 
     const elementSupportNeeded = ELEMENT_PRODUCES[result.weakElement];
     const elementToModerate = result.elementBalance[result.dominantElement] > 3 ? result.dominantElement : null;
@@ -234,14 +248,14 @@ export function BaziPage() {
         const blob = await renderShareCard({
           title: `${name}`,
           subtitle: archetype,
-          tagline: `${t('bazi.dayMasterLabel', { defaultValue: 'Day Master' })}: ${name}`,
+          tagline: t('bazi.shareTagline', { defaultValue: 'Day Master: {{name}}', name }) as string,
           affirmation,
           brand: t('share.brand.bazi', { defaultValue: 'Bazi' }) as string,
         });
         const out = await shareOrDownload(
           blob,
           `arcana-bazi-${key}.png`,
-          `My Bazi Day Master: ${name} — ${archetype}`,
+          t('bazi.shareText', { defaultValue: 'My Bazi Day Master: {{name}} — {{archetype}}', name, archetype }) as string,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
@@ -329,8 +343,8 @@ export function BaziPage() {
                 <div className={`flex justify-center my-1.5 ${ELEMENT_COLOR[p.element]}`}>
                   <ElementGlyph element={p.element} size={22} />
                 </div>
-                <p className="text-meta text-mystic-200" lang="zh-Hant">{p.stem}</p>
-                <p className="text-meta text-mystic-200" lang="zh-Hant">{p.branch}</p>
+                <p className="text-meta text-mystic-200" lang={glyphLang}>{stemLabel(p.stem, locale)}</p>
+                <p className="text-meta text-mystic-200" lang={glyphLang}>{branchLabel(p.branch, locale)}</p>
               </div>
             ))}
           </div>
@@ -442,7 +456,7 @@ export function BaziPage() {
                       { label: t('bazi.hour', { defaultValue: 'Hour' }),   key: 'hour'  as const },
                     ]).map(({ label, key }) => {
                       const god = deepening.tenGods[key];
-                      const info = TEN_GOD_INFO[god];
+                      const info = tx.tenGod(god);
                       return (
                         <div key={key} className="p-3 bg-mystic-800/30 rounded-lg">
                           <div className="flex items-center justify-between mb-1">
@@ -478,21 +492,27 @@ export function BaziPage() {
                         <p className="text-meta text-mystic-400 uppercase tracking-wider">{col.label}</p>
                         <div className="mt-1 space-y-0.5">
                           {col.stems.map((s) => (
-                            <p key={s} className="text-meta text-mystic-200">{s}</p>
+                            <p key={s} className="text-meta text-mystic-200" lang={glyphLang}>{stemLabel(s, locale)}</p>
                           ))}
                         </div>
                       </div>
                     ))}
                   </div>
-                  {deepening.nayin && (
-                    <div className="mt-4 pt-4 border-t border-mystic-700/30">
-                      <p className="font-display-eyebrow mb-1">
-                        {t('bazi.nayinLabel', { defaultValue: 'Soul Sound of your year' })}
-                      </p>
-                      <p className="font-display text-title text-mystic-100">{deepening.nayin.western}</p>
-                      <p className="text-meta text-mystic-400 italic">{deepening.nayin.classical}</p>
-                    </div>
-                  )}
+                  {deepening.nayin && (() => {
+                    // In zh and ja the 納音's name is the classical term itself; print it once.
+                    const nayin = tx.nayin(deepening.nayin);
+                    return (
+                      <div className="mt-4 pt-4 border-t border-mystic-700/30">
+                        <p className="font-display-eyebrow mb-1">
+                          {t('bazi.nayinLabel', { defaultValue: 'Soul Sound of your year' })}
+                        </p>
+                        <p className="font-display text-title text-mystic-100">{nayin.name}</p>
+                        {nayin.classical !== nayin.name && (
+                          <p className="text-meta text-mystic-400 italic">{nayin.classical}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </Card>
 
                 {/* Supporting Element + lucky chips */}
@@ -513,11 +533,11 @@ export function BaziPage() {
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg">
                       <span className="w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: deepening.favorable.color }} />
-                      <span className="text-ui text-mystic-200 capitalize">{deepening.favorable.colorName}</span>
+                      <span className="text-ui text-mystic-200 capitalize">{tx.colorName(deepening.favorable.element)}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg">
                       <Compass className="w-4 h-4 text-mystic-400 flex-shrink-0" />
-                      <span className="text-ui text-mystic-200 capitalize">{deepening.favorable.direction}</span>
+                      <span className="text-ui text-mystic-200 capitalize">{tx.direction(deepening.favorable.direction)}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg col-span-2">
                       <span className="text-meta text-mystic-400 flex-shrink-0">
@@ -528,7 +548,7 @@ export function BaziPage() {
                       </span>
                     </div>
                   </div>
-                  <p className="reading-copy">{deepening.favorable.careerHint}</p>
+                  <p className="reading-copy">{tx.careerHint(deepening.favorable.element)}</p>
                 </Card>
 
                 {/* Today's Lucky Color widget */}
@@ -541,8 +561,8 @@ export function BaziPage() {
                     <div className="flex items-center gap-3 mt-2">
                       <div className="w-12 h-12 rounded-control flex-shrink-0" style={{ backgroundColor: luckyColor.color }} />
                       <div>
-                        <p className="text-ui font-medium text-mystic-100 capitalize">{luckyColor.colorName}</p>
-                        <p className="reading-copy mt-0.5">{luckyColor.oneLiner}</p>
+                        <p className="text-ui font-medium text-mystic-100 capitalize">{tx.colorName(luckyColor.element)}</p>
+                        <p className="reading-copy mt-0.5">{tx.luckyColorLine(luckyColor)}</p>
                       </div>
                     </div>
                   </Card>
@@ -595,20 +615,20 @@ export function BaziPage() {
             >
               <div className="space-y-4">
                 <div>
-                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.yearPillarLabel', { defaultValue: 'Year' })} · {result.year.stem} {result.year.branch}</p>
-                  <p className="reading-copy">{deepResult.pillarNarratives.year}</p>
+                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.yearPillarLabel', { defaultValue: 'Year' })} · <span lang={glyphLang}>{pillarLabel(result.year.stem, result.year.branch, locale)}</span></p>
+                  <p className="reading-copy">{tx.pillarNarrative('year')}</p>
                 </div>
                 <div>
-                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.monthPillarLabel', { defaultValue: 'Month' })} · {result.month.stem} {result.month.branch}</p>
-                  <p className="reading-copy">{deepResult.pillarNarratives.month}</p>
+                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.monthPillarLabel', { defaultValue: 'Month' })} · <span lang={glyphLang}>{pillarLabel(result.month.stem, result.month.branch, locale)}</span></p>
+                  <p className="reading-copy">{tx.pillarNarrative('month')}</p>
                 </div>
                 <div>
-                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.dayPillarLabel', { defaultValue: 'Day' })} · {result.day.stem} {result.day.branch}</p>
-                  <p className="reading-copy">{deepResult.pillarNarratives.day}</p>
+                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.dayPillarLabel', { defaultValue: 'Day' })} · <span lang={glyphLang}>{pillarLabel(result.day.stem, result.day.branch, locale)}</span></p>
+                  <p className="reading-copy">{tx.pillarNarrative('day')}</p>
                 </div>
                 <div>
-                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.hourPillarLabel', { defaultValue: 'Hour' })} · {result.hour.stem} {result.hour.branch}</p>
-                  <p className="reading-copy">{deepResult.pillarNarratives.hour}</p>
+                  <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.hourPillarLabel', { defaultValue: 'Hour' })} · <span lang={glyphLang}>{pillarLabel(result.hour.stem, result.hour.branch, locale)}</span></p>
+                  <p className="reading-copy">{tx.pillarNarrative('hour')}</p>
                 </div>
               </div>
             </Section>
@@ -622,9 +642,14 @@ export function BaziPage() {
                 })}
               </h3>
               <p className="text-meta text-mystic-400 mb-3">
-                {deepResult.annualLuck.stem} {deepResult.annualLuck.branch} · {TEN_GOD_INFO[deepResult.annualLuck.tenGod].name} ({TEN_GOD_INFO[deepResult.annualLuck.tenGod].classical})
+                {t('bazi.annualMeta', {
+                  defaultValue: '{{pillar}} · {{name}} ({{classical}})',
+                  pillar: pillarLabel(deepResult.annualLuck.stem, deepResult.annualLuck.branch, locale),
+                  name: tx.tenGod(deepResult.annualLuck.tenGod).name,
+                  classical: tx.tenGod(deepResult.annualLuck.tenGod).classical,
+                })}
               </p>
-              <p className="reading-copy">{deepResult.annualLuck.reading}</p>
+              <p className="reading-copy">{tx.annualReading(deepResult.annualLuck.tenGod)}</p>
             </Card>
 
             {/* Current luck pillar */}
@@ -638,14 +663,14 @@ export function BaziPage() {
                   })}
                 </h3>
                 <p className="text-meta text-mystic-400 mb-3 flex items-center gap-1.5 flex-wrap">
-                  <span lang="zh-Hant">{deepResult.currentLuckPillar.stem} {deepResult.currentLuckPillar.branch}</span>
+                  <span lang={glyphLang}>{pillarLabel(deepResult.currentLuckPillar.stem, deepResult.currentLuckPillar.branch, locale)}</span>
                   <span>·</span>
                   <span className={`inline-flex ${ELEMENT_COLOR[deepResult.currentLuckPillar.element]}`}><ElementGlyph element={deepResult.currentLuckPillar.element} size={14} /></span>
-                  <span className="capitalize">{deepResult.currentLuckPillar.element}</span>
+                  <span className="capitalize">{elementName(deepResult.currentLuckPillar.element)}</span>
                   <span>·</span>
-                  <span>{deepResult.currentLuckPillar.flavour}</span>
+                  <span>{t(`chartWheel.flavour.${deepResult.currentLuckPillar.flavour}`, { defaultValue: deepResult.currentLuckPillar.flavour })}</span>
                 </p>
-                <p className="reading-copy">{deepResult.currentLuckPillar.theme}</p>
+                <p className="reading-copy">{tx.luckTheme(deepResult.currentLuckPillar.relation)}</p>
               </Card>
             )}
 
@@ -675,7 +700,7 @@ export function BaziPage() {
                     >
                       <div className="flex items-center justify-between text-meta mb-1">
                         <span className="text-mystic-100 font-medium inline-flex items-center gap-1.5">
-                          <span lang="zh-Hant">{p.stem} {p.branch}</span>
+                          <span lang={glyphLang}>{pillarLabel(p.stem, p.branch, locale)}</span>
                           <span className={`inline-flex ${ELEMENT_COLOR[p.element]}`}><ElementGlyph element={p.element} size={14} /></span>
                         </span>
                         <span className="text-mystic-400 tabular-nums">
@@ -684,7 +709,7 @@ export function BaziPage() {
                           {p.startYear}-{p.endYear}
                         </span>
                       </div>
-                      <p className="reading-copy">{p.theme}</p>
+                      <p className="reading-copy">{tx.luckTheme(p.relation)}</p>
                     </div>
                   );
                 })}
@@ -692,21 +717,23 @@ export function BaziPage() {
             </Card>
 
             {/* 格局 — formal structure */}
-            {structure && STRUCTURE_MEANINGS[structure.key] && (
+            {structure && STRUCTURE_MEANINGS[structure.key] && (() => {
+              const meaning = tx.structure(structure.key);
+              return (
               <Section
                 title={t('bazi.structureHeading', { defaultValue: 'Your chart structure' })}
                 headingLevel="h3"
-                description={STRUCTURE_INTRO}
+                description={tx.structureIntro()}
               >
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-display text-gold" style={{ fontFamily: 'serif' }} lang="zh-Hant">
-                    {STRUCTURE_MEANINGS[structure.key].cn}
+                  <span className="text-display text-gold" style={{ fontFamily: 'serif' }} lang={hanziLang(locale)}>
+                    {meaning.cn}
                   </span>
-                  <span className="text-body text-mystic-100">{STRUCTURE_MEANINGS[structure.key].title}</span>
+                  <span className="text-body text-mystic-100">{meaning.title}</span>
                 </div>
                 <div className="reading-copy">
-                  <p>{STRUCTURE_MEANINGS[structure.key].text}</p>
-                  <p>{STRUCTURE_MEANINGS[structure.key].strengthNote}</p>
+                  <p>{meaning.text}</p>
+                  <p>{meaning.strengthNote}</p>
                 </div>
                 <p className="text-meta text-mystic-400 mt-3">
                   {structure.revealed
@@ -714,7 +741,8 @@ export function BaziPage() {
                     : t('bazi.structureHidden', { defaultValue: 'Taken from your month branch. Nothing in your stems reveals it, so it is read from the branch’s principal hidden stem.' })}
                 </p>
               </Section>
-            )}
+              );
+            })()}
 
             {/* Spirit stars */}
             {deepResult.spiritStars.length > 0 && (
@@ -728,14 +756,18 @@ export function BaziPage() {
                       s.kind === 'auspicious' ? 'border-teal/25 bg-teal/10'
                       : s.kind === 'inauspicious' ? 'border-coral/25 bg-coral/10'
                       : 'border-gold/25 bg-gold/5';
+                    // In zh and ja the star's name is its classical name; print it once.
+                    const star = tx.star(s);
                     return (
                       <div key={i} className={`p-3 rounded-control border ${tint}`}>
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1.5">
-                          <span className="text-ui font-medium text-mystic-100">{s.name}</span>
-                          <span className="text-meta text-mystic-400">{s.classical}</span>
-                          <span className="text-meta text-mystic-400 ml-auto capitalize">{s.pillar} pillar</span>
+                          <span className="text-ui font-medium text-mystic-100">{star.name}</span>
+                          {star.classical !== star.name && (
+                            <span className="text-meta text-mystic-400" lang={hanziLang(locale)}>{star.classical}</span>
+                          )}
+                          <span className="text-meta text-mystic-400 ml-auto capitalize">{pillarName(s.pillar)}</span>
                         </div>
-                        <p className="reading-copy">{s.meaning}</p>
+                        <p className="reading-copy">{star.meaning}</p>
                       </div>
                     );
                   })}
@@ -757,7 +789,7 @@ export function BaziPage() {
                       : 'border-gold/25 bg-gold/5';
                     return (
                       <div key={i} className={`p-3 rounded-control border ${tint}`}>
-                        <p className="reading-copy">{r.meaning}</p>
+                        <p className="reading-copy">{tx.relation(r, elementName)}</p>
                       </div>
                     );
                   })}
@@ -776,7 +808,7 @@ export function BaziPage() {
                 <ClimateCell label={t('bazi.climate.wet', { defaultValue: 'Wet' }) as string} value={deepResult.climate.wet} active={deepResult.climate.dominant === 'wet'} />
                 <ClimateCell label={t('bazi.climate.dry', { defaultValue: 'Dry' }) as string} value={deepResult.climate.dry} active={deepResult.climate.dominant === 'dry'} />
               </div>
-              <p className="reading-copy">{deepResult.climate.remedy}</p>
+              <p className="reading-copy">{tx.climate(deepResult.climate.dominant)}</p>
             </Card>
 
             {/* Career affinity */}
@@ -785,7 +817,7 @@ export function BaziPage() {
               headingLevel="h3"
             >
               <ul className="reading-copy space-y-2">
-                {deepResult.lifeAreas.careerAffinity.map((c, i) => (
+                {tx.careers(result.dayMaster).map((c, i) => (
                   <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-teal">
                     {c}
                   </li>
@@ -801,15 +833,15 @@ export function BaziPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.wealthLabel', { defaultValue: 'Wealth' })}</p>
-                  <p className="reading-copy">{deepResult.lifeAreas.wealthAnalysis}</p>
+                  <p className="reading-copy">{tx.wealth(deepResult.lifeAreas.keys, elementName)}</p>
                 </div>
                 <div>
                   <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.spouseLabel', { defaultValue: 'Partnership' })}</p>
-                  <p className="reading-copy">{deepResult.lifeAreas.spouseAnalysis}</p>
+                  <p className="reading-copy">{tx.spouse(deepResult.lifeAreas.keys)}</p>
                 </div>
                 <div>
                   <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">{t('bazi.healthLabel', { defaultValue: 'Health' })}</p>
-                  <p className="reading-copy">{deepResult.lifeAreas.healthFocus}</p>
+                  <p className="reading-copy">{tx.health(deepResult.lifeAreas.keys)}</p>
                 </div>
               </div>
             </Section>

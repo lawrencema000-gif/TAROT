@@ -5,6 +5,7 @@ import { SUIT_GLYPHS, suitKeyFor } from '../../icons/SuitGlyphs';
 import { useT } from '../../../i18n/useT';
 import { useContentOverlay } from '../../../i18n/contentOverlay';
 import type { TarotCard } from '../../../types';
+import { aiReadingSections } from '../../cartomancy/cartoFlow';
 import { FOCUS_AREA_I18N_KEY, type FocusArea } from './types';
 import {
   affirmationFor,
@@ -97,7 +98,7 @@ export function TarotReadingResult({
       className={className}
     >
       {ai ? (
-        ai.rest ? <ReadingProse lede={false} text={ai.rest} /> : null
+        ai.rest ? <AiReadingSections text={ai.rest} /> : null
       ) : (
         <div className="space-y-8">
           {cards.map(({ card, reversed }, i) => {
@@ -168,5 +169,39 @@ export function TarotReadingResult({
       {affirmation && <AffirmationPanel text={affirmation} className="mt-8" />}
       {actions && <div className="mt-6 space-y-3">{actions}</div>}
     </ResultSheet>
+  );
+}
+
+/**
+ * An AI reading's body under its summary, as the model laid it out: each
+ * block under its own heading — the numbering dropped, since the summary
+ * took "1) Overview" and the rest read "2) Past — …", "3) Present — …" —
+ * and a block of "- " lines as a list. It was printed raw: "2) Past — Ace
+ * of Pentacles (Reversed)" with no 1), the actions as hyphens (p9 Q10).
+ * The playing-card result reads the same shape the same way
+ * (cartoFlow.aiReadingSections). `headingLevel`: the level under the
+ * surface's own headings (h3 under the result sheet's h2).
+ */
+export function AiReadingSections({ text, headingLevel = 'h3' }: { text: string; headingLevel?: 'h3' | 'h4' | 'h5' }) {
+  const sections = aiReadingSections(text);
+  if (sections.length === 0) return null;
+  const Heading = headingLevel;
+  return (
+    <div className="space-y-5">
+      {sections.map((section, i) => (
+        <section key={i}>
+          {section.heading && <Heading className="text-ui font-semibold text-ink lining-nums">{section.heading}</Heading>}
+          {section.items ? (
+            <ul className={`reading-copy list-disc space-y-1.5 pl-5 marker:text-ink-muted ${section.heading ? 'mt-1' : ''}`}>
+              {section.items.map((item, j) => (
+                <li key={j}>{item}</li>
+              ))}
+            </ul>
+          ) : section.body ? (
+            <ReadingProse text={section.body} lede={false} className={section.heading ? 'mt-1' : ''} />
+          ) : null}
+        </section>
+      ))}
+    </div>
   );
 }

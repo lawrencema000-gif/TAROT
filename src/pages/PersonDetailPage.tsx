@@ -286,11 +286,16 @@ export function PersonDetailPage() {
         </Section>
       )}
 
-      {/* Actions */}
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="primary" size="md" onClick={() => navigate(`/people/${person.id}/compare`)}>
-          <GitCompareArrows className="w-4 h-4 mr-2" /> {t('people.detail.compare', { defaultValue: 'Compare our charts' })}
-        </Button>
+      {/* Actions. A pet has no "Compare our charts": the comparison is a
+          human synastry (Love, Work, composite charts) cast from a natal
+          chart a pet does not get, and it read the cat Miso as a romantic
+          and work partner (p9 Q13). */}
+      <div className={`grid gap-2 ${isPet ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        {!isPet && (
+          <Button variant="primary" size="md" onClick={() => navigate(`/people/${person.id}/compare`)}>
+            <GitCompareArrows className="w-4 h-4 mr-2" /> {t('people.detail.compare', { defaultValue: 'Compare our charts' })}
+          </Button>
+        )}
         <Button variant="ghost" size="md" onClick={() => setEditing(true)}>
           <Pencil className="w-4 h-4 mr-2" /> {t('people.detail.edit', { defaultValue: 'Edit birth details' })}
         </Button>

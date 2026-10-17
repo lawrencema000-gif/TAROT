@@ -180,22 +180,41 @@ export const BAGUA_AREAS: Record<BaguaArea, BaguaAreaInfo> = {
 export interface BaguaReading {
   /** Score 1-5 per area as rated by the user */
   scores: Record<BaguaArea, number>;
-  /** The area scored lowest — the one most needing attention */
-  focusArea: BaguaArea;
-  /** Top strength area — highest-scoring */
-  strongestArea: BaguaArea;
+  /**
+   * The areas rated lowest, the ones most needing attention: every area
+   * tied at the bottom, in map order. Empty when the map is balanced.
+   */
+  focusAreas: BaguaArea[];
+  /** The areas rated highest, every one tied at the top, in map order. Empty when balanced. */
+  strongestAreas: BaguaArea[];
+  /**
+   * Every area carries the same rating, the untouched nine 3s among them:
+   * no area stands out either way, so none is named.
+   */
+  balanced: boolean;
   /** Average score across all areas */
   overall: number;
 }
 
+/**
+ * The reading of a rated map. It took the first and last of a sort: with
+ * every area at the default 3 the sort order alone named Wealth the area
+ * "depleted" and Helpers the one "thriving", and a tie at either end named
+ * one area and dropped the rest (p9 Q24). Ties are named whole now, and an
+ * even map names none.
+ */
 export function computeBaguaReading(scores: Record<BaguaArea, number>): BaguaReading {
-  const entries = Object.entries(scores) as [BaguaArea, number][];
-  const sorted = entries.slice().sort((a, b) => a[1] - b[1]);
-  const overall = entries.reduce((sum, [, v]) => sum + v, 0) / entries.length;
+  const areas = BAGUA_AREA_ORDER.filter((area) => typeof scores[area] === 'number');
+  const values = areas.map((area) => scores[area]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const balanced = min === max;
+  const overall = values.reduce((sum, v) => sum + v, 0) / values.length;
   return {
     scores,
-    focusArea: sorted[0][0],
-    strongestArea: sorted[sorted.length - 1][0],
+    focusAreas: balanced ? [] : areas.filter((area) => scores[area] === min),
+    strongestAreas: balanced ? [] : areas.filter((area) => scores[area] === max),
+    balanced,
     overall,
   };
 }

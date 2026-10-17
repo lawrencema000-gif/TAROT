@@ -3,8 +3,9 @@ import type { SupportedLocale } from './config';
 /**
  * The Eastern systems' hanzi, in the reader's script.
  *
- * The lunar-mansion, Zi Wei and good-days data spell their names in
- * traditional characters (參水猿, 財帛宮, 化祿, 開市…), which is right for
+ * The lunar-mansion, Zi Wei and good-days data (and the 六爻 panel's palaces,
+ * relatives and spirits) spell their names in
+ * traditional characters (參水猿, 財帛宮, 化祿, 開市, 歸魂卦…), which is right for
  * English and Korean (hanja are traditional). Chinese and Japanese readers
  * meet the same names in their own script everywhere else on the screen:
  * the zh overlays are simplified (参宿, 财帛宫, 化禄) and the ja overlays use
@@ -29,6 +30,10 @@ const SIMPLIFIED: Readonly<Record<string, string>> = {
   機: '机', 陽: '阳', 陰: '阴', 貞: '贞', 貪: '贪', 門: '门', 殺: '杀', 軍: '军', 輔: '辅',
   // calendar words; the good-days purposes
   農: '农', 曆: '历', 閏: '闰', 時: '时', 數: '数', 擇: '择', 開: '开', 學: '学', 種: '种',
+  // 六爻: the 納甲 header, the palaces and their ranks, the six relatives and spirits, the 動/應 marks
+  納: '纳', 兌: '兑', 離: '离', 遊: '游', 歸: '归', 孫: '孙', 陳: '陈', 動: '动', 應: '应',
+  // 八字: the structure names (傷官格) and the spirit stars (天乙貴人, 驛馬, 華蓋, 紅鸞, 將星, 金輿)
+  傷: '伤', 貴: '贵', 驛: '驿', 華: '华', 蓋: '盖', 紅: '红', 鸞: '鸾', 將: '将', 輿: '舆',
 };
 
 /** Traditional (kyūjitai) → shinjitai, for ja: only where Japanese writes the name differently. */
@@ -36,6 +41,10 @@ const SHINJITAI: Readonly<Record<string, string>> = {
   虛: '虚', 參: '参', 兔: '兎', 雞: '鶏', 豬: '猪',
   祿: '禄', 權: '権', 德: '徳',
   曆: '暦', 數: '数', 擇: '択', 學: '学',
+  // 六爻: 應爻 and 歸魂卦
+  應: '応', 歸: '帰',
+  // 八字: 驛馬 and 將星
+  驛: '駅', 將: '将',
 };
 
 const TABLE: Partial<Record<SupportedLocale, Readonly<Record<string, string>>>> = {

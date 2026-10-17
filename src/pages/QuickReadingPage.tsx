@@ -595,9 +595,15 @@ export function QuickReadingPage() {
             <Chip key={c.key} label={lensLabel(c.key)} size="sm" selected={context === c.key} onSelect={() => setContext(c.key)} />
           ))}
         </div>
+        {/* A suggestion is a whole question, and a chip does not shrink
+            (flex-shrink-0): eight of the 80 ja suggestions are 333–357 px
+            on one line against the 328 px row at 360 px, so one widened the
+            page, the screen scrolled sideways and the nav fell below the
+            fold (p9 Q30). Held to the row's width, a long one wraps — at a
+            phrase, as every ja/zh/ko control does (index.css, F84). */}
         <div className="flex flex-wrap gap-1.5">
           {suggestions.map((s) => (
-            <Chip key={s} label={s} size="sm" variant="outline" onClick={() => setQuestion(s)} className="text-left" />
+            <Chip key={s} label={s} size="sm" variant="outline" onClick={() => setQuestion(s)} className="max-w-full text-left" />
           ))}
         </div>
       </div>

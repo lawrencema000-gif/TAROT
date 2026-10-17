@@ -212,26 +212,64 @@ export function FengShuiPage() {
   }
 
   if (stage === 'result' && reading) {
-    const focusInfo = BAGUA_AREAS[reading.focusArea];
-    const strongInfo = BAGUA_AREAS[reading.strongestArea];
-    const focusName = t(`fengshui.areas.${reading.focusArea}.name`, { defaultValue: focusInfo.name }) as string;
-    const strongName = t(`fengshui.areas.${reading.strongestArea}.name`, { defaultValue: strongInfo.name }) as string;
-    const focusMeaning = baguaText(reading.focusArea, 'meaning');
-    const adjustments = baguaAdjustments(reading.focusArea);
+    // Every area tied at either end is named, in map order, and an even
+    // map names none (p9 Q24): nine untouched 3s used to call Wealth
+    // depleted and Helpers thriving, by sort order alone.
+    const { focusAreas, strongestAreas, balanced } = reading;
+    const areaName = (area: BaguaArea) => t(`fengshui.areas.${area}.name`, { defaultValue: BAGUA_AREAS[area].name }) as string;
+    const listSep = t('fengshui.listSeparator', { defaultValue: ', ' }) as string;
+    const focusNames = focusAreas.map(areaName).join(listSep);
+    const loneFocus = focusAreas.length === 1 ? focusAreas[0] : null;
+    const balancedTitle = t('fengshui.balanced.title', { defaultValue: 'Every area feels the same' }) as string;
+    const balancedEyebrow = t('fengshui.balanced.eyebrow', { defaultValue: 'A balanced map' }) as string;
+
+    /** One focus area's remedy: what its low rating means, what to place, and where. */
+    const focusRemedy = (area: BaguaArea, Heading: 'h3' | 'h4') => (
+      <>
+        <section>
+          <p className="reading-copy">
+            {baguaText(area, 'lowReading')}
+          </p>
+          <p className="reading-meta mt-3">
+            {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {baguaText(area, 'element')} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {baguaText(area, 'color')}
+          </p>
+        </section>
+
+        <section>
+          <Heading className="heading-display-md heading-strong text-ink mb-2">
+            {t('fengshui.adjustmentsLabel', { defaultValue: 'Try these adjustments' })}
+          </Heading>
+          <ul className="reading-copy list-disc pl-5 space-y-1.5">
+            {baguaAdjustments(area).map((adj, i) => (
+              <li key={i}>{adj}</li>
+            ))}
+          </ul>
+          <p className="reading-meta mt-4">
+            {/* `direction` is a bare position ('back-left', 左奥); the
+                sentence names the room and the door (P7 F28/F68). */}
+            {t('fengshui.placement', {
+              defaultValue: 'Place these adjustments in the {{dir}} area of your room, as seen from the entry door.',
+              dir: baguaText(area, 'direction'),
+            })}
+          </p>
+        </section>
+      </>
+    );
 
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
-          title: focusName,
-          subtitle: t('fengshui.shareSubtitle', { defaultValue: 'Needs attention' }) as string,
-          tagline: focusMeaning,
-          affirmation: adjustments[0] ?? '',
+          title: balanced ? balancedTitle : focusNames,
+          subtitle: balanced ? balancedEyebrow : t('fengshui.shareSubtitle', { defaultValue: 'Needs attention' }) as string,
+          // One area's meaning and first adjustment; several areas are named in the title.
+          tagline: loneFocus ? baguaText(loneFocus, 'meaning') : '',
+          affirmation: loneFocus ? (baguaAdjustments(loneFocus)[0] ?? '') : '',
           brand: t('share.brand.fengShui', { defaultValue: 'Feng Shui Bagua' }) as string,
         });
         const out = await shareOrDownload(
           blob,
           'arcana-fengshui.png',
-          t('fengshui.shareText', { defaultValue: 'Feng Shui reading: {{area}}', area: focusName }) as string,
+          t('fengshui.shareText', { defaultValue: 'Feng Shui reading: {{area}}', area: balanced ? balancedTitle : focusNames }) as string,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
@@ -256,8 +294,8 @@ export function FengShuiPage() {
             {BAGUA_AREA_ORDER.map((area) => {
               const info = BAGUA_AREAS[area];
               const score = reading.scores[area];
-              const isFocus = area === reading.focusArea;
-              const isStrong = area === reading.strongestArea;
+              const isFocus = focusAreas.includes(area);
+              const isStrong = strongestAreas.includes(area);
               return (
                 <div
                   key={area}
@@ -286,57 +324,65 @@ export function FengShuiPage() {
           </p>
         </Card>
 
-        {/* The reading, on paper: the area that wants attention, what to do
-            about it, and the area that is already carrying you. */}
-        <ResultSheet
-          headingLevel="h2"
-          glyph={<Target />}
-          eyebrow={t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })}
-          title={focusName}
-          summaryHeading={t('fengshui.whatItGoverns', { defaultValue: 'What this area governs' })}
-          summary={focusMeaning}
-          disclaimer="general"
-        >
-          <div className="space-y-7">
-            <section>
-              <p className="reading-copy">
-                {baguaText(reading.focusArea, 'lowReading')}
-              </p>
-              <p className="reading-meta mt-3">
-                {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {baguaText(reading.focusArea, 'element')} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {baguaText(reading.focusArea, 'color')}
-              </p>
-            </section>
+        {/* The reading, on paper: the areas that want attention, what to do
+            about each, and the areas already carrying you. An even map
+            claims neither (p9 Q24). */}
+        {balanced ? (
+          <ResultSheet
+            headingLevel="h2"
+            glyph={<Target />}
+            eyebrow={balancedEyebrow}
+            title={balancedTitle}
+            summary={t('fengshui.balanced.body', {
+              n: reading.scores[BAGUA_AREA_ORDER[0]],
+              defaultValue:
+                'You rated all nine areas {{n}} out of 5, so no area stands out as needing attention or as your strongest. If one feels different, rate the areas again. The room guidance and the checklist below work for any home.',
+            })}
+            disclaimer="general"
+          />
+        ) : (
+          <ResultSheet
+            headingLevel="h2"
+            glyph={<Target />}
+            eyebrow={
+              loneFocus
+                ? t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })
+                : t('fengshui.focusLabelMany', { defaultValue: 'Areas needing attention' })
+            }
+            title={focusNames}
+            summaryHeading={loneFocus ? t('fengshui.whatItGoverns', { defaultValue: 'What this area governs' }) : undefined}
+            summary={loneFocus ? baguaText(loneFocus, 'meaning') : undefined}
+            disclaimer="general"
+          >
+            <div className="space-y-7">
+              {loneFocus
+                ? focusRemedy(loneFocus, 'h3')
+                : focusAreas.map((area) => (
+                    // Several areas tie at the bottom: each is named, with
+                    // what it governs, and gets its own remedy.
+                    <section key={area} className="space-y-4">
+                      <h3 className="heading-display-md heading-strong text-ink">{areaName(area)}</h3>
+                      <p className="reading-meta">{baguaText(area, 'meaning')}</p>
+                      {focusRemedy(area, 'h4')}
+                    </section>
+                  ))}
 
-            <section>
-              <h3 className="heading-display-md heading-strong text-ink mb-2">
-                {t('fengshui.adjustmentsLabel', { defaultValue: 'Try these adjustments' })}
-              </h3>
-              <ul className="reading-copy list-disc pl-5 space-y-1.5">
-                {adjustments.map((adj, i) => (
-                  <li key={i}>{adj}</li>
+              <section className="border-t border-paper-hairline pt-6">
+                <EyebrowLabel tone="ink" align="left" className="block">
+                  {strongestAreas.length > 1
+                    ? t('fengshui.strongestLabelMany', { defaultValue: 'Your strongest areas' })
+                    : t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
+                </EyebrowLabel>
+                {strongestAreas.map((area, i) => (
+                  <div key={area} className={i > 0 ? 'mt-6' : undefined}>
+                    <h3 className="heading-display-md heading-strong text-ink mt-1 mb-2">{areaName(area)}</h3>
+                    <p className="reading-copy">{baguaText(area, 'highReading')}</p>
+                  </div>
                 ))}
-              </ul>
-              <p className="reading-meta mt-4">
-                {/* `direction` is a bare position ('back-left', 左奥); the
-                    sentence names the room and the door (P7 F28/F68). */}
-                {t('fengshui.placement', {
-                  defaultValue: 'Place these adjustments in the {{dir}} area of your room, as seen from the entry door.',
-                  dir: baguaText(reading.focusArea, 'direction'),
-                })}
-              </p>
-            </section>
-
-            <section className="border-t border-paper-hairline pt-6">
-              <EyebrowLabel tone="ink" align="left" className="block">
-                {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
-              </EyebrowLabel>
-              <h3 className="heading-display-md heading-strong text-ink mt-1 mb-2">{strongName}</h3>
-              <p className="reading-copy">
-                {baguaText(reading.strongestArea, 'highReading')}
-              </p>
-            </section>
-          </div>
-        </ResultSheet>
+              </section>
+            </div>
+          </ResultSheet>
+        )}
 
         {/* ─── Personal Kua: 8 directions ─── */}
         {kua && (

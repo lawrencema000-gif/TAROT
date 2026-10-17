@@ -735,6 +735,7 @@
     },
     "openToday": "Open today’s entry",
     "promptCount": "{{n}} prompts",
+    "minutes": "{{n}} min",
     "recommended": "Recommended for you",
     "saveAndLock": "Save and lock",
     "searchMiss": "Nothing matches ‘{{query}}’",
@@ -4917,7 +4918,7 @@
         "name": "Breaking Through"
       },
       "card-collector": {
-        "description": "Save 25 different tarot readings to your collection.",
+        "description": "Save 25 readings to your collection.",
         "name": "Card Collector"
       },
       "card-curious": {
@@ -4973,7 +4974,7 @@
         "name": "Full Deck Explorer"
       },
       "full-moon-reader": {
-        "description": "Complete a tarot reading during a full moon.",
+        "description": "Complete a reading during a full moon.",
         "name": "Full Moon Reader"
       },
       "inner-voice": {
@@ -5089,7 +5090,7 @@
         "name": "XP Legend"
       },
       "zodiac-scholar": {
-        "description": "Read about all 12 zodiac signs in the compatibility section.",
+        "description": "Read the astrology entry for each of the 12 zodiac signs.",
         "name": "Zodiac Scholar"
       },
       "first-hand": {
@@ -6919,7 +6920,7 @@
     "strengths": "Strengths",
     "cautions": "Cautions",
     "transformsInto": "Transforms into",
-    "transformNote": "The changing lines show the energy moving toward this second hexagram — read as \"where this situation is heading\".",
+    "transformNote": "The changing lines show the energy moving toward this second hexagram — read as “where this situation is heading”.",
     "journalPrompt": "Journal prompt",
     "backToStart": "Cast again",
     "castAgain": "Cast again",
@@ -6928,7 +6929,15 @@
     "castingLine": "Line {{n}} of 6",
     "readFullReading": "Read the full reading",
     "askOracleCta": "Read this hexagram for me",
-    "share": "Share this hexagram"
+    "share": "Share this hexagram",
+    "shareText": "My I Ching reading: {{name}}. {{tagline}}"
+  },
+  "liuyao": {
+    "hidden": {
+      "eyebrow": "伏神 · Hidden",
+      "item": "{{role}} under line {{n}}",
+      "body": "{{list}} — roles absent from the cast, read from the palace’s parent hexagram. A missing role often matters as much as a present one."
+    }
   },
   "humanDesign": {
     "title": "Human Design",
@@ -7097,7 +7106,54 @@
     },
     "dayMasterEyebrow": "Your Day Master",
     "structureHidden": "Taken from your month branch. Nothing in your stems reveals it, so it is read from the branch’s principal hidden stem.",
-    "structureRevealed": "Taken from your month branch, whose hidden stem is revealed in the chart above."
+    "structureRevealed": "Taken from your month branch, whose hidden stem is revealed in the chart above.",
+    "casting": "Casting your four pillars…",
+    "pillarNames": {
+      "year": "Year pillar",
+      "month": "Month pillar",
+      "day": "Day pillar",
+      "hour": "Hour pillar"
+    },
+    "annualMeta": "{{pillar}} · {{name}} ({{classical}})",
+    "shareTagline": "Day Master: {{name}}",
+    "shareText": "My Bazi Day Master: {{name}} — {{archetype}}",
+    "ai": {
+      "upsellTitle": "Get your full personalised Bazi reading",
+      "upsellBody": "A 14-section deep reading written specifically for your chart — covering personality, career, wealth, relationships, current luck pillar, year ahead, and a strategy designed around your strengths and clashes.",
+      "upsellCta": "Unlock with Premium",
+      "loading": "Reading your chart…",
+      "loadingNote": "This takes about 10 seconds the first time. Cached after that.",
+      "retry": "Try again",
+      "heading": "Your personalised reading",
+      "regenerate": "Regenerate",
+      "regenerateTitle": "Regenerate this reading",
+      "regenerated": "Reading regenerated",
+      "caption": "Written by AI in the classical BaZi tradition (子平真诠 / 滴天髓). Refreshes once a year.",
+      "errors": {
+        "signIn": "Sign in to see your personalised reading.",
+        "premium": "The personalised reading is part of Premium.",
+        "rateLimit": "Too many requests at once. Wait a minute, then try again.",
+        "dailyLimit": "You’ve reached today’s limit for AI readings. It resets within a day.",
+        "unavailable": "Personalised readings are paused for the moment. Try again later.",
+        "generic": "Your reading couldn’t be written just now. Try again in a moment."
+      },
+      "sections": {
+        "core_summary": "Core summary",
+        "personality": "Personality",
+        "elements": "Element balance",
+        "career": "Career & business",
+        "wealth": "Wealth",
+        "relationships": "Relationships",
+        "family": "Family & early life",
+        "hidden_stems": "Hidden stems",
+        "branch_relations": "Branch interactions",
+        "health": "Health & energy",
+        "luck_pillar": "Current 10-year luck pillar",
+        "annual": "Year ahead ({{year}})",
+        "strategy": "Best strategy for you",
+        "closing_summary": "In closing"
+      }
+    }
   },
   "ayurveda": {
     "withSecondary": "with secondary {{sec}}",
@@ -7293,6 +7349,7 @@
           "name": "Narcissistic Shadow",
           "tagline": "The hungry self — craves mirroring, fears insignificance.",
           "summary": "Your shadow is strongest around narcissism — the hunger to be seen, admired, special. This energy built whole empires and whole disasters. In its healthy form it is confidence, charisma, the courage to take up space. In its shadow it is a bottomless mirror that cannot be filled.",
+          "summaryShared": "Narcissism is one of your shared top shadows — the hunger to be seen, admired, special. This energy built whole empires and whole disasters. In its healthy form it is confidence, charisma, the courage to take up space. In its shadow it is a bottomless mirror that cannot be filled.",
           "strengths": [
             "Confidence",
             "Charisma",
@@ -7311,6 +7368,7 @@
           "name": "Machiavellian Shadow",
           "tagline": "The strategist — sees the game, plays several moves ahead.",
           "summary": "Your shadow leans toward strategy — reading the room, steering conversations, playing the long game. At its best this is wisdom and political skill. In shadow it corrodes intimacy: you stop trusting anyone to just be with you, because you are always several moves ahead.",
+          "summaryShared": "Strategy is one of your shared top shadows — reading the room, steering conversations, playing the long game. At its best this is wisdom and political skill. In shadow it corrodes intimacy: you stop trusting anyone to just be with you, because you are always several moves ahead.",
           "strengths": [
             "Strategic thinking",
             "Reading people",
@@ -7329,6 +7387,7 @@
           "name": "Psychopathic Shadow",
           "tagline": "The cold one — unencumbered by fear, unencumbered by bond.",
           "summary": "Your shadow runs coldest — low fear, low attachment, high willingness to break rules. The healthy version is the surgeon who does not freeze, the soldier who protects, the CEO who makes the hard call. In shadow, it is disconnection — the freezing of warmth that would have sustained you.",
+          "summaryShared": "Coldness is one of your shared top shadows — low fear, low attachment, high willingness to break rules. The healthy version is the surgeon who does not freeze, the soldier who protects, the CEO who makes the hard call. In shadow, it is disconnection — the freezing of warmth that would have sustained you.",
           "strengths": [
             "Courage under pressure",
             "Capacity to make hard calls",
@@ -7837,6 +7896,7 @@
           "name": "Exhaustion-Dominant Burnout",
           "tagline": "The tank is empty. Energy is the first thing to rebuild.",
           "summary": "Your burnout expresses as pure depletion. You can still see the value of your work, still care about the outcomes — you just don’t have the energy left to deliver. This is the most reversible form of burnout if caught here.",
+          "summaryShared": "Depletion is one part of your burnout: the energy to deliver has run low. This is the most reversible form of burnout if caught here.",
           "strengths": [
             "You still care — that matters",
             "You haven’t disconnected from your values yet"
@@ -7852,6 +7912,7 @@
           "name": "Cynicism-Dominant Burnout",
           "tagline": "You’ve detached. The work stopped mattering.",
           "summary": "Your burnout is in your relationship to the work itself. You still have some energy, but you’ve emotionally checked out. The fire went out. Doing the work feels hollow. This is a warning sign — the longer cynicism sits, the harder it is to reconnect.",
+          "summaryShared": "Part of your burnout is in your relationship to the work itself: you’ve emotionally checked out, and doing the work feels hollow. This is a warning sign — the longer cynicism sits, the harder it is to reconnect.",
           "strengths": [
             "You can see clearly what is broken — cynicism is often accurate observation"
           ],
@@ -7946,6 +8007,7 @@
           "name": "Passive",
           "tagline": "Silence over safety — your needs come last.",
           "summary": "Your default is to keep the peace by keeping quiet. This often develops in environments where speaking up had bad consequences. Short-term, it reduces conflict. Long-term, it builds resentment and disconnects you from what you actually want.",
+          "summaryShared": "Keeping the peace by keeping quiet is one of your go-to styles. This often develops in environments where speaking up had bad consequences. Short-term, it reduces conflict. Long-term, it builds resentment and disconnects you from what you actually want.",
           "strengths": [
             "Sensitivity to others’ needs",
             "Easy-going reputation",
@@ -8066,6 +8128,7 @@
           "name": "Competing",
           "tagline": "Assertive, uncooperative — fights for own position.",
           "summary": "Your default mode is to fight for what you believe is right. Great when the stakes are high and you have the right answer. Dangerous when it’s low-stakes or you don’t actually have the right answer.",
+          "summaryShared": "Fighting for what you believe is right is one of your go-to modes. Great when the stakes are high and you have the right answer. Dangerous when it’s low-stakes or you don’t actually have the right answer.",
           "strengths": [
             "Decisiveness in crisis",
             "Moral clarity",
@@ -9132,6 +9195,7 @@
           "name": "Empath",
           "tagline": "You absorb emotional fields, not just sensory input.",
           "summary": "Your core sensitivity is EMOTIONAL. You pick up other people’s feelings and often carry them as your own. This is a gift and a burden. Learning to distinguish \"mine\" from \"theirs\" is the practice.",
+          "summaryShared": "Your emotional sensitivity runs about as strong as your sensory one. You pick up other people’s feelings and often carry them as your own. This is a gift and a burden. Learning to distinguish \"mine\" from \"theirs\" is the practice.",
           "strengths": [
             "Deep attunement to others",
             "Natural healer presence",
@@ -9148,6 +9212,7 @@
           "name": "Highly Sensitive Person (HSP)",
           "tagline": "You process sensory input deeply.",
           "summary": "Your core sensitivity is SENSORY + INFORMATIONAL. You notice subtleties, process deeply, and get overwhelmed by high-stimulation environments. ~20% of people are HSPs. It’s a neurological trait, not a flaw.",
+          "summaryShared": "Your sensory and informational sensitivity runs about as strong as your emotional one. You notice subtleties, process deeply, and get overwhelmed by high-stimulation environments. ~20% of people are HSPs. It’s a neurological trait, not a flaw.",
           "strengths": [
             "Depth of processing",
             "Aesthetic sensitivity",
@@ -10116,6 +10181,14 @@
     "overallScore": "Overall: {{n}} / 5",
     "focusLabel": "Area needing attention",
     "strongestLabel": "Your strongest area",
+    "focusLabelMany": "Areas needing attention",
+    "strongestLabelMany": "Your strongest areas",
+    "listSeparator": ", ",
+    "balanced": {
+      "eyebrow": "A balanced map",
+      "title": "Every area feels the same",
+      "body": "You rated all nine areas {{n}} out of 5, so no area stands out as needing attention or as your strongest. If one feels different, rate the areas again. The room guidance and the checklist below work for any home."
+    },
     "adjustmentsLabel": "Try these adjustments",
     "elementLabel": "Element",
     "colorLabel": "Colour",
@@ -10409,7 +10482,12 @@
   "companion": {
     "title": "Companion",
     "newConversation": "New conversation",
-    "emptyState": "Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
+    "newConversationConfirmTitle": "Start a new conversation?",
+    "newConversationConfirmBody": "This conversation will close, and you can’t come back to it.",
+    "newConversationConfirmBodyPaid": "This conversation will close, and you can’t come back to it. Your next message starts a new conversation, which uses {{n}} Moonstones.",
+    "newConversationConfirmAction": "Start a new conversation",
+    "newConversationConfirmKeep": "Keep this conversation",
+    "emptyState":"Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
     "placeholder": "Ask the companion…",
     "thinking": "thinking…",
     "sendFailed": "Couldn’t reach your companion — check your connection and send again.",
@@ -10673,6 +10751,8 @@
     "cardSub": "Every planet in its sign and house, every aspect, with interpretations.",
     "needsBirthData": "Add your birth data first",
     "needsBirthDataBody": "The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.",
+    "needsBirthPlace": "Add your birth place",
+    "needsBirthPlaceBody": "Your chart is drawn for the place you were born. Pick it in Profile → Edit profile, then open this page again.",
     "locked": {
       "feat1": "Big Three with deeper readings",
       "feat2": "All 10 planets in signs + houses",
@@ -10683,7 +10763,7 @@
     "unlocked": "Chart unlocked",
     "unlockFailed": "Couldn’t unlock the report — check your connection and try again.",
     "insufficientBalance": "Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.",
-    "errorChartMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
+    "errorChartMissing": "We couldn’t draw your chart just now. Check your connection and try again.",
     "printCta": "Save as PDF",
     "bigThreeHeading": "The Big Three",
     "planetsHeading": "Planets in signs and houses",
@@ -10766,7 +10846,7 @@
   "careerReport": {
     "title": "Career Archetype",
     "needsMbti": "Take the personality quiz first",
-    "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
+    "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 48-question version) and your archetype will unlock.",
     "shareLabel": "Career archetype",
     "locked": {
       "body": "A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.",
@@ -11149,7 +11229,12 @@
   "tarotCompanion": {
     "title": "Tarot companion",
     "redraw": "New card",
-    "drawing": "Drawing…",
+    "newCardConfirmTitle": "Draw a new card?",
+    "newCardConfirmBody": "Your conversation about {{card}} will close, and you can’t come back to it.",
+    "newCardConfirmBodyPaid": "Your conversation about {{card}} will close, and you can’t come back to it. Reading a new card starts a new conversation, which uses {{n}} Moonstones.",
+    "newCardConfirmAction": "Draw a new card",
+    "newCardConfirmKeep": "Keep this conversation",
+    "drawing":"Drawing…",
     "drawCta": "Draw a card",
     "empty": "Pull a card to begin a conversation.",
     "upright": "Upright",
@@ -11430,7 +11515,14 @@
     "affirmationLabel": "Your affirmation",
     "backToSaved": "Back to my tree",
     "retakeCta": "Grow a new tree",
-    "yourTree": "Your tree"
+    "yourTree": "Your tree",
+    "likert": {
+      "1": "Strongly disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly agree"
+    }
   },
   "updateBanner": {
     "title": "A new version is available",

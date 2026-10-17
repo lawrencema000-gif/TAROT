@@ -14,8 +14,8 @@ import { ShadowResult } from '../results/ShadowResult';
 import { EnneagramResult } from '../results/EnneagramResult';
 import { ElementResult } from '../results/ElementResult';
 import { CourtMatchResult } from '../results/CourtMatchResult';
-import { calculateExtraQuiz, darkTriadQuiz, type DimensionalResult } from '../../../data/extraQuizzes';
-import { selfCompassionQuiz } from '../../../data/extraQuizzesPart2';
+import { calculateExtraQuiz, darkTriadQuiz, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
+import { empathQuiz, selfCompassionQuiz } from '../../../data/extraQuizzesPart2';
 import { ayurvedaQuiz, calculateDosha } from '../../../data/ayurvedaQuiz';
 import { calculateLoveLanguage, loveLanguageQuiz } from '../../../data/quizzes';
 import { calculateShadowArchetype, shadowArchetypeQuiz } from '../../../data/shadowArchetypeQuiz';
@@ -50,15 +50,15 @@ beforeAll(async () => {
 afterEach(() => cleanup());
 
 describe('F65 — a three-way tie on a dimensional quiz names all three', () => {
-  it('Dark Triad all-Neutral: close call, "Shared with", three gold bars, and no "strongest" claim in the verdict block', () => {
+  it('Dark Triad all-Neutral: close call, "Shared with", three gold bars, and no "strongest" claim anywhere (p9 Q07)', () => {
     const result = calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!;
-    const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
+    const { verdict, container } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
     expect(screen.getByText('Narcissistic Shadow, Machiavellian Shadow and Psychopathic Shadow scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Machiavellian Shadow and Psychopathic Shadow')).toBeInTheDocument();
-    expect(verdict.textContent).not.toMatch(/strongest around narcissism/);
-    // The card is still read — as the first of the three, in the body.
+    // The card is still read — as the first of the three, in the body, in words for a shared top.
     const heading = screen.getByRole('heading', { name: 'Reading Narcissistic Shadow first' });
-    expect(heading.parentElement?.textContent).toMatch(/Your shadow is strongest around narcissism/);
+    expect(heading.parentElement?.textContent).toMatch(/Narcissism is one of your shared top shadows — the hunger to be seen, admired, special\./);
+    expect(container.textContent).not.toMatch(/strongest/i);
     expect(emphasisedBars()).toHaveLength(3);
   });
 
@@ -226,5 +226,60 @@ describe('O#160 — self-compassion never points at a card that is not there', (
     } finally {
       await i18n.changeLanguage('en');
     }
+  });
+});
+
+/*
+ * p9 Q07: F65 moved the first tied result's summary out of the verdict
+ * block, but the summary itself claimed a sole winner — three shadows at
+ * 3.0, then "Reading Narcissistic Shadow first — Your shadow is strongest
+ * around narcissism". A result whose summary claims a sole top now has a
+ * version for a shared one (summaryShared), in every language.
+ */
+describe('p9 Q07 — a shared top is never read as a sole winner', () => {
+  const tieBody = () => screen.getByRole('heading', { name: /first$|として読む$|부터 읽어요$|读起$/ }).parentElement!.textContent ?? '';
+
+  it.each([
+    ['ja', 'ナルシシズムは、同率で並ぶあなたの影のひとつです。', /もっとも強く/],
+    ['ko', '자기애는 공동 1위인 당신의 그림자 중 하나예요', /가장 강하게/],
+    ['zh', '自恋是你并列居首的几种阴影之一', /最为强烈/],
+  ])('%s: Dark Triad all-Neutral reads narcissism as one of the shared tops', async (lng, lede, claim) => {
+    await i18n.changeLanguage(lng);
+    try {
+      const result = calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!;
+      const { container } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
+      expect(tieBody()).toContain(lede);
+      expect(container.textContent).not.toMatch(claim);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('Empath ≈ HSP: the tie does not call one sensitivity the core one', () => {
+    const answers = Object.fromEntries(empathQuiz.questions.map((q, i) => [q.id, i === 0 || q.id === empathQuiz.questions.find((x) => x.dimension === 'hsp')!.id ? 4 : 3]));
+    const result = calculateExtraQuiz('empath-hsp-v1', answers)!;
+    expect(result.isTie).toBe(true);
+    expect(['empath', 'hsp']).toContain(result.primary);
+    const { container } = mount(<ExtraResult quiz={empathQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(tieBody()).toMatch(/runs about as strong as your/);
+    expect(container.textContent).not.toMatch(/core sensitivity/i);
+  });
+
+  it('every dimensional quiz: what a tie reads first never claims a sole top (en)', () => {
+    const SOLE = /\b(?:strongest|coldest|core sensitivity|default)\b|pure depletion|still see the value of your work|still have some energy/i;
+    const offenders: string[] = [];
+    let read = 0;
+    for (const [quizId, entry] of Object.entries(EXTRA_QUIZ_SCORING)) {
+      const quizKey = quizId.replace(/-v\d+$/, '');
+      for (const dim of entry.dimensions) {
+        const base = `extraQuizzes.${quizKey}.results.${dim}`;
+        const summary = i18n.t(`${base}.summary`, { ns: 'app', defaultValue: entry.info[dim]?.summary ?? '' });
+        const shared = i18n.t(`${base}.summaryShared`, { ns: 'app', defaultValue: summary });
+        read++;
+        if (SOLE.test(shared)) offenders.push(`${quizKey}.${dim}: ${shared.slice(0, 60)}`);
+      }
+    }
+    expect(read).toBeGreaterThan(60);
+    expect(offenders).toEqual([]);
   });
 });

@@ -2,6 +2,8 @@
 // Keeps all copy in one place so astrology-daily / -weekly / -monthly
 // / -transit-calendar can pick the right language at request time.
 
+import { fillKoTemplate } from "./ko-josa.ts";
+
 export type Locale = "en" | "ja" | "ko" | "zh";
 export type Element = "Fire" | "Earth" | "Air" | "Water";
 export type AspectType = "conjunction" | "opposition" | "trine" | "square" | "sextile";
@@ -175,6 +177,9 @@ function pairHash(input: string): number {
 // Compose an aspect brief with localized planet names substituted in. The
 // variant is chosen by the planet pair, so a day with three conjunctions
 // shows three different sentences and a given pair reads consistently.
+// In Korean the particle on each name agrees with that name ("목성과 달이",
+// not "목성과(와) 달이(가)"; "달로", not "달으로"): the ko templates write
+// two-form markers or one form, and fillKoTemplate picks the form.
 export function buildAspectBrief(
   locale: Locale,
   transitPlanet: string,
@@ -183,9 +188,12 @@ export function buildAspectBrief(
 ): string {
   const variants = ASPECT_BRIEFS[locale][aspect] || ASPECT_BRIEFS[locale].conjunction;
   const template = variants[pairHash(`${transitPlanet}>${natalPlanet}`) % variants.length];
-  return template
-    .replaceAll("{transitPlanet}", PLANET_NAMES[locale][transitPlanet] ?? transitPlanet)
-    .replaceAll("{natalPlanet}", PLANET_NAMES[locale][natalPlanet] ?? natalPlanet);
+  const names: Record<string, string> = {
+    transitPlanet: PLANET_NAMES[locale][transitPlanet] ?? transitPlanet,
+    natalPlanet: PLANET_NAMES[locale][natalPlanet] ?? natalPlanet,
+  };
+  if (locale === "ko") return fillKoTemplate(template, names);
+  return template.replace(/\{(transitPlanet|natalPlanet)\}/g, (_: string, key: string) => names[key]);
 }
 
 // Daily themes by element

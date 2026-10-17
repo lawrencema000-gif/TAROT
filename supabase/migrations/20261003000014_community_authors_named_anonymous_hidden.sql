@@ -12,11 +12,22 @@
   community_comments.user_id on every row, anonymous ones included. Next to a
   name on the named rows, that id attributes every Whispering Well post.
 
-  ## The rule this migration enforces
+  ## The rules this migration enforces
   An anonymous post or comment never reveals its author to anyone but the
   author and the service role: not through the base tables, the views, the
   block tables, an RPC result, an error text, the account export, or a change
   in which rows the viewer sees.
+
+  A named post or comment shows other members only a name its author chose
+  for Community (profiles.community_name, §5), never profiles.display_name.
+  The member never chose display_name for anyone else to read: email sign-up
+  fills it from the address (OnboardingPage → displayNameFromEmail:
+  jane.doe1990@gmail.com becomes "Jane Doe", arcana-qa-p7-p9-en1@… stays
+  "arcana-qa-p7-p9-en1"), a Google sign-up gets the Google full name
+  (handle_new_user, 20260112113637), and Profile computes the Expression
+  number "from your full name" out of it. Nor is a Google photo URL in
+  avatar_seed ever published. Until a member chooses a community name, their
+  named rows carry no name and the client signs them "A member" (P9 Q00).
 
   The first draft of this file broke that rule and the shipped clients
   (P8 F00, F35, F36): its block RPC wrote the resolved anonymous author into
@@ -49,7 +60,12 @@
      separate table (rather than a hidden column on community_blocks) also
      means a member's direct insert into community_blocks can never collide
      with, and so never test for, an anonymous block.
-  5. public.community_feed_posts / public.community_feed_comments: the read
+  5. profiles.community_name: the name a member chose to show on their named
+     posts and comments. NULL for everyone until they set it on their own row
+     (the existing own-row profiles policies; nothing copies display_name into
+     it). 1-32 characters, no surrounding spaces, no control characters, no
+     "@" (an email address is never a community name).
+  6. public.community_feed_posts / public.community_feed_comments: the read
      path of the new client. Owner-run views (they must return other members'
      anonymous rows, which the base policy now withholds), so each repeats the
      visibility predicate of 20260807120000 (visible when not hidden and
@@ -57,20 +73,22 @@
        - author_id, author_display_name and author_avatar_seed only on named
          rows; NULL on every anonymous row, the caller's own included (is_mine
          says which rows are theirs);
+       - author_display_name is the author's community_name (NULL until they
+         choose one), and author_avatar_seed is never a URL;
        - the caller's blocks, applied as in 4.
      Supabase's advisor reports both as security-definer views; that is the
      point of them, and each one filters by auth.uid() itself.
-  6. RPCs (authenticated only):
+  7. RPCs (authenticated only):
        community_block_author(post | comment) — block whoever wrote a row the
          caller can see, without learning who it is. Same answer for named and
          anonymous rows; a failure never echoes the row.
        community_my_blocks() — the caller's blocks, keyed by block id. An
          anonymous block carries no author. A named block carries the member's
-         id (already readable in community_blocks) and their display name only
-         when they have visible named content, so the list is never a way to
-         look up the name behind an arbitrary id.
+         id (already readable in community_blocks) and their community name
+         only when they have visible named content, so the list is never a way
+         to look up the name behind an arbitrary id.
        community_unblock(block_id) — either kind.
-  7. Moderation: community_flagged_queue() and community_review_flagged(kind,
+  8. Moderation: community_flagged_queue() and community_review_flagged(kind,
      id, publish), admins only (public.is_admin(), as the moderation_events
      and crisis_flags policies). A flagged post or comment was visible to its
      author only, and nothing could publish it. Publish sets 'allowed'; keep
@@ -186,7 +204,25 @@ ALTER TABLE public.community_anonymous_blocks ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.community_anonymous_blocks FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.community_anonymous_blocks TO service_role;
 
--- ── 5. Read views ───────────────────────────────────────────────────────────
+-- ── 5. The name a member chose for Community ────────────────────────────────
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS community_name text;
+
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_community_name_shape;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_community_name_shape CHECK (
+  community_name IS NULL
+  OR (
+    char_length(community_name) BETWEEN 1 AND 32
+    AND community_name = btrim(community_name)
+    AND community_name !~ '[[:cntrl:]]'
+    AND strpos(community_name, '@') = 0
+  )
+);
+
+COMMENT ON COLUMN public.profiles.community_name IS
+  'The name this member chose to show other members on their named community posts and comments. NULL until they choose one (the feed then signs them "A member"). Never filled from display_name, the email or an OAuth profile. See 20261003000014.';
+
+-- ── 6. Read views ───────────────────────────────────────────────────────────
 
 CREATE OR REPLACE VIEW public.community_feed_posts
 WITH (security_barrier = true) AS
@@ -203,8 +239,10 @@ SELECT
   cp.updated_at,
   CASE WHEN cp.is_anonymous THEN NULL ELSE cp.user_id END AS author_id,
   (cp.user_id = me.uid) AS is_mine,
-  CASE WHEN cp.is_anonymous THEN NULL ELSE p.display_name END AS author_display_name,
-  CASE WHEN cp.is_anonymous THEN NULL ELSE p.avatar_seed END AS author_avatar_seed
+  -- The chosen community name, never display_name (see the rules above).
+  CASE WHEN cp.is_anonymous THEN NULL ELSE p.community_name END AS author_display_name,
+  -- A generated-avatar seed only: a Google sign-up stores its photo URL here.
+  CASE WHEN cp.is_anonymous OR p.avatar_seed ~* '^([a-z][a-z0-9+.-]*:|//)' THEN NULL ELSE p.avatar_seed END AS author_avatar_seed
 FROM public.community_posts cp
 CROSS JOIN (SELECT auth.uid() AS uid) me
 LEFT JOIN public.profiles p ON p.id = cp.user_id AND cp.is_anonymous = false
@@ -220,7 +258,7 @@ WHERE me.uid IS NOT NULL
   );
 
 COMMENT ON VIEW public.community_feed_posts IS
-  'Feed read path. Owner-run: repeats the visibility of community_posts_select_visible (20260807120000), names only named rows, applies the caller''s named blocks to named rows and anonymous blocks to anonymous rows. See 20261003000014.';
+  'Feed read path. Owner-run: repeats the visibility of community_posts_select_visible (20260807120000), names only named rows and only by the author''s chosen community_name, applies the caller''s named blocks to named rows and anonymous blocks to anonymous rows. See 20261003000014.';
 
 CREATE OR REPLACE VIEW public.community_feed_comments
 WITH (security_barrier = true) AS
@@ -235,8 +273,8 @@ SELECT
   cc.created_at,
   CASE WHEN cc.is_anonymous THEN NULL ELSE cc.user_id END AS author_id,
   (cc.user_id = me.uid) AS is_mine,
-  CASE WHEN cc.is_anonymous THEN NULL ELSE p.display_name END AS author_display_name,
-  CASE WHEN cc.is_anonymous THEN NULL ELSE p.avatar_seed END AS author_avatar_seed
+  CASE WHEN cc.is_anonymous THEN NULL ELSE p.community_name END AS author_display_name,
+  CASE WHEN cc.is_anonymous OR p.avatar_seed ~* '^([a-z][a-z0-9+.-]*:|//)' THEN NULL ELSE p.avatar_seed END AS author_avatar_seed
 FROM public.community_comments cc
 CROSS JOIN (SELECT auth.uid() AS uid) me
 LEFT JOIN public.profiles p ON p.id = cc.user_id AND cc.is_anonymous = false
@@ -252,14 +290,14 @@ WHERE me.uid IS NOT NULL
   );
 
 COMMENT ON VIEW public.community_feed_comments IS
-  'Comment read path. Owner-run: repeats the visibility of community_comments_select_visible (20260807120000), names only named rows, applies the caller''s blocks as community_feed_posts does. See 20261003000014.';
+  'Comment read path. Owner-run: repeats the visibility of community_comments_select_visible (20260807120000), names only named rows and only by the author''s chosen community_name, applies the caller''s blocks as community_feed_posts does. See 20261003000014.';
 
 REVOKE ALL ON public.community_feed_posts FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON public.community_feed_comments FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.community_feed_posts TO authenticated;
 GRANT SELECT ON public.community_feed_comments TO authenticated;
 
--- ── 6. Blocking without learning who it is ──────────────────────────────────
+-- ── 7. Blocking without learning who it is ──────────────────────────────────
 
 CREATE OR REPLACE FUNCTION public.community_block_author(
   p_post_id uuid DEFAULT NULL,
@@ -346,7 +384,7 @@ AS $$
         WHERE y.user_id = b.blocked_id AND y.is_anonymous = false
           AND y.is_hidden = false AND y.moderation_status = 'allowed'
       )
-      THEN p.display_name
+      THEN p.community_name
     END,
     b.created_at
   FROM public.community_blocks b
@@ -381,7 +419,7 @@ BEGIN
 END;
 $$;
 
--- ── 7. Moderators decide on flagged rows ────────────────────────────────────
+-- ── 8. Moderators decide on flagged rows ────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION public.community_flagged_queue()
 RETURNS TABLE (

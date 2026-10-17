@@ -12,7 +12,12 @@
  * stay false too — the method patterns need the writer as their subject.
  */
 import { describe, expect, it } from 'vitest';
-import { detectCrisis } from '../../../supabase/functions/_shared/crisis';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { detectCrisis, CRISIS_LINES, type CrisisLocale } from '../../../supabase/functions/_shared/crisis';
+import {
+  SYSTEM, crisisShortcut, fallbackPrompts, journalCrisisReply, parseCoachReply,
+} from '../../../supabase/functions/ai-journal-coach/reply';
 
 const MUST_TRIP = [
   // the review's misses
@@ -111,6 +116,20 @@ const MUST_TRIP = [
   '電車に飛び込みたい',
   '한강에서 뛰어내릴 거야',
   '옥상에서 뛰어내리고 싶어',
+  // p9 Q29: the Japanese "I want to end it" with no object (F01 dropped it)
+  'もう終わりにしたい',
+  '疲れた。もう終わりにしたい。',
+  '終わりにしたい',
+  '疲れた。終わりにしたい。',
+  'もう、終わりにしたい',
+  '疲れた…終わりにしたい',
+  'もう終わらせたい',
+  // p9 Q32: the QA's journal entry, and the zh/ko phrasings of the same kind
+  '最近ずっと眠れない。もう消えたい。生きている意味がわからない。誰にも言えない。',
+  '我真的好想消失',
+  '好想消失。',
+  '그만 살고 싶어',
+  '이제 그만 살고 싶다',
 ];
 
 const MUST_STAY_FALSE = [
@@ -161,6 +180,17 @@ const MUST_STAY_FALSE = [
   // …and relationship/decision talk next to the widened English helpers
   'I’ve decided to end it with him',
   'nobody would miss me at the party, so I stayed home',
+  // p9 Q29: the object-less pattern leaves objects, and "quickly", alone
+  '宿題を早く終わらせたい',
+  '会議を早く終わりにしたい',
+  'この関係を終わりにしたいです',
+  'レポートを終わらせたい',
+  // p9: 想消失 needs the wish, not its negation or a worry made to vanish
+  '我不想消失',
+  '想让烦恼消失',
+  '我想让疼痛消失',
+  '그만하고 싶어',
+  '이제 그만 먹고 싶어',
 ];
 
 describe('detectCrisis', () => {
@@ -170,4 +200,86 @@ describe('detectCrisis', () => {
   for (const text of MUST_STAY_FALSE) {
     it(`stays false: ${text}`, () => expect(detectCrisis(text)).toBe(false));
   }
+});
+
+/*
+ * p9 Q32: the journal coach screened entries with an English-only regex and
+ * told the model to answer with the US lines, so a Japanese member writing
+ * 「もう消えたい」 got reflective questions and no helpline. It now runs the
+ * detector above and answers in the member's language with the lines the
+ * Community crisis banner shows for it.
+ */
+const LOCALES: CrisisLocale[] = ['en', 'ja', 'ko', 'zh'];
+const crisisStrings = (lng: CrisisLocale) =>
+  (JSON.parse(readFileSync(join(__dirname, '..', '..', 'i18n', 'locales', lng, 'app.json'), 'utf8')) as {
+    crisis: { phone: Record<string, string>; text: Record<string, string>; footer: string };
+  }).crisis;
+// The CJK punctuation rule of cjkPunctuation.test.ts, for the server's own words.
+const CJK = '\\u3000-\\u303f\\u3040-\\u309f\\u30a0-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff\\uff00-\\uffef';
+const ASCII_MARK_BY_CJK = new RegExp(`[${CJK}][?!,;:]|(^|[^0-9])[?!,;] *[${CJK}]|\\([^()]*[${CJK}][^()]*\\)`);
+
+describe('journal coach: the crisis reply (p9 Q32)', () => {
+  it.each(LOCALES)('%s: the server’s lines are the crisis banner’s (the locale file is the source)', (lng) => {
+    const s = crisisStrings(lng);
+    expect(CRISIS_LINES[lng]).toEqual({
+      phone: { title: s.phone.title, number: s.phone.number, body: s.phone.body },
+      text: { title: s.text.title, number: s.text.number, body: s.text.body },
+      footer: s.footer,
+    });
+  });
+
+  it('the QA’s Japanese entry gets the Japanese lines, before any model call', () => {
+    const reply = crisisShortcut('最近ずっと眠れない。もう消えたい。生きている意味がわからない。誰にも言えない。', 'ja');
+    expect(reply?.crisis).toBe(true);
+    const text = [reply!.observation, ...reply!.prompts].join('\n');
+    expect(text).toContain('よりそいホットライン');
+    expect(text).toContain('0120-279-338');
+    expect(text).toContain('0570-064-556');
+    expect(text).toContain('119');
+    expect(text).not.toMatch(/988|741741/);
+  });
+
+  it('an ordinary entry goes on to the model', () => {
+    expect(crisisShortcut('今日は友だちとカフェで話して、少し気持ちが軽くなった。', 'ja')).toBeNull();
+    expect(crisisShortcut('I finally finished the painting I started in spring.', 'en')).toBeNull();
+  });
+
+  it.each(LOCALES)('%s: names both of the language’s lines, the emergency footer and findahelpline', (lng) => {
+    const reply = journalCrisisReply(lng);
+    const lines = CRISIS_LINES[lng];
+    const text = [reply.observation, ...reply.prompts].join('\n');
+    expect(reply.crisis).toBe(true);
+    expect(reply.prompts).toHaveLength(3);
+    expect(text).toContain(lines.phone.number);
+    expect(text).toContain(lines.text.number);
+    expect(reply.observation).toContain(lines.footer);
+    expect(text).toContain('findahelpline.com');
+    if (lng !== 'en') expect(text).not.toMatch(/988|741741/);
+    expect(text).not.toMatch(/!/);
+    if (lng === 'ja' || lng === 'zh') expect(text).not.toMatch(ASCII_MARK_BY_CJK);
+  });
+
+  it('the prompt carries no helpline of any country: the model answers {"crisis": true}', () => {
+    expect(SYSTEM).not.toMatch(/988|741741|\d{3}-\d{3}/);
+    expect(SYSTEM).toContain('{"crisis": true}');
+  });
+
+  it('reads the model’s crisis answer however it is wrapped', () => {
+    expect(parseCoachReply('{"crisis": true}')).toEqual({ kind: 'crisis' });
+    expect(parseCoachReply('```json\n{"crisis": true}\n```')).toEqual({ kind: 'crisis' });
+    expect(parseCoachReply('Here you go: {"crisis":true}')).toEqual({ kind: 'crisis' });
+    expect(parseCoachReply('{"crisis": true, "observation": 1')).toEqual({ kind: 'crisis' });
+  });
+
+  it('reads a reply, fenced or not, and nothing else', () => {
+    const reply = { kind: 'reply', reply: { observation: 'You keep returning to the sea.', prompts: ['What does the sea hold for you?'] } };
+    expect(parseCoachReply('{"observation": "You keep returning to the sea.", "prompts": ["What does the sea hold for you?"]}')).toEqual(reply);
+    expect(parseCoachReply('```json\n{"observation": "You keep returning to the sea.", "prompts": ["What does the sea hold for you?"]}\n```')).toEqual(reply);
+    expect(parseCoachReply('Just some prose with no JSON.')).toBeNull();
+  });
+
+  it.each(['ja', 'ko', 'zh'] as const)('%s: the fallback questions are in the member’s language', (lng) => {
+    for (const q of fallbackPrompts(lng)) expect(q).not.toMatch(/[A-Za-z]/);
+    if (lng !== 'ko') for (const q of fallbackPrompts(lng)) expect(q).not.toMatch(ASCII_MARK_BY_CJK);
+  });
 });

@@ -160,9 +160,9 @@ const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff]/;
  * them as the 4 of ワンドの4), and at the serif's cap height beside Latin,
  * where a full-size Inter figure towers over "Life Path".
  */
-function digitFontFor(ctx: CanvasRenderingContext2D, font: string, text: string): string | null {
-  if (!font.includes(DISPLAY) || !/\d/.test(text)) return null;
-  const inter = font.replace(DISPLAY, BODY);
+function digitFontFor(ctx: CanvasRenderingContext2D, font: string, text: string, serif: string = DISPLAY): string | null {
+  if (!font.includes(serif) || !/\d/.test(text)) return null;
+  const inter = font.replace(serif, BODY);
   if (CJK.test(text)) return inter;
   ctx.font = font;
   const serifCap = ctx.measureText('H').actualBoundingBoxAscent;
@@ -769,11 +769,18 @@ function drawPlayingFace(ctx: CanvasRenderingContext2D, opts: CartomancyShareOpt
     ctx.stroke(star);
     ctx.restore();
   } else if (opts.rank !== 'joker' && opts.suit !== 'joker') {
-    ctx.font = cssFont(600, 22, FACE_DISPLAY);
+    // A number rank in Inter at the serif's cap height, on the same
+    // baseline: a canvas has no font-variant-numeric, so Cormorant drew its
+    // old-style figures and the corner "10" read "IO" (p9 Q35) while the
+    // card in the app (PlayingCardFace) sets lining ones. A, J, Q and K
+    // stay in the serif.
+    const rank = RANK_LABEL[opts.rank];
+    const rankFont = cssFont(600, 22, FACE_DISPLAY);
+    ctx.font = digitFontFor(ctx, rankFont, rank, FACE_DISPLAY) ?? rankFont;
     ctx.fillStyle = C.gold;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(RANK_LABEL[opts.rank], 24 + 9, 30 + 18);
+    ctx.fillText(rank, 24 + 9, 30 + 18);
     drawSuitMark(ctx, opts.suit, 24 + 9 - 7, 30 + 22, 14, ink);
   }
 

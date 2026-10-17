@@ -68,7 +68,8 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { journalEntries, tarotReadings } from '../dal';
-import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
+import { journalTemplates, templateCategories, getTemplatesForPersonality, localizeJournalTemplate, JournalTemplate } from '../data/journalTemplates';
+import { useContentOverlay } from '../i18n/contentOverlay';
 import { MOOD_CATEGORIES, getTodayEntry as getTodayMood } from '../data/moodDiary';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
@@ -262,6 +263,14 @@ export function JournalPage() {
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  // The templates in the reader's language (the 'journal' content overlay):
+  // the rows, the editor's title and prompts, and the prompt saved with the
+  // entry. English templates used to title a Japanese member's entry.
+  const { overlay: templateOverlay, ready: templatesReady } = useContentOverlay('journal');
+  const selectedLocal = useMemo(
+    () => (selectedTemplate ? localizeJournalTemplate(selectedTemplate, templateOverlay) : null),
+    [selectedTemplate, templateOverlay],
+  );
 
   // The user's local day, as the mood diary and the ritual count it. A
   // UTC date put an 08:00 Tokyo entry on "yesterday".
@@ -481,8 +490,8 @@ export function JournalPage() {
       return;
     }
 
-    const templatePrompt = selectedTemplate
-      ? `${selectedTemplate.title}: ${selectedTemplate.prompts.join(' | ')}`
+    const templatePrompt = selectedLocal
+      ? `${selectedLocal.title}: ${selectedLocal.prompts.join(' | ')}`
       : null;
 
     const entryDate = editingEntry ? editingEntry.date : draftDate;
@@ -748,7 +757,7 @@ export function JournalPage() {
     resetDraft();
     setSelectedTemplate(template);
     setDraftDate(today);
-    setTitle(template.title);
+    setTitle(localizeJournalTemplate(template, templateOverlay).title);
     setSelectedTags(template.tags || []);
     setShowEditor(true);
   };
@@ -782,22 +791,23 @@ export function JournalPage() {
   const templateRow = (template: JournalTemplate, tone: 'gold' | 'neutral') => {
     const CategoryIcon = categoryIcons[template.category] || FileText;
     const catInfo = templateCategories[template.category as keyof typeof templateCategories];
+    const local = localizeJournalTemplate(template, templateOverlay);
     return (
       <ListRow
         key={template.id}
         icon={<CategoryIcon />}
         tone={tone}
-        label={template.title}
+        label={local.title}
         meta={
           <>
             <span className="tracking-[0.08em] uppercase text-caption text-mystic-500">
               {t(`journal.templateCategories.${template.category}`, { defaultValue: catInfo?.name ?? template.category })}
               {' · '}
-              {template.timeEstimate}
+              {t('journal.minutes', { defaultValue: '{{n}} min', n: template.minutes })}
               {' · '}
-              {t('journal.promptCount', { defaultValue: '{{n}} prompts', n: template.prompts.length })}
+              {t('journal.promptCount', { defaultValue: '{{n}} prompts', n: local.prompts.length })}
             </span>
-            <span className="block">{template.description}</span>
+            <span className="block">{local.description}</span>
           </>
         }
         onClick={() => startTemplateEntry(template)}
@@ -1043,7 +1053,13 @@ export function JournalPage() {
         )
       )}
 
-      {activeTab === 'templates' && (
+      {activeTab === 'templates' && !templatesReady && (
+        <div role="status" aria-busy="true" aria-label={t('common:actions.loading', { defaultValue: 'Loading…' })} className="space-y-2">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={64} />)}
+        </div>
+      )}
+
+      {activeTab === 'templates' && templatesReady && (
         <div className="space-y-4">
           {recommendedTemplates.length > 0 && (
             <Section
@@ -1221,7 +1237,7 @@ export function JournalPage() {
       <Sheet
         open={showEditor}
         onClose={closeEditor}
-        title={editingEntry ? t('journal.editSheet.editEntry') : selectedTemplate ? selectedTemplate.title : t('journal.editSheet.newEntry')}
+        title={editingEntry ? t('journal.editSheet.editEntry') : selectedLocal ? selectedLocal.title : t('journal.editSheet.newEntry')}
       >
         <div className="flex flex-col h-full -m-6">
           <div className="flex-1 overflow-y-auto">
@@ -1296,7 +1312,7 @@ export function JournalPage() {
                 </div>
                 {!editingEntry && (selectedTemplate || draftDate === today) && (
                   <p className="reading-lede mb-4">
-                    {selectedTemplate ? selectedTemplate.prompts[currentPromptIndex] : todayPrompt}
+                    {selectedLocal ? selectedLocal.prompts[currentPromptIndex] : todayPrompt}
                   </p>
                 )}
                 <input

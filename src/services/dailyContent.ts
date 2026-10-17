@@ -14,6 +14,10 @@ import {
   miniRitualTemplates,
 } from '../data/zodiacContent';
 import { dailyI18n } from '../i18n/localizeDailyInsights';
+import i18n, { getLocale } from '../i18n/config';
+import { localizePlanetName, localizeSignName } from '../i18n/localizeNames';
+import { fillKoTemplate } from '../i18n/koJosa';
+import type { Planet, ZodiacSign as ZodiacSignName } from '../types/astrology';
 
 export interface DailyReading {
   sign: ZodiacSign;
@@ -122,10 +126,17 @@ const HEALING_EN = ['reflection', 'release', 'restoration'];
 const NURTURING_EN = ['rest', 'movement', 'creativity'];
 const HEALTH_FOCUS_EN = ['balance', 'vitality', 'mindfulness'];
 
+/**
+ * Fill a daily template. A Korean template was written with the particle one
+ * noun takes ("{challenge}이", "{area}로") and is filled with many, so each
+ * particle is re-picked for the word that filled its slot (이/가, 을/를, 은/는,
+ * 과/와, 으로/로, 이에요/예요 — src/i18n/koJosa.ts).
+ */
 function interpolateTemplate(
   template: string,
   context: Record<string, string>
 ): string {
+  if (getLocale() === 'ko') return fillKoTemplate(template, context, (key) => key);
   return template.replace(/\{(\w+)\}/g, (_, key) => context[key] || key);
 }
 
@@ -158,11 +169,20 @@ function buildContext(
   const nurturing        = dailyI18n.nurturing(NURTURING_EN);
   const healthFocuses    = dailyI18n.healthFocuses(HEALTH_FOCUS_EN);
 
+  // The sign, its element and its ruler in the reader's language: the
+  // Japanese, Korean and Chinese templates used to be filled with the
+  // English keys ("airの性質", "수호성 Jupiter이", "Pisces的阴影"). English
+  // keeps the words it always had ("Pisces", "water", "Neptune").
+  const locale = getLocale();
+  const signName = sign.charAt(0).toUpperCase() + sign.slice(1);
+
   return {
-    sign: sign.charAt(0).toUpperCase() + sign.slice(1),
-    element: profile.element,
+    sign: locale === 'en' ? signName : localizeSignName(signName as ZodiacSignName, locale),
+    element: locale === 'en'
+      ? profile.element
+      : (i18n.t(`profile.elements.${profile.element}`, { ns: 'app', defaultValue: profile.element }) as string),
     modality: profile.modality,
-    planet: profile.rulingPlanet,
+    planet: locale === 'en' ? profile.rulingPlanet : localizePlanetName(profile.rulingPlanet as Planet, locale),
     strength: selectFromArray(profile.strengths, random),
     challenge: selectFromArray(profile.challenges, random),
     loveStyle: profile.loveStyle,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle, Loader2 } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge, TarotFace } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge, TarotFace, Sheet } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -10,6 +10,7 @@ import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { ACTION_COST } from '../dal/moonstoneSpend';
 import { aiFailureOf } from '../components/reports/aiReading';
 import {
   newConversationId,
@@ -92,6 +93,8 @@ export function TarotCompanionPage() {
   }, [convo.conversationId]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('tarot-companion-session');
+  /** "New card" was pressed with a conversation on screen: it asks before closing it (p9 Q06). */
+  const [confirmNewCard, setConfirmNewCard] = useState(false);
 
   const draw = useCallback(async () => {
     setDrawing(true);
@@ -317,6 +320,19 @@ export function TarotCompanionPage() {
 
   /** Whether the next follow-up is covered by the opener's charge. */
   const covered = conversationCovered(convo);
+  /**
+   * "New card" closes the conversation on screen for good: the account
+   * keeps one Tarot conversation, and a new card is a new one. With a
+   * conversation there it asks first, and while that conversation's 24
+   * hours are paid for (or a send may have paid them) it says what the next
+   * one costs. One tap used to throw away a conversation bought minutes
+   * before (p9 Q06).
+   */
+  const stillPaid = !profile?.isPremium && (covered || mayBePaid(convo));
+  const requestNewCard = () => {
+    if (messages.length > 0) setConfirmNewCard(true);
+    else void draw();
+  };
 
   return (
     <Page spacing="sm">
@@ -324,7 +340,7 @@ export function TarotCompanionPage() {
         icon={<Sparkles />}
         title={t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
         action={
-          <Button variant="ghost" size="sm" onClick={draw} disabled={drawing || busy} className="gap-1">
+          <Button variant="ghost" size="sm" onClick={requestNewCard} disabled={drawing || busy} className="gap-1">
             <Shuffle className="w-3 h-3" />
             {t('tarotCompanion.redraw', { defaultValue: 'New card' })}
           </Button>
@@ -387,35 +403,45 @@ export function TarotCompanionPage() {
             )}
           </div>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-              placeholder={t('tarotCompanion.composerPlaceholder', { defaultValue: 'Ask a follow-up…' })}
-              maxLength={2000}
-              className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 min-h-[44px] text-mystic-100 text-ui placeholder-mystic-500 focus:outline-none focus:border-gold/40"
-            />
-            <Button variant="primary" onClick={handleSend} disabled={busy || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
-              <Send className="w-4 h-4" aria-hidden />
-            </Button>
-          </div>
-          {/* When the next follow-up is the one charged — the opener's 24
-              hours are over, or no charge was seen — the price is on
-              screen before it goes. */}
-          {!covered && !sending && !profile?.isPremium && (
-            <div className="mt-3 space-y-1">
-              {typeof convo.chargedAt === 'number' && (
-                <p className="text-meta text-mystic-300">
-                  {t('tarotCompanion.renewNotice', {
-                    defaultValue: 'The 24 hours this conversation covered have passed. Your next question starts a new 24 hours.',
-                  })}
-                </p>
-              )}
-              <MoonstoneCostLine wording="conversation" />
+          {/* The composer rides just above the bottom nav (or, with the
+              keyboard up and the nav hidden, the bottom edge) while the
+              conversation is on screen. In the flow, the card above and a
+              reply as tall as the 50vh box put it under the nav after the
+              first answer: the input's top at 810 px, the nav's at 749, at
+              390 × 844 (p9 Q11). It carries its own fill, so a reply
+              passing behind it reads as passing under it; scrolled to the
+              end it rests in the card as before. */}
+          <div className="sticky z-10 bottom-[calc(6rem_+_env(safe-area-inset-bottom,0px))] [body.keyboard-open_&]:bottom-0 bg-mystic-850 pt-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder={t('tarotCompanion.composerPlaceholder', { defaultValue: 'Ask a follow-up…' })}
+                maxLength={2000}
+                className="flex-1 min-w-0 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 min-h-[44px] text-mystic-100 text-ui placeholder-mystic-500 focus:outline-none focus:border-gold/40"
+              />
+              <Button variant="primary" onClick={handleSend} disabled={busy || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
+                <Send className="w-4 h-4" aria-hidden />
+              </Button>
             </div>
-          )}
+            {/* When the next follow-up is the one charged — the opener's 24
+                hours are over, or no charge was seen — the price is on
+                screen before it goes, beside the input it is for. */}
+            {!covered && !sending && !profile?.isPremium && (
+              <div className="mt-3 space-y-1">
+                {typeof convo.chargedAt === 'number' && (
+                  <p className="text-meta text-mystic-300">
+                    {t('tarotCompanion.renewNotice', {
+                      defaultValue: 'The 24 hours this conversation covered have passed. Your next question starts a new 24 hours.',
+                    })}
+                  </p>
+                )}
+                <MoonstoneCostLine wording="conversation" />
+              </div>
+            )}
+          </div>
         </Card>
       )}
 
@@ -447,6 +473,45 @@ export function TarotCompanionPage() {
           )}
         </Card>
       )}
+
+      {/* Closing the conversation is for good, so it asks; keeping it is the
+          safe default and the way back. */}
+      <Sheet
+        open={confirmNewCard}
+        onClose={() => setConfirmNewCard(false)}
+        title={t('tarotCompanion.newCardConfirmTitle', { defaultValue: 'Draw a new card?' })}
+      >
+        <div className="space-y-5">
+          <p className="text-ui text-mystic-300 leading-relaxed">
+            {stillPaid
+              ? t('tarotCompanion.newCardConfirmBodyPaid', {
+                  card: card?.card.name ?? '',
+                  n: ACTION_COST,
+                  defaultValue: 'Your conversation about {{card}} will close, and you can’t come back to it. Reading a new card starts a new conversation, which uses {{n}} Moonstones.',
+                })
+              : t('tarotCompanion.newCardConfirmBody', {
+                  card: card?.card.name ?? '',
+                  defaultValue: 'Your conversation about {{card}} will close, and you can’t come back to it.',
+                })}
+          </p>
+          <div className="space-y-3">
+            <Button
+              variant="destructive"
+              fullWidth
+              disabled={drawing || busy}
+              onClick={() => {
+                setConfirmNewCard(false);
+                void draw();
+              }}
+            >
+              {t('tarotCompanion.newCardConfirmAction', { defaultValue: 'Draw a new card' })}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => setConfirmNewCard(false)}>
+              {t('tarotCompanion.newCardConfirmKeep', { defaultValue: 'Keep this conversation' })}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
       {EarnSheet}
     </Page>
   );

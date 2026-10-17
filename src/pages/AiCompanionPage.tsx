@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { ACTION_COST } from '../dal/moonstoneSpend';
 import { localDateStr } from '../utils/localDate';
 import { scrollBehavior } from '../utils/motion';
 import { aiFailureOf } from '../components/reports/aiReading';
@@ -312,6 +313,14 @@ export function AiCompanionPage() {
     if (userId) saveConversation(userId, persona, fresh);
     setConvo(fresh);
   };
+  /**
+   * "New conversation" replaces this persona's conversation for good, so it
+   * asks first; while the conversation's 24 hours are paid for (or a send
+   * may have paid them) it says what the next one costs. One tap used to
+   * overwrite a conversation bought minutes before (p9 Q06).
+   */
+  const [confirmNew, setConfirmNew] = useState(false);
+  const stillPaid = !profile?.isPremium && (covered || mayBePaid(convo));
 
   /** "They're mine": the old conversations join this account's, and the device copy goes. */
   const claimLegacy = () => {
@@ -344,7 +353,7 @@ export function AiCompanionPage() {
         title={t('companion.title', { defaultValue: 'Companion' })}
         action={
           history.length > 0 ? (
-            <Button variant="ghost" size="sm" onClick={clearConversation} disabled={busy}>
+            <Button variant="ghost" size="sm" onClick={() => setConfirmNew(true)} disabled={busy}>
               {t('companion.newConversation', { defaultValue: 'New conversation' })}
             </Button>
           ) : undefined
@@ -476,6 +485,43 @@ export function AiCompanionPage() {
         )}
       </div>
       {EarnSheet}
+
+      {/* Replacing the conversation is for good, so it asks; keeping it is
+          the safe default. */}
+      <Sheet
+        open={confirmNew}
+        onClose={() => setConfirmNew(false)}
+        title={t('companion.newConversationConfirmTitle', { defaultValue: 'Start a new conversation?' })}
+      >
+        <div className="space-y-5">
+          <p className="text-ui text-mystic-300 leading-relaxed">
+            {stillPaid
+              ? t('companion.newConversationConfirmBodyPaid', {
+                  n: ACTION_COST,
+                  defaultValue: 'This conversation will close, and you can’t come back to it. Your next message starts a new conversation, which uses {{n}} Moonstones.',
+                })
+              : t('companion.newConversationConfirmBody', {
+                  defaultValue: 'This conversation will close, and you can’t come back to it.',
+                })}
+          </p>
+          <div className="space-y-3">
+            <Button
+              variant="destructive"
+              fullWidth
+              disabled={busy}
+              onClick={() => {
+                setConfirmNew(false);
+                clearConversation();
+              }}
+            >
+              {t('companion.newConversationConfirmAction', { defaultValue: 'Start a new conversation' })}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => setConfirmNew(false)}>
+              {t('companion.newConversationConfirmKeep', { defaultValue: 'Keep this conversation' })}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
 
       {/* Conversations an earlier version kept on this device: asked
           about, never taken (p8 F33). Only who they were with is shown

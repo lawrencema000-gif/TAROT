@@ -398,38 +398,94 @@ export function firstSentences(text: string, count: number): string {
 export interface AiSection {
   /** The block's own heading, numbering and markdown removed ("The situation — Seven of Clubs"). */
   heading?: string;
+  /** The block under the heading, markdown marks removed (a list keeps its "- " markers here). */
   body: string;
+  /**
+   * The body as list items, when every line of it is one ("- Build a
+   * one-pager." → "Build a one-pager."): markers, numbers and markdown
+   * removed. Absent for prose.
+   */
+  items?: string[];
 }
 
-const HEADING_NUMBER = /^\s*(?:#{1,6}\s*)?(?:\d{1,2}\s*[.)]\s*)?/;
+const HEADING_NUMBER = /^\s*(?:#{1,6}\s*)?(?:\d{1,2}\s*[.)．）]\s*)?/;
+/**
+ * A list item's marker: "- ", "* ", a bullet (• ‧ ∙ ◦ the small square,
+ * the katakana middle dot ・), an en or em dash, or a number ("1. ", "2) ",
+ * full-width "３．"). The marks are escaped: the tokens gate reads a
+ * literal square as an emoji icon.
+ */
+const LIST_MARKER = /^\s*(?:[-*+]\s+|[\u2022\u2027\u2219\u25E6\u25AA\u30FB\u2013\u2014]\s*|\d{1,2}\s*[.)\uFF0E\uFF09\u3001]\s*)/;
 
-/** A line the model wrote as a heading: short, unpunctuated, alone on its line. */
+/**
+ * A line the model wrote as a heading: short, unpunctuated, alone on its
+ * line. Ending in a stop of any script (. ! ? ; , and 。！？、；，) makes it
+ * a sentence; a marker makes it a list item. A trailing colon is dropped.
+ */
 function headingOf(line: string): string | null {
   const bare = line.replace(MARKDOWN_MARKS, '').trim();
   if (!bare || bare.length > 64) return null;
-  if (/[.!?;,]$/.test(bare) || /^[-•]/.test(bare)) return null;
-  const cleaned = bare.replace(HEADING_NUMBER, '').replace(/:$/, '').trim();
+  if (/[.!?;,。！？、；，]$/.test(bare) || /^[-•・]/.test(bare)) return null;
+  const cleaned = bare.replace(HEADING_NUMBER, '').replace(/[:：]$/, '').trim();
   return cleaned || null;
+}
+
+/** The block's lines as list items when every one is an item; null for prose. */
+function listItemsOf(lines: string[]): string[] | null {
+  const rows = lines.map((l) => l.trim()).filter(Boolean);
+  if (rows.length === 0 || !rows.every((l) => LIST_MARKER.test(l))) return null;
+  const items = rows.map((l) => l.replace(LIST_MARKER, '').replace(MARKDOWN_MARKS, '').trim()).filter(Boolean);
+  return items.length > 0 ? items : null;
 }
 
 /**
  * An AI reading as blocks: the generators write "1) Overview" then the
  * paragraph, "2) The situation — Seven of Clubs" then its paragraph,
- * "Practical actions" then bullets. Each blank-line block whose first line
- * reads as a heading (and has a body under it) becomes {heading, body};
- * any other block is body alone. Markdown marks are dropped from the body.
+ * "3 Practical Actions" then bullets. Each blank-line block whose first line
+ * reads as a heading (and has a body under it) becomes {heading, body}; a
+ * heading standing alone in its block heads the block after it (as the
+ * tarot summary reads it, readingText.splitLede); any other block is body
+ * alone. A body whose every line is a list item also comes as `items`, and
+ * a heading that only counts them ("3 Practical Actions" over three
+ * bullets) loses the count, which the list now shows. Markdown marks are
+ * dropped.
  */
-export function splitAiReading(text: string): { lede: string; sections: AiSection[] } {
+export function aiReadingSections(text: string): AiSection[] {
   const blocks = text
     .split(/\n\s*\n/)
     .map((b) => b.trim())
     .filter(Boolean);
-  const sections: AiSection[] = blocks.map((block) => {
+  const sections: AiSection[] = [];
+  let pending: string | null = null;
+  blocks.forEach((block, b) => {
     const lines = block.split('\n');
-    const heading = lines.length > 1 ? headingOf(lines[0]) : null;
-    const body = (heading ? lines.slice(1) : lines).join('\n').replace(MARKDOWN_MARKS, '').trim();
-    return heading ? { heading, body } : { body };
+    const alone = lines.length === 1 ? headingOf(lines[0]) : null;
+    if (alone && b < blocks.length - 1) {
+      if (pending) sections.push({ heading: pending, body: '' });
+      pending = alone;
+      return;
+    }
+    const own = lines.length > 1 ? headingOf(lines[0]) : null;
+    const rest = own ? lines.slice(1) : lines;
+    let heading = own ?? pending;
+    if (own && pending) sections.push({ heading: pending, body: '' });
+    pending = null;
+    const body = rest.join('\n').replace(MARKDOWN_MARKS, '').trim();
+    const items = listItemsOf(rest);
+    const count = heading ? /^(\d{1,2})\s+(?=\p{Lu})/u.exec(heading) : null;
+    if (heading && count && items && items.length === Number(count[1])) heading = heading.slice(count[0].length);
+    sections.push({ ...(heading ? { heading } : {}), body, ...(items ? { items } : {}) });
   });
+  if (pending) sections.push({ heading: pending, body: '' });
+  return sections;
+}
+
+/**
+ * The reading's summary — its first block with a body, without its heading
+ * ("1) Overview") — and the sections after it (aiReadingSections).
+ */
+export function splitAiReading(text: string): { lede: string; sections: AiSection[] } {
+  const sections = aiReadingSections(text);
   const first = sections.find((s) => s.body.length > 0);
   if (!first) return { lede: '', sections: [] };
   return { lede: first.body, sections: sections.filter((s) => s !== first && (s.body || s.heading)) };
@@ -471,18 +527,64 @@ export function cartoSummarySentencesFrom(index: number, count: number): number 
 }
 
 /**
+ * A sentence that reads the card by what lies beside it: "Beside Spades it
+ * invites you to look honestly at whether a third person… is taking up room
+ * between you", "Read with heavier cards it can hint at…", "A Spade next to
+ * it does not cancel the wish", "With gentle cards nearby…". The summary and
+ * the short text under a card are what the card says on its own; they do
+ * not see the table, and such a sentence there reads as this table's
+ * reading whatever lies beside the card — under a love question with no
+ * Spades out, the Three of Hearts' whole section was the third-person
+ * sentence (p9 Q09). It stays in the full meaning, where it reads as the
+ * condition it is. One pattern set per script; the golden test holds them
+ * to every meaning of the four corpora, no more and no fewer.
+ */
+const NEIGHBOUR_BOUND: readonly RegExp[] = [
+  /\b(?:beside|next to)\s+(?:it|them|spades|hearts|clubs|diamonds)\b/i,
+  /\b(?:heavier|gentle|gentler|softer|kinder|darker|lighter)\s+cards\b/i,
+  /重いカード|穏やかなカード|そばに出|隣にある|隣に(?:スペード|ハート|クラブ|ダイヤ)/,
+  /무거운 카드|부드러운 카드|곁에 놓|옆에 (?:놓|스페이드|하트|클로버|다이아)/,
+  /沉重的牌|周围若有|相邻|旁边的牌|旁边出现|在它旁边/,
+];
+
+/** True when the sentence reads the card by its neighbours (see NEIGHBOUR_BOUND). */
+export function isNeighbourBound(sentence: string): boolean {
+  return NEIGHBOUR_BOUND.some((re) => re.test(sentence));
+}
+
+/** A meaning's sentences that hold whatever lies beside the card. */
+function ownSentences(text: string): string[] {
+  return sentencesOf(text).filter((s) => !isNeighbourBound(s));
+}
+
+/**
+ * The first `count` sentences of a card's meaning as a summary quotes it:
+ * those that hold on their own (ownSentences). Cut from the source, as
+ * firstSentences does, when none of them reads the neighbours.
+ */
+function quotedSentences(text: string, count: number): string {
+  if (!sentencesOf(text).slice(0, count).some(isNeighbourBound)) return firstSentences(text, count);
+  return joinSentences(ownSentences(text).slice(0, count));
+}
+
+/**
  * A card's section under the summary: it continues where the summary
  * stopped, so no sentence is printed twice. `short` is the next two
  * sentences after the ones the summary quoted (empty when nothing is left:
  * a one-card reading whose meaning is two sentences long); `more` says the
- * meaning runs on past them, for the "Read the full meaning" fold. The
+ * meaning holds more than the summary and `short` printed — later
+ * sentences, or one that reads the card by its neighbours, which neither
+ * prints (isNeighbourBound) — for the "Read the full meaning" fold. The
  * playing-card result printed the summary's sentences again under every
  * card: a one-card reading showed the same paragraph twice (p8 F17).
  */
 export function cartoSectionText(text: string, index: number, count: number): { short: string; more: boolean } {
-  const sentences = sentencesOf(text);
+  const all = sentencesOf(text);
+  const own = all.filter((s) => !isNeighbourBound(s));
   const taken = cartoSummarySentencesFrom(index, count);
-  return { short: joinSentences(sentences.slice(taken, taken + 2)), more: sentences.length > taken + 2 };
+  const shown = own.slice(taken, taken + 2);
+  const printed = Math.min(own.length, taken) + shown.length;
+  return { short: joinSentences(shown), more: all.length > printed };
 }
 
 /** "Four of Clubs: …" — how a summary sentence is led by its card's name; the result passes the locale's form. */
@@ -503,7 +605,7 @@ export function cartoSynthesis(
   if (cards.length === 0) return '';
   const quoted = (index: number) => {
     const { card, reversed } = cards[index];
-    return firstSentences(cartoMainMeaning(card, reversed, focus).text, cartoSummarySentencesFrom(index, cards.length));
+    return quotedSentences(cartoMainMeaning(card, reversed, focus).text, cartoSummarySentencesFrom(index, cards.length));
   };
   if (cards.length === 1) return quoted(0);
   return joinSentences(

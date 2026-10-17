@@ -130,7 +130,7 @@ export function CareerReportPage() {
           title={t('careerReport.needsMbti', { defaultValue: 'Take the personality quiz first' })}
           description={t('careerReport.needsMbtiBody', {
             defaultValue:
-              'This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.',
+              'This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 48-question version) and your archetype will unlock.',
           })}
         />
       </Page>

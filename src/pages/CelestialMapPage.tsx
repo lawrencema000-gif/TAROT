@@ -383,9 +383,13 @@ export function CelestialMapPage() {
         {/* City search — autocomplete from our curated 280-city dataset */}
         <CelestialCitySearch onPick={handleCityPick} />
 
-        {/* Life-area filter — keep as the compact in-place toggle */}
+        {/* Life-area filter — keep as the compact in-place toggle. The row
+            bleeds to the screen edge (-mx-4) and pads back to the gutter
+            (px-4); scroll-px-4 puts the snap points on that gutter too.
+            Without it the first chip snapped to scrollLeft 16 and sat at
+            x = 0, flush with the edge (p9 Q15). */}
         <div
-          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scroll-smooth"
+          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scroll-px-4 snap-x snap-mandatory scroll-smooth"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {

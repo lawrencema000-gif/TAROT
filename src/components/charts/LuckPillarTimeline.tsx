@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import type { LuckPillar } from '../../data/baziDeep';
+import { stemLabel, branchLabel } from '../../data/baziReading';
 import { FIVE_ELEMENT_COLOR, FLAVOUR_COLOR, withAlpha } from '../../lib/chart';
 import { Tag } from '../ui';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
+import { hanziLang } from '../../i18n/localizeHanzi';
 
 /**
  * 大运 luck-pillar timeline — the 80-year band of ten-year cycles, coloured by
@@ -35,11 +38,16 @@ export function LuckPillarTimeline({
   const showMarker =
     typeof currentAge === 'number' && currentAge >= spanStart && currentAge <= spanEnd;
 
+  // The stems and branches as the reader writes them: 甲子 in zh/ja/ko (the
+  // same characters in every script), the romanized Jia / Zi in English.
+  const locale = getLocale();
+  const glyphLang = locale === 'en' ? undefined : hanziLang(locale);
   const flavourLabel = (f: LuckPillar['flavour']) => t(`chartWheel.flavour.${f}`, { defaultValue: f.charAt(0).toUpperCase() + f.slice(1) });
   const describe = (p: LuckPillar) =>
     t('chartWheel.luckPillar.detail', {
       defaultValue: '{{stem}}{{branch}} · Age {{from}}–{{to}} · {{startYear}}–{{endYear}} · {{flavour}}',
-      stem: p.stem, branch: p.branch, from: p.startAge, to: p.endAge, startYear: p.startYear, endYear: p.endYear, flavour: flavourLabel(p.flavour),
+      stem: stemLabel(p.stem, locale), branch: branchLabel(p.branch, locale),
+      from: p.startAge, to: p.endAge, startYear: p.startYear, endYear: p.endYear, flavour: flavourLabel(p.flavour),
     });
 
   return (
@@ -67,8 +75,8 @@ export function LuckPillarTimeline({
                   boxShadow: isCurrent ? `inset 0 0 0 2px ${FLAVOUR_COLOR[p.flavour]}` : undefined,
                 }}
               >
-                <span className="text-meta font-medium text-mystic-950 leading-none" aria-hidden>{p.stem}</span>
-                <span className="text-caption text-mystic-950/80 leading-none mt-0.5" aria-hidden>{p.branch}</span>
+                <span className="text-meta font-medium text-mystic-950 leading-none" aria-hidden lang={glyphLang}>{stemLabel(p.stem, locale)}</span>
+                <span className="text-caption text-mystic-950/80 leading-none mt-0.5" aria-hidden lang={glyphLang}>{branchLabel(p.branch, locale)}</span>
               </button>
             );
           })}

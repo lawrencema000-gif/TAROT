@@ -1,6 +1,7 @@
 /**
- * Crisis keyword detection for community posts, comments and the Whispering
- * Well. Pure (no Deno, no network) so it can be exercised from Node too.
+ * Crisis keyword detection for community posts, comments, the Whispering
+ * Well and the journal coach. Pure (no Deno, no network) so it can be
+ * exercised from Node too.
  *
  * The bias is deliberate: a false positive shows someone a helpline banner
  * and puts their post in front of a moderator; a miss leaves a person who
@@ -51,6 +52,14 @@
  * a desire, intention or decision, or a real-world place (a roof, a bridge,
  * the tracks). A moderator can publish a flagged post since 20261003000014,
  * so where a phrasing stays ambiguous, it still trips.
+ *
+ * 2026-10-17 (p9 Q29/Q32): F01 also stopped catching the object-less
+ * 「もう終わりにしたい」 — the Japanese "I want to end it", which still trips in
+ * English — and the journal coach ran an English-only regex of its own. The
+ * coach now runs this module, so the gaps a Japanese, Korean or Chinese
+ * journal entry would fall through matter here too: 「終わりにしたい」 with no
+ * object trips again, and so do 그만 살고 싶 and 想消失. The helplines shown
+ * for each language live at the end of the file (CRISIS_LINES).
  */
 
 // Apostrophe: straight, typographic, or dropped ("dont", "cant").
@@ -179,6 +188,11 @@ export const CRISIS_PATTERNS: RegExp[] = [
   // relationship), 仕事を終わりにしたい (a job) or 宿題を全部終わらせたい (p8 F01)
   /(?:人生|命|自分|自分自身|この人生|生きるの|生きること)(?:を|は|も)?(?:もう)?(?:終わりにしたい|終わらせたい|終わりにする|終わらせる)/,
   /(?:^|[。、．！？!?\s「『（(]|もう)(?:全部|すべて|全て|何もかも|なにもかも)(?:を)?(?:終わりにしたい|終わらせたい)/,
+  // …and with no object at all: 「もう終わりにしたい」「疲れた。終わりにしたい。」,
+  // the counterpart of "I want to end it" (p9 Q29: F01's narrowing dropped
+  // it). A relationship or a job keeps its を (関係を終わりにしたい) and stays
+  // false; so do 宿題を早く終わらせたい and 全部 after を or に.
+  /(?:^|[。、．！？!?\s「『（(…‥]|もう)(?:終わりにしたい|終わらせたい)/,
   // この世から消えたい / いなくなりたい — not この世から争いがなくなりますように
   /この世から(?:消えたい|消えてしまいたい|消えてなくなりたい|いなくなりたい|居なくなりたい|去りたい|おさらばしたい)/,
 
@@ -190,9 +204,14 @@ export const CRISIS_PATTERNS: RegExp[] = [
   /목을\s*매|투신|손목을\s*긋|약을\s*(?:다\s*)?먹고\s*죽/,
   /뛰어\s*내리고\s*싶|뛰어\s*내릴\s*(?:거|까|래|게|생각)|뛰어\s*내리려고\s*(?:해|했|한|하고)|(?:옥상|다리|건물|아파트|한강|베란다|창문)에서\s*뛰어\s*내리/,
   /살고\s*싶지\s*않|살기\s*싫|살\s*이유가\s*없|사는\s*게\s*의미가\s*없|사라지고\s*싶|삶을\s*끝내|생을\s*마감/,
+  // "I want to stop living" (p9: 살고 싶지 않 / 살기 싫 did not cover it)
+  /그만\s*살고\s*싶/,
 
   // ── Chinese (simplified and traditional) ──
   /想死|不想活|活不下去|不想再活|活着没(?:有)?意思|活著沒(?:有)?意思|活着没(?:有)?意义|活著沒(?:有)?意義/,
+  // "I want to disappear" — the zh counterpart of 消えたい / 사라지고 싶 (p9:
+  // only ja and ko had it); not 不想消失, nor 想让烦恼消失 (wanting a worry gone)
+  /(?<!不)想(?:要)?消失/,
   /自杀|自殺|轻生|輕生|自残|自殘|自伤|自傷|寻死|尋死|一了百了/,
   // (跳楼价 is a "rock-bottom price", not a jump)
   /割腕|上吊|跳[楼樓](?![价價])|跳河|跳桥|跳橋|结束(?:自己的)?生命|結束(?:自己的)?生命|了结自己|了結自己|吃安眠药|吃安眠藥/,
@@ -202,3 +221,56 @@ export function detectCrisis(text: string): boolean {
   for (const re of CRISIS_PATTERNS) if (re.test(text)) return true;
   return false;
 }
+
+// ── The helplines, per language ─────────────────────────────────────────────
+//
+// What the community CrisisBanner shows (src/i18n/locales/<lng>/app.json,
+// crisis.phone / crisis.text / crisis.footer), for the server surfaces that
+// answer in text themselves: the journal coach answered a Japanese member
+// with no line at all, and its prompt told the model to give the US 988 and
+// 741741 (p9 Q32). The locale files are the source: crisis.test.ts fails when
+// a line here differs from theirs.
+
+export type CrisisLocale = "en" | "ja" | "ko" | "zh";
+
+export interface CrisisLine {
+  /** crisis.<phone|text>.title */
+  title: string;
+  /** crisis.<phone|text>.number */
+  number: string;
+  /** crisis.<phone|text>.body: the number, hours and where it serves */
+  body: string;
+}
+
+export interface CrisisLines {
+  phone: CrisisLine;
+  text: CrisisLine;
+  /** crisis.footer: not a medical service, and the emergency numbers */
+  footer: string;
+}
+
+export const CRISIS_LINES: Record<CrisisLocale, CrisisLines> = {
+  en: {
+    phone: { title: "988 Suicide & Crisis Lifeline", number: "988", body: "Call or text 988 · 24/7 · US" },
+    text: { title: "Crisis Text Line", number: "741741", body: "Text HOME to 741741 · US/UK/CA/IE" },
+    footer: "Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.",
+  },
+  ja: {
+    phone: { title: "よりそいホットライン", number: "0120-279-338", body: "0120-279-338 · 24時間 · 通話無料" },
+    text: { title: "こころの健康相談統一ダイヤル", number: "0570-064-556", body: "0570-064-556 · 通話料有料（ナビダイヤル）· 受付時間は地域により異なります" },
+    footer: "Arcana は医療サービスではありません。緊急時は 119 または 110 に電話してください。",
+  },
+  ko: {
+    phone: { title: "자살예방 상담전화", number: "109", body: "109 · 24시간 · 대한민국" },
+    text: { title: "정신건강위기상담전화", number: "1577-0199", body: "1577-0199 · 24시간" },
+    footer: "Arcana는 의료 서비스가 아니에요. 긴급한 상황이라면 119 또는 112로 전화하세요.",
+  },
+  zh: {
+    phone: { title: "希望24热线", number: "400-161-9995", body: "400-161-9995 · 24小时 · 中国大陆" },
+    text: { title: "北京心理危机研究与干预中心", number: "010-82951332", body: "010-82951332 · 24小时" },
+    footer: "Arcana 不是医疗服务。紧急情况请拨打 120 或 110。",
+  },
+};
+
+/** Lines for anywhere else (the banner's "International helplines" row). */
+export const INTERNATIONAL_HELPLINES = "findahelpline.com";

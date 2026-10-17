@@ -133,3 +133,104 @@ describe('hanziLang and hanziUnlessShown', () => {
     expect(hanziUnlessShown('紫微斗數', 'ko', ['자미두수', '십이궁, 십사주성, 사화'])).toBe('紫微斗數');
   });
 });
+
+// 六爻: the glyphs the Liu Yao panel prints (liuYao.ts) — the eight palaces and
+// their ranks, the five relatives, the six spirits, the 動/世/應 marks and the
+// 納甲 header. Imported here, not at the top, so this block stands on its own lines.
+describe('localizeHanzi: the Liu Yao glyphs (六爻)', () => {
+  const load = async () => {
+    const { RELATIVE_INFO, SPIRIT_INFO, PALACE_INFO, RANK_INFO } = await import('../data/liuYao');
+    return {
+      relatives: Object.values(RELATIVE_INFO).map((r) => r.cn).join(' '),
+      spirits: Object.values(SPIRIT_INFO).map((s) => s.cn).join(' '),
+      palaces: Object.values(PALACE_INFO).map((p) => p.cn).join(''),
+      ranks: RANK_INFO.map((r) => r.cn).join(' '),
+      // LiuYaoPanel's own glyphs: the moving, world and response marks, the header, 伏神 and 日辰.
+      marks: '動 世 應 六爻 · 納甲筮法 伏神 日辰',
+      roles: RELATIVE_INFO as Record<string, { cn: string }>,
+    };
+  };
+
+  it('zh reads simplified, ja the shinjitai, and en and ko keep the traditional forms', async () => {
+    const g = await load();
+    const zh = (s: string) => localizeHanzi(s, 'zh');
+    const ja = (s: string) => localizeHanzi(s, 'ja');
+    expect(zh(g.relatives)).toBe('父母 兄弟 子孙 妻财 官鬼');
+    expect(zh(g.spirits)).toBe('青龙 朱雀 勾陈 螣蛇 白虎 玄武');
+    expect(zh(g.palaces)).toBe('乾兑离震巽坎艮坤');
+    expect(zh(g.ranks)).toBe('本宫卦 一世卦 二世卦 三世卦 四世卦 五世卦 游魂卦 归魂卦');
+    expect(zh(g.marks)).toBe('动 世 应 六爻 · 纳甲筮法 伏神 日辰');
+    expect(ja(g.relatives)).toBe(g.relatives);
+    expect(ja(g.spirits)).toBe(g.spirits);
+    expect(ja(g.palaces)).toBe(g.palaces);
+    expect(ja(g.ranks)).toBe('本宮卦 一世卦 二世卦 三世卦 四世卦 五世卦 遊魂卦 帰魂卦');
+    expect(ja(g.marks)).toBe('動 世 応 六爻 · 納甲筮法 伏神 日辰');
+    for (const s of [g.relatives, g.spirits, g.palaces, g.ranks, g.marks]) {
+      expect(localizeHanzi(s, 'en')).toBe(s);
+      expect(localizeHanzi(s, 'ko')).toBe(s);
+    }
+  });
+
+  it('every zh and ja liuyao overlay role name is the role glyph the table gives', async () => {
+    const { roles } = await load();
+    for (const lng of ['zh', 'ja'] as const) {
+      const o = overlay(lng, 'liuyao');
+      for (const [key, r] of Object.entries(roles)) {
+        expect(at(o, `relatives.${key}.name`), `${lng} ${key}`).toBe(localizeHanzi(r.cn, lng));
+      }
+    }
+  });
+
+  it('no zh or ja overlay writes a Liu Yao form the table converts away', async () => {
+    const g = await load();
+    const inventory = [...new Set([...(g.relatives + g.spirits + g.palaces + g.ranks + g.marks)])];
+    for (const lng of ['zh', 'ja'] as const) {
+      const converted = inventory.filter((ch) => localizeHanzi(ch, lng) !== ch);
+      expect(converted.length, lng).toBeGreaterThan(0);
+      for (const mod of ['liuyao', 'iching', 'mansions', 'ziwei', 'auspicious']) {
+        const text = JSON.stringify(overlay(lng, mod));
+        expect(converted.filter((ch) => text.includes(ch)), `${lng} ${mod}`).toEqual([]);
+      }
+    }
+  });
+});
+
+// 八字: the structure names (baziStructure.ts) and the spirit stars (baziDeep.ts)
+// the Bazi result prints as glyphs. Imported here, not at the top, so this block
+// stands on its own lines.
+describe('localizeHanzi: the Bazi glyphs (八字)', () => {
+  const load = async () => {
+    const { STRUCTURE_MEANINGS } = await import('../data/baziStructure');
+    const { SPIRIT_STAR_CLASSICAL } = await import('../data/baziDeep');
+    return {
+      structures: Object.values(STRUCTURE_MEANINGS).map((s) => s.cn).join(' '),
+      starNames: Object.values(SPIRIT_STAR_CLASSICAL).join(' '),
+      stars: SPIRIT_STAR_CLASSICAL as Record<string, string>,
+    };
+  };
+
+  it('zh reads the structures and spirit stars in simplified, ja in shinjitai; en and ko keep the traditional forms', async () => {
+    const { structures, starNames } = await load();
+    expect(localizeHanzi(structures, 'zh')).toBe('正官格 七杀格 正财格 偏财格 正印格 偏印格 食神格 伤官格 建禄格 阳刃格 月劫格');
+    expect(localizeHanzi(structures, 'ja')).toBe('正官格 七殺格 正財格 偏財格 正印格 偏印格 食神格 傷官格 建禄格 陽刃格 月劫格');
+    expect(localizeHanzi(starNames, 'zh')).toBe('天乙贵人 文昌 桃花 驿马 华盖 羊刃 红鸾 天喜 孤辰 寡宿 将星 禄神 金舆 月德贵人 空亡');
+    expect(localizeHanzi(starNames, 'ja')).toBe('天乙貴人 文昌 桃花 駅馬 華蓋 羊刃 紅鸞 天喜 孤辰 寡宿 将星 禄神 金輿 月徳貴人 空亡');
+    for (const s of [structures, starNames]) {
+      expect(localizeHanzi(s, 'en')).toBe(s);
+      expect(localizeHanzi(s, 'ko')).toBe(s);
+    }
+  });
+
+  it('the zh and ja bazi overlays name each star as the table writes it, and write no form it converts away', async () => {
+    const { structures, starNames, stars } = await load();
+    for (const lng of ['zh', 'ja'] as const) {
+      const o = overlay(lng, 'bazi');
+      for (const [id, cn] of Object.entries(stars)) {
+        expect(at(o, `stars.${id}.name`), `${lng} ${id}`).toBe(localizeHanzi(cn, lng));
+      }
+      const converted = [...new Set([...(structures + starNames)])].filter((ch) => localizeHanzi(ch, lng) !== ch);
+      const text = JSON.stringify(o);
+      expect(converted.filter((ch) => text.includes(ch)), lng).toEqual([]);
+    }
+  });
+});

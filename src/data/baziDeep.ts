@@ -14,12 +14,19 @@ import {
   BRANCH_ELEMENT,
   ELEMENT_PRODUCES,
   ELEMENT_CONTROLS,
+  fillTemplate,
   type HeavenlyStem,
   type EarthlyBranch,
   type FiveElement,
   type BaziResult,
   type TenGod,
 } from './bazi';
+
+// Every reader-facing sentence below is English and stays the source of
+// truth. Each one is reachable by a stable key (a relation, a Ten God, a star
+// id, a climate, a level, an element), carried on the result next to the
+// English, so the 'bazi' content overlay translates it by that key
+// (src/data/baziReading.ts), never by matching the English.
 
 export type Gender = 'male' | 'female';
 
@@ -45,9 +52,33 @@ export interface LuckPillar {
   branchElement: FiveElement;
   /** What this 10-year window emphasizes. */
   theme: string;
+  /** The stem element's relation to the day master: the key of `theme`. */
+  relation: LuckRelation;
   /** Whether the cycle's element nourishes the day master (favorable),
    *  drains it (challenging), or is neutral. */
   flavour: 'supporting' | 'challenging' | 'neutral';
+}
+
+/** How a luck pillar's stem element stands to the day master. */
+export type LuckRelation = 'self' | 'resource' | 'output' | 'wealth' | 'pressure' | 'neutral';
+
+/** The decade's theme, per relation. */
+export const LUCK_THEMES: Record<LuckRelation, string> = {
+  self: 'A decade of self-assertion and peer dynamics. Strong urge to test your independence; watch for over-extending against allies who feel like rivals.',
+  resource: 'A decade of nourishment and learning. Mentors, teachers, and supportive family figures shape this period. Excellent for study and skill-building.',
+  output: 'A decade of expression and creative output. Art, communication, ideas pouring out. Watch for burnout from over-producing without rest.',
+  wealth: 'A decade of wealth and pursuit. Money, work projects, partnerships you actively manage. The decade of building.',
+  pressure: 'A decade of pressure and accountability. Authority figures, deadlines, structural challenges that forge maturity. Hardest if resisted, most transforming if met head-on.',
+  neutral: 'A neutral decade with no single dominant theme. Mix of all the above; pay attention to which element from your annual luck activates.',
+};
+
+export function luckRelation(dm: FiveElement, stemEl: FiveElement): LuckRelation {
+  if (stemEl === dm) return 'self';
+  if (ELEMENT_PRODUCES[stemEl] === dm) return 'resource';
+  if (ELEMENT_PRODUCES[dm] === stemEl) return 'output';
+  if (ELEMENT_CONTROLS[dm] === stemEl) return 'wealth';
+  if (ELEMENT_CONTROLS[stemEl] === dm) return 'pressure';
+  return 'neutral';
 }
 
 /**
@@ -115,6 +146,7 @@ export function computeLuckPillars(
     const yearStart = birthYear + ageStart;
     const yearEnd = birthYear + ageEnd;
 
+    const relation = luckRelation(result.dayMasterElement, stemEl);
     pillars.push({
       startAgeExact,
       startAge: ageStart,
@@ -125,30 +157,12 @@ export function computeLuckPillars(
       branch,
       element: stemEl,
       branchElement: branchEl,
-      theme: themeForElement(result.dayMasterElement, stemEl),
+      theme: LUCK_THEMES[relation],
+      relation,
       flavour: flavourForElement(result.dayMasterElement, stemEl),
     });
   }
   return pillars;
-}
-
-function themeForElement(dm: FiveElement, stemEl: FiveElement): string {
-  if (stemEl === dm) {
-    return 'A decade of self-assertion and peer dynamics. Strong urge to test your independence; watch for over-extending against allies who feel like rivals.';
-  }
-  if (ELEMENT_PRODUCES[stemEl] === dm) {
-    return 'A decade of nourishment and learning. Mentors, teachers, and supportive family figures shape this period. Excellent for study and skill-building.';
-  }
-  if (ELEMENT_PRODUCES[dm] === stemEl) {
-    return 'A decade of expression and creative output. Art, communication, ideas pouring out. Watch for burnout from over-producing without rest.';
-  }
-  if (ELEMENT_CONTROLS[dm] === stemEl) {
-    return 'A decade of wealth and pursuit. Money, work projects, partnerships you actively manage. The decade of building.';
-  }
-  if (ELEMENT_CONTROLS[stemEl] === dm) {
-    return 'A decade of pressure and accountability. Authority figures, deadlines, structural challenges that forge maturity. Hardest if resisted, most transforming if met head-on.';
-  }
-  return 'A neutral decade with no single dominant theme. Mix of all the above; pay attention to which element from your annual luck activates.';
 }
 
 function flavourForElement(dm: FiveElement, stemEl: FiveElement): LuckPillar['flavour'] {
@@ -179,7 +193,7 @@ export interface AnnualLuck {
   reading: string;
 }
 
-const ANNUAL_TEN_GOD_READING: Record<TenGod, string> = {
+export const ANNUAL_TEN_GOD_READING: Record<TenGod, string> = {
   Companion: 'A year of belonging and peer activity. Old friends resurface, new peers click immediately. Watch for over-merging — the year asks you to stay distinct even within community.',
   Rival: 'A competitive year. Resources you thought were yours get challenged. The energy is brotherly but sharp — used well it sharpens your edge; ignored it drains money.',
   Output: 'A creative, expressive year. Art, writing, food, hospitality, parenting — anything where you generate. Speak more, perform more, share more. Watch for burnout from over-giving.',
@@ -237,7 +251,14 @@ function computeStemTenGod(dayStem: HeavenlyStem, otherStem: HeavenlyStem): TenG
 
 export type SpiritStarKind = 'auspicious' | 'mixed' | 'inauspicious';
 
+/** The stars detectSpiritStars can place, by a stable id (the 'bazi' overlay's key). */
+export type SpiritStarId =
+  | 'tianYi' | 'wenChang' | 'taoHua' | 'yiMa' | 'huaGai' | 'yangRen'
+  | 'hongLuan' | 'tianXi' | 'guChen' | 'guaSu' | 'jiangXing' | 'luShen'
+  | 'jinYu' | 'yueDe' | 'kongWang';
+
 export interface SpiritStar {
+  id: SpiritStarId;
   classical: string;
   name: string;
   kind: SpiritStarKind;
@@ -245,6 +266,77 @@ export interface SpiritStar {
   pillar: 'year' | 'month' | 'day' | 'hour';
   meaning: string;
 }
+
+/** Every star's name, kind and reading. `classical` is in traditional characters (src/i18n/localizeHanzi.ts converts it). */
+export const SPIRIT_STARS: Record<SpiritStarId, { classical: string; name: string; kind: SpiritStarKind; meaning: string }> = {
+  tianYi: {
+    classical: '天乙貴人', name: 'Celestial Benefactor', kind: 'auspicious',
+    meaning: 'Mentors and unexpected help arrive throughout your life, often at the most critical moments. People in positions of authority become advocates. The clearest "lucky" star in classical Bazi.',
+  },
+  wenChang: {
+    classical: '文昌', name: 'Literary Star', kind: 'auspicious',
+    meaning: 'Strong intellect, writing ability, academic success, articulate communication. Often manifests as a memorable teacher, a published voice, or a particularly clear-thinking mind.',
+  },
+  taoHua: {
+    classical: '桃花', name: 'Peach Blossom', kind: 'mixed',
+    meaning: 'Magnetic charm and romantic / sexual appeal. People are drawn to you. In favourable contexts: a fulfilling love life. In unfavourable: scandal, infidelity, or attention you didn\'t want. The pillar where it appears tells you which life-area carries the charge.',
+  },
+  yiMa: {
+    classical: '驛馬', name: 'Travel Horse', kind: 'mixed',
+    meaning: 'Restlessness, frequent moves, international career, life lived between places. People with strong Yi Ma rarely settle young; their soul calls them outward. Excellent for sales, diplomacy, journalism, anything mobile.',
+  },
+  huaGai: {
+    classical: '華蓋', name: 'Canopy of Solitude', kind: 'auspicious',
+    meaning: 'A spiritual, artistic, or scholarly disposition. Comfortable alone. Often religious, philosophical, or unusually creative. The shadow: relationships can feel like compromise of an essential solitude.',
+  },
+  yangRen: {
+    classical: '羊刃', name: 'Blade Star', kind: 'mixed',
+    meaning: 'Intensity, decisiveness, willingness to cut through. Strong leadership, military / surgical / operational capability. The shadow: explosive temper, accidents, harsh action that can\'t be undone. Channel it through discipline.',
+  },
+  hongLuan: {
+    classical: '紅鸞', name: 'Crimson Phoenix', kind: 'auspicious',
+    meaning: 'The marriage star. Attraction that leads somewhere binding — engagement, partnership, the joining of families. Where it sits shows the part of life through which love tends to arrive.',
+  },
+  tianXi: {
+    classical: '天喜', name: 'Heavenly Joy', kind: 'auspicious',
+    meaning: 'The celebration star: births, reunions, good news that arrives without being chased. Softer than 紅鸞 and less about romance — this is the star of things going right in public.',
+  },
+  guChen: {
+    classical: '孤辰', name: 'Solitary Star', kind: 'inauspicious',
+    meaning: 'A pull toward standing apart. Independence that reads as self-sufficiency from outside and as distance from inside. Not a sentence to loneliness — but closeness here takes deliberate effort rather than arriving on its own.',
+  },
+  guaSu: {
+    classical: '寡宿', name: 'Widowed Star', kind: 'inauspicious',
+    meaning: 'The quieter twin of 孤辰: a tendency to withdraw inward, especially after loss. Often found in people whose depth is real but slow to show. Ask for company before you need it.',
+  },
+  jiangXing: {
+    classical: '將星', name: 'General Star', kind: 'auspicious',
+    meaning: 'Command. People look to you to decide, and you are usually comfortable being looked at that way. Strong in management, the armed and emergency services, anywhere someone has to carry the call.',
+  },
+  luShen: {
+    classical: '祿神', name: 'Prosperity Seat', kind: 'auspicious',
+    meaning: 'Your own element at full strength — self-sufficiency, a steady living earned rather than gifted. Where it sits is where your effort reliably converts into support.',
+  },
+  jinYu: {
+    classical: '金輿', name: 'Golden Carriage', kind: 'auspicious',
+    meaning: 'Ease of circumstance — comfortable surroundings, a supportive marriage, help that arrives in material form. Classically the star of riding rather than walking.',
+  },
+  yueDe: {
+    classical: '月德貴人', name: 'Moon Virtue', kind: 'auspicious',
+    meaning: 'A protective star. Trouble tends to resolve before it lands, and people are inclined to give you the benefit of the doubt. Classically said to soften every harsh star it shares a chart with.',
+  },
+  kongWang: {
+    classical: '空亡', name: 'Void', kind: 'inauspicious',
+    meaning: 'A pillar that does not produce its expected fruit. Plans here unravel. Effort spent in this life-area returns less than expected. Not a permanent loss — but a sign to redirect rather than push harder.',
+  },
+};
+
+/** The stars' classical names, by id (the inventory src/i18n/localizeHanzi.test.ts holds the zh and ja forms to). */
+export const SPIRIT_STAR_CLASSICAL: Record<SpiritStarId, string> = Object.fromEntries(
+  (Object.keys(SPIRIT_STARS) as SpiritStarId[]).map((id) => [id, SPIRIT_STARS[id].classical]),
+) as Record<SpiritStarId, string>;
+
+const starAt = (id: SpiritStarId, pillar: SpiritStar['pillar']): SpiritStar => ({ id, ...SPIRIT_STARS[id], pillar });
 
 export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   const stars: SpiritStar[] = [];
@@ -268,13 +360,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   };
   for (const { p, b } of allBranches) {
     if (tianYi[dm]?.includes(b)) {
-      stars.push({
-        classical: '天乙貴人',
-        name: 'Celestial Benefactor',
-        kind: 'auspicious',
-        pillar: p,
-        meaning: 'Mentors and unexpected help arrive throughout your life, often at the most critical moments. People in positions of authority become advocates. The clearest "lucky" star in classical Bazi.',
-      });
+      stars.push(starAt('tianYi', p));
       break; // count once
     }
   }
@@ -287,13 +373,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   };
   for (const { p, b } of allBranches) {
     if (wenChang[dm] === b) {
-      stars.push({
-        classical: '文昌',
-        name: 'Literary Star',
-        kind: 'auspicious',
-        pillar: p,
-        meaning: 'Strong intellect, writing ability, academic success, articulate communication. Often manifests as a memorable teacher, a published voice, or a particularly clear-thinking mind.',
-      });
+      stars.push(starAt('wenChang', p));
       break;
     }
   }
@@ -309,13 +389,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   if (taoHuaTarget) {
     for (const { p, b } of allBranches) {
       if (b === taoHuaTarget && p !== 'day') {
-        stars.push({
-          classical: '桃花',
-          name: 'Peach Blossom',
-          kind: 'mixed',
-          pillar: p,
-          meaning: 'Magnetic charm and romantic / sexual appeal. People are drawn to you. In favourable contexts: a fulfilling love life. In unfavourable: scandal, infidelity, or attention you didn\'t want. The pillar where it appears tells you which life-area carries the charge.',
-        });
+        stars.push(starAt('taoHua', p));
         break;
       }
     }
@@ -332,13 +406,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   if (yiMaTarget) {
     for (const { p, b } of allBranches) {
       if (b === yiMaTarget) {
-        stars.push({
-          classical: '驛馬',
-          name: 'Travel Horse',
-          kind: 'mixed',
-          pillar: p,
-          meaning: 'Restlessness, frequent moves, international career, life lived between places. People with strong Yi Ma rarely settle young; their soul calls them outward. Excellent for sales, diplomacy, journalism, anything mobile.',
-        });
+        stars.push(starAt('yiMa', p));
         break;
       }
     }
@@ -355,13 +423,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   if (huaGaiTarget) {
     for (const { p, b } of allBranches) {
       if (b === huaGaiTarget) {
-        stars.push({
-          classical: '華蓋',
-          name: 'Canopy of Solitude',
-          kind: 'auspicious',
-          pillar: p,
-          meaning: 'A spiritual, artistic, or scholarly disposition. Comfortable alone. Often religious, philosophical, or unusually creative. The shadow: relationships can feel like compromise of an essential solitude.',
-        });
+        stars.push(starAt('huaGai', p));
         break;
       }
     }
@@ -375,13 +437,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   if (yangRenTarget) {
     for (const { p, b } of allBranches) {
       if (b === yangRenTarget) {
-        stars.push({
-          classical: '羊刃',
-          name: 'Blade Star',
-          kind: 'mixed',
-          pillar: p,
-          meaning: 'Intensity, decisiveness, willingness to cut through. Strong leadership, military / surgical / operational capability. The shadow: explosive temper, accidents, harsh action that can\'t be undone. Channel it through discipline.',
-        });
+        stars.push(starAt('yangRen', p));
         break;
       }
     }
@@ -394,24 +450,14 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   // births and celebrations cluster.
   const yearBranchIdx = BRANCHES.indexOf(result.year.branch);
   const hongluanIdx = ((3 - yearBranchIdx) % 12 + 12) % 12;
-  const PAIR: { idx: number; classical: string; name: string; meaning: string }[] = [
-    {
-      idx: hongluanIdx,
-      classical: '紅鸞',
-      name: 'Crimson Phoenix',
-      meaning: 'The marriage star. Attraction that leads somewhere binding — engagement, partnership, the joining of families. Where it sits shows the part of life through which love tends to arrive.',
-    },
-    {
-      idx: (hongluanIdx + 6) % 12,
-      classical: '天喜',
-      name: 'Heavenly Joy',
-      meaning: 'The celebration star: births, reunions, good news that arrives without being chased. Softer than 紅鸞 and less about romance — this is the star of things going right in public.',
-    },
+  const PAIR: { idx: number; id: SpiritStarId }[] = [
+    { idx: hongluanIdx, id: 'hongLuan' },
+    { idx: (hongluanIdx + 6) % 12, id: 'tianXi' },
   ];
   for (const star of PAIR) {
     for (const { p, b } of allBranches) {
       if (BRANCHES.indexOf(b) === star.idx) {
-        stars.push({ classical: star.classical, name: star.name, kind: 'auspicious', pillar: p, meaning: star.meaning });
+        stars.push(starAt(star.id, p));
         break;
       }
     }
@@ -430,19 +476,13 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
     const [guchen, guasu] = solitude;
     for (const { p, b } of allBranches) {
       if (b === guchen) {
-        stars.push({
-          classical: '孤辰', name: 'Solitary Star', kind: 'inauspicious', pillar: p,
-          meaning: 'A pull toward standing apart. Independence that reads as self-sufficiency from outside and as distance from inside. Not a sentence to loneliness — but closeness here takes deliberate effort rather than arriving on its own.',
-        });
+        stars.push(starAt('guChen', p));
         break;
       }
     }
     for (const { p, b } of allBranches) {
       if (b === guasu) {
-        stars.push({
-          classical: '寡宿', name: 'Widowed Star', kind: 'inauspicious', pillar: p,
-          meaning: 'The quieter twin of 孤辰: a tendency to withdraw inward, especially after loss. Often found in people whose depth is real but slow to show. Ask for company before you need it.',
-        });
+        stars.push(starAt('guaSu', p));
         break;
       }
     }
@@ -458,10 +498,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   };
   for (const { p, b } of allBranches) {
     if (b === GENERAL[dayBranch]) {
-      stars.push({
-        classical: '將星', name: 'General Star', kind: 'auspicious', pillar: p,
-        meaning: 'Command. People look to you to decide, and you are usually comfortable being looked at that way. Strong in management, the armed and emergency services, anywhere someone has to carry the call.',
-      });
+      stars.push(starAt('jiangXing', p));
       break;
     }
   }
@@ -474,10 +511,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   };
   for (const { p, b } of allBranches) {
     if (b === LU[dm]) {
-      stars.push({
-        classical: '祿神', name: 'Prosperity Seat', kind: 'auspicious', pillar: p,
-        meaning: 'Your own element at full strength — self-sufficiency, a steady living earned rather than gifted. Where it sits is where your effort reliably converts into support.',
-      });
+      stars.push(starAt('luShen', p));
       break;
     }
   }
@@ -488,10 +522,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   const jinyu = BRANCHES[(luIdx + 2) % 12];
   for (const { p, b } of allBranches) {
     if (b === jinyu) {
-      stars.push({
-        classical: '金輿', name: 'Golden Carriage', kind: 'auspicious', pillar: p,
-        meaning: 'Ease of circumstance — comfortable surroundings, a supportive marriage, help that arrives in material form. Classically the star of riding rather than walking.',
-      });
+      stars.push(starAt('jinYu', p));
       break;
     }
   }
@@ -515,10 +546,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   ];
   for (const { p, s } of allStems) {
     if (s === yuedeStem) {
-      stars.push({
-        classical: '月德貴人', name: 'Moon Virtue', kind: 'auspicious', pillar: p,
-        meaning: 'A protective star. Trouble tends to resolve before it lands, and people are inclined to give you the benefit of the doubt. Classically said to soften every harsh star it shares a chart with.',
-      });
+      stars.push(starAt('yueDe', p));
       break;
     }
   }
@@ -547,13 +575,7 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
   // throws away the half the reader most needs.
   for (const { p, b } of allBranches) {
     if (voids.includes(b)) {
-      stars.push({
-        classical: '空亡',
-        name: 'Void',
-        kind: 'inauspicious',
-        pillar: p,
-        meaning: 'A pillar that does not produce its expected fruit. Plans here unravel. Effort spent in this life-area returns less than expected. Not a permanent loss — but a sign to redirect rather than push harder.',
-      });
+      stars.push(starAt('kongWang', p));
     }
   }
 
@@ -568,8 +590,20 @@ export interface BranchRelation {
   type: 'clash' | 'combine' | 'triple-harmony';
   branches: EarthlyBranch[];
   pillars: ('year' | 'month' | 'day' | 'hour')[];
+  /** The element a three-harmony frame generates (absent for a clash or a combine). */
+  element?: FiveElement;
   meaning: string;
 }
+
+/**
+ * Each relation's reading. `{{a}}` / `{{b}}` are the pair's branches,
+ * `{{branches}}` the frame's three joined, `{{element}}` the frame's element.
+ */
+export const BRANCH_RELATION_TEXT: Record<BranchRelation['type'], string> = {
+  clash: 'Six-Clash between {{a}} and {{b}}. Polar-opposite branches in your chart create persistent tension between the life-areas they govern. Manifests as recurring conflict, restless changes, and "you can\'t have both at once" forced choices.',
+  combine: 'Six-Combine between {{a}} and {{b}}. These branches lock together and produce stable harmony in their domains. Cooperative energy: partnerships, alliances, settled relationships.',
+  'triple-harmony': 'Three-Harmony of {{branches}}. The most powerful branch combination — generates abundant {{element}} energy. Whatever life-area this serves becomes a major theme in this lifetime.',
+};
 
 const SIX_CLASHES: Array<[EarthlyBranch, EarthlyBranch]> = [
   ['Zi', 'Wu'], ['Chou', 'Wei'], ['Yin', 'Shen'],
@@ -606,7 +640,7 @@ export function detectBranchRelations(result: BaziResult): BranchRelation[] {
         type: 'clash',
         branches: [a, b],
         pillars: [...pillarMap[a], ...pillarMap[b]],
-        meaning: `Six-Clash between ${a} and ${b}. Polar-opposite branches in your chart create persistent tension between the life-areas they govern. Manifests as recurring conflict, restless changes, and "you can't have both at once" forced choices.`,
+        meaning: fillTemplate(BRANCH_RELATION_TEXT.clash, { a, b }),
       });
     }
   }
@@ -616,17 +650,19 @@ export function detectBranchRelations(result: BaziResult): BranchRelation[] {
         type: 'combine',
         branches: [a, b],
         pillars: [...pillarMap[a], ...pillarMap[b]],
-        meaning: `Six-Combine between ${a} and ${b}. These branches lock together and produce stable harmony in their domains. Cooperative energy: partnerships, alliances, settled relationships.`,
+        meaning: fillTemplate(BRANCH_RELATION_TEXT.combine, { a, b }),
       });
     }
   }
   for (const triple of TRIPLE_HARMONIES) {
     if (triple.every((b) => pillarMap[b])) {
+      const element = BRANCH_ELEMENT[triple[1]];
       list.push({
         type: 'triple-harmony',
         branches: [...triple],
         pillars: triple.flatMap((b) => pillarMap[b] ?? []),
-        meaning: `Three-Harmony of ${triple.join(' + ')}. The most powerful branch combination — generates abundant ${BRANCH_ELEMENT[triple[1]]} energy. Whatever life-area this serves becomes a major theme in this lifetime.`,
+        element,
+        meaning: fillTemplate(BRANCH_RELATION_TEXT['triple-harmony'], { branches: triple.join(' + '), element }),
       });
     }
   }
@@ -674,28 +710,59 @@ export function computeClimate(result: BaziResult): ClimateBalance {
     : hot === max ? 'hot'
     : wet === max ? 'wet'
     : 'dry';
-  const remedies: Record<ClimateBalance['dominant'], string> = {
-    cold: 'Your chart runs cold. Warmth is medicine — fire elements (red, orange decor; spicy food in moderation; sunny exposure; afternoon energy) restore vitality. Avoid over-icing your environment in winter. Cold-leaning charts especially benefit from southwest and south as living directions.',
-    hot:  'Your chart runs hot. Cooling balances — water elements (blue tones; still water nearby; pre-dawn and evening as your strongest hours; cold immersion done thoughtfully). Watch for inflammation, irritability, and burnout. Don\'t double-up on red rooms or fiery decor.',
-    wet:  'Your chart runs damp. Earth and metal elements drain the dampness — dry foods, well-ventilated spaces, structured routines, decisive action. Watch for stagnation, water-retention issues, drifting motivation. Open windows; clear clutter; finish what you start.',
-    dry:  'Your chart runs dry. Water nourishes — proper hydration, moist environments, emotional fluency, gentle rest. Watch for skin issues, brittle joints, parched creativity. Avoid over-strenuous yang practices; cultivate the receptive feminine yin.',
-    balanced: 'Your chart is climatically balanced — no single climate dominates. This is rare and a source of resilience. The work is to maintain balance through seasonal adjustments rather than corrective intervention.',
-  };
-  return { cold, hot, wet, dry, dominant, remedy: remedies[dominant] };
+  return { cold, hot, wet, dry, dominant, remedy: CLIMATE_REMEDIES[dominant] };
 }
+
+/** The remedy for each dominant climate. */
+export const CLIMATE_REMEDIES: Record<ClimateBalance['dominant'], string> = {
+  cold: 'Your chart runs cold. Warmth is medicine — fire elements (red, orange decor; spicy food in moderation; sunny exposure; afternoon energy) restore vitality. Avoid over-icing your environment in winter. Cold-leaning charts especially benefit from southwest and south as living directions.',
+  hot:  'Your chart runs hot. Cooling balances — water elements (blue tones; still water nearby; pre-dawn and evening as your strongest hours; cold immersion done thoughtfully). Watch for inflammation, irritability, and burnout. Don\'t double-up on red rooms or fiery decor.',
+  wet:  'Your chart runs damp. Earth and metal elements drain the dampness — dry foods, well-ventilated spaces, structured routines, decisive action. Watch for stagnation, water-retention issues, drifting motivation. Open windows; clear clutter; finish what you start.',
+  dry:  'Your chart runs dry. Water nourishes — proper hydration, moist environments, emotional fluency, gentle rest. Watch for skin issues, brittle joints, parched creativity. Avoid over-strenuous yang practices; cultivate the receptive feminine yin.',
+  balanced: 'Your chart is climatically balanced — no single climate dominates. This is rare and a source of resilience. The work is to maintain balance through seasonal adjustments rather than corrective intervention.',
+};
 
 // ────────────────────────────────────────────────────────────────────
 // 6. Career / Wealth / Spouse / Health summaries
 // ────────────────────────────────────────────────────────────────────
+
+export type WealthLevel = 'absent' | 'weak' | 'moderate' | 'strong';
+export type SpouseLevel = 'absent' | 'moderate' | 'strong';
 
 export interface LifeAreas {
   careerAffinity: string[];
   wealthAnalysis: string;
   spouseAnalysis: string;
   healthFocus: string;
+  /** What each text was chosen by: the keys the 'bazi' overlay translates them by. */
+  keys: { wealthElement: FiveElement; wealthLevel: WealthLevel; spouseLevel: SpouseLevel; healthElement: FiveElement };
 }
 
-const CAREER_BY_DAY_MASTER: Record<HeavenlyStem, string[]> = {
+/** The wealth reading per level; `{{element}}` is the wealth element (the one the day master controls). */
+export const WEALTH_TEXT: Record<WealthLevel, string> = {
+  absent: 'Your wealth element ({{element}}) is absent from the natal chart. This is not a sentence of poverty — it means money rarely arrives directly. You typically need to channel through your output star or follow a Wealth annual luck pillar to access it. Build through skills + reputation rather than direct pursuit.',
+  weak: 'Your wealth element ({{element}}) is in your chart, weak but present. Money requires deliberate cultivation. Skill-building, networking, and patience over years compound. Avoid speculative shortcuts.',
+  moderate: 'Your wealth element ({{element}}) appears in your chart with moderate presence. A solid earning capacity. Money responds to consistent effort. Build slowly; don\'t gamble.',
+  strong: 'Your wealth element ({{element}}) appears in your chart with strong presence. Money flows toward you naturally — the work is stewardship, not chase. Watch for over-spending or hoarding extremes.',
+};
+
+/** The partnership reading per level. */
+export const SPOUSE_TEXT: Record<SpouseLevel, string> = {
+  absent: 'The spouse element does not appear in your natal chart. Often correlates with marrying late or to someone whose chart strongly carries this element. Not a barrier; a different timing.',
+  moderate: 'The spouse element is moderately present. Relationships develop on a steady timeline. Quality more than urgency.',
+  strong: 'The spouse element appears strongly in your chart. Relationships are a major life theme; you marry early or partner intensely. Watch for over-prioritizing partnership at the cost of self.',
+};
+
+/** The health focus of each day-master element. */
+export const HEALTH_BY_ELEMENT: Record<FiveElement, string> = {
+  wood: 'Liver, gallbladder, joints, eyes, tendons. When wood is excessive: irritability, headaches, neck tension. When weak: rigid joints, dry eyes, short temper. Stretch daily; manage anger through exercise.',
+  fire: 'Heart, small intestine, circulation, tongue, skin (blood-related). When fire is excessive: insomnia, anxiety, palpitations. When weak: cold extremities, depression, low libido. Cardio matters; don\'t skip rest.',
+  earth: 'Spleen, stomach, digestion, mouth, muscles. When earth is excessive: weight gain, lethargy, overthinking. When weak: poor appetite, IBS, brain fog. Eat slowly; avoid raw cold foods.',
+  metal: 'Lungs, large intestine, skin, nose. When metal is excessive: rigidity, grief, sinus issues. When weak: weak immunity, dry skin, asthma. Breath-work daily; clear closets to clear lungs.',
+  water: 'Kidneys, bladder, bones, ears, hair. When water is excessive: fear, listlessness, urinary issues. When weak: lower back pain, hearing issues, premature aging. Sleep is the medicine; don\'t over-exert.',
+};
+
+export const CAREER_BY_DAY_MASTER: Record<HeavenlyStem, string[]> = {
   Jia: ['Architecture', 'Education / academia', 'Forestry / agriculture', 'Leadership in established institutions', 'Civil engineering'],
   Yi:  ['Floral / botanical / herbal', 'Writing + editorial', 'Mediation / diplomacy', 'Boutique design', 'Therapy + counselling'],
   Bing: ['Performance / theatre', 'Public speaking', 'Solar / renewable energy', 'Marketing + advertising', 'Tour-guiding / charismatic leadership'],
@@ -714,38 +781,23 @@ export function computeLifeAreas(result: BaziResult): LifeAreas {
   const wealthEl = ELEMENT_CONTROLS[dmEl];
 
   const wealthCount = result.elementBalance[wealthEl] ?? 0;
-  const wealthStrength =
+  const wealthLevel: WealthLevel =
     wealthCount >= 3 ? 'strong' :
     wealthCount === 2 ? 'moderate' :
-    wealthCount === 1 ? 'weak but present' : 'absent';
-
-  const wealthAnalysis = wealthCount === 0
-    ? `Your wealth element (${wealthEl}) is absent from the natal chart. This is not a sentence of poverty — it means money rarely arrives directly. You typically need to channel through your output star or follow a Wealth annual luck pillar to access it. Build through skills + reputation rather than direct pursuit.`
-    : `Your wealth element (${wealthEl}) appears in your chart with ${wealthStrength} presence. ${wealthCount >= 3 ? 'Money flows toward you naturally — the work is stewardship, not chase. Watch for over-spending or hoarding extremes.' : wealthCount === 2 ? 'A solid earning capacity. Money responds to consistent effort. Build slowly; don\'t gamble.' : 'Money requires deliberate cultivation. Skill-building, networking, and patience over years compound. Avoid speculative shortcuts.'}`;
+    wealthCount === 1 ? 'weak' : 'absent';
 
   // Spouse star: female → Authority/Pressure (the controlling element). Male → Wealth/WealthEdge.
   const spouseEl = result.dayMasterPolarity === 'yang' ? wealthEl : ELEMENT_CONTROLS[dmEl] === wealthEl ? wealthEl : wealthEl;
   // Note: simplified — full Bazi distinguishes by user's gender, which we don't always have. Show element-based reading.
   const spouseCount = result.elementBalance[spouseEl] ?? 0;
-  const spouseAnalysis = spouseCount === 0
-    ? `The spouse element does not appear in your natal chart. Often correlates with marrying late or to someone whose chart strongly carries this element. Not a barrier; a different timing.`
-    : spouseCount >= 3
-    ? `The spouse element appears strongly in your chart. Relationships are a major life theme; you marry early or partner intensely. Watch for over-prioritizing partnership at the cost of self.`
-    : `The spouse element is moderately present. Relationships develop on a steady timeline. Quality more than urgency.`;
-
-  const healthMap: Record<FiveElement, string> = {
-    wood: 'Liver, gallbladder, joints, eyes, tendons. When wood is excessive: irritability, headaches, neck tension. When weak: rigid joints, dry eyes, short temper. Stretch daily; manage anger through exercise.',
-    fire: 'Heart, small intestine, circulation, tongue, skin (blood-related). When fire is excessive: insomnia, anxiety, palpitations. When weak: cold extremities, depression, low libido. Cardio matters; don\'t skip rest.',
-    earth: 'Spleen, stomach, digestion, mouth, muscles. When earth is excessive: weight gain, lethargy, overthinking. When weak: poor appetite, IBS, brain fog. Eat slowly; avoid raw cold foods.',
-    metal: 'Lungs, large intestine, skin, nose. When metal is excessive: rigidity, grief, sinus issues. When weak: weak immunity, dry skin, asthma. Breath-work daily; clear closets to clear lungs.',
-    water: 'Kidneys, bladder, bones, ears, hair. When water is excessive: fear, listlessness, urinary issues. When weak: lower back pain, hearing issues, premature aging. Sleep is the medicine; don\'t over-exert.',
-  };
+  const spouseLevel: SpouseLevel = spouseCount === 0 ? 'absent' : spouseCount >= 3 ? 'strong' : 'moderate';
 
   return {
     careerAffinity: CAREER_BY_DAY_MASTER[dm],
-    wealthAnalysis,
-    spouseAnalysis,
-    healthFocus: healthMap[dmEl],
+    wealthAnalysis: fillTemplate(WEALTH_TEXT[wealthLevel], { element: wealthEl }),
+    spouseAnalysis: SPOUSE_TEXT[spouseLevel],
+    healthFocus: HEALTH_BY_ELEMENT[dmEl],
+    keys: { wealthElement: wealthEl, wealthLevel, spouseLevel, healthElement: dmEl },
   };
 }
 

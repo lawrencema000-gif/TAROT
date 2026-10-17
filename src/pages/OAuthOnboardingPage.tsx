@@ -64,6 +64,28 @@ type OnboardingData = {
 };
 
 /**
+ * The birth date the sign-up trigger writes before anyone has given one
+ * (handle_new_user, 20260112113637: "user will update during onboarding").
+ * Every new account, email or OAuth, reaches this page holding it.
+ */
+export const SIGNUP_PLACEHOLDER_BIRTH_DATE = '2000-01-01';
+
+/**
+ * The birth date the member gave, or '' while they have given none. Seeded
+ * as it was, the trigger's placeholder filled the required field with
+ * 01/01/2000 and enabled Continue, and a member who tapped through was saved
+ * as a Capricorn born that day: every horoscope, chart and match then read
+ * it (p9 Q05). Only an open onboarding can hold the placeholder unanswered:
+ * `finish` seals the profile after `handleComplete` has written a real date.
+ * A member truly born on 2000-01-01 who reloads at the reveal enters it once
+ * more; nobody is saved with a date they did not give.
+ */
+function givenBirthDate(profile: Pick<UserProfile, 'birthDate' | 'onboardingComplete'> | null | undefined): string {
+  const date = profile?.birthDate ?? '';
+  return !profile?.onboardingComplete && date === SIGNUP_PLACEHOLDER_BIRTH_DATE ? '' : date;
+}
+
+/**
  * What the profile already holds. `handleComplete` writes everything before
  * the reveal step, so a reload before "Begin" used to restart at step 0 with
  * every field blank; the fields come back from the row instead.
@@ -71,7 +93,7 @@ type OnboardingData = {
 function seedFromProfile(profile: UserProfile | null | undefined): OnboardingData {
   return {
     goals: Array.isArray(profile?.goals) ? profile.goals : [],
-    birthDate: profile?.birthDate ?? '',
+    birthDate: givenBirthDate(profile),
     birthTime: profile?.birthTime ?? '',
     birthPlace: profile?.birthPlace ?? '',
     birthLat: typeof profile?.birthLat === 'number' ? profile.birthLat : undefined,
@@ -338,11 +360,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-meta font-medium text-mystic-300 mb-2">
-                    {t('oauth.basics.birthDate')} <span className="text-coral">*</span>
+                  <label htmlFor="onboarding-birth-date" className="block text-meta font-medium text-mystic-300 mb-2">
+                    {t('oauth.basics.birthDate')} <span className="text-coral" aria-hidden>*</span>
                   </label>
+                  {/* Starts empty until the member gives a date: Continue
+                      waits for one (p9 Q05). */}
                   <Input
+                    id="onboarding-birth-date"
                     type="date"
+                    required
                     value={data.birthDate}
                     onChange={e => handleBirthDateChange(e.target.value)}
                     min={(() => {

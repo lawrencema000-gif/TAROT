@@ -218,8 +218,11 @@ export const TarotFace = memo(function TarotFace({
   ) : (
     // lining-nums: the display serif's default figures are old-style, which
     // set the 5 of "カップの5" below the line like a subscript (p8 F80).
+    // keep-phrases: a two-line name breaks between phrases. Balanced over
+    // every character, 「ペンタクルのキング」 split 「ペンタク/ルのキング」 on
+    // the Library sheet and the shared page (p9 Q36); now 「ペンタクルの/キング」.
     <span
-      className={`block font-display font-semibold uppercase tracking-[0.1em] leading-[1.1] text-gold text-center lining-nums ${PLATE_TYPE[size]} ${size === 'thumb' || size === 'sm' || size === 'fill' ? 'text-balance' : ''}`}
+      className={`block keep-phrases font-display font-semibold uppercase tracking-[0.1em] leading-[1.1] text-gold text-center lining-nums ${PLATE_TYPE[size]} ${size === 'thumb' || size === 'sm' || size === 'fill' ? 'text-balance' : ''}`}
     >
       {tail ? (
         <>
@@ -261,7 +264,7 @@ export const TarotFace = memo(function TarotFace({
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center p-2 text-center">
-              <span className="text-caption text-mystic-300 line-clamp-3">{name}</span>
+              <span className="keep-phrases text-caption text-mystic-300 line-clamp-3">{name}</span>
             </div>
           )}
           {/*

@@ -2,6 +2,7 @@ import { useState, lazy, Suspense } from 'react';
 import { BookOpen, Coins, RotateCcw, Share2 } from 'lucide-react';
 import { Card, Button, toast, SectionDivider, Page, PageHeader, Section, ResultSheet, EyebrowLabel, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useContentOverlay, loadContentOverlay } from '../i18n/contentOverlay';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { CoinToss, type CoinFace } from '../components/iching/CoinToss';
 import {
@@ -10,8 +11,8 @@ import {
   LINES_TO_HEXAGRAM,
   type CastResult,
 } from '../data/ichingHexagrams';
+import { localizeHexagram } from '../data/ichingReading';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
-import { tArray } from '../utils/tArray';
 
 type Stage = 'intro' | 'casting' | 'result';
 
@@ -59,6 +60,11 @@ export function IChingPage() {
   const [tossActive, setTossActive] = useState(false);
   const [showLiuYao, setShowLiuYao] = useState(false);
   const [tossFaces, setTossFaces] = useState<[CoinFace, CoinFace, CoinFace]>(['heads', 'heads', 'heads']);
+  // The 64 readings in the reader's language (the 'iching' content overlay).
+  // Asked for on the intro screen, so it has landed long before the six
+  // tosses end; until it has, the result waits on the casting screen rather
+  // than flashing the English.
+  const { overlay, ready } = useContentOverlay('iching');
 
   const startCast = async () => {
     setStage('casting');
@@ -134,7 +140,7 @@ export function IChingPage() {
     );
   }
 
-  if (stage === 'casting') {
+  if (stage === 'casting' || (stage === 'result' && !ready)) {
     return (
       <Page spacing="lg" className="flex flex-col items-center justify-center min-h-[60vh]">
         <PageHeader
@@ -152,7 +158,7 @@ export function IChingPage() {
         <p className="text-meta text-mystic-400 tracking-widest uppercase tabular-nums" role="status">
           {t('iching.castingLine', {
             defaultValue: 'Line {{n}} of 6',
-            n: Math.max(1, animatingLine + 1),
+            n: stage === 'result' ? 6 : Math.max(1, animatingLine + 1),
           })}
         </p>
 
@@ -163,7 +169,7 @@ export function IChingPage() {
             <div
               key={index}
               className={`w-28 h-2 rounded-full transition-colors duration-deliberate ${
-                animatingLine >= index ? 'bg-gold' : 'bg-mystic-800'
+                stage === 'result' || animatingLine >= index ? 'bg-gold' : 'bg-mystic-800'
               }`}
             />
           ))}
@@ -175,36 +181,31 @@ export function IChingPage() {
   if (stage === 'result' && cast) {
     const primary = HEXAGRAMS[cast.primaryHexagram];
     const transformed = cast.transformedHexagram ? HEXAGRAMS[cast.transformedHexagram] : null;
-    const hexagramKey = `iching.hexagrams.${primary.number}`;
     const hexagramLabel = t('iching.hexagramLabel', { defaultValue: 'Hexagram' }) as string;
 
-    const localizedName = t(`${hexagramKey}.name`, { defaultValue: primary.name }) as string;
-    const localizedTagline = t(`${hexagramKey}.tagline`, { defaultValue: primary.tagline }) as string;
-    const localizedInterpretation = t(`${hexagramKey}.interpretation`, {
-      defaultValue: primary.interpretation,
-    }) as string;
-    const localizedJudgement = t(`${hexagramKey}.judgement`, {
-      defaultValue: primary.judgement,
-    }) as string;
-    const localizedJournal = t(`${hexagramKey}.journalPrompt`, {
-      defaultValue: primary.journalPrompt,
-    }) as string;
-    const strengths = tArray(t, `${hexagramKey}.strengths`, primary.strengths);
-    const cautions = tArray(t, `${hexagramKey}.cautions`, primary.cautions);
+    // The name is a UI string (iching.hexagrams.<n>.name); everything the
+    // reading says comes from the 'iching' overlay, English where it has none.
+    const localizedName = t(`iching.hexagrams.${primary.number}.name`, { defaultValue: primary.name }) as string;
+    const reading = localizeHexagram(primary, overlay);
+    const changed = transformed ? localizeHexagram(transformed, overlay) : null;
 
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
           title: localizedName,
           subtitle: `${hexagramLabel} ${primary.number}`,
-          tagline: localizedTagline,
-          affirmation: localizedJournal,
+          tagline: reading.tagline,
+          affirmation: reading.journalPrompt,
           brand: t('share.brand.iching', { defaultValue: 'I-Ching' }) as string,
         });
         const out = await shareOrDownload(
           blob,
           `arcana-iching-${primary.number}.png`,
-          `My I-Ching reading: ${localizedName}. ${localizedTagline}`,
+          t('iching.shareText', {
+            defaultValue: 'My I Ching reading: {{name}}. {{tagline}}',
+            name: localizedName,
+            tagline: reading.tagline,
+          }) as string,
         );
         if (out === 'downloaded') {
           toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
@@ -222,14 +223,16 @@ export function IChingPage() {
             "All systems", and "Cast again" closes the reading below. Two
             stacked back links read as a broken header. */}
         {/* The reading, on paper: glyph → "Hexagram 23" → the name → ✦✦✦ →
-            pinyin · 漢字 over the tagline → judgement, interpretation,
-            strengths, cautions, the changing hexagram, the journal prompt. */}
+            the heading (pinyin · 漢字 in English, the full classical name —
+            山地剥 — in Chinese, Japanese and Korean) over the tagline →
+            judgement, interpretation, strengths, cautions, the changing
+            hexagram, the journal prompt. */}
         <ResultSheet
           glyph={<HexagramGlyph number={primary.number} size={28} label={`${hexagramLabel} ${primary.number}`} />}
           eyebrow={question ? t('iching.yourQuestion', { defaultValue: 'Your question' }) as string : `${hexagramLabel} ${primary.number}`}
           title={question ? question : localizedName}
-          summaryHeading={question ? `${localizedName} · ${primary.pinyin} · ${primary.chinese}` : `${primary.pinyin} · ${primary.chinese}`}
-          summary={localizedTagline}
+          summaryHeading={question ? `${localizedName} · ${reading.heading}` : reading.heading}
+          summary={reading.tagline}
           disclaimer="general"
         >
           <div className="space-y-7">
@@ -239,14 +242,14 @@ export function IChingPage() {
 
             <section>
               <EyebrowLabel tone="ink" align="left" className="block">{t('iching.judgement', { defaultValue: 'The Judgement' })}</EyebrowLabel>
-              <blockquote className="reading-quote mt-2">{localizedJudgement}</blockquote>
+              <blockquote className="reading-quote mt-2">{reading.judgement}</blockquote>
             </section>
 
             <section>
               <h3 className="heading-display-md heading-strong text-ink mb-2">
                 {t('iching.interpretation', { defaultValue: 'Interpretation' })}
               </h3>
-              <ReadingProse text={localizedInterpretation} lede={false} />
+              <ReadingProse text={reading.interpretation} lede={false} />
             </section>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -255,7 +258,7 @@ export function IChingPage() {
                   {t('iching.strengths', { defaultValue: 'Strengths' })}
                 </h3>
                 <ul className="reading-copy list-disc pl-5 space-y-1.5">
-                  {strengths.map((s, i) => (
+                  {reading.strengths.map((s, i) => (
                     <li key={i}>{s}</li>
                   ))}
                 </ul>
@@ -265,14 +268,14 @@ export function IChingPage() {
                   {t('iching.cautions', { defaultValue: 'Cautions' })}
                 </h3>
                 <ul className="reading-copy list-disc pl-5 space-y-1.5">
-                  {cautions.map((c, i) => (
+                  {reading.cautions.map((c, i) => (
                     <li key={i}>{c}</li>
                   ))}
                 </ul>
               </section>
             </div>
 
-            {transformed && (
+            {transformed && changed && (
               <section className="border-t border-paper-hairline pt-6">
                 <div className="flex items-center gap-2 mb-3">
                   <RotateCcw className="w-4 h-4 text-ink-blue" aria-hidden />
@@ -286,11 +289,7 @@ export function IChingPage() {
                     <p className="text-ink font-display font-semibold text-title">
                       {t(`iching.hexagrams.${transformed.number}.name`, { defaultValue: transformed.name })}
                     </p>
-                    <p className="reading-meta italic mt-1">
-                      {t(`iching.hexagrams.${transformed.number}.tagline`, {
-                        defaultValue: transformed.tagline,
-                      })}
-                    </p>
+                    <p className="reading-meta italic mt-1">{changed.tagline}</p>
                   </div>
                 </div>
                 <p className="reading-copy mt-3">
@@ -304,7 +303,7 @@ export function IChingPage() {
 
             <section className="border-t border-paper-hairline pt-6">
               <EyebrowLabel tone="ink" align="left" className="block">{t('iching.journalPrompt', { defaultValue: 'Journal prompt' })}</EyebrowLabel>
-              <blockquote className="reading-quote mt-2">{localizedJournal}</blockquote>
+              <blockquote className="reading-quote mt-2">{reading.journalPrompt}</blockquote>
             </section>
           </div>
         </ResultSheet>
@@ -328,7 +327,15 @@ export function IChingPage() {
               <LiuYaoPanel lineValues={cast.lines} />
             </Suspense>
           ) : (
-            <Button variant="outline" fullWidth onClick={() => setShowLiuYao(true)}>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => {
+                // The panel's prose (the 'liuyao' overlay) downloads alongside its code.
+                void loadContentOverlay('liuyao');
+                setShowLiuYao(true);
+              }}
+            >
               {t('iching.readAsLiuYao', { defaultValue: 'Read this cast as 六爻' })}
             </Button>
           )}

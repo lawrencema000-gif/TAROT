@@ -13,7 +13,7 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
-import { useBirthTzBackfill } from '../components/horoscope/birthZone';
+import { useBirthTzBackfill, birthZoneOf, castParamsFor } from '../components/horoscope/birthZone';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
@@ -98,11 +98,44 @@ const aspectLabel = (a: string) => (a in ASPECT_META ? localizeAspectName(a as A
 export function NatalChartReportPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
-  const { chart, loading: chartLoading, fetchChart } = useNatalChart();
+  const { chart, loading: chartLoading, error: chartError, fetchChart, computeChart } = useNatalChart();
   // A chart cast before F21 (in the signup zone, not the birth place's) is
   // recast before this paid report prints its houses; reload when it lands.
   useBirthTzBackfill(fetchChart);
   const natal: NatalChart | null = chart?.natalChart ?? null;
+
+  // No chart, no sale (p9 Q01). Neither onboarding casts a chart — only the
+  // Horoscope tab's setup does — so a member who comes here first has none,
+  // and the page used to take 200 Moonstones and then say "re-enter your
+  // birth data". A missing chart is now cast here, the way the Horoscope
+  // setup casts it (the birth place's zone, castParamsFor), and the report
+  // is offered only once one exists. The backfill above saves a zone it
+  // derives, so the cast does not write the profile itself.
+  const birthLat = profile?.birthLat;
+  const birthLon = profile?.birthLon;
+  const hasBirthPlace = typeof birthLat === 'number' && Number.isFinite(birthLat)
+    && typeof birthLon === 'number' && Number.isFinite(birthLon);
+  // 'done' and 'failed' both end the attempt; a retry goes back to 'idle'.
+  const [castState, setCastState] = useState<'idle' | 'casting' | 'done' | 'failed'>('idle');
+  // Guards the effect below against a second cast (StrictMode runs it twice).
+  const castTried = useRef(false);
+  const castChart = useCallback(async () => {
+    if (!profile?.birthDate || typeof profile.birthLat !== 'number' || typeof profile.birthLon !== 'number') return;
+    castTried.current = true;
+    setCastState('casting');
+    try {
+      const { tz } = await birthZoneOf(profile);
+      const cast = await computeChart(castParamsFor({ ...profile, birthLat: profile.birthLat, birthLon: profile.birthLon }, tz));
+      setCastState(cast?.natalChart ? 'done' : 'failed');
+    } catch {
+      setCastState('failed');
+    }
+  }, [profile, computeChart]);
+  const retryChart = () => {
+    castTried.current = false;
+    setCastState('idle');
+    void fetchChart();
+  };
 
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -166,6 +199,13 @@ export function NatalChartReportPage() {
   }, [user, hasBirthData, reference, profile?.isPremium]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
+
+  // Once astrology-get-chart has answered "none", cast it (once; a retry
+  // reloads and comes back here).
+  useEffect(() => {
+    if (!user || !hasBirthData || !hasBirthPlace || natal || chartLoading || chartError || castTried.current) return;
+    void castChart();
+  }, [user, hasBirthData, hasBirthPlace, natal, chartLoading, chartError, castChart]);
 
   const loadTransits = useCallback(async () => {
     if (transitPlanets) return;
@@ -306,6 +346,8 @@ export function NatalChartReportPage() {
   const houseLabel = (n: number) => t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n });
 
   const handleUnlock = async () => {
+    // The unlock is offered only beside a chart; never charge without one.
+    if (!natal || unlocking) return;
     setUnlocking(true);
     const res = await reportUnlocks.unlockWithMoonstones('natal-chart-pdf', reference, NATAL_COST);
     setUnlocking(false);
@@ -321,6 +363,10 @@ export function NatalChartReportPage() {
         }),
         'error',
       );
+    } else if (res.error === 'chart-missing') {
+      // The server holds no chart for this account and refused before the
+      // debit: read it again (and cast it), then the unlock is offered again.
+      retryChart();
     } else {
       toast(
         t('natalReport.unlockFailed', {
@@ -352,11 +398,65 @@ export function NatalChartReportPage() {
     );
   }
 
+  const reportHeader = (
+    <PageHeader
+      icon={<ScrollText />}
+      title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
+    />
+  );
+
+  // The chart is being cast here (or is about to be): the page, not a bare
+  // loading line.
+  if (castState === 'casting'
+    || (castState === 'idle' && !natal && hasBirthPlace && !chartLoading && !checking && !chartError)) {
+    return (
+      <Page spacing="sm">
+        {reportHeader}
+        <Card padding="lg" className="text-center">
+          <p className="text-ui text-mystic-300" role="status" aria-live="polite">
+            {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
+          </p>
+        </Card>
+      </Page>
+    );
+  }
+
   if (checking || chartLoading) {
     return (
       <div className="py-12 text-center text-mystic-500">
         {t('common:actions.loading', { defaultValue: 'Loading…' })}
       </div>
+    );
+  }
+
+  // No chart: nothing is sold and nothing paid for is promised (p9 Q01).
+  // Either it could not be read or cast — try again — or there is no birth
+  // place to cast it for.
+  if (!natal) {
+    return (
+      <Page spacing="sm">
+        {reportHeader}
+        {chartError || hasBirthPlace ? (
+          <Card padding="lg" className="text-center">
+            <p className="text-ui text-mystic-300 mb-4" role="alert">
+              {t('natalReport.errorChartMissing', {
+                defaultValue: 'We couldn’t draw your chart just now. Check your connection and try again.',
+              })}
+            </p>
+            <Button variant="outline" onClick={retryChart}>
+              {t('common:actions.retry', { defaultValue: 'Try again' })}
+            </Button>
+          </Card>
+        ) : (
+          <EmptyState
+            icon={<AlertCircle />}
+            title={t('natalReport.needsBirthPlace', { defaultValue: 'Add your birth place' })}
+            description={t('natalReport.needsBirthPlaceBody', {
+              defaultValue: 'Your chart is drawn for the place you were born. Pick it in Profile → Edit profile, then open this page again.',
+            })}
+          />
+        )}
+      </Page>
     );
   }
 
@@ -515,18 +615,6 @@ export function NatalChartReportPage() {
           />
         )}
       </Page>
-    );
-  }
-
-  if (!natal) {
-    return (
-      <Card padding="lg">
-        <p className="text-ui text-mystic-300">
-          {t('natalReport.errorChartMissing', {
-            defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
-          })}
-        </p>
-      </Card>
     );
   }
 

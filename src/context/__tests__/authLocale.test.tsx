@@ -191,7 +191,9 @@ afterEach(async () => {
   });
 });
 
-describe('signing in on a new device keeps the account its language (p9 RQB-1)', () => {
+// These sign-ins load the account's language bundle lazily; under a loaded
+// parallel run that has taken longer than the 5 s default (p9 gate run).
+describe('signing in on a new device keeps the account its language (p9 RQB-1)', { timeout: 20_000 }, () => {
   it('the first visit stores the default English, though nobody chose it', () => {
     expect(FIRST_VISIT.get(LOCALE_STORAGE_KEY)).toBe('en');
     expect(getLocale()).toBe('en');

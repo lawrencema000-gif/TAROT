@@ -67,7 +67,8 @@ describe('the hero title (F72)', () => {
     expect(h1.className).not.toMatch(/\btruncate\b/);
     cleanup();
     render(hero('おはようございます', 'さくら'));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^さくら さん$/);
+    // The honorific follows the name directly: 「さくらさん」, not 「さくら さん」 (QA Q34).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^さくらさん$/);
   });
 
   it('ko and zh: their own punctuation', async () => {

@@ -28,6 +28,8 @@ import {
   savedSpreadLayout,
   type SavedReadingRow,
 } from './tarot/SavedReadingSheet';
+import { AiReadingSections } from './tarot/TarotReadingResult';
+import { splitLede } from './tarot/readingText';
 // The header ☆ sheet names saved items the same way (one source, p9 R16).
 import { savedCardLabel, savedCardLine, savedCardName, savedHoroscopeLabel, type SavedCardRef } from '../overlays/SavedSheet';
 
@@ -344,6 +346,17 @@ export function LibrarySection() {
     return (reading.cards ?? []).map((c) => ({ name: savedCardName(c, playing), reversed: c.reversed }));
   };
 
+  /**
+   * Every interpretation a member bought is kept (premium_readings) and
+   * loaded above, for every member — but the tab that lists them was
+   * Premium-only. A free member who spent Moonstones on an AI reading and
+   * left the reveal unsaved could not reach the paid text again anywhere in
+   * the app (p9 Q02). The tab is there for anyone who has one; it stays
+   * while it is open, so deleting the last row shows its empty state
+   * rather than pulling the tab from under the reader.
+   */
+  const showAiReadings = Boolean(profile?.isPremium) || premiumReadings.length > 0 || activeTab === 'ai-readings';
+
   return (
     <div className="space-y-6">
       <Tabs
@@ -354,7 +367,7 @@ export function LibrarySection() {
         onChange={setActiveTab}
         items={[
           { id: 'saved' as const, icon: Bookmark, label: t('library.tabs.saved', { defaultValue: 'Saved' }) },
-          ...(profile?.isPremium
+          ...(showAiReadings
             ? [{ id: 'ai-readings' as const, icon: Brain, label: t('library.tabs.aiReadings', { defaultValue: 'AI Readings' }) }]
             : []),
           { id: 'guides' as const, icon: Book, label: t('library.tabs.guides', { defaultValue: 'Guides' }) },
@@ -590,8 +603,10 @@ export function LibrarySection() {
                         ) : (
                           <span className="text-meta text-mystic-400 line-clamp-1">{savedCardLine(t, premiumCards(reading))}</span>
                         )}
+                        {/* The reading's opening paragraph, not its raw first
+                            characters ("1) Overview You've had…"). */}
                         <span className="text-meta text-mystic-400 line-clamp-2 mt-1">
-                          {reading.content.slice(0, 150)}…
+                          {(splitLede(reading.content).lede || reading.content).slice(0, 150)}…
                         </span>
                         <span className="mt-1 flex items-center gap-1 text-meta text-mystic-500">
                           <Calendar className="w-3 h-3" aria-hidden />
@@ -765,7 +780,19 @@ export function LibrarySection() {
                 </div>
               )}
               <h4 className="font-display-eyebrow mb-3">{t('library.reading.interpretation')}</h4>
-              <ReadingProse text={selectedReading.content} />
+              {/* As the reveal reads it (p9 Q10): the opening paragraph as the
+                  lede, then each block under its heading, numbers dropped,
+                  the actions as a list. */}
+              {(() => {
+                const { lede, rest } = splitLede(selectedReading.content);
+                if (!lede) return <ReadingProse text={selectedReading.content} />;
+                return (
+                  <>
+                    <ReadingProse text={lede} />
+                    {rest && <AiReadingSections text={rest} headingLevel="h5" />}
+                  </>
+                );
+              })()}
               {selectedReading.context.usedLlm && (
                 <p className="reading-caption text-center mt-6">
                   {t('library.reading.generatedWithAi', { defaultValue: 'Written by a model, personalized to your profile' })}

@@ -13,6 +13,7 @@ import {
   cartoTableLabel,
   cartoVerdict,
   firstSentences,
+  isNeighbourBound,
   sentencesOf,
   type CartoFocus,
 } from '../../components/cartomancy/cartoFlow';
@@ -76,20 +77,38 @@ const ALL: SupportedLocale[] = ['en', 'ja', 'ko', 'zh'];
 const FOCI: CartoFocus[] = ['general', 'love', 'career'];
 
 describe('a card’s section continues where the summary stopped (F17)', () => {
-  /** Every sentence a table's sections print, against the summary above them. */
+  /**
+   * Every sentence a table's sections print, against the summary above them.
+   * A sentence that reads the card by its neighbours ("Beside Spades it
+   * invites you…") is printed by neither — it waits in the full meaning
+   * (p9 Q09) — so the cut runs over the card's other sentences.
+   */
   function check(table: Array<{ card: PlayingCard; reversed: boolean }>, focus: CartoFocus, label: string) {
     const summary = cartoSynthesis(table, focus, (name, sentence) => `${name}: ${sentence}`);
     table.forEach(({ card: c, reversed }, i) => {
       const main = cartoMainMeaning(c, reversed, focus).text;
       const all = sentencesOf(main);
+      const own = all.filter((s) => !isNeighbourBound(s));
       const taken = cartoSummarySentencesFrom(i, table.length);
       const { short, more } = cartoSectionText(main, i, table.length);
+      const shortSentences = sentencesOf(short);
       // nothing the summary quoted is printed again under the card
-      for (const s of sentencesOf(short)) expect(summary.includes(s), `${label} #${i}: "${s}" is in the summary`).toBe(false);
+      for (const s of shortSentences) expect(summary.includes(s), `${label} #${i}: "${s}" is in the summary`).toBe(false);
+      // the section is the card's next sentences after the ones the summary quoted
+      expect(shortSentences, `${label} #${i}`).toEqual(own.slice(taken, taken + 2));
+      // a neighbour's reading is in neither
+      for (const s of all.filter(isNeighbourBound)) {
+        expect(short.includes(s), `${label} #${i}: "${s}" in the section`).toBe(false);
+        expect(summary.includes(s), `${label} #${i}: "${s}" in the summary`).toBe(false);
+      }
       // and nothing is lost: what neither printed is behind "Read the full meaning"
-      expect(more, `${label} #${i}`).toBe(all.length > taken + 2);
-      // the summary quoted exactly the sentences the section skips
-      if (i < 3 || table.length === 1) expect(summary.includes(firstSentences(main, taken)), `${label} #${i}`).toBe(true);
+      const printed = Math.min(own.length, i < 3 || table.length === 1 ? taken : 0) + shortSentences.length;
+      expect(more, `${label} #${i}`).toBe(all.length > printed);
+      // the summary quoted exactly the sentences the section skips (cut from the source when none is a neighbour's)
+      if (i < 3 || table.length === 1) {
+        for (const s of own.slice(0, taken)) expect(summary.includes(s), `${label} #${i}: "${s}"`).toBe(true);
+        if (!all.slice(0, taken).some(isNeighbourBound)) expect(summary.includes(firstSentences(main, taken)), `${label} #${i}`).toBe(true);
+      }
     });
   }
 

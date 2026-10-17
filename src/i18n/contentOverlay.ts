@@ -43,6 +43,11 @@ export const CONTENT_MODULES = [
   'pets',
   'humanDesign',
   'compat',
+  'iching',
+  'liuyao',
+  'bazi',
+  'loveTree',
+  'journal',
 ] as const;
 
 export type ContentModule = (typeof CONTENT_MODULES)[number];
@@ -68,6 +73,11 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     pets: () => import('./locales/ja/content-pets.json'),
     humanDesign: () => import('./locales/ja/content-humanDesign.json'),
     compat: () => import('./locales/ja/content-compat.json'),
+    iching: () => import('./locales/ja/content-iching.json'),
+    liuyao: () => import('./locales/ja/content-liuyao.json'),
+    bazi: () => import('./locales/ja/content-bazi.json'),
+    loveTree: () => import('./locales/ja/content-loveTree.json'),
+    journal: () => import('./locales/ja/content-journal.json'),
   },
   ko: {
     interpretations: () => import('./locales/ko/content-interpretations.json'),
@@ -85,6 +95,11 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     pets: () => import('./locales/ko/content-pets.json'),
     humanDesign: () => import('./locales/ko/content-humanDesign.json'),
     compat: () => import('./locales/ko/content-compat.json'),
+    iching: () => import('./locales/ko/content-iching.json'),
+    liuyao: () => import('./locales/ko/content-liuyao.json'),
+    bazi: () => import('./locales/ko/content-bazi.json'),
+    loveTree: () => import('./locales/ko/content-loveTree.json'),
+    journal: () => import('./locales/ko/content-journal.json'),
   },
   zh: {
     interpretations: () => import('./locales/zh/content-interpretations.json'),
@@ -102,6 +117,11 @@ const LOADERS: Record<LazyLocale, Record<ContentModule, Loader>> = {
     pets: () => import('./locales/zh/content-pets.json'),
     humanDesign: () => import('./locales/zh/content-humanDesign.json'),
     compat: () => import('./locales/zh/content-compat.json'),
+    iching: () => import('./locales/zh/content-iching.json'),
+    liuyao: () => import('./locales/zh/content-liuyao.json'),
+    bazi: () => import('./locales/zh/content-bazi.json'),
+    loveTree: () => import('./locales/zh/content-loveTree.json'),
+    journal: () => import('./locales/zh/content-journal.json'),
   },
 };
 

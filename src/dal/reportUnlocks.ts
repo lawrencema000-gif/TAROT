@@ -31,6 +31,12 @@ export async function isUnlocked(
   return { ok: true, data: data !== null };
 }
 
+/**
+ * Unlock a report with Moonstones. Fails with 'insufficient-balance' when the
+ * balance is short, and with 'chart-missing' when the server refuses a
+ * chart-based report (natal, year ahead) because the member has no natal
+ * chart yet — refused before any debit, so nothing was taken (p9 Q01).
+ */
 export async function unlockWithMoonstones(
   reportKey: ReportKey,
   reference: string,
@@ -45,6 +51,9 @@ export async function unlockWithMoonstones(
     const msg = error.message.toLowerCase();
     if (msg.includes('insufficient moonstones')) {
       return { ok: false, error: 'insufficient-balance' };
+    }
+    if (msg.includes('natal chart required')) {
+      return { ok: false, error: 'chart-missing' };
     }
     captureException('dal.reportUnlocks.unlockWithMoonstones', error);
     return { ok: false, error: error.message };

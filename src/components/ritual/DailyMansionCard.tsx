@@ -42,10 +42,13 @@ export function DailyMansionCard() {
           {glyph.text}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2 min-w-0">
-            {/* The label holds its line; the caption beside it gives way. */}
+          {/* The label holds its line; the caption sits beside it where it
+              fits and moves under it where it does not. Truncated beside it,
+              "Dī · Saturn" read "Dī · Sa…" at 360 px and lost the planet
+              (p9 Q14). */}
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 min-w-0">
             <EyebrowLabel className="shrink-0 whitespace-nowrap">{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
-            <span className="text-caption text-mystic-500 truncate" lang={caption.lang}>
+            <span className="text-caption text-mystic-500 min-w-0 break-words" lang={caption.lang}>
               {caption.text}
             </span>
           </div>

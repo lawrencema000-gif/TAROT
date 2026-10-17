@@ -41,6 +41,11 @@ import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId }
 import { shareFile } from '../../utils/nativeShare';
 import { cardBackSrc } from '../../utils/imageUrl';
 import type { UserProfile } from '../../types';
+// The release's version, from package.json: the one source version.json is
+// built from and Android's versionName is held to (appVersion.test.ts). A
+// hard-coded '1.0.0' showed "Version 1.0.0" on the 1.2.0 app (p9 Q16). The
+// named import ships the string alone, not the manifest.
+import { version as APP_VERSION } from '../../../package.json';
 
 /**
  * "Default" clears the column. UserProfile types these as `string | undefined`,
@@ -60,7 +65,6 @@ type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'langu
 const CELESTIAL_BG_URL = 'celestial://animated';
 
 const SUPPORT_EMAIL = 'support@arcana.app';
-const APP_VERSION = '1.0.0';
 
 interface CardBackOption {
   url: string;

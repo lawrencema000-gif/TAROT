@@ -34,8 +34,10 @@ import {
  *
  * A tie names every result level at the top: in the close call, in a
  * "Shared with" line under the verdict, and in the bars. The card's
- * summary ("Your shadow is strongest around narcissism") then leaves the
- * verdict block for the body, read as the first of the tied results.
+ * summary then leaves the verdict block for the body, read as the first of
+ * the tied results — in the words written for a shared top where the
+ * summary claims a sole one ("Your shadow is strongest around narcissism",
+ * "Your core sensitivity is…", "Your default is…"): `summaryShared`.
  */
 export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewProps<DimensionalResult>) {
   const { t } = useT('app');
@@ -50,6 +52,14 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const name = localized('name', info.name);
   const tagline = localized('tagline', info.tagline);
   const summary = localized('summary', info.summary);
+  /**
+   * What "Reading X first" says when the top is shared. A summary written
+   * for a sole winner said the opposite of the tie right above it: three
+   * shadows at 3.0, then "Your shadow is strongest around narcissism"
+   * (p9 Q07, F65). Such a result has a version for a shared top; every
+   * other summary reads as written.
+   */
+  const sharedSummary = localized('summaryShared', summary);
   // A list from the locale only when it IS a list of strings: a half-merged
   // block can arrive as an object keyed "0", "1"… and `.map` would throw.
   const list = (field: 'strengths' | 'shadow') => {
@@ -167,7 +177,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
             )}
           </ResultSection>
 
-          {shared && <ReadingFirst name={name}>{summary}</ReadingFirst>}
+          {shared && <ReadingFirst name={name}>{sharedSummary}</ReadingFirst>}
 
           {(weakestList.length > 0 || levelPractice) && (
             <ResultSection title={t('extraQuizzes.self-compassion.whereToPractise', { defaultValue: 'Where to practise' })}>

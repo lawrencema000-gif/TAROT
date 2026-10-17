@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PLANET_GLYPH, TIME_LORD_COLOR, isPlanet, withAlpha } from '../../lib/chart';
+import { NODE_GLYPH, PLANET_GLYPH, TIME_LORD_COLOR, isPlanet, withAlpha } from '../../lib/chart';
 import { Tag } from '../ui';
 import { useT } from '../../i18n/useT';
 import { localizePlanetName } from '../../i18n/localizeNames';
@@ -48,7 +48,7 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
     if (lord === 'South Node') return t('chartWheel.nodes.south', { defaultValue: 'South Node' });
     return lord;
   };
-  const lordGlyph = (lord: string) => PLANET_GLYPH[lord] ?? (lord.includes('North') ? '☊' : '☋');
+  const lordGlyph = (lord: string) => PLANET_GLYPH[lord] ?? (lord.includes('North') ? NODE_GLYPH.north : NODE_GLYPH.south);
 
   const currentMajor = data.periods.find(
     (p) => data.current && p.lord === data.current.major &&

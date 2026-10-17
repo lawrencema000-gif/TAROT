@@ -142,18 +142,6 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   return { ok: true, data: outcome };
 }
 
-/**
- * Quiz Moonstones are credited by the server when the quiz_results row is
- * inserted (trigger quiz_results_credit_moonstones, migration
- * 20261003000005): 2 stones, once per (user, quiz_id), at most 10 quizzes a
- * day. The RPC this used to call accepted any quiz id from any client and
- * is service-role only now, so this is a no-op kept for call-site
- * compatibility — it can be deleted along with its callers.
- */
-export async function awardQuizCompletion(_userId: string, _reference: string): Promise<Result<void>> {
-  return { ok: true, data: undefined };
-}
-
 /** Check if user has already checked in today — used before showing the
  * "Claim" button. Idempotent: querying this is side-effect-free. */
 export async function hasCheckedInToday(userId: string): Promise<Result<boolean>> {

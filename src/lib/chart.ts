@@ -93,6 +93,12 @@ export const PLANET_GLYPH: Record<string, string> = {
   Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
 };
 
+// The lunar nodes (Firdaria lords). Kept here with the other glyphs: whether
+// U+260A/U+260B count as Extended_Pictographic depends on the JS engine's
+// Unicode data (Node 25 says yes, Node 22 no), which made the tokens gate's
+// emoji allowance for the file that used them stale on CI.
+export const NODE_GLYPH = { north: '☊', south: '☋' } as const;
+
 // U+2648–2653 are Emoji_Presentation=Yes, so without the text variation
 // selector (U+FE0E) Android and iOS paint them as colour emoji and ignore
 // `fill`/`color`. The selector makes them text again wherever they render.

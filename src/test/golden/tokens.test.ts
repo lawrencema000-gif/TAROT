@@ -270,7 +270,6 @@ const RULES: Rule[] = [
       // burn-down (offenders on 2026-10-02)
       'src/components/celestial/CelestialMapIntroLoader.tsx',
       'src/components/celestial/CelestialMapView.tsx',
-      'src/components/charts/FirdariaTimeline.tsx',
       'src/data/astrologyLearn.ts',
       'src/data/moonPhases.ts',
       'src/data/tarotDeck.ts',

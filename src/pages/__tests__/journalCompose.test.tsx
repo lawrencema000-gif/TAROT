@@ -130,11 +130,15 @@ describe('Home’s "Write" opens the editor (F54/F88)', () => {
   });
 });
 
+// created_at at local noon: the picker shows the reader's calendar day, so a
+// UTC timestamp would land on another day west of UTC or at UTC+13/+14 (p9 R22).
+const localNoon = (y: number, m: number, d: number) => new Date(y, m, d, 12).toISOString();
+
 describe('Link a reading names the readings (F49)', () => {
   it('by spread, day and cards — tarot by id, legacy rows by name, playing cards from their deck', async () => {
     readings = [
       {
-        id: 'r1', date: '2026-10-17', spread_type: 'three-card', created_at: '2026-10-17T01:00:00Z',
+        id: 'r1', date: '2026-10-17', spread_type: 'three-card', created_at: localNoon(2026, 9, 17),
         cards: [
           { cardId: 26, cardName: 'Five of Wands', reversed: false, position: 'Past' },
           { cardId: 40, cardName: 'Five of Cups', reversed: true, position: 'Present' },
@@ -142,14 +146,14 @@ describe('Link a reading names the readings (F49)', () => {
         ],
       },
       {
-        id: 'r2', date: '2026-10-16', spread_type: 'carto-three-timeline', created_at: '2026-10-16T09:00:00Z',
+        id: 'r2', date: '2026-10-16', spread_type: 'carto-three-timeline', created_at: localNoon(2026, 9, 16),
         cards: [
           { cardId: 108, cardName: 'Nine of Hearts', reversed: false, position: 'Past', deck: 'playing' },
           { cardId: 139, cardName: 'Ace of Spades', reversed: false, position: 'Present', deck: 'playing' },
         ],
       },
       // A row from before ids (cards carry `name`) whose `date` held the UTC day: dated by created_at.
-      { id: 'r3', date: '2026-10-10', spread_type: 'three-card', created_at: '2026-10-12T12:00:00Z', cards: [{ name: 'The Fool' }, { name: 'Wheel of Fortune' }] },
+      { id: 'r3', date: '2026-10-10', spread_type: 'three-card', created_at: localNoon(2026, 9, 12), cards: [{ name: 'The Fool' }, { name: 'Wheel of Fortune' }] },
       // No created_at in the list query: the date column.
       { id: 'r4', date: '2026-10-09', spread_type: 'celtic-cross', cards: [{ cardId: 0, cardName: 'The Fool' }] },
     ];

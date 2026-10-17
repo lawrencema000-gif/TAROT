@@ -41,6 +41,7 @@ import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, checkAndAwardStreakMilestone, STREAK_MILESTONES } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
+import { ritualTimeReports } from '../components/ritual/ritualReports';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -61,7 +62,7 @@ const NIGHTS = 14;
 export function HomePage() {
   const { t } = useT(['app', 'common']);
   const { profile, user, refreshProfile } = useAuth();
-  const { setActiveTab, openOverlay } = useUI();
+  const { openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();
   const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
@@ -222,6 +223,10 @@ export function HomePage() {
 
   const updateRitualProgress = async (field: keyof Omit<RitualState, 'completed'>) => {
     if (!user) return;
+    // A part already done stays done: turning the card and then reading its
+    // meaning is one card part, not a second write (or, while the first
+    // write is still in flight, a second completion).
+    if (ritualState[field]) return;
 
     const newState = { ...ritualState, [field]: true };
     const completed = newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed;
@@ -240,6 +245,9 @@ export function HomePage() {
 
     if (completed && !ritualState.completed) {
       setRitualState(prev => ({ ...prev, completed: true }));
+      // The moment the ritual was completed, for the badges that count the
+      // hour and the weekday.
+      const completedAt = new Date();
 
       const xpResult = await awardXP(user.id, 'ritual_complete');
 
@@ -274,16 +282,14 @@ export function HomePage() {
         }
       }
 
-      if (xpResult) {
-        // Time-based achievements
-        const hour = new Date().getHours();
-        if (hour < 7) checkAchievementProgress(user.id, 'morning_ritual');
-        if (hour >= 22) checkAchievementProgress(user.id, 'evening_ritual');
-        const dayOfWeek = new Date().getDay();
-        if (dayOfWeek === 0 || dayOfWeek === 6) checkAchievementProgress(user.id, 'weekend_ritual');
-
-        await refreshProfile();
+      // Early Riser, Night Owl, Weekend Warrior — reported whenever the ritual
+      // completed. The server matches each report to this ritual's own
+      // record, so a capped or failed XP award (awardXP's null) must not drop
+      // them, and the profile is re-read either way (p8 F05).
+      for (const report of ritualTimeReports(completedAt)) {
+        checkAchievementProgress(user.id, report);
       }
+      await refreshProfile();
 
       setCelebrationReason('complete');
       setShowCelebration(true);
@@ -371,9 +377,12 @@ export function HomePage() {
     setShowCardDetail(true);
   };
 
+  // "Write" opens the journal's editor on today's prompt — or today's entry
+  // when there is one — not the Journal's list, which asked for a second tap
+  // on "Write today" (p8 F54/F88). JournalPage reads `compose`.
   const handleWritePrompt = () => {
     updateRitualProgress('promptViewed');
-    setActiveTab('journal');
+    navigate('/journal', { state: { compose: 'today' } });
   };
 
   const greeting = () => {
@@ -446,7 +455,10 @@ export function HomePage() {
 
           <Card padding="md">
             {drawnTarot && (
+              // Keyed by the day: tomorrow's card arrives face down, even on
+              // a Home left open across midnight.
               <TarotFlipCard
+                key={today}
                 card={drawnTarot.card}
                 reversed={drawnTarot.reversed}
                 saved={tarotSaved}
@@ -454,6 +466,8 @@ export function HomePage() {
                 onShare={handleTarotShare}
                 onMeaning={handleTarotMeaning}
                 cardBackUrl={profile?.card_back_url}
+                revealed={ritualState.tarotViewed}
+                onReveal={() => updateRitualProgress('tarotViewed')}
               />
             )}
           </Card>

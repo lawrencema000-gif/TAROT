@@ -7,8 +7,18 @@ import {
   postAuthDestination,
   forgetNext,
   isAuthPath,
+  isResetPasswordPath,
+  shellPath,
+  signedOutMemberDestination,
 } from '../authReturn';
-import { isStaleChunkMessage, reloadForStaleChunk } from '../staleChunk';
+import {
+  isStaleChunkMessage,
+  reloadForStaleChunk,
+  failedChunkUrl,
+  canReachServer,
+  recoverFromStaleChunk,
+  __resetStaleChunkProbe,
+} from '../staleChunk';
 import { holdPrerenderedHero, releasePrerenderedHero, isPrerenderedHeroHeld } from '../prerenderedHero';
 import { cardBackSources, cardBackSrc, backgroundSrc } from '../../../utils/imageUrl';
 import { resolveTab, isMoreGroupRoute, MORE_GROUP_ROUTES } from '../../../context/UIContext';
@@ -74,6 +84,31 @@ describe('post-auth destination (P7 #2/#3/#37/#39)', () => {
     expect(isAuthPath('/')).toBe(false);
     expect(isAuthPath('/signin/x')).toBe(false);
   });
+
+  it('reads the slash forms the live site redirects to as the same screens (p8 F43)', () => {
+    expect(shellPath('/signin/')).toBe('/signin');
+    expect(shellPath('/signup//')).toBe('/signup');
+    expect(shellPath('/')).toBe('/');
+    expect(shellPath('/tarot-meanings/the-fool/')).toBe('/tarot-meanings/the-fool');
+    expect(isAuthPath('/signin/')).toBe(true);
+    expect(isAuthPath('/signup/')).toBe(true);
+    expect(isResetPasswordPath('/reset-password/')).toBe(true);
+    expect(isResetPasswordPath('/reset-password')).toBe(true);
+    // ...and refuses them as a `next`, like the slashless forms.
+    for (const bad of ['/signin/', '/signup/?next=/x', '/reset-password/']) expect(safeNextPath(bad)).toBeNull();
+  });
+
+  it('a sign-out sends the next visitor home only from the page it happened on (p8 F46)', () => {
+    // Signed out on /journal: the URL still names the last member's page.
+    expect(signedOutMemberDestination('/journal', '/journal', '/journal')).toBe('/');
+    expect(signedOutMemberDestination('/journal', '/journal', '/journal/')).toBe('/');
+    // Signed out on a public page, then a member link: sign in and come back.
+    expect(signedOutMemberDestination('/cartomancy/reading', '/cartomancy/reading', '/cartomancy')).toBe(
+      '/signin?next=%2Fcartomancy%2Freading',
+    );
+    // No sign-out in this visit (a bookmark, an invite link).
+    expect(signedOutMemberDestination('/invite/AB12?x=1', '/invite/AB12', null)).toBe('/signin?next=%2Finvite%2FAB12%3Fx%3D1');
+  });
 });
 
 describe('stale-chunk recovery (P7 #40)', () => {
@@ -105,6 +140,87 @@ describe('stale-chunk recovery (P7 #40)', () => {
       expect(reload).toHaveBeenCalledTimes(2);
     } finally {
       Object.defineProperty(window, 'location', { configurable: true, value: orig });
+    }
+  });
+});
+
+describe('offline is not a stale deploy (p8 F44)', () => {
+  const origin = 'https://tarotlife.app';
+  const chrome = `Failed to fetch dynamically imported module: ${origin}/assets/QuizzesPage-CE2makJ8.js`;
+  let onLine: PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    sessionStorage.clear();
+    __resetStaleChunkProbe();
+    onLine = Object.getOwnPropertyDescriptor(Navigator.prototype, 'onLine');
+  });
+  const setOnline = (v: boolean) => Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => v });
+  const restoreOnline = () => {
+    delete (navigator as unknown as Record<string, unknown>).onLine;
+    if (onLine) Object.defineProperty(Navigator.prototype, 'onLine', onLine);
+  };
+
+  it('finds the failed file in each browser’s message, same origin only', () => {
+    expect(failedChunkUrl(chrome, origin)).toBe(`${origin}/assets/QuizzesPage-CE2makJ8.js`);
+    expect(failedChunkUrl(`error loading dynamically imported module: ${origin}/assets/a-1.js`, origin)).toBe(`${origin}/assets/a-1.js`);
+    expect(failedChunkUrl('Unable to preload CSS for /assets/x-9.css', origin)).toBe(`${origin}/assets/x-9.css`);
+    expect(failedChunkUrl('Importing a module script failed.', origin)).toBeNull();
+    expect(failedChunkUrl('Failed to fetch dynamically imported module: https://cdn.example.com/a.js', origin)).toBeNull();
+  });
+
+  it('a reload is offered only when the server answers', async () => {
+    try {
+      setOnline(false);
+      const never = vi.fn();
+      expect(await canReachServer(chrome, never as unknown as typeof fetch)).toBe(false);
+      expect(never).not.toHaveBeenCalled();
+
+      setOnline(true);
+      // The connection drops the probe (Chrome's ERR_INTERNET_DISCONNECTED is a TypeError).
+      expect(await canReachServer(chrome, vi.fn().mockRejectedValue(new TypeError('Failed to fetch')) as unknown as typeof fetch)).toBe(false);
+      // The server answers: the SPA fallback's HTML for a removed chunk, or anything else.
+      const answered = vi.fn().mockResolvedValue(new Response('<!doctype html>', { status: 200, headers: { 'content-type': 'text/html' } }));
+      expect(await canReachServer(chrome, answered as unknown as typeof fetch)).toBe(true);
+      expect(answered.mock.calls[0][1]).toMatchObject({ cache: 'no-store' });
+      // Safari names no file: the probe asks for /version.json.
+      const v = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+      expect(await canReachServer('Importing a module script failed.', v as unknown as typeof fetch)).toBe(true);
+      expect(v.mock.calls[0][0]).toBe('/version.json');
+      // HTML served for a script is an answer already.
+      const unused = vi.fn();
+      expect(await canReachServer("'text/html' is not a valid JavaScript MIME type.", unused as unknown as typeof fetch)).toBe(true);
+      expect(unused).not.toHaveBeenCalled();
+    } finally {
+      restoreOnline();
+    }
+  });
+
+  it('recovers by reloading once when reachable, and leaves the error where it is when not', async () => {
+    const reload = vi.fn();
+    const orig = window.location;
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...orig, reload } });
+    try {
+      setOnline(true);
+      const down = vi.fn().mockRejectedValue(new TypeError('Failed to fetch')) as unknown as typeof fetch;
+      expect(await recoverFromStaleChunk(new TypeError(chrome), down)).toBe(false);
+      expect(reload).not.toHaveBeenCalled();
+
+      // Two failures from one deploy share one probe and one reload.
+      const up = vi.fn().mockResolvedValue(new Response('', { status: 200, headers: { 'content-type': 'text/html' } }));
+      const [a, b] = await Promise.all([
+        recoverFromStaleChunk(new TypeError(chrome), up as unknown as typeof fetch),
+        recoverFromStaleChunk(new Error('Unable to preload CSS for /assets/QuizzesPage-1.css'), up as unknown as typeof fetch),
+      ]);
+      expect([a, b]).toEqual([true, true]);
+      expect(up).toHaveBeenCalledTimes(1);
+      expect(reload).toHaveBeenCalledTimes(1);
+
+      // Not a module failure at all: nothing to recover.
+      __resetStaleChunkProbe();
+      expect(await recoverFromStaleChunk(new TypeError('x is undefined'), up as unknown as typeof fetch)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: orig });
+      restoreOnline();
     }
   });
 });
@@ -165,8 +281,8 @@ describe('appearance renditions (P7 #138)', () => {
   it('an unknown Storage back goes through the image transform, never the original', () => {
     const url = `${S}/card-backs/${DIR}/card_back_1999999999999.png`;
     const s = cardBackSources(url, 96);
-    expect(s.src).toBe(`https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/render/image/public/card-backs/${DIR}/card_back_1999999999999.png?width=200&quality=75`);
-    expect(s.srcSet).toContain('width=480');
+    expect(s.src).toBe(`https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/render/image/public/card-backs/${DIR}/card_back_1999999999999.png?width=200&quality=75&resize=contain`);
+    expect(s.srcSet).toContain('width=480&quality=75&resize=contain 480w');
   });
 
   it('bundled card images keep their 150/400 renditions; the default SVG is as given', () => {
@@ -182,7 +298,7 @@ describe('appearance renditions (P7 #138)', () => {
       expect(backgroundSrc(`${S}/backgrounds/${DIR}/${stem}.png`)).toBe(`/backgrounds/full/${stem}.webp`);
     }
     expect(backgroundSrc(`${S}/backgrounds/${DIR}/background_2.png`)).toBe(
-      `https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/render/image/public/backgrounds/${DIR}/background_2.png?width=900&quality=55`,
+      `https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/render/image/public/backgrounds/${DIR}/background_2.png?width=900&quality=55&resize=contain`,
     );
     expect(backgroundSrc('https://example.com/a.png')).toBe('https://example.com/a.png');
   });

@@ -73,6 +73,23 @@ export interface CheckinResult {
   alreadyCheckedIn: boolean;
 }
 
+/**
+ * The day a check-in belongs to: the UTC date, which is what the server's
+ * CURRENT_DATE names (moonstone_daily_checkin keys its row by it). It is
+ * not the reader's calendar day — the ritual beside the widget is keyed by
+ * that — so the next check-in opens at UTC midnight, which is 09:00 in
+ * Tokyo and 17:00 in Los Angeles. Say when (nextCheckinOpensAt), never
+ * "tomorrow" (p8 F56).
+ */
+export function checkinDay(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+/** The instant the next check-in opens after `now`: the next UTC midnight. */
+export function nextCheckinOpensAt(now: Date = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+}
+
 export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   // Already checked in today (another tab, another device, a widget left
   // open since before the claim)? Say so without calling the RPC: before
@@ -82,7 +99,7 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   const { data: authData } = await supabase.auth.getUser();
   const uid = authData.user?.id;
   if (uid) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = checkinDay();
     const { data: existing } = await supabase
       .from('moonstone_daily_checkins')
       .select('streak_day')
@@ -140,7 +157,7 @@ export async function awardQuizCompletion(_userId: string, _reference: string): 
 /** Check if user has already checked in today — used before showing the
  * "Claim" button. Idempotent: querying this is side-effect-free. */
 export async function hasCheckedInToday(userId: string): Promise<Result<boolean>> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = checkinDay();
   const { data, error } = await supabase
     .from('moonstone_daily_checkins')
     .select('date')

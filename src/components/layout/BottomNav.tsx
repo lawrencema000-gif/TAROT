@@ -209,6 +209,10 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           fill one level down that padding was transparent — a strip of the
           page scrolled past underneath the tabs at 390px. Opaque, because
           elevation is fill; the gold hairline on top is the bar's edge. */}
+      {/* Inactive tabs: gold at 75% on the bar's mystic-900 is 5.4:1, AA for
+          the 12–13px labels (55% was 3.4:1, p8 F55). Active is full gold
+          (8.9:1) and also carries the tinted pill, its ring and the dot, so
+          the state never rests on colour alone. */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom bg-mystic-900 border-t border-gold/20" data-main-nav="" aria-label={t('nav.mainNavigation', { defaultValue: 'Main navigation' })} role="tablist">
         <div>
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
@@ -230,7 +234,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                     transition-all duration-slow touch-manipulation
                     active:scale-90
-                    ${isActive ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
+                    ${isActive ? 'text-gold' : 'text-gold/75 hover:text-gold/90'}
                   `}
                 >
                   <div className={`
@@ -266,7 +270,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                 transition-all duration-slow touch-manipulation
                 active:scale-90
-                ${isMoreActive || moreOpen ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
+                ${isMoreActive || moreOpen ? 'text-gold' : 'text-gold/75 hover:text-gold/90'}
               `}
             >
               <div className={`

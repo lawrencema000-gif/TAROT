@@ -59,7 +59,10 @@ function mapRow(r: Record<string, unknown>): Person {
   };
 }
 
-const COLS = 'id, user_id, name, relationship, birth_date, birth_time, birth_tz, birth_place, birth_lat, birth_lon, notes, created_at';
+// `species` is read like every other column the form writes: without it
+// every pet came back as an unspecified companion, and the edit sheet then
+// saved the default chip over the stored species (p8 F23).
+export const COLS = 'id, user_id, name, relationship, species, birth_date, birth_time, birth_tz, birth_place, birth_lat, birth_lon, notes, created_at';
 
 export async function listForUser(userId: string): Promise<Result<Person[]>> {
   const { data, error } = await supabase
@@ -116,6 +119,21 @@ export async function update(id: string, input: PersonInput): Promise<Result<Per
   const { data, error } = await supabase.from('people').update(row).eq('id', id).select(COLS).single();
   if (error) {
     captureException('dal.people.update', error, { id });
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, data: mapRow(data as Record<string, unknown>) };
+}
+
+/**
+ * Set only the zone a person's birth time is read in. The birth_utc trigger
+ * recomputes the instant and clears the cached chart, so the next chart call
+ * recasts it (p8 F25: a person saved without a place had no zone, and the
+ * trigger read the birth time as UTC).
+ */
+export async function setBirthTz(id: string, birthTz: string): Promise<Result<Person>> {
+  const { data, error } = await supabase.from('people').update({ birth_tz: birthTz }).eq('id', id).select(COLS).single();
+  if (error) {
+    captureException('dal.people.setBirthTz', error, { id });
     return { ok: false, error: error.message };
   }
   return { ok: true, data: mapRow(data as Record<string, unknown>) };

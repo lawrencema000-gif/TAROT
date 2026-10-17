@@ -5,6 +5,8 @@
       "afternoon": "Good afternoon",
       "evening": "Good evening"
     },
+    "greetingTitle": "{{greeting}}.",
+    "nameTitle": "{{name}}.",
     "subtitle": "Three parts: your horoscope, one card, one question.",
     "level": "Level {{n}}",
     "todaysRitual": "Today’s ritual",
@@ -48,7 +50,8 @@
       "saveCard": "Save {{name}}",
       "shareCard": "Share {{name}}",
       "meaningOf": "Read the meaning of {{name}}",
-      "faceDownLabel": "Your card, face down. Tap to turn it over."
+      "faceDownLabel": "Your card, face down. Tap to turn it over.",
+      "promptQuoted": "“{{prompt}}”"
     },
     "xpEarned": "+{{xp}} XP earned.",
     "removedFromSaved": "Removed from saved",
@@ -215,7 +218,9 @@
     },
     "search": {
       "placeholder": "Search a city or country…",
-      "label": "Search a city"
+      "label": "Search a city",
+      "searching": "Searching places…",
+      "noResults": "No places matched “{{query}}”. Check the spelling, or try a larger city nearby."
     },
     "about": {
       "eyebrow": "Astrocartography",
@@ -289,7 +294,10 @@
     "power": {
       "title": "Your power places",
       "subtitle": "Where the most planetary lines converge for your chart. Strong spots to consider visiting, moving to, or revisiting.",
-      "lockedHint": "Unlock to see your places"
+      "lockedHint": "Unlock to see your places",
+      "lineCount": "{{count}} lines",
+      "lineCount_one": "{{count}} line",
+      "lineCount_other": "{{count}} lines"
     },
     "destinedPlace": {
       "eyebrow": "Your destined place",
@@ -658,7 +666,7 @@
       "howFeeling": "How are you feeling?",
       "tags": "Tags",
       "attachments": "Attachments",
-      "tarotLinked": "Tarot reading linked",
+      "tarotLinked": "Reading linked",
       "goToPrompt": "Prompt {{n}}",
       "unlinkReading": "Remove the linked reading",
       "promptOf": "Prompt {{n}} of {{total}}",
@@ -704,6 +712,7 @@
       "withTag": "You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries), and you return to {{tag}} more than any other theme."
     },
     "linkedShort": "Reading",
+    "cardSeparator": ", ",
     "moodNames": {
       "anxious": "Anxious",
       "calm": "Calm",
@@ -724,7 +733,6 @@
     "searchMissSub": "Try another word, or clear the filter.",
     "searchPlaceholder": "Search entries",
     "seeInsights": "See insights",
-    "spreadRow": "{{spread}} spread",
     "startWritingCta": "Start writing",
     "tagNames": {
       "anxiety": "Anxiety",
@@ -6908,6 +6916,7 @@
     "birthTime": "Birth time (optional, sharpens result)",
     "calculate": "Reveal my design",
     "calcFailed": "Couldn’t calculate your design — check your birth details and try again.",
+    "errorSpent": "This chart was already given once and can’t be shown again. Reveal my design starts a new one, charged as usual.",
     "needBirthDate": "Birth date is required",
     "disclaimer": "This is a lightweight reading. A full Human Design chart uses planetary positions from your exact birth moment. For the complete 9-centre bodygraph, export your birth data and visit a dedicated Human Design site.",
     "signatureLabel": "Signature",
@@ -10280,6 +10289,8 @@
     "claimButton": "Claim daily",
     "claiming": "Claiming…",
     "alreadyClaimed": "Come back tomorrow",
+    "nextClaimAt": "Next claim at {{time}}",
+    "nextClaimTomorrowAt": "Next claim tomorrow at {{time}}",
     "claimed": "+{{n}} Moonstones · Day {{d}} streak",
     "claimFailed": "Couldn’t claim today’s reward — check your connection and try again.",
     "premiumLabel": "Premium · all readings unlocked",
@@ -10643,11 +10654,11 @@
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "crossAspects": "Top cross-aspects",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
-    "upgradeToPremium": "See what Premium includes",
+    "upgradeToPremium": "See Premium plans",
     "earnNow": "Watch an ad, earn {{n}} Moonstones",
     "noAspects": "No aspects computed.",
     "chartRulerLabel": "Chart ruler:",
-    "crossAspectRow": "{{partner}} {{type}} {{natal}}",
+    "crossAspectRow": "Their {{partner}} {{type}} your {{natal}}",
     "dominantPlanetsLabel": "Dominant planets:",
     "inHouseOf": "In your house of {{theme}}.",
     "listJoin": ", ",
@@ -11424,10 +11435,12 @@
       "saving": "Saving…",
       "saveChanges": "Save birth details",
       "add": "Add this person",
-      "approxLocation": "Using the nearest listed city — an approximate location."
+      "approxLocation": "Using the nearest listed city — an approximate location.",
+      "noPlaceNote": "Without a birth place, the birth time is read in your time zone, and the chart has no rising sign or houses."
     },
     "detail": {
       "chartFailed": "Couldn’t cast the chart — check your connection and try again.",
+      "noPlace": "No birth place saved — the birth time is read in your time zone, so this chart has no rising sign or houses.",
       "deleted": "{{name}} deleted",
       "deleteFailed": "Couldn’t delete {{name}} — try again.",
       "backToPeople": "Back to people",
@@ -11486,6 +11499,7 @@
       "errorNoCharge": "The reading didn’t come through. Nothing was charged.",
       "errorRateLimit": "Too many readings at once — wait a moment and try again.",
       "errorRetryFree": "The reading didn’t come through. If you were charged, Reveal reading again returns it at no extra cost.",
+      "errorSpent": "This reading was already given once and can’t be shown again. Reveal reading starts a new one, charged as usual.",
       "errorUnavailable": "Readings are paused for a moment. Nothing was charged.",
       "focus": {
         "career": "Career",

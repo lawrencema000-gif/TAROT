@@ -48,6 +48,15 @@ interface TarotFlipCardProps {
   onShare: () => void;
   onMeaning: () => void;
   cardBackUrl?: string;
+  /**
+   * The card was turned over today already (the ritual's card part is
+   * done): it lies face up, without the turn. It used to mount face down
+   * on every visit, asking "Tap to reveal" a card the reader had read and
+   * a ritual that said it was complete (p8 F53/F74).
+   */
+  revealed?: boolean;
+  /** The reader turned the card over here: turning it is the ritual's card part. */
+  onReveal?: () => void;
 }
 
 export function TarotFlipCard({
@@ -58,10 +67,21 @@ export function TarotFlipCard({
   onShare,
   onMeaning,
   cardBackUrl,
+  revealed = false,
+  onReveal,
 }: TarotFlipCardProps) {
   const { t } = useT('app');
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(revealed);
+  // A turn made here — animated, announced, felt — as against a card that
+  // arrived face up.
+  const [turnedHere, setTurnedHere] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
+
+  // The day's ritual row can land after the card mounted (it was turned on
+  // another device): lay it face up then too. Never face down again.
+  useEffect(() => {
+    if (revealed) setIsFlipped(true);
+  }, [revealed]);
 
   const { src: cardImageUrl } = useProgressiveImage({
     cardId: card.id,
@@ -85,7 +105,9 @@ export function TarotFlipCard({
     // A tap as the card is pressed, a thump as it passes edge-on.
     cancelHaptic.current();
     cancelHaptic.current = flipHaptics(FLIP_MS, reduceMotion);
+    setTurnedHere(true);
     setIsFlipped(true);
+    onReveal?.();
   };
 
   const toggleReversed = () => {
@@ -102,8 +124,9 @@ export function TarotFlipCard({
         <div className="min-w-0">
           <p className="font-display-eyebrow text-mystic-500">{t('home.ritualCards.yourCard')}</p>
           {/* The heading names what is on the table: the invitation before
-              the turn, the card after it (R5 m-2). */}
-          <h3 className="heading-display-md text-mystic-100 truncate">
+              the turn, the card after it (R5 m-2). Lining figures: the
+              serif's old-style 5 sat like a subscript in "ペンタクルの5" (F80). */}
+          <h3 className="heading-display-md lining-nums text-mystic-100 truncate">
             {isFlipped ? card.name : t('home.ritualCards.tapToReveal')}
           </h3>
         </div>
@@ -147,7 +170,9 @@ export function TarotFlipCard({
           style={{
             transformStyle: 'preserve-3d',
             transform: isFlipped ? TURNED : AT_REST,
-            transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
+            // Only the reader's own tap turns the card; one that was turned
+            // earlier simply lies face up.
+            transition: turnedHere ? `transform ${FLIP_MS}ms ${FLIP_EASE}` : 'none',
           }}
         >
           {/* Back — the Arcana back. It frames itself. */}
@@ -177,9 +202,10 @@ export function TarotFlipCard({
             plate stays upright, so nothing sits over it. */}
       </div>
 
-      {/* Screen reader announcement for card reveal */}
+      {/* Screen reader announcement for card reveal — the reader's own turn
+          only; a card that arrives face up is named by its label. */}
       <div className="sr-only" aria-live="assertive" role="status">
-        {isFlipped &&
+        {turnedHere &&
           t('home.ritualCards.revealedAnnounce', {
             defaultValue: 'Card revealed: {{name}}, {{orientation}}.',
             name: card.name,
@@ -189,8 +215,8 @@ export function TarotFlipCard({
 
       {isFlipped && (
         <div
-          className="space-y-4 animate-fade-in"
-          style={{ animationDuration: '280ms', animationDelay: `${FLIP_MS - 160}ms`, animationFillMode: 'both' }}
+          className={`space-y-4 ${turnedHere ? 'animate-fade-in' : ''}`}
+          style={turnedHere ? { animationDuration: '280ms', animationDelay: `${FLIP_MS - 160}ms`, animationFillMode: 'both' } : undefined}
         >
           {/* Short by default (R5 M-12): the keywords, two sentences, and
               the rest behind a disclosure — the actions stay in view. */}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
 import { Button, Badge, EyebrowLabel, ReadingProse } from '../ui';
@@ -6,8 +6,13 @@ import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { scorePlaces, type PlaceScore, type LifeIntent } from '../../utils/celestialScoring';
 import { ccToFlag } from '../../utils/celestialGeo';
-import { generateCelestialReading, type CelestialReadingResponse } from '../../dal/celestialReading';
-import type { PlanetName, Angle } from '../../utils/astrocartography';
+import { generateCelestialReading, type CelestialReadingRequest, type CelestialReadingResponse } from '../../dal/celestialReading';
+import { PLANETS, type PlanetName, type Angle } from '../../utils/astrocartography';
+import { localizePlanetName } from '../../i18n/localizeNames';
+import { localizeCountry } from './placeNames';
+
+/** A planet the model named, in the reader's language when it is one of the ten (p8 F27). */
+const planetLabel = (p: string) => ((PLANETS as readonly string[]).includes(p) ? localizePlanetName(p as PlanetName) : p);
 
 /**
  * "Find Your Place" — the headline flagship feature.
@@ -113,46 +118,84 @@ export function FindYourPlace({
     };
   }, [phase.kind]);
 
+  /** The paid request in flight or last failed: its id and the body it was sent with. */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** A reading is between its first line and its last (set synchronously). */
+  const busy = useRef(false);
+  /** The same, for the buttons: disabled from the spend gate on. */
+  const [working, setWorking] = useState(false);
+
+  /**
+   * Read `target`, paid at most once (p8 F20). Start, re-roll and retry all
+   * come through here. `busy` is set before the spend gate is awaited, so a
+   * second tap during its round trip returns at once (it used to send a
+   * second 250-Moonstone request); the buttons are disabled from the gate
+   * check on. The request carries a `requestId`, kept until a reading
+   * lands: the server debits once per (requestId, body), so retrying the
+   * same place gets the first run's reading back instead of a second
+   * charge, and skips the gate (the first attempt may have left the balance
+   * under the cost).
+   */
+  async function readPlace(target: PlaceScore, opts: { computing?: boolean } = {}) {
+    if (busy.current) return;
+    busy.current = true;
+    setWorking(true);
+    const failed = () => setPhase({ kind: 'error', result: target, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
+    try {
+      const req: CelestialReadingRequest = {
+        mode: 'best-place',
+        city: {
+          name: target.city.name,
+          country: target.city.country,
+          lat: target.city.lat,
+          lon: target.city.lon,
+        },
+        intent,
+        lines: target.contributingLines.map((c) => ({ planet: c.planet, angle: c.angle, distanceKm: c.distanceKm })),
+        birth: { utc: birthUtc },
+        userContext: { zodiacSign, mbtiType, locale },
+      };
+      const signature = JSON.stringify(req);
+      if (attempt.current?.body !== signature) {
+        attempt.current = { id: crypto.randomUUID(), body: signature };
+        if (!isPremium && !(await trySpend())) {
+          attempt.current = null;
+          return;
+        }
+      }
+      const requestId = attempt.current!.id;
+      if (opts.computing) {
+        setPhase({ kind: 'computing' });
+        // Brief computing animation to give the user something to look at
+        // before the AI call returns. ~1.4s is long enough to feel like
+        // "the cosmos is consulting" but short enough that the AI call
+        // (typically 4-8s) hides behind the reveal step that follows.
+        await new Promise((r) => setTimeout(r, 1400));
+      }
+      setPhase({ kind: 'reading', result: target });
+      onReveal(target.city);
+      const withId: CelestialReadingRequest & { requestId: string } = { ...req, requestId };
+      const res = await generateCelestialReading(withId);
+      if (res.ok) {
+        attempt.current = null;
+        setPhase({ kind: 'done', result: target, reading: res.data });
+      } else {
+        failed();
+      }
+    } catch {
+      failed();
+    } finally {
+      busy.current = false;
+      setWorking(false);
+    }
+  }
+
   async function handleStart() {
     if (ranked.length === 0) {
       setPhase({ kind: 'error', result: null, message: t('celestial.findPlace.error.noPlace', { defaultValue: 'No strong place found for this intent — try a different life area.' }) });
       return;
     }
-    if (!isPremium) {
-      const spent = await trySpend();
-      if (!spent) return;
-    }
-    const top = ranked[0];
-    setPhase({ kind: 'computing' });
-    // Brief computing animation to give the user something to look at
-    // before the AI call returns. ~1.4s is long enough to feel like
-    // "the cosmos is consulting" but short enough that the AI call
-    // (typically 4-8s) hides behind the reveal step that follows.
-    await new Promise((r) => setTimeout(r, 1400));
-    setPhase({ kind: 'reading', result: top });
-    onReveal(top.city);
-    try {
-      const res = await generateCelestialReading({
-        mode: 'best-place',
-        city: {
-          name: top.city.name,
-          country: top.city.country,
-          lat: top.city.lat,
-          lon: top.city.lon,
-        },
-        intent,
-        lines: top.contributingLines.map((c) => ({ planet: c.planet, angle: c.angle, distanceKm: c.distanceKm })),
-        birth: { utc: birthUtc },
-        userContext: { zodiacSign, mbtiType, locale },
-      });
-      if (res.ok) {
-        setPhase({ kind: 'done', result: top, reading: res.data });
-      } else {
-        setPhase({ kind: 'error', result: top, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
-      }
-    } catch {
-      setPhase({ kind: 'error', result: top, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
-    }
+    await readPlace(ranked[0], { computing: true });
   }
 
   function handleClose() {
@@ -169,34 +212,13 @@ export function FindYourPlace({
     const usedIndex = used ? ranked.findIndex((r) => r.city.name === used.name && r.city.cc === used.cc) : -1;
     const next = ranked[(usedIndex + 1) % ranked.length];
     if (!next) return;
-    if (!isPremium) {
-      const spent = await trySpend();
-      if (!spent) return;
-    }
-    setPhase({ kind: 'reading', result: next });
-    onReveal(next.city);
-    try {
-      const res = await generateCelestialReading({
-        mode: 'best-place',
-        city: {
-          name: next.city.name,
-          country: next.city.country,
-          lat: next.city.lat,
-          lon: next.city.lon,
-        },
-        intent,
-        lines: next.contributingLines.map((c) => ({ planet: c.planet, angle: c.angle, distanceKm: c.distanceKm })),
-        birth: { utc: birthUtc },
-        userContext: { zodiacSign, mbtiType, locale },
-      });
-      if (res.ok) {
-        setPhase({ kind: 'done', result: next, reading: res.data });
-      } else {
-        setPhase({ kind: 'error', result: next, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
-      }
-    } catch {
-      setPhase({ kind: 'error', result: next, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
-    }
+    await readPlace(next);
+  }
+
+  /** "Try the reading again": the same place, the same request — not the next city, charged anew. */
+  async function handleRetry() {
+    if (phase.kind === 'error' && phase.result) await readPlace(phase.result);
+    else await handleStart();
   }
 
   return (
@@ -208,7 +230,9 @@ export function FindYourPlace({
         transition={{ duration: 0.4, delay: 0.2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => (isPremium ? handleStart() : ranked.length === 0 ? onUpgrade() : handleStart())}
-        className="group w-full p-5 rounded-card bg-gradient-to-br from-gold/25 via-gold/10 to-mystic-900/60 hairline-gold border border-gold/40 hover:border-gold/60 transition-all text-left relative overflow-hidden"
+        disabled={working}
+        aria-busy={working}
+        className="group w-full p-5 rounded-card bg-gradient-to-br from-gold/25 via-gold/10 to-mystic-900/60 hairline-gold border border-gold/40 hover:border-gold/60 transition-all text-left relative overflow-hidden disabled:opacity-60 disabled:cursor-wait"
       >
         {/* Subtle animated shimmer across the card */}
         <div
@@ -292,6 +316,7 @@ export function FindYourPlace({
                       onSave={handleSave}
                       saving={saving}
                       savedFlash={savedFlash}
+                      working={working}
                     />
                   </RevealHero>
                 )}
@@ -307,7 +332,7 @@ export function FindYourPlace({
                         <p className="text-meta text-coral-light/80 mb-3">
                           {phase.message}
                         </p>
-                        <Button variant="ghost" size="sm" onClick={() => (phase.result ? handleReroll() : handleStart())}>
+                        <Button variant="ghost" size="sm" onClick={handleRetry} disabled={working}>
                           <RefreshCw className="w-3 h-3 mr-1.5" aria-hidden />
                           {t('celestial.findPlace.error.retry', { defaultValue: 'Try the reading again' })}
                         </Button>
@@ -378,7 +403,7 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
         <h2 className="text-3xl font-display text-mystic-100 leading-tight">
           {result.city.name}
         </h2>
-        <p className="text-meta text-mystic-400">{result.city.country}</p>
+        <p className="text-meta text-mystic-400">{localizeCountry(result.city.cc, result.city.country)}</p>
       </motion.div>
 
       {/* Contributing planets row — visual constellation */}
@@ -400,10 +425,10 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
               {line.angle}
             </div>
             <span className="text-meta uppercase tracking-wider text-mystic-400">
-              {line.planet}
+              {localizePlanetName(line.planet)}
             </span>
-            <span className="text-meta text-mystic-400">
-              {Math.round(line.distanceKm)} km
+            <span className="text-meta text-mystic-400 tabular-nums">
+              {t('celestial.city.km', { defaultValue: '{{km}} km', km: Math.round(line.distanceKm) })}
             </span>
           </div>
         ))}
@@ -432,12 +457,15 @@ function ReadingBody({
   onSave,
   saving,
   savedFlash,
+  working,
 }: {
   reading: CelestialReadingResponse;
   onReroll: () => void;
   onSave: () => Promise<void>;
   saving: boolean;
   savedFlash: boolean;
+  /** A paid re-roll is already on its way: one tap, one charge. */
+  working: boolean;
 }) {
   const { t } = useT('app');
   return (
@@ -467,7 +495,7 @@ function ReadingBody({
                 style={{ backgroundColor: PLANET_COLOR[note.planet as PlanetName] ?? '#d4af37' }}
               />
               <p className="reading-copy flex-1">
-                <span className="text-mystic-100 font-medium">{note.planet} {note.angle}</span>
+                <span className="text-mystic-100 font-medium">{planetLabel(note.planet)} {note.angle}</span>
                 {' — '}{note.note}
               </p>
             </div>
@@ -496,7 +524,7 @@ function ReadingBody({
       )}
 
       <div className="flex gap-2 pt-2">
-        <Button variant="ghost" size="md" onClick={onReroll} disabled={saving}>
+        <Button variant="ghost" size="md" onClick={onReroll} disabled={saving || working}>
           <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
           {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Show me a different place' })}
         </Button>

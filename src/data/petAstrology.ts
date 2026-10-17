@@ -197,6 +197,50 @@ export function readPet(birthDate: string, species?: Species | null): PetReading
   };
 }
 
+/** The reading's prose fields, in the order the card shows them. */
+export const PET_SIGN_FIELDS = ['headline', 'temperament', 'needs', 'quirk'] as const;
+
+/**
+ * The English the 'pets' content overlay translates
+ * (src/i18n/locales/<lng>/content-pets.json, read through
+ * src/i18n/contentOverlay.ts): `signs.<sign>.<field>` and
+ * `species.<species>.lens`, keyed by the enum values, never by the text.
+ * The species labels are UI strings (people.species.*), not content.
+ */
+export function petsCorpus(): {
+  signs: Record<ZodiacSign, PetSignReading>;
+  species: Record<Species, { lens: string }>;
+} {
+  const signs = {} as Record<ZodiacSign, PetSignReading>;
+  for (const [sign, r] of Object.entries(PET_SIGNS) as [ZodiacSign, PetSignReading][]) {
+    signs[sign] = { headline: r.headline, temperament: r.temperament, needs: r.needs, quirk: r.quirk };
+  }
+  const species = {} as Record<Species, { lens: string }>;
+  for (const [k, info] of Object.entries(SPECIES_INFO) as [Species, SpeciesInfo][]) species[k] = { lens: info.lens };
+  return { signs, species };
+}
+
+/**
+ * `reading` in the reader's language: each field from the overlay
+ * (`translate(path, english)`, i.e. the overlay's `ct`), else the English.
+ * Pass the overlay's `ct` bound to it; English passes the identity.
+ */
+export function localizePetReading(
+  reading: PetReading,
+  translate: (path: string, english: string) => string,
+): PetReading {
+  const signs = Object.fromEntries(
+    PET_SIGN_FIELDS.map((f) => [f, translate(`signs.${reading.sign}.${f}`, reading.reading[f])]),
+  ) as unknown as PetSignReading;
+  return {
+    ...reading,
+    reading: signs,
+    speciesLens: reading.species && reading.speciesLens
+      ? translate(`species.${reading.species}.lens`, reading.speciesLens)
+      : reading.speciesLens,
+  };
+}
+
 /**
  * Shown on every pet reading. Not boilerplate — the one place this feature
  * could do harm is by sounding like it knows something about an animal's

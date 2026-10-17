@@ -12,6 +12,8 @@ import { type NatalChart, computeSynastry, synastryScore, toWheelChart, isPlanet
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
 import { useInterpretations } from '../hooks/useAstrology';
+import { useBirthTzBackfill, fallbackZone } from '../components/horoscope/birthZone';
+import { ensurePersonZone } from '../components/people/personZone';
 
 type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
 const TABS: { key: CompareTab; label: string; blurb: string }[] = [
@@ -36,6 +38,10 @@ export function PersonComparePage() {
   const navigate = useNavigate();
   const { t } = useT('app');
   const { profile } = useAuth();
+  // Your side of the comparison is cast from birth_utc / birthTz: a profile
+  // without a birth-place zone (cast before F21) gets one here, and the
+  // charts recast when the profile comes back.
+  useBirthTzBackfill();
   const [name, setName] = useState('');
   const [mine, setMine] = useState<NatalChart | null>(null);
   const [theirs, setTheirs] = useState<NatalChart | null>(null);
@@ -73,9 +79,12 @@ export function PersonComparePage() {
     if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
     const pRes = await peopleDal.getById(id);
     if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
+    // Saved before F25 without a place: give their birth time a zone before
+    // their chart is cast (the trigger read it as UTC).
+    await ensurePersonZone(pRes.data);
     setName(pRes.data.name);
     const [own, other] = await Promise.all([
-      chartFor({ birthDate: profile.birthDate, birthTime: profile.birthTime ?? null, birthUtc: profile.birthUtc ?? null, lat: profile.birthLat ?? null, lon: profile.birthLon ?? null, timezone: profile.birthTz ?? profile.timezone ?? null }),
+      chartFor({ birthDate: profile.birthDate, birthTime: profile.birthTime ?? null, birthUtc: profile.birthUtc ?? null, lat: profile.birthLat ?? null, lon: profile.birthLon ?? null, timezone: profile.birthTz || fallbackZone(profile) }),
       chartFor({ personId: id }),
     ]);
     if (!own || !other) { setErr(t('people.compare.castFailed', { defaultValue: "Couldn't cast both charts — check your connection and try again." })); setLoading(false); return; }

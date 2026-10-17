@@ -105,6 +105,12 @@ export function AchievementsPage() {
   }
 
   const localized = useMemo(() => achievements.map(localize), [achievements, localize]);
+  // One object per badge and language, so a re-render (every AuthContext
+  // change) does not restart the modal's XP count-up (p8 F41).
+  const celebrationLocalized = useMemo(
+    () => (celebrationAchievement ? localize(celebrationAchievement) : null),
+    [celebrationAchievement, localize],
+  );
 
   const filteredAchievements = useMemo(() => {
     const filtered = selectedCategory === 'all'
@@ -299,7 +305,7 @@ export function AchievementsPage() {
       </div>
 
       <AchievementUnlockModal
-        achievement={celebrationAchievement ? localize(celebrationAchievement) : null}
+        achievement={celebrationLocalized}
         onClose={handleCloseCelebration}
       />
     </Page>

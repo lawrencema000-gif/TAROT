@@ -22,8 +22,45 @@ const STORE_TTL_MS = 30 * 60 * 1000;
 /** The two signed-out entry screens. */
 export const AUTH_PATHS: readonly string[] = ['/signin', '/signup'];
 
+/**
+ * A pathname without its trailing slash(es); `/` stays `/`.
+ *
+ * Netlify serves every prerendered route at both `/x` and `/x/`, the live
+ * site 301s `/signin` to `/signin/`, and the sitemap and canonicals of the
+ * builds before p8 named the slash form, so `/signin/` and `/signup/` are in
+ * every returning visitor's history and in the search index. The shell's
+ * decisions (which entry screen, member page or unknown path) compare
+ * against this, never against the raw pathname (p8 F43).
+ */
+export function shellPath(pathname: string): string {
+  return pathname.replace(/(.)\/+$/, '$1');
+}
+
 export function isAuthPath(pathname: string): boolean {
-  return AUTH_PATHS.includes(pathname);
+  return AUTH_PATHS.includes(shellPath(pathname));
+}
+
+/** The password-recovery screen, with or without a trailing slash. */
+export function isResetPasswordPath(pathname: string): boolean {
+  return shellPath(pathname) === '/reset-password';
+}
+
+/**
+ * Where a signed-out visitor who opened a member page goes: to sign-in, and
+ * back to the page afterwards — except right after a sign-out on that very
+ * page. Then the URL still names the last member's page (their journal,
+ * their person), and the next person at the device must not be brought back
+ * to it: they go to `/`.
+ *
+ * `signedOutFrom` is the path the visitor was on when the session ended, or
+ * null. It counts once, and only for the page the sign-out happened on: a
+ * visitor who signs out on a public page (the cartomancy hub, a card
+ * meaning) and then taps a member link goes to sign-in like anyone else
+ * (p8 F46; the flag it replaces stayed set for the rest of the session).
+ */
+export function signedOutMemberDestination(fullPath: string, pathname: string, signedOutFrom: string | null): string {
+  if (signedOutFrom !== null && shellPath(signedOutFrom) === shellPath(pathname)) return '/';
+  return signInPathFor(fullPath);
 }
 
 /**
@@ -43,7 +80,7 @@ export function safeNextPath(raw: string | null | undefined): string | null {
     return null;
   }
   if (url.origin !== 'https://arcana.invalid') return null;
-  if (isAuthPath(url.pathname) || url.pathname === '/reset-password') return null;
+  if (isAuthPath(url.pathname) || isResetPasswordPath(url.pathname)) return null;
   return `${url.pathname}${url.search}${url.hash}`;
 }
 

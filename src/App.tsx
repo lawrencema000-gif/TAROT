@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, Suspense, Component, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { lazyWithReload } from './components/layout/staleChunk';
-import { isAuthPath, signInPathFor, authPathKeepingNext, rememberNextFrom, postAuthDestination, forgetNext } from './components/layout/authReturn';
+import { isAuthPath, isResetPasswordPath, shellPath, signedOutMemberDestination, authPathKeepingNext, rememberNextFrom, postAuthDestination, forgetNext } from './components/layout/authReturn';
 import { releasePrerenderedHero } from './components/layout/prerenderedHero';
 import { backgroundSrc } from './utils/imageUrl';
 import { ChevronLeft } from 'lucide-react';
@@ -339,13 +339,19 @@ function AppContent() {
   // pending): /signup then shows the sign-in form, not step one again.
   const [signupDone, setSignupDone] = useState(false);
   const web = !isNative();
-  const path = location.pathname;
+  // Every decision below reads the path without a trailing slash: `/signin/`
+  // and `/signup/` are the forms the live site redirects to and the old
+  // sitemap listed, and an exact match sent them to the 404 (p8 F43).
+  const path = shellPath(location.pathname);
   const onboardingOpen = web ? path === '/signup' && !signupDone : showOnboarding;
   const authFormOpen = web ? path === '/signin' || (path === '/signup' && signupDone) : true;
-  // A visitor who signs out stays on whatever member URL they were reading;
-  // they go to `/`, not to a sign-in form that would bring the next person
-  // back to the last one's page.
-  const wasSignedIn = useRef(false);
+  // The page the visitor was on while signed in, kept by the effect below.
+  // On the render where the session ends it still names that page, so a
+  // sign-out on a member URL goes to `/` (signedOutMemberDestination), not
+  // to a sign-in form that would bring the next person back to the last
+  // one's page. Cleared on the first signed-out render after that, so it
+  // never outlives the sign-out (p8 F46).
+  const lastSignedInPath = useRef<string | null>(null);
 
 
   useEffect(() => {
@@ -368,12 +374,12 @@ function AppContent() {
   // Shopify (single noindex page) — this is an uncontested branded-search
   // lane: "arcana login", "arcana sign up", "tarotlife login", etc.
   useEffect(() => {
-    if (location.pathname === '/signin') {
+    if (path === '/signin') {
       setShowOnboarding(false);
-    } else if (location.pathname === '/signup') {
+    } else if (path === '/signup') {
       setShowOnboarding(true);
     }
-  }, [location.pathname]);
+  }, [path]);
 
   // A `next` on an auth screen survives the trip through Google: the OAuth
   // return strips the query string (AuthContext) before the redirect reads it.
@@ -382,8 +388,8 @@ function AppContent() {
   }, [user, location.pathname, location.search]);
 
   useEffect(() => {
-    if (user) wasSignedIn.current = true;
-    else if (!loading && location.pathname === '/') wasSignedIn.current = false;
+    if (user) lastSignedInPath.current = location.pathname;
+    else if (!loading) lastSignedInPath.current = null;
   }, [user, loading, location.pathname]);
 
   useEffect(() => {
@@ -641,7 +647,7 @@ function AppContent() {
   // directly to /reset-password. Closes a UX + security gap where the
   // recovery email previously dropped users into a normal signed-in
   // session with no way to actually update their password.
-  if (passwordRecoveryMode || location.pathname === '/reset-password') {
+  if (passwordRecoveryMode || isResetPasswordPath(location.pathname)) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -654,10 +660,16 @@ function AppContent() {
   }
 
   // Signed out on a member page (a "Start a reading" tap, a bookmark, an
-  // invite link): sign in, then come back to it. After a sign-out the URL
-  // still names the last member's page; that visitor goes to `/` instead.
+  // invite link): sign in, then come back to it. On the render where a
+  // session ends on a member page, the URL still names the last member's
+  // page; that visitor goes to `/` instead.
   if (!user && isMemberRoute && !isPublicPath(path)) {
-    return <Navigate to={wasSignedIn.current ? '/' : signInPathFor(`${path}${location.search}${location.hash}`)} replace />;
+    return (
+      <Navigate
+        to={signedOutMemberDestination(`${path}${location.search}${location.hash}`, path, lastSignedInPath.current)}
+        replace
+      />
+    );
   }
 
   // Public content pages (SEO) — render before auth guard. A web path that is

@@ -48,13 +48,19 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
   const [isVisible, setIsVisible] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [xpCount, setXpCount] = useState(0);
+  // The entrance and the count-up belong to a badge, not to an object: a
+  // caller that localises the row builds a new one on every render, and the
+  // shell re-renders on every profile refetch (a tab coming back, the save
+  // that earned the badge), which restarted the count at 0 mid-modal
+  // (p8 F41). Keyed on the badge and its reward instead.
+  const shownId = achievement?.id ?? null;
+  const targetXP = achievement?.xp_reward ?? 0;
 
   useEffect(() => {
-    if (achievement) {
+    if (shownId !== null) {
       setIsVisible(true);
       setTimeout(() => setShowContent(true), 100);
 
-      const targetXP = achievement.xp_reward;
       // Same reasoning as the landing figures: the XP total is the payload,
       // the count-up is decoration, and setInterval is out of reach of the
       // CSS block that freezes this modal's own scale/opacity around it.
@@ -78,7 +84,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
       setShowContent(false);
       setTimeout(() => setIsVisible(false), 300);
     }
-  }, [achievement]);
+  }, [shownId, targetXP]);
 
   if (!isVisible || !achievement) return null;
 

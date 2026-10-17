@@ -80,7 +80,7 @@
       "no": "No thanks"
     },
     "next": "Continue",
-    "beginJourney": "Begin my first ritual",
+    "finish": "Finish",
     "toast": {
       "saveFailed": "Couldn’t save your details — check your connection and try again.",
       "welcome": "Welcome to Arcana."

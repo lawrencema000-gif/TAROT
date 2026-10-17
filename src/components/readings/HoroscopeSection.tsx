@@ -4,6 +4,7 @@ import { TarotCardIcon } from '../ui/NavIcons';
 import { Card, Button, Progress, toast, ReadingProse, Skeleton } from '../ui';
 import { ZODIAC_ICONS } from '../icons';
 import { TodayForYouView } from '../horoscope/TodayForYou';
+import { useBirthTzBackfill } from '../horoscope/birthZone';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { useNatalChart, useDailyHoroscope } from '../../hooks/useAstrology';
@@ -87,7 +88,9 @@ function localSignDates(range: string, locale: string): string {
  */
 export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const { user } = useAuth();
-  const { chart, loading: chartLoading } = useNatalChart();
+  const { chart, loading: chartLoading, fetchChart } = useNatalChart();
+  // A chart cast before F21 is recast in the birth place's zone; reload.
+  useBirthTzBackfill(fetchChart);
 
   if (user && chartLoading && !chart) {
     return (

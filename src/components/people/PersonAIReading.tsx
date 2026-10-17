@@ -17,6 +17,18 @@ const FOCUS = [
 
 type Focus = (typeof FOCUS)[number]['key'];
 
+/** The `error.code` a function answered with (a FunctionsHttpError keeps the Response on `context`). */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * AI chart reading for a saved person — Moonstone-gated (the server does the
  * authoritative debit; the hook only gate-checks and shows the Earn sheet).
@@ -28,6 +40,12 @@ type Focus = (typeof FOCUS)[number]['key'];
  * lands: a retry after a dropped connection is the same request, charged
  * at most once, and skips the client gate (a charged first attempt can
  * leave the balance under the cost).
+ *
+ * One tap, one request (p8 F20): the gate check is a round trip, and a
+ * second tap during it used to pass every test, mint its own requestId and
+ * be charged as a second reading. `busy` is set synchronously before
+ * anything is awaited, so a re-entrant tap returns at once, and the button
+ * is disabled (and says so) from the gate check on, not from the request.
  */
 export function PersonAIReading({ personId, personName }: { personId: string; personName: string }) {
   const { t } = useT('app');
@@ -37,21 +55,48 @@ export function PersonAIReading({ personId, personName }: { personId: string; pe
   const [loading, setLoading] = useState(false);
   /** The attempt in flight or last failed: its id and the body it was sent with. */
   const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** A reveal is between its first line and its last. */
+  const busy = useRef(false);
 
   const reveal = async () => {
+    if (busy.current) return;
+    busy.current = true;
+    setLoading(true);
+    try {
+      await revealOnce();
+    } finally {
+      busy.current = false;
+      setLoading(false);
+    }
+  };
+
+  const revealOnce = async () => {
     const body = { personId, focus, locale: getLocale() };
     const signature = JSON.stringify(body);
     if (attempt.current?.body !== signature) {
-      const ok = await tryConsume();
-      if (!ok) return;
+      // The id exists before the gate is awaited: anything that reads the
+      // attempt while the gate is in flight sees this request, not none.
       attempt.current = { id: crypto.randomUUID(), body: signature };
+      if (!(await tryConsume())) {
+        attempt.current = null;
+        return;
+      }
     }
-    setLoading(true);
+    const requestId = attempt.current!.id;
     const { data, error } = await supabase.functions.invoke('ai-person-reading', {
-      body: { ...body, requestId: attempt.current.id },
+      body: { ...body, requestId },
     });
-    setLoading(false);
     if (error) {
+      if ((await functionErrorCode(error)) === 'REQUEST_ALREADY_USED') {
+        // This id was spent on a reading delivered once and no longer kept:
+        // every later press with it would get the same 409 while the toast
+        // promised a free retry. The next press is a new reading.
+        attempt.current = null;
+        toast(t('people.aiReading.errorSpent', {
+          defaultValue: 'This reading was already given once and can’t be shown again. Reveal reading starts a new one, charged as usual.',
+        }), 'error');
+        return;
+      }
       const failure = await aiFailureOf(error);
       if (failure === 'insufficient' || failure === 'soft-cap') {
         // Refused before the debit; the gate opens the Earn sheet.

@@ -5,6 +5,8 @@
       "afternoon": "こんにちは",
       "evening": "こんばんは"
     },
+    "greetingTitle": "{{greeting}}",
+    "nameTitle": "{{name}} さん",
     "subtitle": "今日の宇宙があなたに届けるメッセージ",
     "level": "レベル {{n}}",
     "todaysRitual": "今日のリチュアル",
@@ -38,7 +40,8 @@
       "saveCard": "{{name}}を保存",
       "shareCard": "{{name}}をシェア",
       "meaningOf": "{{name}}の意味を読む",
-      "faceDownLabel": "あなたのカード（裏向き）。タップするとめくれます。"
+      "faceDownLabel": "あなたのカード（裏向き）。タップするとめくれます。",
+      "promptQuoted": "「{{prompt}}」"
     },
     "xpEarned": "+{{xp}} XPを獲得しました。",
     "removedFromSaved": "保存済みから削除しました",
@@ -441,7 +444,7 @@
       "insights": "インサイト"
     },
     "todaysPrompt": "今日のプロンプト",
-    "defaultPrompt": "今日、何について振り返っていますか?",
+    "defaultPrompt": "今日、何について振り返っていますか？",
     "emptyState": "まだジャーナルがありません。",
     "emptyStateSub": "今日から振り返りの旅をはじめましょう。",
     "loadMore": "さらに読み込む",
@@ -463,10 +466,10 @@
       "newEntry": "新しいエントリー",
       "editEntry": "エントリーを編集",
       "yourThoughts": "あなたの思い",
-      "howFeeling": "今日の気分は?",
+      "howFeeling": "今日の気分は？",
       "tags": "タグ",
       "attachments": "添付",
-      "tarotLinked": "タロットリーディングをリンク済み",
+      "tarotLinked": "リーディングをリンク済み",
       "goToPrompt": "プロンプト{{n}}",
       "unlinkReading": "リーディングのリンクを解除",
       "promptOf": "プロンプト {{n}} / {{total}}",
@@ -479,7 +482,7 @@
       "savedLocked": "エントリーを保存してロックしました",
       "saved": "エントリーを保存しました",
       "xpEarned": "+{{n}} XPを獲得しました。",
-      "deleteConfirm": "このジャーナルエントリーを削除しますか?",
+      "deleteConfirm": "このジャーナルエントリーを削除しますか？",
       "deleted": "エントリーを削除しました",
       "deleteFailed": "このエントリーを削除できませんでした。もう一度お試しください。",
       "savedLockedXp": "保存してロックしました · +{{n}} XP",
@@ -512,6 +515,7 @@
       "withTag": "あなたがいちばんよく書くのは{{weekday}}です。最も多い気分は「{{mood}}」で（{{total}}件中{{n}}件）、ほかのどのテーマよりも「{{tag}}」に立ち返っています。"
     },
     "linkedShort": "リーディング",
+    "cardSeparator": "、",
     "moodNames": {
       "anxious": "不安",
       "calm": "穏やか",
@@ -532,7 +536,6 @@
     "searchMissSub": "別の言葉で探すか、フィルターをクリアしてみてください。",
     "searchPlaceholder": "エントリーを検索",
     "seeInsights": "インサイトを見る",
-    "spreadRow": "{{spread}}スプレッド",
     "startWritingCta": "書きはじめる",
     "tagNames": {
       "anxiety": "不安",
@@ -6925,8 +6928,9 @@
     "birthTime": "出生時刻（任意、結果がより精密になります）",
     "calculate": "私のデザインを見る",
     "calcFailed": "デザインを計算できませんでした。出生情報を確認して、もう一度お試しください。",
+    "errorSpent": "このチャートはすでに一度お届けしたため、もう一度表示することはできません。「私のデザインを見る」を押すと新しく計算し、通常どおり料金がかかります。",
     "needBirthDate": "生年月日が必要です",
-    "disclaimer": "これは簡易版です。本格的なヒューマンデザインのチャートには、出生時点の正確な惑星位置が必要です。9センターのボディグラフ全体を見たい場合は、専用のHuman Designサイトへ出生データを持って行ってください。",
+    "disclaimer": "これは簡易版です。本格的なヒューマンデザインのチャートには、出生時点の正確な惑星位置が必要です。9センターのボディグラフ全体を見たい場合は、ヒューマンデザイン専用のサイトへ出生データを持って行ってください。",
     "signatureLabel": "シグネチャー",
     "notSelfLabel": "不本来（ノット・セルフ）テーマ",
     "authorityLabel": "オーソリティ",
@@ -10297,6 +10301,8 @@
     "claimButton": "今日の分を受け取る",
     "claiming": "受け取り中…",
     "alreadyClaimed": "また明日",
+    "nextClaimAt": "次は{{time}}から受け取れます",
+    "nextClaimTomorrowAt": "次は明日の{{time}}から受け取れます",
     "claimed": "+{{n}} ムーンストーン · {{d}}日目の連続ログイン",
     "claimFailed": "今日の報酬を受け取れませんでした。接続を確認して、もう一度お試しください。",
     "premiumLabel": "プレミアム · すべてのリーディングが解放済み",
@@ -10585,7 +10591,7 @@
       "feat3": "各トランジット期間の開始／終了日",
       "feat4": "一年を通した全体の物語"
     },
-    "unlockCta": "{{n}} Moonstonesでアンロック",
+    "unlockCta": "ムーンストーン{{n}}個でアンロック",
     "unlocked": "予報をアンロックしました",
     "unlockFailed": "予報をアンロックできませんでした。接続を確認して、もう一度お試しください。",
     "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
@@ -10616,7 +10622,7 @@
       "feat3": "オーブ厳密のアスペクト表",
       "feat4": "PDF保存またはブラウザから印刷"
     },
-    "unlockCta": "{{n}} Moonstonesでアンロック",
+    "unlockCta": "ムーンストーン{{n}}個でアンロック",
     "unlocked": "チャートをアンロックしました",
     "unlockFailed": "レポートをアンロックできませんでした。接続を確認して、もう一度お試しください。",
     "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
@@ -10634,8 +10640,8 @@
       "solar-return": "ソーラーリターン",
       "synastry": "シナストリー"
     },
-    "computing": "Computing…",
-    "progressedAge": "Age {{n}}",
+    "computing": "チャートを計算しています…",
+    "progressedAge": "{{n}}歳",
     "synastryPrompt": "相手の出生データ",
     "partnerNamePlaceholder": "相手の名前（任意）",
     "synastryCta": "相手のチャートを重ねる",
@@ -10646,7 +10652,7 @@
     "orEarnMoonstones": "または{{n}}ムーンストーンで解放",
     "crossAspects": "主要クロスアスペクト",
     "disclaimer": "占星術は予言ではなく、象徴のレンズです。あなたのチャートは気質の地図—どう生かすかはあなた次第。",
-    "upgradeToPremium": "プレミアムに含まれるものを見る",
+    "upgradeToPremium": "プレミアムのプランを見る",
     "earnNow": "広告を見て、ムーンストーン{{n}}個を貯める",
     "noAspects": "計算されたアスペクトはありません。",
     "chartRulerLabel": "チャートの守護星：",
@@ -10712,7 +10718,7 @@
       "feat3": "あなたの協働のカウンターウェイト",
       "feat4": "新しい役割での最初の90日プラン"
     },
-    "unlockCta": "{{n}} Moonstonesで解放",
+    "unlockCta": "ムーンストーン{{n}}個で解放",
     "unlocked": "レポートを解放しました",
     "unlockFailed": "レポートを解放できませんでした。接続を確認して、もう一度お試しください。",
     "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
@@ -11390,7 +11396,9 @@
     },
     "search": {
       "placeholder": "都市や国を検索…",
-      "label": "都市を検索"
+      "label": "都市を検索",
+      "searching": "場所を検索しています…",
+      "noResults": "「{{query}}」に一致する場所が見つかりませんでした。表記を確認するか、近くの大きな都市でお試しください。"
     },
     "about": {
       "eyebrow": "アストロカートグラフィー",
@@ -11464,7 +11472,10 @@
     "power": {
       "title": "あなたのパワースポット",
       "subtitle": "あなたのチャートで、もっとも多くの惑星ラインが交わる場所です。訪れる、移り住む、また戻る——そんな候補になる強い場所です。",
-      "lockedHint": "解放して、あなたの場所を見る"
+      "lockedHint": "解放して、あなたの場所を見る",
+      "lineCount": "{{count}}本のライン",
+      "lineCount_one": "{{count}}本のライン",
+      "lineCount_other": "{{count}}本のライン"
     },
     "destinedPlace": {
       "eyebrow": "あなたの運命の場所",
@@ -11633,10 +11644,12 @@
       "saving": "保存中…",
       "saveChanges": "出生情報を保存",
       "add": "この人を追加",
-      "approxLocation": "一覧にある最寄りの都市を使っています。おおよその位置です。"
+      "approxLocation": "一覧にある最寄りの都市を使っています。おおよその位置です。",
+      "noPlaceNote": "出生地がない場合は、出生時刻をあなたのタイムゾーンで読み取ります。チャートにはアセンダントとハウスがありません。"
     },
     "detail": {
       "chartFailed": "チャートを立てられませんでした。接続を確認して、もう一度お試しください。",
+      "noPlace": "出生地が保存されていないため、出生時刻はあなたのタイムゾーンで読み取っています。このチャートにはアセンダントとハウスがありません。",
       "deleted": "{{name}}を削除しました",
       "deleteFailed": "{{name}}を削除できませんでした。もう一度お試しください。",
       "backToPeople": "大切な人の一覧に戻る",
@@ -11695,6 +11708,7 @@
       "errorNoCharge": "リーディングを受け取れませんでした。料金はかかっていません。",
       "errorRateLimit": "リーディングのリクエストが多すぎます。少し待ってからもう一度お試しください。",
       "errorRetryFree": "リーディングを受け取れませんでした。料金がかかっていた場合は、もう一度「リーディングを見る」を押すと、追加料金なしで表示されます。",
+      "errorSpent": "このリーディングはすでに一度お届けしたため、もう一度表示することはできません。「リーディングを見る」を押すと新しいリーディングが始まり、通常どおり料金がかかります。",
       "errorUnavailable": "リーディングは一時的に停止しています。料金はかかっていません。",
       "focus": {
         "career": "キャリア",

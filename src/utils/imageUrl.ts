@@ -14,7 +14,8 @@
  *     scripts/appearance-renditions.py, long-cached by _headers), keyed by
  *     the stored file name;
  *   - any other file in those Storage buckets goes through Supabase's image
- *     transform endpoint (enabled on this project; checked 2026-10-03);
+ *     transform endpoint (enabled on this project; checked 2026-10-03),
+ *     scaled to a width at its own aspect (see transformUrl);
  *   - the bundled tarot images use their existing 150/400 renditions;
  *   - anything else (the default SVG, a data: URL) is used as given.
  */
@@ -52,8 +53,16 @@ function stemOf(path: string): string {
   return file.replace(/\.[a-z0-9]+$/i, '');
 }
 
-function transformUrl(origin: string, bucket: string, path: string, width: number, quality: number): string {
-  return `${origin}/storage/v1/render/image/public/${bucket}/${path}?width=${width}&quality=${quality}`;
+/**
+ * Supabase's image transform for a stored file, `width` px wide at its own
+ * aspect. `resize=contain` is not optional: the endpoint's default mode is
+ * `cover`, and `cover` with a width alone keeps the source's full height, so
+ * a 1024×1536 back asked for at width 200 came back 200×1536 — a strip of
+ * the middle of the art, which the card then cropped again (p8 F45).
+ * Exported for the geometry check (imageUrl.geometry.test.ts).
+ */
+export function transformUrl(origin: string, bucket: string, path: string, width: number, quality: number): string {
+  return `${origin}/storage/v1/render/image/public/${bucket}/${path}?width=${width}&quality=${quality}&resize=contain`;
 }
 
 /** The narrowest width in `widths` that covers `need` px, else the widest. */

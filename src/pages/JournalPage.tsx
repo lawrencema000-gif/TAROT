@@ -22,7 +22,7 @@ import {
   Moon,
   PenLine,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -44,8 +44,22 @@ import {
   PageGrid,
   Paper,
   TarotCardIcon,
+  PlayingCardIcon,
   type Tone,
 } from '../components/ui';
+import { SpreadGlyph } from '../components/icons/SpreadGlyph';
+import {
+  isPlayingReading,
+  savedSpreadLayout,
+  savedSpreadName,
+  type SavedReadingRow,
+} from '../components/readings/tarot/SavedReadingSheet';
+import { calendarDay } from '../components/readings/tarot/readingDates';
+import { canonicalCardName, cardIdFromName } from '../components/readings/tarot/cardSlug';
+import { getPlayingCard } from '../data/cartomancy';
+import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
+import { localizeCard } from '../i18n/localizeCard';
+import type { TarotCard } from '../types';
 import { MoodGlyph, JOURNAL_MOOD_GLYPHS, type MoodGlyphId } from '../components/journal/MoodGlyphs';
 import { countWords } from '../components/journal/wordCount';
 import { useAuth } from '../context/AuthContext';
@@ -95,24 +109,6 @@ const POSITIVE_MOODS = ['happy', 'calm', 'grateful', 'inspired', 'loved'];
 /** Five muted hues for the two insight bar charts (design cues §6.7). */
 const BAR_HUES = ['bg-cosmic-violet', 'bg-coral-dark', 'bg-cosmic-blue', 'bg-gold-dark', 'bg-teal-dark'];
 
-/** The abbreviation on a row's trailing Tag for its linked spread. */
-const SPREAD_ABBR: Record<string, string> = {
-  single: 'I',
-  'single-card': 'I',
-  daily: 'I',
-  'three-card': 'III',
-  'past-present-future': 'III',
-  'celtic-cross': 'CC',
-  horseshoe: 'HS',
-  relationship: 'REL',
-  'yes-no': 'Y/N',
-};
-
-function spreadAbbr(type: string | undefined): string {
-  if (!type) return '';
-  return SPREAD_ABBR[type] ?? type.replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase();
-}
-
 /** The gate for the generated insight: enough entries, and some variety to speak of. */
 const INSIGHT_MIN_ENTRIES = 5;
 /** A bar chart of one or two data points is a 100% bar, not a pattern. */
@@ -140,11 +136,49 @@ interface JournalEntry {
   updated_at: string;
 }
 
+/**
+ * A saved reading as the Link-a-reading picker lists it. The cards are the
+ * rows the readings save — `cardId` and the canonical English `cardName`
+ * (a playing card's `deck: 'playing'`); rows from before ids carry only a
+ * name, the oldest ones as `name`.
+ */
 interface TarotReading {
   id: string;
   date: string;
   spread_type: string;
-  cards: { name: string; position?: string }[];
+  cards: { cardId?: number; cardName?: string; name?: string; reversed?: boolean; position?: string; deck?: 'tarot' | 'playing' }[];
+  /** When the reading was saved: its day on the reader's clock (`date` held the UTC day before p8). */
+  created_at?: string;
+}
+
+/** True for a playing-card (cartomancy) reading, as the Library tells them apart. */
+function isPlaying(reading: TarotReading): boolean {
+  return isPlayingReading(reading as unknown as Pick<SavedReadingRow, 'spread_type' | 'cards'>);
+}
+
+/**
+ * A reading's card names in the reader's language: tarot cards by id from
+ * the tarot corpus, playing cards from the cartomancy corpus. The picker
+ * mapped `c.name`, which current rows do not have, and listed every reading
+ * as "Oct 6 · , …" (p8 F49).
+ */
+function readingCardNames(reading: TarotReading): string[] {
+  const playing = isPlaying(reading);
+  return (reading.cards ?? []).map((c) => {
+    const stored = c.cardName ?? c.name ?? '';
+    if (playing) {
+      const pc = c.cardId !== undefined ? getPlayingCard(c.cardId) : undefined;
+      return pc ? localizePlayingCard(pc).name : stored;
+    }
+    const id = c.cardId ?? cardIdFromName(stored);
+    if (id === undefined) return stored;
+    return localizeCard({ id, name: canonicalCardName(id) || stored } as TarotCard).name;
+  }).filter(Boolean);
+}
+
+/** The day a reading was made: the moment it was saved, else its `date` column. */
+function readingDay(reading: TarotReading): Date {
+  return calendarDay(reading.created_at || reading.date);
 }
 
 type JournalTab = 'entries' | 'templates' | 'insights';
@@ -186,6 +220,10 @@ export function JournalPage() {
   const { t } = useT('app');
   const locale = getLocale();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Home's ritual "Write" arrives with { compose: 'today' }: open the editor
+  // on today's prompt (or today's entry) once the list is in.
+  const composeToday = useRef((location.state as { compose?: string } | null)?.compose === 'today');
   const isDesktop = useIsDesktop();
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useGamification();
@@ -554,11 +592,42 @@ export function JournalPage() {
   // This account's cached mood only — the cache is scoped per user.
   const todayMood = getTodayMood(user?.id);
 
+  // Home's "Write": what "Write today" does here — today's entry if there is
+  // one, else a new entry on today's prompt — once the entries are in, so
+  // an entry already written is opened rather than doubled.
+  useEffect(() => {
+    if (!composeToday.current || loading) return;
+    composeToday.current = false;
+    // Spent: a reload, or Back to this page, must not open it again.
+    navigate(location.pathname, { replace: true, state: null });
+    if (todayEntry) openEditEntry(todayEntry);
+    else openNewEntry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
   const readingById = useMemo(() => {
     const map = new Map<string, TarotReading>();
     for (const r of recentReadings) map.set(r.id, r);
     return map;
   }, [recentReadings]);
+
+  // Playing-card readings name their spread and cards from the cartomancy
+  // corpus, which ja/ko/zh fetch on demand: only when one is in the list.
+  useCartomancyCorpus(recentReadings.some(isPlaying));
+
+  /** A reading's spread as the Library names it (not its id: "carto three timeline spread"). */
+  const readingName = (reading: TarotReading): string => {
+    const name = savedSpreadName(t, reading.spread_type);
+    return name === reading.spread_type ? t('journal.linkedShort', { defaultValue: 'Reading' }) : name;
+  };
+
+  /** "Oct 6 · Five of Wands, Three of Cups…" */
+  const readingMeta = (reading: TarotReading): string => {
+    const names = readingCardNames(reading);
+    const cards = names.slice(0, 2).join(t('journal.cardSeparator', { defaultValue: ', ' })) + (names.length > 2 ? '…' : '');
+    const day = shortDateFmt.format(readingDay(reading));
+    return cards ? `${day} · ${cards}` : day;
+  };
 
   const entriesForStats = entries;
   const insights = useMemo(() => {
@@ -697,11 +766,12 @@ export function JournalPage() {
   const wordCount = countWords(content, locale);
   const isSearching = Boolean(searchQuery.trim() || selectedTagFilter);
   const editorDateLabel = formatDate(draftDate);
+  const linkedReading = linkedReadingId ? readingById.get(linkedReadingId) : undefined;
 
   const promptCard = !todayEntry && (
     <Card padding="lg" interactive onClick={openNewEntry}>
       <EyebrowLabel align="left" className="block mb-2">{t('journal.todaysPrompt')}</EyebrowLabel>
-      <p className="heading-display-md heading-strong text-mystic-100 text-balance">{todayPrompt}</p>
+      <p className="heading-display-md heading-strong lining-nums text-mystic-100 text-balance">{todayPrompt}</p>
       <span className="mt-3 inline-flex items-center gap-1 text-meta font-medium text-gold">
         {t('journal.startWritingCta', { defaultValue: 'Start writing' })}
         <ChevronRight className="w-4 h-4" aria-hidden />
@@ -869,8 +939,6 @@ export function JournalPage() {
         <div className="space-y-3">
           <ListRowGroup>
             {filteredEntries.map(entry => {
-              const reading = entry.linked_reading_id ? readingById.get(entry.linked_reading_id) : undefined;
-              const abbr = reading ? spreadAbbr(reading.spread_type) : '';
               const body = snippet(entry.content);
               return (
                 <ListRow
@@ -887,9 +955,12 @@ export function JournalPage() {
                   trailing={
                     <span className="flex items-center gap-2 shrink-0">
                       {entry.is_locked && <Lock className="w-3.5 h-3.5 text-mystic-500" aria-label={t('journal.lock.locked')} />}
+                      {/* "Reading", in the reader's language: the English
+                          abbreviations this carried ("III", "CC", the slug's
+                          first letters — "CAR") said nothing (p8 F49). */}
                       {entry.linked_reading_id && (
                         <Tag tone="blue" icon={<Link2 className="w-3 h-3" aria-hidden />}>
-                          {abbr || t('journal.linkedShort', { defaultValue: 'Reading' })}
+                          {t('journal.linkedShort', { defaultValue: 'Reading' })}
                         </Tag>
                       )}
                       <ChevronRight className="w-5 h-5 text-mystic-500" aria-hidden />
@@ -1235,7 +1306,7 @@ export function JournalPage() {
                   aria-label={t('journal.titlePlaceholder')}
                   placeholder={t('journal.titlePlaceholder')}
                   maxLength={120}
-                  className="w-full bg-transparent border-0 border-b border-paper-hairline pb-2 heading-display-md heading-strong text-ink placeholder:text-ink-muted focus:outline-none focus:border-ink-gold"
+                  className="w-full bg-transparent border-0 border-b border-paper-hairline pb-2 heading-display-md heading-strong lining-nums text-ink placeholder:text-ink-muted focus:outline-none focus:border-ink-gold"
                 />
                 <textarea
                   value={content}
@@ -1352,14 +1423,13 @@ export function JournalPage() {
                 <p className="text-meta text-mystic-400 mb-3">{t('journal.editSheet.attachments')}</p>
                 {linkedReadingId ? (
                   <ListRowGroup>
+                    {/* Named as the picker names it; a reading older than
+                        the picker's list is "Reading linked". */}
                     <ListRow
-                      icon={<TarotCardIcon />}
+                      icon={linkedReading && isPlaying(linkedReading) ? <PlayingCardIcon /> : <TarotCardIcon />}
                       tone="blue"
-                      label={t('journal.editSheet.tarotLinked')}
-                      meta={(() => {
-                        const r = readingById.get(linkedReadingId);
-                        return r ? `${shortDateFmt.format(parseLocalDate(r.date))} · ${r.cards.slice(0, 2).map(c => c.name).join(', ')}` : undefined;
-                      })()}
+                      label={linkedReading ? readingName(linkedReading) : t('journal.editSheet.tarotLinked')}
+                      meta={linkedReading ? <span className="[word-break:auto-phrase]">{readingMeta(linkedReading)}</span> : undefined}
                       trailing={
                         <button
                           type="button"
@@ -1467,14 +1537,23 @@ export function JournalPage() {
           <EmptyState variant="inline" icon={<TarotCardIcon />} title={t('journal.noReadings')} />
         ) : (
           <ListRowGroup>
+            {/* Each reading by its spread's name, its day and its cards, as
+                the Library lists it; the glyph is the spread's shape. */}
             {recentReadings.map(reading => (
               <ListRow
                 key={reading.id}
-                icon={<TarotCardIcon />}
+                icon={
+                  isPlaying(reading) ? (
+                    <PlayingCardIcon />
+                  ) : (
+                    <SpreadGlyph layout={savedSpreadLayout(reading.spread_type, reading.cards?.length ?? 0)} />
+                  )
+                }
                 tone="blue"
-                label={t('journal.spreadRow', { defaultValue: '{{spread}} spread', spread: reading.spread_type.replace(/-/g, ' ') })}
-                meta={`${shortDateFmt.format(parseLocalDate(reading.date))} · ${reading.cards.slice(0, 2).map(c => c.name).join(', ')}${reading.cards.length > 2 ? '…' : ''}`}
-                trailing={<Tag tone="blue">{spreadAbbr(reading.spread_type)}</Tag>}
+                label={readingName(reading)}
+                // auto-phrase: a second line breaks between words, never
+                // inside "スペードのエース".
+                meta={<span className="[word-break:auto-phrase]">{readingMeta(reading)}</span>}
                 onClick={() => {
                   setLinkedReadingId(reading.id);
                   setShowAttachmentPicker(false);

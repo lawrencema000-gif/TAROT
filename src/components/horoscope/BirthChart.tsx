@@ -5,6 +5,7 @@ import { Card, Sheet, Skeleton, Progress, Tag, type Tone } from '../ui';
 import { ChartWheel } from '../chart/ChartWheel';
 import { houseTheme } from '../chart/houseThemes';
 import { useNatalChart } from '../../hooks/useAstrology';
+import { useBirthTzBackfill } from './birthZone';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
 import { ZodiacGlyph, PlanetGlyph } from '../icons';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
@@ -70,7 +71,9 @@ function aspectMark(type: string): { line: string } {
 
 export function BirthChart() {
   const { t } = useT('app');
-  const { chart, loading, error } = useNatalChart();
+  const { chart, loading, error, fetchChart } = useNatalChart();
+  // A chart cast before F21 is recast in the birth place's zone; reload.
+  useBirthTzBackfill(fetchChart);
   const interp = useInterpData();
   const [expandedBigThree, setExpandedBigThree] = useState(false);
   const [selectedPlacement, setSelectedPlacement] = useState<PlanetPlacement | null>(null);

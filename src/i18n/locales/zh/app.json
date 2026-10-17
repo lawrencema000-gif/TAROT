@@ -5,11 +5,13 @@
       "afternoon": "下午好",
       "evening": "晚上好"
     },
+    "greetingTitle": "{{greeting}}",
+    "nameTitle": "{{name}}",
     "subtitle": "今日宇宙捎来的讯息",
     "level": "等级 {{n}}",
     "todaysRitual": "今日仪式",
     "ritualComplete": "仪式完成",
-    "streak": "已连续 {{n}} 天,继续保持。",
+    "streak": "已连续 {{n}} 天，继续保持。",
     "savedToday": "今日已保存",
     "copiedToClipboard": "已复制到剪贴板",
     "dayStreakLabel": "天连续",
@@ -38,7 +40,8 @@
       "saveCard": "收藏{{name}}",
       "shareCard": "分享{{name}}",
       "meaningOf": "阅读{{name}}的牌意",
-      "faceDownLabel": "你的牌，牌面朝下。点击将它翻开。"
+      "faceDownLabel": "你的牌，牌面朝下。点击将它翻开。",
+      "promptQuoted": "“{{prompt}}”"
     },
     "xpEarned": "获得 +{{xp}} XP。",
     "removedFromSaved": "已从收藏中移除",
@@ -50,7 +53,7 @@
     "pickACardSub": "30秒的日常仪式，一张召唤你的牌。",
     "soulmateTitle": "灵魂伴侣分数",
     "soulmateSub": "与任何人对比星盘 — 得出 100 分制的契合度。",
-    "loveTreeSub": "90 秒,12 道题 → 你的依恋风格化为一棵活树。",
+    "loveTreeSub": "90 秒，12 道题 → 你的依恋风格化为一棵活树。",
     "loveTreeTitle": "爱之树",
     "exploreMore": "今日仪式之外",
     "seeAllSaved": "查看全部收藏",
@@ -441,7 +444,7 @@
       "insights": "洞察"
     },
     "todaysPrompt": "今日提示语",
-    "defaultPrompt": "今天想要反思什么?",
+    "defaultPrompt": "今天想要反思什么？",
     "emptyState": "还没有日记。",
     "emptyStateSub": "今天就开始你的反思旅程吧。",
     "loadMore": "加载更多",
@@ -463,10 +466,10 @@
       "newEntry": "新条目",
       "editEntry": "编辑条目",
       "yourThoughts": "你的想法",
-      "howFeeling": "你现在的感受?",
+      "howFeeling": "你现在的感受？",
       "tags": "标签",
       "attachments": "附件",
-      "tarotLinked": "已关联塔罗牌阵",
+      "tarotLinked": "已关联解读",
       "goToPrompt": "提示语 {{n}}",
       "unlinkReading": "移除关联的牌阵",
       "promptOf": "提示 {{n}} / {{total}}",
@@ -479,7 +482,7 @@
       "savedLocked": "条目已保存并锁定",
       "saved": "条目已保存",
       "xpEarned": "获得 +{{n}} XP。",
-      "deleteConfirm": "删除此日记条目?",
+      "deleteConfirm": "删除此日记条目？",
       "deleted": "条目已删除",
       "deleteFailed": "无法删除这条日记，请重试。",
       "savedLockedXp": "已保存并锁定 · +{{n}} XP",
@@ -512,6 +515,7 @@
       "withTag": "你最常在{{weekday}}写日记。你最常见的心情是{{mood}}（{{total}} 条中有 {{n}} 条），而{{tag}}是你最常回到的主题。"
     },
     "linkedShort": "解读",
+    "cardSeparator": "、",
     "moodNames": {
       "anxious": "焦虑",
       "calm": "平静",
@@ -532,7 +536,6 @@
     "searchMissSub": "换个词试试，或清除筛选。",
     "searchPlaceholder": "搜索日记",
     "seeInsights": "查看洞察",
-    "spreadRow": "{{spread}}牌阵",
     "startWritingCta": "开始书写",
     "tagNames": {
       "anxiety": "焦虑",
@@ -6925,8 +6928,9 @@
     "birthTime": "出生时间（可选，让结果更精准）",
     "calculate": "揭示我的设计",
     "calcFailed": "无法计算你的人类图，请检查出生信息后重试。",
+    "errorSpent": "这张人类图已经交付过一次，无法再次显示。点击「揭示我的设计」会重新计算，并照常扣费。",
     "needBirthDate": "请填写出生日期",
-    "disclaimer": "这是简化版本。完整的人类图需要出生时刻准确的行星位置。若想看完整的九中心 bodygraph，请把出生数据带到专门的人类图网站。",
+    "disclaimer": "这是简化版本。完整的人类图需要出生时刻准确的行星位置。若想看完整的九中心人体图，请把出生数据带到专门的人类图网站。",
     "signatureLabel": "标志",
     "notSelfLabel": "非我主题",
     "authorityLabel": "内在权威",
@@ -10297,6 +10301,8 @@
     "claimButton": "领取今日",
     "claiming": "领取中…",
     "alreadyClaimed": "明天再来",
+    "nextClaimAt": "{{time}} 起可再次领取",
+    "nextClaimTomorrowAt": "明天 {{time}} 起可再次领取",
     "claimed": "+{{n}} 月光石 · 连续第 {{d}} 天",
     "claimFailed": "无法领取今日奖励，请检查网络连接后重试。",
     "premiumLabel": "高级版 · 全部解读已解锁",
@@ -10585,7 +10591,7 @@
       "feat3": "每个行运窗口的起止日期",
       "feat4": "全年叙事主线"
     },
-    "unlockCta": "用{{n}} Moonstones解锁",
+    "unlockCta": "用 {{n}} 月光石解锁",
     "unlocked": "预测已解锁",
     "unlockFailed": "无法解锁预报，请检查网络连接后重试。",
     "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
@@ -10616,7 +10622,7 @@
       "feat3": "相位矩阵与精确容许度",
       "feat4": "保存为 PDF 或在浏览器中打印"
     },
-    "unlockCta": "用 {{n}} Moonstones 解锁",
+    "unlockCta": "用 {{n}} 月光石解锁",
     "unlocked": "已解锁本命盘",
     "unlockFailed": "无法解锁报告，请检查网络连接后重试。",
     "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
@@ -10634,8 +10640,8 @@
       "solar-return": "太阳回归",
       "synastry": "合盘"
     },
-    "computing": "Computing…",
-    "progressedAge": "Age {{n}}",
+    "computing": "正在计算你的星盘…",
+    "progressedAge": "{{n}}岁",
     "synastryPrompt": "对方的出生信息",
     "partnerNamePlaceholder": "对方姓名（可选）",
     "synastryCta": "叠加对方星盘",
@@ -10646,7 +10652,7 @@
     "orEarnMoonstones": "或使用 {{n}} 月光石解锁",
     "crossAspects": "重点交互相位",
     "disclaimer": "占星是一种象征性的视角，而非预言。你的星盘映照你的气质——如何运用，全由你定。",
-    "upgradeToPremium": "看看高级版包含什么",
+    "upgradeToPremium": "查看高级版方案",
     "earnNow": "看广告，赚 {{n}} 月光石",
     "noAspects": "未计算出相位。",
     "chartRulerLabel": "命主星：",
@@ -10712,7 +10718,7 @@
       "feat3": "你的协作平衡力量",
       "feat4": "新岗位的前90天计划"
     },
-    "unlockCta": "用 {{n}} Moonstones 解锁",
+    "unlockCta": "用 {{n}} 月光石解锁",
     "unlocked": "报告已解锁",
     "unlockFailed": "无法解锁报告，请检查网络连接后重试。",
     "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
@@ -11390,7 +11396,9 @@
     },
     "search": {
       "placeholder": "搜索城市或国家…",
-      "label": "搜索城市"
+      "label": "搜索城市",
+      "searching": "正在搜索地点…",
+      "noResults": "没有找到与“{{query}}”匹配的地点。请检查拼写，或试试附近的大城市。"
     },
     "about": {
       "eyebrow": "占星地图",
@@ -11464,7 +11472,10 @@
     "power": {
       "title": "你的能量之地",
       "subtitle": "你的星盘中行星线汇聚最多的地方。值得考虑前往、迁居或重访的强能量点。",
-      "lockedHint": "解锁以查看你的地点"
+      "lockedHint": "解锁以查看你的地点",
+      "lineCount": "{{count}} 条线",
+      "lineCount_one": "{{count}} 条线",
+      "lineCount_other": "{{count}} 条线"
     },
     "destinedPlace": {
       "eyebrow": "你的命定之地",
@@ -11633,10 +11644,12 @@
       "saving": "保存中…",
       "saveChanges": "保存出生信息",
       "add": "添加这个人",
-      "approxLocation": "使用列表中最近的城市——位置为近似值。"
+      "approxLocation": "使用列表中最近的城市——位置为近似值。",
+      "noPlaceNote": "没有出生地时，出生时间会按你所在的时区解读，星盘也不会有上升星座和宫位。"
     },
     "detail": {
       "chartFailed": "无法排出星盘，请检查网络连接后重试。",
+      "noPlace": "未保存出生地，出生时间按你所在的时区解读，因此这张星盘没有上升星座和宫位。",
       "deleted": "已删除{{name}}",
       "deleteFailed": "无法删除{{name}}，请重试。",
       "backToPeople": "返回人物",
@@ -11695,6 +11708,7 @@
       "errorNoCharge": "解读未能完成。没有扣除任何费用。",
       "errorRateLimit": "同时进行的解读太多——请稍等片刻再试。",
       "errorRetryFree": "解读未能完成。如果你已被扣费，再次点击「揭晓解读」即可取回，无需额外付费。",
+      "errorSpent": "这次解读已经交付过一次，无法再次显示。点击「揭晓解读」会开始一次新的解读，并照常扣费。",
       "errorUnavailable": "解读服务暂停片刻。没有扣除任何费用。",
       "focus": {
         "career": "事业",

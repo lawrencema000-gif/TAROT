@@ -23,6 +23,8 @@ import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
 import { isNative } from '../utils/platform';
 import { useGeocode } from '../hooks/useAstrology';
+import { deriveBirthTz } from '../utils/birthTz';
+import { fallbackZone } from '../components/horoscope/birthZone';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
 import { useT } from '../i18n/useT';
@@ -109,7 +111,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const [step, setStep] = useState(() => firstIncompleteStep(seedFromProfile(profile)));
   const [loading, setLoading] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
-  const { results: geoResults, loading: geoLoading, search: geoSearch, usedFallback: geoApprox } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch, usedFallback: geoApprox } = useGeocode();
   const [showGeoResults, setShowGeoResults] = useState(false);
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Attribution runs while the reveal is on screen; Begin awaits it.
@@ -168,20 +170,42 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const handleComplete = async () => {
     setLoading(true);
 
+    const place = data.birthPlace.trim();
+    const located = data.birthLat !== undefined && data.birthLon !== undefined;
     const profileUpdate: Record<string, unknown> = {
       goals: data.goals,
       birthDate: data.birthDate,
       birthTime: data.birthTime || undefined,
-      birthPlace: data.birthPlace || undefined,
+      birthPlace: place || null,
       tonePreference: data.tonePreference,
       notificationsEnabled: data.notificationsEnabled,
       notificationTime: data.notificationTime,
+      // The device's zone, as the email onboarding writes it. An OAuth
+      // account otherwise keeps the signup default, 'UTC', which the
+      // birth_utc trigger falls back to when no birth-place zone is known
+      // (F21).
+      timezone: fallbackZone(profile),
       // onboardingComplete is written by finish(): App.tsx renders this page
       // only while it is false, so flipping it here would unmount the page
       // before the reveal step could paint.
     };
-    if (data.birthLat !== undefined) profileUpdate.birthLat = data.birthLat;
-    if (data.birthLon !== undefined) profileUpdate.birthLon = data.birthLon;
+    if (located) {
+      profileUpdate.birthLat = data.birthLat;
+      profileUpdate.birthLon = data.birthLon;
+      // The birth place's own zone: the one the birth time is read in, by
+      // the chart cast and by the birth_utc trigger (F21). Derived from the
+      // coordinates, which every result carries (the geocoder's zone is not
+      // on every row). A zone that cannot be derived clears one left by an
+      // earlier place.
+      profileUpdate.birthTz = await deriveBirthTz(data.birthLat!, data.birthLon!);
+    } else {
+      // No place picked from the list: no coordinates, so none of an
+      // earlier pick (a resumed onboarding) may stay under the new text.
+      // Horoscope resolves a typed place itself.
+      profileUpdate.birthLat = null;
+      profileUpdate.birthLon = null;
+      profileUpdate.birthTz = null;
+    }
 
     const { error } = await updateProfile(profileUpdate);
 
@@ -382,6 +406,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   {geoApprox && (data.birthLat !== undefined || (showGeoResults && geoResults.length > 0)) && (
                     <p className="text-meta text-mystic-400 mt-1.5">{t('app:horoscope.onboarding.approxLocation', { defaultValue: 'Using an approximate location — the nearest city we could match.' })}</p>
                   )}
+                  {/* What the search could not do: no match, no connection, or
+                      only same-name places outside the region typed (O#35). */}
+                  {showGeoResults && data.birthLat === undefined && !geoLoading && geoError && (
+                    <p className="text-meta text-gold/80 mt-1.5" role="status">{geoError}</p>
+                  )}
                   <p className="text-caption text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
                 </div>
               </div>
@@ -521,7 +550,10 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           loading={loading}
           
         >
-          {step === REVEAL ? t('oauth.reveal.cta') : step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
+          {/* Labels short enough for one line beside Back at 360 px in every
+              locale (F60): "Begin my first ritual" wrapped, and the screen it
+              led to was the reveal, not a ritual. */}
+          {step === REVEAL ? t('oauth.reveal.cta') : step === totalSteps - 1 ? t('oauth.finish') : t('oauth.next')}
           <ChevronRight className="w-4 h-4" aria-hidden />
         </Button>
       </div>

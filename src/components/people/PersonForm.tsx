@@ -8,6 +8,7 @@ import { people } from '../../dal';
 import type { Person, PersonInput, Relationship, Species } from '../../dal/people';
 import { SPECIES_INFO } from '../../data/petAstrology';
 import { useAuth } from '../../context/AuthContext';
+import { fallbackZone } from '../horoscope/birthZone';
 import type { City } from '../../utils/celestialGeo';
 
 const RELATIONSHIPS: { key: Relationship; label: string }[] = [
@@ -33,7 +34,10 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
   const { t } = useT('app');
   const [name, setName] = useState(existing?.name ?? '');
   const [relationship, setRelationship] = useState<Relationship>(existing?.relationship ?? 'friend');
-  const [species, setSpecies] = useState<Species>(existing?.species ?? 'dog');
+  // A new pet starts on Dog, the commonest answer. An existing one keeps
+  // what is stored, including none (an unspecified companion): the edit
+  // sheet used to preselect Dog and save it over a stored Cat (p8 F23).
+  const [species, setSpecies] = useState<Species | null>(existing ? existing.species : 'dog');
   const [birthDate, setBirthDate] = useState(existing?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(existing?.birthTime ?? '');
   const [place, setPlace] = useState<{ name: string; lat: number; lon: number } | null>(
@@ -41,11 +45,14 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
       ? { name: existing.birthPlace, lat: existing.birthLat, lon: existing.birthLon }
       : null,
   );
+  /** Where the place just picked came from: the curated list is the nearest listed city, the search is the place itself. */
+  const [placeSource, setPlaceSource] = useState<'list' | 'search' | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePickCity = (c: City) => {
-    setPlace({ name: `${c.name}, ${c.country}`, lat: c.lat, lon: c.lon });
+  const handlePickCity = (c: City, source: 'list' | 'search') => {
+    setPlace({ name: c.country ? `${c.name}, ${c.country}` : c.name, lat: c.lat, lon: c.lon });
+    setPlaceSource(source);
   };
 
   const handleSave = async () => {
@@ -54,8 +61,10 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) { setError(t('people.form.dateRequired', { defaultValue: 'Enter their birth date.' })); return; }
     setError(null);
     setSaving(true);
-    let birthTz: string | null = null;
-    if (place) birthTz = await deriveBirthTz(place.lat, place.lon);
+    // The birth place's zone; with no place, the device's (p8 F25). The
+    // trigger used to read a place-less birth time as UTC, which moved the
+    // Moon by up to a sign for anyone born east or west of Greenwich.
+    const birthTz = place ? await deriveBirthTz(place.lat, place.lon) : fallbackZone();
 
     const input: PersonInput = {
       name: name.trim(),
@@ -107,7 +116,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
           <label className="mb-1.5 block"><EyebrowLabel align="left">{t('people.form.species', { defaultValue: 'Species' })}</EyebrowLabel></label>
           <div className="flex flex-wrap gap-2">
             {SPECIES_KEYS.map((k) => (
-              <Chip key={k} label={SPECIES_INFO[k].label} selected={species === k} onSelect={() => setSpecies(k)} />
+              <Chip key={k} label={t(`people.species.${k}`, { defaultValue: SPECIES_INFO[k].label })} selected={species === k} onSelect={() => setSpecies(k)} />
             ))}
           </div>
         </div>
@@ -121,14 +130,26 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
         {place && (
           <div className="mb-2">
             <p className="text-ui text-gold">{place.name}</p>
-            {/* The picker resolves to the nearest city in the curated list,
-                not the exact street (R5 M-6): say so, without blocking. */}
-            <p className="text-meta text-mystic-400 mt-0.5">
-              {t('people.form.approxLocation', { defaultValue: 'Using the nearest listed city — an approximate location.' })}
-            </p>
+            {/* A pick from the curated list is the nearest listed city, not
+                the exact place (R5 M-6): say so, without blocking. A place
+                from the search is the place itself. */}
+            {placeSource === 'list' && (
+              <p className="text-meta text-mystic-400 mt-0.5">
+                {t('people.form.approxLocation', { defaultValue: 'Using the nearest listed city — an approximate location.' })}
+              </p>
+            )}
           </div>
         )}
         <CelestialCitySearch onPick={handlePickCity} />
+        {/* Optional, so say what leaving it out costs (p8 F25). A pet's
+            reading is its sun sign: no place or time involved. */}
+        {!place && relationship !== 'pet' && (
+          <p className="text-meta text-mystic-400 mt-1.5">
+            {t('people.form.noPlaceNote', {
+              defaultValue: 'Without a birth place, the birth time is read in your time zone, and the chart has no rising sign or houses.',
+            })}
+          </p>
+        )}
       </div>
 
       {error && <p role="alert" className="text-caption text-coral bg-coral/10 border border-coral/25 rounded-control p-3">{error}</p>}

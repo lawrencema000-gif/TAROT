@@ -80,7 +80,7 @@
       "no": "不用了"
     },
     "next": "继续",
-    "beginJourney": "开始我的第一次仪式",
+    "finish": "完成",
     "toast": {
       "saveFailed": "无法保存你的资料，请检查网络连接后重试。",
       "welcome": "欢迎来到 Arcana。"

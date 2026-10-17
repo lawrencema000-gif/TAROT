@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 // The module's default invoke is never used here: every test passes its own.
 vi.mock('../../lib/supabase', () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 
-import { runPaintAttempt, type PendingPaint } from './SoulmatePortrait';
+import { runPaintAttempt, type PendingPaint } from './portraitPaint';
 
 /** A function's error the way supabase-js hands it over: the Response on `context`. */
 function httpError(status: number, code: string, details?: Record<string, unknown>) {

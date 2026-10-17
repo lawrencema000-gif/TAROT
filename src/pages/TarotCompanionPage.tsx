@@ -345,7 +345,7 @@ export function TarotCompanionPage() {
           {/* When the next follow-up is the one charged — the opener's 24
               hours are over, or no charge was seen — the price is on
               screen before it goes. */}
-          {!covered && !sending && (
+          {!covered && !sending && !profile?.isPremium && (
             <div className="mt-3 space-y-1">
               {typeof convo.chargedAt === 'number' && (
                 <p className="text-meta text-mystic-300">

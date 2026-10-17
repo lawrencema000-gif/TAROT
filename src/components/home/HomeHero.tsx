@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Button, DeckFan, EyebrowLabel, SparkleFourPoint } from '../ui';
+import { useT } from '../../i18n/useT';
 
 /**
  * The home hero: the deck.
@@ -17,7 +18,48 @@ import { Button, DeckFan, EyebrowLabel, SparkleFourPoint } from '../ui';
  * action. Once the ritual has begun the deck steps aside — the drawn card
  * itself is on the page below — and the hero becomes the greeting with the
  * three parts of the ritual marked.
+ *
+ * The title (the name, or the greeting when there is no name to use) is
+ * punctuated by the language — "Sakura." in English, "さくら さん" in
+ * Japanese — and is never cut: beside the streak pill, Japanese
+ * "おはようございます." needed 293px of 244 and read "おはようござい…" every
+ * morning (p8 F72). A title too wide for the line at the display size is set
+ * one size down; only if that is still too wide does it wrap.
  */
+
+/**
+ * True while `text` fits on one line of `box` at heading-display-xl. The
+ * probe is the title at that size, unwrapped and clipped to nothing, so it
+ * is measured whichever size the title is shown at.
+ */
+function useFitsDisplaySize(text: string) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLSpanElement>(null);
+  const [fits, setFits] = useState(true);
+
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const probe = probeRef.current;
+    if (!box || !probe) return;
+    let live = true;
+    const measure = () => {
+      if (!live || box.clientWidth === 0) return;
+      setFits(probe.offsetWidth <= box.clientWidth);
+    };
+    measure();
+    // A rotation or a narrower pill changes the line; a web font landing
+    // changes the title's width.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(box);
+    void document.fonts?.ready.then(measure);
+    return () => {
+      live = false;
+      ro?.disconnect();
+    };
+  }, [text]);
+
+  return { boxRef, probeRef, fits };
+}
 
 export interface HomeHeroProps {
   /** "Good morning" — the eyebrow when there is a name, the title otherwise. */
@@ -54,20 +96,29 @@ export function HomeHero({
   cardBackUrl,
   aside,
 }: HomeHeroProps) {
+  const { t } = useT('app');
   const parts = [progress.horoscope, progress.tarot, progress.prompt];
+  // The page title: the name with the greeting above it, or the greeting.
+  const heading = name
+    ? t('home.nameTitle', { defaultValue: '{{name}}.', name })
+    : t('home.greetingTitle', { defaultValue: '{{greeting}}.', greeting });
+  const { boxRef, probeRef, fits } = useFitsDisplaySize(heading);
 
   return (
     <section className="space-y-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          {name ? (
-            <>
-              <EyebrowLabel className="!text-mystic-400">{greeting}</EyebrowLabel>
-              <h1 className="heading-display-xl text-mystic-100 mt-1 truncate">{name}.</h1>
-            </>
-          ) : (
-            <h1 className="heading-display-xl text-mystic-100 truncate">{greeting}.</h1>
-          )}
+        <div ref={boxRef} className="min-w-0 flex-1">
+          {name && <EyebrowLabel className="!text-mystic-400">{greeting}</EyebrowLabel>}
+          <h1
+            className={`${fits ? 'heading-display-xl' : 'heading-display-lg line-clamp-2 [word-break:auto-phrase] [overflow-wrap:anywhere]'} lining-nums text-mystic-100 ${name ? 'mt-1' : ''}`}
+          >
+            {heading}
+          </h1>
+          <div className="h-0 overflow-hidden" aria-hidden>
+            <span ref={probeRef} className="heading-display-xl lining-nums invisible inline-block whitespace-nowrap">
+              {heading}
+            </span>
+          </div>
           {subline}
         </div>
         {aside}

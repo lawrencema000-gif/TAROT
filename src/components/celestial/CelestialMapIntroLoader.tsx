@@ -5,6 +5,7 @@ import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { PLANETS } from '../../utils/astrocartography';
+import { localizePlanetName } from '../../i18n/localizeNames';
 
 /**
  * First-open intro loader for the Celestial Map.
@@ -96,7 +97,7 @@ export function CelestialMapIntroLoader({ open, onDone }: Props) {
                   >
                     {PLANET_GLYPH[planet]}
                   </div>
-                  <EyebrowLabel>{planet}</EyebrowLabel>
+                  <EyebrowLabel>{localizePlanetName(planet)}</EyebrowLabel>
                 </motion.div>
               ))}
             </div>

@@ -5,6 +5,7 @@ import { Button, Card, Input, HoroscopeWheelIcon, Progress } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { ZodiacGlyph } from '../icons';
+import { birthZoneOf, fallbackZone } from './birthZone';
 import type { ZodiacSign, ChartMode } from '../../types/astrology';
 
 interface Props {
@@ -86,7 +87,13 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     setComputing(true);
     setComputeError('');
     try {
-      const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // The birth place's zone, as doCompute uses (F21). This is the cast
+      // every onboarded user takes, and it used to read the profile's
+      // timezone instead: the signup default, 'UTC', for an OAuth account.
+      // A zone derived here is persisted first, so birth_utc (the trigger)
+      // and every chart read from it agree with this one.
+      const { tz, derived } = await birthZoneOf(profile);
+      if (derived) await updateProfile({ birthTz: derived });
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
       await computeChart({
         birthDate: profile.birthDate,
@@ -113,7 +120,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
       // only a fallback (wrong for anyone who moved since birth).
       const { deriveBirthTz } = await import('../../utils/birthTz');
       const birthTz = await deriveBirthTz(loc.lat, loc.lon);
-      const tz = birthTz || profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const tz = birthTz || fallbackZone(profile);
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
 
       await updateProfile({

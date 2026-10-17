@@ -670,7 +670,15 @@
 
   /* ── Display typography ────────────────────────────────────────
      Richer treatments for premium-feeling headlines and reading
-     copy. Work with the self-hosted Cormorant Garamond + Inter declared at the top of this file. */
+     copy. Work with the self-hosted Cormorant Garamond + Inter declared at the top of this file.
+
+     Lining figures wherever a display class is set (p8 F80). Cormorant's
+     default figures are old-style: "100" drops to a small-cap "IOO", a 0 is
+     an "o", and beside kana or hangul a card's number sits like a subscript
+     (「ワンドの₃」). Each display class declares the same pair: the property,
+     and Tailwind's --tw-numeric-figure, so a `tabular-nums` on the same
+     element composes to "lining-nums tabular-nums" instead of replacing it.
+     The `font-display` utility gets the pair in @layer utilities below. */
 
   /* Oversized serif opener — used for reading titles and report
      section headings. Wider tracking gives it a printed feel. */
@@ -680,6 +688,8 @@
     letter-spacing: 0.005em;
     line-height: 1.1;
     font-feature-settings: 'dlig' 1, 'liga' 1;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
 
   /* All-caps micro-header above major sections. This was 10.4px
@@ -695,6 +705,8 @@
     letter-spacing: 0.14em;
     font-size: 0.6875rem;
     color: rgb(var(--gold-primary));
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
 
   /* Japanese, Korean and Chinese have no capitals to carry an 11px label,
@@ -724,6 +736,42 @@
       font-size: 0.8125rem;
       letter-spacing: 0.02em;
     }
+  }
+
+  /* CJK line breaks in headings, controls and short labels (p8 F84).
+     Japanese and Chinese set no spaces, so every character is a break
+     opportunity and a title or a button splits a word wherever the line
+     runs out: 「タロットスプレッ/ド」, 「完全なネイタルチャ/ート」,
+     「最初のリチュアル/をはじめる」. Text a reader takes in at a glance
+     breaks between phrases instead:
+       - ja: word-break: auto-phrase (Chromium 119+, so Android WebView
+         119+ and Chrome; elsewhere the declaration is dropped), with
+         line-break: strict as the fallback that still keeps ー and the
+         small kana off the start of a line ("ネイタル/チャート", not
+         "ネイタルチャ/ート");
+       - zh: auto-phrase where a browser segments Chinese, the default
+         elsewhere;
+       - ko: Korean spaces its words, so keep-all breaks only at the
+         spaces.
+     overflow-wrap: anywhere lets a phrase wider than its box break inside
+     rather than overflow, and keeps the box's min-content as small as it
+     was, so no flex or grid layout widens. Body copy keeps the default
+     breaking. :where() holds all of it at zero specificity: a component's
+     own utility (truncate, whitespace-nowrap, break-words) still wins.
+     `.keep-phrases` opts in any other short label (a span under a card, a
+     tile caption). */
+  :where(html:lang(ja)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+    word-break: auto-phrase;
+    line-break: strict;
+    overflow-wrap: anywhere;
+  }
+  :where(html:lang(zh)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+    word-break: auto-phrase;
+    overflow-wrap: anywhere;
+  }
+  :where(html:lang(ko)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   /* Drop cap — first letter of a paragraph rendered as a serif initial.
@@ -803,6 +851,8 @@
     letter-spacing: -0.005em;
     line-height: 1.08;
     font-feature-settings: 'liga' 1;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
   .heading-display-lg {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -810,6 +860,8 @@
     font-size: clamp(1.5rem, 3.8vw, 1.875rem);
     letter-spacing: 0.001em;
     line-height: 1.15;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
   .heading-display-md {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -817,6 +869,8 @@
     font-size: clamp(1.125rem, 2.4vw, 1.375rem);
     letter-spacing: 0.005em;
     line-height: 1.2;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
   /* Bold display — a modifier, not a size. Cormorant 600 is self-hosted
      (the @font-face block above) and no heading used it; the serif at a
@@ -868,6 +922,7 @@
      italic, a rule in the margin rather than quote marks. */
   .reading-quote {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 400;
     font-size: 1.375rem;
     line-height: 1.35;
@@ -897,6 +952,7 @@
   .prose-reading h2,
   .prose-reading h3 {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 500;
     line-height: 1.2;
     margin-top: 2em;
@@ -904,6 +960,7 @@
   }
   .prose-reading h1 {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 500;
     font-size: 2rem;
     line-height: 1.12;
@@ -929,6 +986,7 @@
   .prose-reading li + li { margin-top: 0.4em; }
   .prose-reading blockquote {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-size: 1.375rem;
     line-height: 1.35;
     padding-left: 1rem;
@@ -1175,6 +1233,14 @@
 }
 
 @layer utilities {
+  /* The display serif as a utility (tailwind.config.js fontFamily.display)
+     takes the display classes' lining figures too (p8 F80; see "Display
+     typography"). Tailwind emits its font-family rule beside this one. */
+  .font-display {
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
+  }
+
   .perspective-1000 {
     perspective: 1000px;
   }

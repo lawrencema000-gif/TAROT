@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './utils/polyfills'; // must load before any code that may call Array.at / String.at
 import App from './App.tsx';
-import { isStaleChunkMessage, reloadForStaleChunk } from './components/layout/staleChunk';
+import { recoverFromStaleChunk } from './components/layout/staleChunk';
 import { holdPrerenderedHero } from './components/layout/prerenderedHero';
 
 // Stale-chunk recovery. When a new deploy replaces hashed JS chunks,
@@ -11,23 +11,27 @@ import { holdPrerenderedHero } from './components/layout/prerenderedHero';
 // serves HTML for those missing URLs; the browser then reports a module
 // load failure (see isStaleChunkMessage). The page is on an obsolete bundle
 // and just needs to refetch index.html, so it reloads once (time-windowed
-// in sessionStorage so a failing new deploy cannot loop). These listeners
-// catch the entry and modulepreload failures; a React.lazy screen catches
-// its own (lazyWithReload), because React swallows that rejection.
+// in sessionStorage so a failing new deploy cannot loop) — but only when the
+// server answers: the same messages mean "offline", and a reload then lands
+// on the browser's offline page instead of the app (recoverFromStaleChunk,
+// p8 F44). These listeners catch the entry and modulepreload failures and the
+// i18n bundles (config.ts surfaces those as unhandled rejections); a
+// React.lazy screen catches its own (lazyWithReload), because React swallows
+// that rejection.
 {
   window.addEventListener('error', (e) => {
-    const msg = String(e.message || '');
-    if (isStaleChunkMessage(msg)) reloadForStaleChunk(msg);
+    void recoverFromStaleChunk(String(e.message || ''));
   });
   window.addEventListener('unhandledrejection', (e) => {
-    const reason = e?.reason;
-    const msg = reason instanceof Error ? reason.message : String(reason ?? '');
-    if (isStaleChunkMessage(msg)) reloadForStaleChunk(msg);
+    void recoverFromStaleChunk(e?.reason);
   });
-  // Vite's own signal for a failed dynamic-import preload (CSS or JS).
+  // Vite's own signal for a failed dynamic-import preload (CSS or JS). Not
+  // prevented: whether to reload is only known after the probe, so the
+  // failure carries on to the import that asked for it (lazyWithReload
+  // shares this probe, and waits for the reload when there is one).
   window.addEventListener('vite:preloadError', (e) => {
     const payload = (e as Event & { payload?: unknown }).payload;
-    if (reloadForStaleChunk(payload ?? 'vite:preloadError')) e.preventDefault();
+    void recoverFromStaleChunk(payload ?? 'vite:preloadError');
   });
 }
 import { initAnalytics } from './services/analytics';

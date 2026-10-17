@@ -80,7 +80,7 @@
       "no": "괜찮아요"
     },
     "next": "계속",
-    "beginJourney": "첫 의식 시작하기",
+    "finish": "완료",
     "toast": {
       "saveFailed": "정보를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "welcome": "Arcana에 오신 걸 환영해요."

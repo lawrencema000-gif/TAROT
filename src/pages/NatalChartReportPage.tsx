@@ -11,6 +11,7 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
+import { useBirthTzBackfill } from '../components/horoscope/birthZone';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
@@ -95,7 +96,10 @@ const aspectLabel = (a: string) => (a in ASPECT_META ? localizeAspectName(a as A
 export function NatalChartReportPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
-  const { chart, loading: chartLoading } = useNatalChart();
+  const { chart, loading: chartLoading, fetchChart } = useNatalChart();
+  // A chart cast before F21 (in the signup zone, not the birth place's) is
+  // recast before this paid report prints its houses; reload when it lands.
+  useBirthTzBackfill(fetchChart);
   const natal: NatalChart | null = chart?.natalChart ?? null;
 
   const [unlocked, setUnlocked] = useState(false);
@@ -378,8 +382,9 @@ export function NatalChartReportPage() {
             onClick={() => setShowSubscription(true)}
           >
             <Crown className="w-4 h-4 mr-2" />
+            {/* One line beside the crown at 360 px in every locale (F60). */}
             {t('natalReport.upgradeToPremium', {
-              defaultValue: 'See what Premium includes',
+              defaultValue: 'See Premium plans',
             })}
           </Button>
 
@@ -618,8 +623,10 @@ export function NatalChartReportPage() {
             {partnerAspects.slice(0, 8).map((a, i) => (
               <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
                 <span className="min-w-0 break-words">
+                  {/* Names whose planet is whose (F31): the row was coloured
+                      spans once, then one string that said only "Venus trine Mars". */}
                   {t('natalReport.crossAspectRow', {
-                    defaultValue: '{{partner}} {{type}} {{natal}}',
+                    defaultValue: 'Their {{partner}} {{type}} your {{natal}}',
                     partner: planetLabel(a.partnerPlanet),
                     type: aspectLabel(a.type),
                     natal: planetLabel(a.natalPlanet),

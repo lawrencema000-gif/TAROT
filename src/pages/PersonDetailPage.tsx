@@ -12,8 +12,12 @@ import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
-import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
+import { readPet, localizePetReading, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
+import { ensurePersonZone } from '../components/people/personZone';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { ct, useContentOverlay } from '../i18n/contentOverlay';
+import { hanziUnlessShown } from '../i18n/localizeHanzi';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
 import { useInterpretations } from '../hooks/useAstrology';
 
@@ -30,6 +34,8 @@ export function PersonDetailPage() {
   const [chart, setChart] = useState<NatalChart | null>(null);
   // The planet / aspect readings, in the reader's language (null until loaded).
   const interp = useInterpretations();
+  // A pet's temperament reading in ja/ko/zh: the 'pets' content overlay.
+  const { overlay: petOverlay, ready: petOverlayReady } = useContentOverlay('pets');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -44,8 +50,11 @@ export function PersonDetailPage() {
     setLoading(true); setErr(null);
     const pRes = await peopleDal.getById(id);
     if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
-    setPerson(pRes.data);
-    if (pRes.data.relationship === 'pet') {
+    // Saved before F25 without a place: no zone, so the chart was read in
+    // UTC. Give it the zone the form saves today before casting.
+    const found = await ensurePersonZone(pRes.data);
+    setPerson(found);
+    if (found.relationship === 'pet') {
       // A pet gets a temperament reading, not a natal wheel — no houses, no
       // ascendant, and no reason to spend an edge-function call on either.
       setLoading(false);
@@ -66,7 +75,9 @@ export function PersonDetailPage() {
     else toast(t('people.detail.deleteFailed', { defaultValue: "Couldn't delete {{name}} — try again.", name: person?.name ?? '' }), 'error');
   };
 
-  if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>;
+  // A pet's reading waits for its overlay (a small lazy chunk) rather than
+  // flash the English first.
+  if (loading || (person?.relationship === 'pet' && !petOverlayReady)) return <div className="flex justify-center py-24"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>;
   if (err || !person) return (
     <div className="p-6 text-center space-y-4">
       <p className="text-mystic-300">{err}</p>
@@ -75,8 +86,19 @@ export function PersonDetailPage() {
   );
 
   const isPet = person.relationship === 'pet';
-  const petReading = isPet ? readPet(person.birthDate, person.species) : null;
+  // The reading in the reader's language: the 'pets' content overlay, keyed
+  // by sign and species, over the English (p8 F24).
+  const petBase = isPet ? readPet(person.birthDate, person.species) : null;
+  const petReading = petBase ? localizePetReading(petBase, (path, en) => ct(petOverlay, path, en)) : null;
   const petSign = petReading ? petReading.sign.charAt(0).toUpperCase() + petReading.sign.slice(1) : null;
+  const locale = getLocale();
+  const animalName = petReading?.animal
+    ? t(`chineseZodiac.${petReading.animal.en.toLowerCase()}.name`, { defaultValue: petReading.animal.en })
+    : '';
+  // The year's hanzi in the reader's script, and not twice where the
+  // localized name already is it (zh: 龙年, not 龙年 龍).
+  const animalHanzi = petReading?.animal ? (hanziUnlessShown(petReading.animal.cn, locale, [animalName]) ?? '') : '';
+  const noPlace = !isPet && (person.birthLat == null || person.birthLon == null);
   const sun = chart?.planets.find((p) => p.planet === 'Sun');
   const moon = chart?.planets.find((p) => p.planet === 'Moon');
 
@@ -106,7 +128,11 @@ export function PersonDetailPage() {
           </>
         ) : undefined}
       />
-      {!person.birthTime && !isPet && (
+      {noPlace ? (
+        // No place: there are no houses or rising sign to call approximate,
+        // and the time is read in the device's zone (p8 F25).
+        <p className="text-center text-meta text-mystic-400 -mt-3">{t('people.detail.noPlace', { defaultValue: 'No birth place saved — the birth time is read in your time zone, so this chart has no rising sign or houses.' })}</p>
+      ) : !person.birthTime && !isPet && (
         <p className="text-center text-meta text-mystic-400 -mt-3">{t('people.detail.birthTimeUnknown', { defaultValue: 'Birth time unknown — houses and rising sign are approximate.' })}</p>
       )}
 
@@ -124,9 +150,9 @@ export function PersonDetailPage() {
                   {petReading.animal && (
                     <> · {t('people.pet.yearOf', {
                       defaultValue: 'Year of the {{animal}} {{cn}}',
-                      animal: t(`chineseZodiac.${petReading.animal.en.toLowerCase()}.name`, { defaultValue: petReading.animal.en }),
-                      cn: petReading.animal.cn,
-                    })}</>
+                      animal: animalName,
+                      cn: animalHanzi,
+                    }).trim()}</>
                   )}
                 </div>
               </div>

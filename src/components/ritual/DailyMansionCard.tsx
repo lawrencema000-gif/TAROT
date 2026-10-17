@@ -5,7 +5,7 @@ import { Card, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
 import { useContentOverlay, ct } from '../../i18n/contentOverlay';
-import { mansionCaption } from './mansionCaption';
+import { mansionCaption, mansionGlyph } from './mansionCaption';
 import { mansionForDate } from '../../data/lunarMansions';
 import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansionsContent';
 
@@ -30,17 +30,21 @@ export function DailyMansionCard() {
   const title = ct(overlay, `mansions.${mansion.key}.title`, MANSION_MEANINGS[mansion.key]?.title ?? '');
   const advice = ct(overlay, `mansions.${mansion.key}.advice`, MANSION_DAILY_ADVICE[mansion.key] ?? '');
   const caption = mansionCaption(mansion, getLocale());
+  // The tile's character in the reader's script (参 under the title 参宿 in
+  // zh and ja, not the traditional 參), as the caption beside it.
+  const glyph = mansionGlyph(mansion, getLocale());
 
   return (
     <Card padding="md" interactive role="link" tabIndex={0} onClick={() => navigate('/mansions')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/mansions'); } }}>
       <div className="flex items-center gap-4">
         {/* The character is the tile (R5 m-14); the caption reads in the UI's language. */}
-        <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden>
-          {mansion.cn}
+        <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden lang={glyph.lang}>
+          {glyph.text}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2 min-w-0">
-            <EyebrowLabel>{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
+            {/* The label holds its line; the caption beside it gives way. */}
+            <EyebrowLabel className="shrink-0 whitespace-nowrap">{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
             <span className="text-caption text-mystic-500 truncate" lang={caption.lang}>
               {caption.text}
             </span>

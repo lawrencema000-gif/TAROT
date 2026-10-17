@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MapPin, Crown, Sparkles, Coins, Loader2, AlertCircle } from 'lucide-react';
 import { Sheet, Button, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
-import type { PlanetName, Angle } from '../../utils/astrocartography';
+import { PLANETS, type PlanetName, type Angle } from '../../utils/astrocartography';
+import { localizeCountry } from './placeNames';
 import {
   linesNearPoint,
   nearestCity,
@@ -16,6 +17,7 @@ import { ct, useContentOverlay } from '../../i18n/contentOverlay';
 import { localizePlanetName } from '../../i18n/localizeNames';
 import {
   generateCelestialReading,
+  type CelestialReadingRequest,
   type CelestialReadingResponse,
   type LifeIntent,
 } from '../../dal/celestialReading';
@@ -75,6 +77,9 @@ interface Props {
   /** Hook into the upgrade-to-premium CTA. */
   onUpgrade: () => void;
 }
+
+/** A planet the model named, in the reader's language when it is one of the ten (p8 F27). */
+const planetLabel = (p: string) => ((PLANETS as readonly string[]).includes(p) ? localizePlanetName(p as PlanetName) : p);
 
 const PLANET_DOT_COLOR: Record<PlanetName, string> = {
   Sun: '#f4d668',
@@ -136,6 +141,11 @@ export function CityInsightPanel({
   const hiddenCount = isPremium ? 0 : Math.max(0, allHits.length - visibleHits.length);
   const isFarFromCity = cityInfo && cityInfo.distanceKm > 300;
 
+  /** The paid request in flight or last failed: its id and the body it was sent with. */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** A request is between its first line and its last. */
+  const busy = useRef(false);
+
   // Reset reading/error when the sheet re-opens at a new point — readings
   // are place-specific and getting stale text in a new sheet would be
   // confusing.
@@ -144,39 +154,62 @@ export function CityInsightPanel({
     setReading(null);
     setReadingError(null);
     setExpandedKey(null);
+    attempt.current = null;
   }, [open, point?.lat, point?.lon]);
 
+  /**
+   * One tap, one charge (p8 F20). `busy` is set before the spend gate is
+   * awaited, so a second tap during the gate's round trip returns at once
+   * (it used to send a second, separately charged 250-Moonstone request),
+   * and the button is disabled from the gate check on. The request carries
+   * a `requestId`, kept until a reading lands: the server debits once per
+   * (requestId, body), so a retry after a dropped connection gets the first
+   * run's reading back instead of a second charge, and skips the gate (the
+   * first attempt may have left the balance under the cost).
+   */
   async function handleRequestReading() {
-    if (!point || !cityInfo) return;
-    // Premium passes through; non-premium hits the spend gate first.
-    if (!isPremium) {
-      const spent = await trySpend();
-      if (!spent) return;
-    }
+    if (!point || !cityInfo || busy.current) return;
+    busy.current = true;
     setLoadingReading(true);
     setReadingError(null);
-    const res = await generateCelestialReading({
-      city: {
-        name: cityInfo.city.name,
-        country: cityInfo.city.country,
-        lat: cityInfo.city.lat,
-        lon: cityInfo.city.lon,
-      },
-      intent,
-      // We use the full (premium) line set when fetching the AI reading
-      // because the AI's job is to synthesise the *true* astrocartography
-      // for this point, not the gated subset. The free user paid for
-      // this read (or is premium); the cap is on the line-graph, not the
-      // text interpretation.
-      lines: allHits.map((h) => ({ planet: h.planet, angle: h.angle, distanceKm: h.distanceKm })),
-      birth: { utc: birthUtc },
-      userContext: { zodiacSign, mbtiType, locale },
-    });
-    setLoadingReading(false);
-    if (res.ok) {
-      setReading(res.data);
-    } else {
-      setReadingError(res.error);
+    try {
+      const req: CelestialReadingRequest = {
+        city: {
+          name: cityInfo.city.name,
+          country: cityInfo.city.country,
+          lat: cityInfo.city.lat,
+          lon: cityInfo.city.lon,
+        },
+        intent,
+        // We use the full (premium) line set when fetching the AI reading
+        // because the AI's job is to synthesise the *true* astrocartography
+        // for this point, not the gated subset. The free user paid for
+        // this read (or is premium); the cap is on the line-graph, not the
+        // text interpretation.
+        lines: allHits.map((h) => ({ planet: h.planet, angle: h.angle, distanceKm: h.distanceKm })),
+        birth: { utc: birthUtc },
+        userContext: { zodiacSign, mbtiType, locale },
+      };
+      const signature = JSON.stringify(req);
+      if (attempt.current?.body !== signature) {
+        attempt.current = { id: crypto.randomUUID(), body: signature };
+        // Premium passes through; non-premium hits the spend gate first.
+        if (!isPremium && !(await trySpend())) {
+          attempt.current = null;
+          return;
+        }
+      }
+      const withId: CelestialReadingRequest & { requestId: string } = { ...req, requestId: attempt.current!.id };
+      const res = await generateCelestialReading(withId);
+      if (res.ok) {
+        attempt.current = null;
+        setReading(res.data);
+      } else {
+        setReadingError(res.error);
+      }
+    } finally {
+      busy.current = false;
+      setLoadingReading(false);
     }
   }
 
@@ -199,7 +232,7 @@ export function CityInsightPanel({
             </h2>
             <p className="text-meta text-mystic-400 mt-0.5">
               {cityInfo && !isFarFromCity
-                ? cityInfo.city.country
+                ? localizeCountry(cityInfo.city.cc, cityInfo.city.country)
                 : point
                   ? `${point.lat.toFixed(2)}°, ${point.lon.toFixed(2)}°`
                   : ''}
@@ -409,7 +442,7 @@ export function CityInsightPanel({
                       aria-hidden
                     />
                     <p className="reading-copy flex-1">
-                      <span className="text-mystic-100 font-medium">{note.planet} {note.angle}</span>
+                      <span className="text-mystic-100 font-medium">{planetLabel(note.planet)} {note.angle}</span>
                       {' — '}{note.note}
                     </p>
                   </div>

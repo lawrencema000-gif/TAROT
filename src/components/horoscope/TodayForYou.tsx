@@ -2,7 +2,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, BookOpen } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { Card, Skeleton, ResultSheet, Disclaimer, Button } from '../ui';
-import { useDailyHoroscope } from '../../hooks/useAstrology';
+import { useDailyHoroscope, useNatalChart } from '../../hooks/useAstrology';
+import { useBirthTzBackfill } from './birthZone';
 import { useAuth } from '../../context/AuthContext';
 import { adsService } from '../../services/ads';
 import type { AspectType, DailyContent, ZodiacSign } from '../../types/astrology';
@@ -50,6 +51,11 @@ export interface TodayForYouViewProps {
  */
 export function TodayForYou() {
   const source = useDailyHoroscope();
+  // The tab /horoscope opens on: where a chart cast before F21 is recast in
+  // the birth place's zone. The chart copy the other tabs read (the
+  // useAstrology cache, already filled by the page) reloads with it.
+  const { fetchChart } = useNatalChart();
+  useBirthTzBackfill(fetchChart);
   return <TodayForYouView {...source} />;
 }
 

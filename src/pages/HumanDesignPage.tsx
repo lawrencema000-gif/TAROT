@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, Compass, Target, Share2 } from 'lucide-react';
 import {
   Card, Button, Input, toast, Page, PageHeader, Section, Disclosure, Tag,
@@ -13,6 +13,20 @@ import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesi
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { birthZoneOf, fallbackZone } from '../components/horoscope/birthZone';
+import { aiFailureOf } from '../components/reports/aiReading';
+
+/** The `error.code` a function answered with (a FunctionsHttpError keeps the Response on `context`). */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Human Design reading page.
@@ -76,21 +90,46 @@ export function HumanDesignPage() {
     if (profile?.birthTime) setBirthTime(profile.birthTime);
   }, [profile]);
 
+  /** The paid request in flight or last failed: its id and the body it was sent with. */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** A calculation is between its first line and its last (set synchronously). */
+  const busy = useRef(false);
+
+  /**
+   * One tap, one 50-Moonstone charge (p8 F20). `busy` and the loading stage
+   * are set before the spend gate is awaited, so a second tap during its
+   * round trip returns at once and the button is disabled from the gate
+   * check on. The request carries a `requestId`, kept until a chart lands:
+   * the server debits once per (requestId, body), so a retry after a
+   * dropped connection gets the first run's chart back instead of a second
+   * charge, and skips the gate.
+   */
   const runCalc = async () => {
+    if (busy.current) return;
     if (!birthDate) {
       toast(t('humanDesign.needBirthDate', { defaultValue: 'Birth date is required' }), 'error');
       return;
     }
-    const ok = await tryConsume();
-    if (!ok) return;
+    busy.current = true;
     setStage('loading');
+    let landed = false;
     try {
+      // The profile's own birth is read in its birth place's zone (F21);
+      // the device's zone was wrong for anyone born elsewhere. A date typed
+      // for someone else has no place, so it is read in the device's zone.
+      const own = !!profile && birthDate === profile.birthDate;
+      const timezone = own && profile ? (await birthZoneOf(profile)).tz : fallbackZone(profile);
+      const body = { birthDate, birthTime: birthTime || undefined, timezone };
+      const signature = JSON.stringify(body);
+      if (attempt.current?.body !== signature) {
+        attempt.current = { id: crypto.randomUUID(), body: signature };
+        if (!(await tryConsume())) {
+          attempt.current = null;
+          return;
+        }
+      }
       const { data, error } = await supabase.functions.invoke('human-design-chart', {
-        body: {
-          birthDate,
-          birthTime: birthTime || undefined,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        },
+        body: { ...body, requestId: attempt.current!.id },
       });
       if (error) throw error;
       // Shared edge handler wraps responses as { data: result, correlationId } —
@@ -98,13 +137,32 @@ export function HumanDesignPage() {
       // doesn't go through the wrapper.
       const payload = (data as { data?: HdChart })?.data ?? (data as HdChart);
       if (!payload?.type) throw new Error('No chart returned');
+      attempt.current = null;
       setChart(payload);
+      landed = true;
       setStage('result');
     } catch (e) {
       await refund();
       console.error('[HumanDesign] chart calc failed:', e);
+      const failure = await aiFailureOf(e);
+      if (failure === 'insufficient' || failure === 'soft-cap') {
+        // Refused before the debit (the balance moved after the gate): a new
+        // press is a new request, and the gate opens the Earn sheet now.
+        attempt.current = null;
+        if (!(await tryConsume())) return;
+      } else if ((await functionErrorCode(e)) === 'REQUEST_ALREADY_USED') {
+        // The id was spent on a chart delivered once and no longer kept;
+        // pressing again with it would only get the same refusal.
+        attempt.current = null;
+        toast(t('humanDesign.errorSpent', {
+          defaultValue: 'This chart was already given once and can’t be shown again. Reveal my design starts a new one, charged as usual.',
+        }), 'error');
+        return;
+      }
       toast(t('humanDesign.calcFailed', { defaultValue: 'Could not calculate chart. Check your connection and try again.' }), 'error');
-      setStage('input');
+    } finally {
+      busy.current = false;
+      if (!landed) setStage('input');
     }
   };
 

@@ -5,6 +5,8 @@
       "afternoon": "안녕하세요",
       "evening": "좋은 저녁이에요"
     },
+    "greetingTitle": "{{greeting}}.",
+    "nameTitle": "{{name}}님",
     "subtitle": "오늘 우주가 전하는 메시지",
     "level": "레벨 {{n}}",
     "todaysRitual": "오늘의 의식",
@@ -38,7 +40,8 @@
       "saveCard": "{{name}} 저장",
       "shareCard": "{{name}} 공유",
       "meaningOf": "{{name}}의 의미 읽기",
-      "faceDownLabel": "뒷면이 보이는 당신의 카드예요. 눌러서 뒤집어 보세요."
+      "faceDownLabel": "뒷면이 보이는 당신의 카드예요. 눌러서 뒤집어 보세요.",
+      "promptQuoted": "“{{prompt}}”"
     },
     "xpEarned": "+{{xp}} XP를 얻었어요.",
     "removedFromSaved": "저장에서 지웠어요",
@@ -466,7 +469,7 @@
       "howFeeling": "오늘 기분은 어떤가요?",
       "tags": "태그",
       "attachments": "첨부",
-      "tarotLinked": "타로 리딩 연결됨",
+      "tarotLinked": "리딩 연결됨",
       "goToPrompt": "프롬프트 {{n}}",
       "unlinkReading": "연결된 리딩 제거",
       "promptOf": "프롬프트 {{n}} / {{total}}",
@@ -512,6 +515,7 @@
       "withTag": "{{weekday}}에 가장 자주 써요. 가장 자주 기록한 기분은 {{mood}}, 전체 {{total}}개 중 {{n}}개이고, 다른 어떤 주제보다 {{tag}} 이야기로 자주 돌아와요."
     },
     "linkedShort": "리딩",
+    "cardSeparator": ", ",
     "moodNames": {
       "anxious": "불안",
       "calm": "차분함",
@@ -532,7 +536,6 @@
     "searchMissSub": "다른 단어로 찾아보거나 필터를 지워 보세요.",
     "searchPlaceholder": "기록 검색",
     "seeInsights": "인사이트 보기",
-    "spreadRow": "{{spread}} 스프레드",
     "startWritingCta": "쓰기 시작하기",
     "tagNames": {
       "anxiety": "불안",
@@ -6925,8 +6928,9 @@
     "birthTime": "출생 시간 (선택, 결과를 더 정확하게)",
     "calculate": "나의 디자인 보기",
     "calcFailed": "디자인을 계산하지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
+    "errorSpent": "이 차트는 이미 한 번 전해 드려서 다시 보여 드릴 수 없어요. ‘나의 디자인 보기’를 누르면 새로 계산하고, 평소처럼 비용이 차감돼요.",
     "needBirthDate": "생년월일이 필요합니다",
-    "disclaimer": "이것은 간편 버전입니다. 완전한 휴먼디자인 차트는 정확한 출생 시점의 행성 위치가 필요합니다. 9센터 전체 바디그래프를 원하면 전용 Human Design 사이트에 출생 데이터를 입력하세요.",
+    "disclaimer": "이건 간편 버전이에요. 완전한 휴먼디자인 차트에는 정확한 출생 시점의 행성 위치가 필요해요. 9센터 전체 바디그래프를 원하면 휴먼디자인 전용 사이트에 출생 데이터를 입력해 보세요.",
     "signatureLabel": "시그니처",
     "notSelfLabel": "낫-셀프 테마",
     "authorityLabel": "결정 권위",
@@ -10297,6 +10301,8 @@
     "claimButton": "오늘의 보상 받기",
     "claiming": "받는 중…",
     "alreadyClaimed": "내일 다시 오세요",
+    "nextClaimAt": "{{time}}부터 다시 받을 수 있어요",
+    "nextClaimTomorrowAt": "내일 {{time}}부터 다시 받을 수 있어요",
     "claimed": "+{{n}} 문스톤 · {{d}}일 연속 접속",
     "claimFailed": "오늘의 보상을 받지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "premiumLabel": "프리미엄 · 모든 리딩 열림",
@@ -10585,7 +10591,7 @@
       "feat3": "각 트랜싯 기간의 시작/종료 날짜",
       "feat4": "한 해를 관통하는 서사"
     },
-    "unlockCta": "{{n}} Moonstones로 해제",
+    "unlockCta": "문스톤 {{n}}개로 잠금 해제",
     "unlocked": "예보가 해제됨",
     "unlockFailed": "예보를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
@@ -10611,31 +10617,31 @@
     "needsBirthData": "먼저 출생 정보 추가",
     "needsBirthDataBody": "전체 출생 차트에는 출생 일시와 장소가 필요합니다. 프로필 → 프로필 수정에서 추가하세요.",
     "locked": {
-      "feat1": "Big Three 심화 해석",
+      "feat1": "빅 쓰리 심화 해석",
       "feat2": "10개 행성의 별자리 + 하우스",
       "feat3": "정확한 궤차(오브)의 각도표",
       "feat4": "브라우저에서 PDF로 저장하거나 인쇄"
     },
-    "unlockCta": "{{n}} Moonstones로 잠금 해제",
+    "unlockCta": "문스톤 {{n}}개로 잠금 해제",
     "unlocked": "차트 잠금 해제됨",
     "unlockFailed": "보고서를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
     "errorChartMissing": "계산된 출생 차트를 찾지 못했어요. 프로필에서 출생 정보를 다시 입력해주세요.",
     "printCta": "PDF로 저장",
-    "bigThreeHeading": "Big Three",
+    "bigThreeHeading": "빅 쓰리",
     "planetsHeading": "별자리와 하우스의 행성들",
     "elementsHeading": "원소와 양식의 균형",
     "aspectsHeading": "각 — 행성 간의 배선",
     "wheelHeading": "나의 차트 휠",
     "variant": {
-      "natal": "Natal",
-      "transits": "오늘의 Transits",
-      "progressions": "Progressions",
-      "solar-return": "Solar return",
-      "synastry": "Synastry"
+      "natal": "네이탈",
+      "transits": "오늘의 트랜짓",
+      "progressions": "프로그레션",
+      "solar-return": "솔라 리턴",
+      "synastry": "시너스트리"
     },
-    "computing": "Computing…",
-    "progressedAge": "Age {{n}}",
+    "computing": "차트를 계산하는 중…",
+    "progressedAge": "{{n}}세",
     "synastryPrompt": "파트너 출생 정보",
     "partnerNamePlaceholder": "파트너 이름(선택)",
     "synastryCta": "파트너 차트 오버레이",
@@ -10646,11 +10652,11 @@
     "orEarnMoonstones": "또는 문스톤 {{n}}개로 잠금 해제",
     "crossAspects": "주요 교차 각",
     "disclaimer": "점성술은 상징적 렌즈이지 예언이 아닙니다. 당신의 차트는 기질의 지도 — 그 활용은 온전히 당신의 몫입니다.",
-    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "upgradeToPremium": "프리미엄 플랜 보기",
     "earnNow": "광고 보고 문스톤 {{n}}개 받기",
     "noAspects": "계산된 각이 없어요.",
     "chartRulerLabel": "차트 지배 행성:",
-    "crossAspectRow": "{{partner}}–{{natal}} {{type}}",
+    "crossAspectRow": "파트너의 {{partner}}–나의 {{natal}} {{type}}",
     "dominantPlanetsLabel": "우세 행성:",
     "inHouseOf": "{{theme}}의 하우스에 있어요.",
     "listJoin": ", ",
@@ -10712,7 +10718,7 @@
       "feat3": "당신의 협업 균형추",
       "feat4": "새 역할에서의 첫 90일 계획"
     },
-    "unlockCta": "{{n}} 문스톤으로 잠금 해제",
+    "unlockCta": "문스톤 {{n}}개로 잠금 해제",
     "unlocked": "리포트가 열렸습니다",
     "unlockFailed": "보고서를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
@@ -11390,7 +11396,9 @@
     },
     "search": {
       "placeholder": "도시나 나라 검색…",
-      "label": "도시 검색"
+      "label": "도시 검색",
+      "searching": "장소를 찾는 중…",
+      "noResults": "‘{{query}}’에 맞는 장소를 찾지 못했어요. 철자를 확인하거나 근처의 큰 도시로 검색해 보세요."
     },
     "about": {
       "eyebrow": "아스트로카토그래피",
@@ -11464,7 +11472,10 @@
     "power": {
       "title": "당신의 파워 플레이스",
       "subtitle": "당신의 차트에서 가장 많은 행성 라인이 모이는 곳. 방문하거나, 이주하거나, 다시 찾아갈 만한 강한 지점이에요.",
-      "lockedHint": "잠금 해제하고 내 장소 보기"
+      "lockedHint": "잠금 해제하고 내 장소 보기",
+      "lineCount": "라인 {{count}}개",
+      "lineCount_one": "라인 {{count}}개",
+      "lineCount_other": "라인 {{count}}개"
     },
     "destinedPlace": {
       "eyebrow": "당신의 운명의 장소",
@@ -11633,10 +11644,12 @@
       "saving": "저장 중…",
       "saveChanges": "출생 정보 저장",
       "add": "이 사람 추가",
-      "approxLocation": "목록에서 가장 가까운 도시를 사용해요 — 대략적인 위치예요."
+      "approxLocation": "목록에서 가장 가까운 도시를 사용해요 — 대략적인 위치예요.",
+      "noPlaceNote": "출생지가 없으면 출생 시각을 당신의 시간대로 읽어요. 차트에는 상승궁과 하우스가 없어요."
     },
     "detail": {
       "chartFailed": "차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "noPlace": "저장된 출생지가 없어서 출생 시각을 당신의 시간대로 읽었어요. 그래서 이 차트에는 상승궁과 하우스가 없어요.",
       "deleted": "{{name}}을(를) 삭제했어요",
       "deleteFailed": "{{name}}을(를) 삭제하지 못했어요 — 다시 시도해 주세요.",
       "backToPeople": "사람들로 돌아가기",
@@ -11695,6 +11708,7 @@
       "errorNoCharge": "리딩을 받아 오지 못했어요. 아무것도 차감되지 않았어요.",
       "errorRateLimit": "한꺼번에 리딩 요청이 너무 많아요 — 잠시 기다린 뒤 다시 시도해 주세요.",
       "errorRetryFree": "리딩을 받아 오지 못했어요. 이미 차감됐다면 ‘리딩 보기’를 다시 누를 때 추가 비용 없이 받을 수 있어요.",
+      "errorSpent": "이 리딩은 이미 한 번 전해 드려서 다시 보여 드릴 수 없어요. ‘리딩 보기’를 누르면 새 리딩이 시작되고, 평소처럼 비용이 차감돼요.",
       "errorUnavailable": "리딩이 잠시 멈춰 있어요. 아무것도 차감되지 않았어요.",
       "focus": {
         "career": "커리어",

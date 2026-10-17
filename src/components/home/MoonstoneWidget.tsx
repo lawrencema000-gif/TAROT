@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { Moon, Gift, Plus } from 'lucide-react';
 import { Card, Button, toast } from '../ui';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { useAuth } from '../../context/AuthContext';
 import { moonstones } from '../../dal';
 import { onBalanceChange } from '../../dal/moonstoneSpend';
 import { EarnMoonstonesSheet } from '../moonstones/EarnMoonstonesSheet';
+import { checkinOpening, nextClaimLabel } from './checkinOpening';
 
 /**
  * Compact Home-screen widget: shows Moonstone balance + claim button
@@ -16,6 +18,14 @@ import { EarnMoonstonesSheet } from '../moonstones/EarnMoonstonesSheet';
  *
  * The "+" button opens the Earn-Moonstones sheet (watch ad / check-in /
  * upsell to premium). Direct Moonstone purchasing was removed.
+ *
+ * Layout: the balance column holds the label, the number and the day's
+ * check-in — the claim button, or when the next claim opens. The claim used
+ * to sit in the row beside the label and the "+", and at 390px in Japanese
+ * the three squeezed each other until "ムーンストーン" and "今日の分を受け取る"
+ * broke mid-word (p8 F71); in the column it has the card's width to itself
+ * in every language. The number is set in Inter with lining, tabular
+ * figures: the display serif's old-style "100" read as "IOO" (F59/F80).
  */
 export function MoonstoneWidget() {
   const { t } = useT('app');
@@ -26,6 +36,9 @@ export function MoonstoneWidget() {
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [showEarn, setShowEarn] = useState(false);
+  // Re-read when the clock moves on, so the "next claim" line is computed
+  // from the time it is shown at, not the time the widget mounted.
+  const [now, setNow] = useState(() => new Date());
 
   const refresh = useCallback(async () => {
     if (!user?.id) return;
@@ -35,6 +48,7 @@ export function MoonstoneWidget() {
     ]);
     if (balRes.ok) setBalance(balRes.data);
     if (checkedRes.ok) setCanClaim(!checkedRes.data);
+    setNow(new Date());
     setLoading(false);
   }, [user?.id]);
 
@@ -46,6 +60,15 @@ export function MoonstoneWidget() {
   useEffect(() => {
     return onBalanceChange((newBalance) => setBalance(newBalance));
   }, []);
+
+  // Claimed: offer the claim again when the next one opens (UTC midnight),
+  // without waiting for a remount — Home can sit open across it.
+  useEffect(() => {
+    if (loading || canClaim || isPremium) return;
+    const wait = Math.max(0, checkinOpening(now, getLocale()).at.getTime() - Date.now()) + 1500;
+    const timer = window.setTimeout(() => { void refresh(); }, wait);
+    return () => window.clearTimeout(timer);
+  }, [loading, canClaim, isPremium, now, refresh]);
 
   const claim = async () => {
     setClaiming(true);
@@ -82,47 +105,46 @@ export function MoonstoneWidget() {
   return (
     <>
       <Card padding="md">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-control bg-gold/10 text-gold flex items-center justify-center">
-              <Moon className="w-5 h-5" aria-hidden />
-            </div>
-            <div>
-              <p className="text-meta text-mystic-400">
-                {isPremium
-                  ? t('moonstones.premiumLabel', { defaultValue: 'Premium · all readings unlocked' })
-                  : t('moonstones.balanceLabel', { defaultValue: 'Moonstones' })}
-              </p>
-              <p className="heading-display-md text-gold">
-                {isPremium ? '∞' : balance}
-              </p>
-            </div>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 shrink-0 rounded-control bg-gold/10 text-gold flex items-center justify-center">
+            <Moon className="w-5 h-5" aria-hidden />
           </div>
-
-          <div className="flex items-center gap-2">
+          {/* auto-phrase: where a narrow phone still has to wrap a line here,
+              Japanese breaks between phrases, never inside a word. */}
+          <div className="min-w-0 flex-1 [word-break:auto-phrase] [overflow-wrap:anywhere]">
+            <p className="text-meta text-mystic-400">
+              {isPremium
+                ? t('moonstones.premiumLabel', { defaultValue: 'Premium · all readings unlocked' })
+                : t('moonstones.balanceLabel', { defaultValue: 'Moonstones' })}
+            </p>
+            <p className="font-body text-title font-semibold tabular-nums lining-nums text-gold">
+              {isPremium ? '∞' : balance}
+            </p>
             {!isPremium && canClaim && (
-              <Button variant="primary" size="sm" onClick={claim} disabled={claiming}>
-                <Gift className="w-4 h-4 mr-1" />
+              <Button variant="primary" size="sm" onClick={claim} disabled={claiming} className="mt-3 max-w-full">
+                <Gift className="w-4 h-4 shrink-0" aria-hidden />
                 {claiming
                   ? t('moonstones.claiming', { defaultValue: 'Claiming...' })
                   : t('moonstones.claimButton', { defaultValue: 'Claim daily' })}
               </Button>
             )}
             {!isPremium && !canClaim && (
-              <p className="text-meta text-mystic-500">
-                {t('moonstones.alreadyClaimed', { defaultValue: 'Come back tomorrow' })}
+              <p className="text-meta text-mystic-500 mt-1">
+                {nextClaimLabel(t, now, getLocale())}
               </p>
             )}
-            {!isPremium && (
-              <button
-                onClick={() => setShowEarn(true)}
-                aria-label={t('moonstones.earn', { defaultValue: 'Earn moonstones' }) as string}
-                className="w-11 h-11 rounded-full bg-mystic-800 hover:bg-mystic-700 flex items-center justify-center text-gold transition-colors"
-              >
-                <Plus className="w-4 h-4" aria-hidden />
-              </button>
-            )}
           </div>
+
+          {!isPremium && (
+            <button
+              type="button"
+              onClick={() => setShowEarn(true)}
+              aria-label={t('moonstones.earn', { defaultValue: 'Earn moonstones' }) as string}
+              className="w-11 h-11 shrink-0 -my-0.5 rounded-full bg-mystic-800 hover:bg-mystic-700 flex items-center justify-center text-gold transition-colors"
+            >
+              <Plus className="w-4 h-4" aria-hidden />
+            </button>
+          )}
         </div>
       </Card>
 

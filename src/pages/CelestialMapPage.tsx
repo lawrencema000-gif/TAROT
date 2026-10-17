@@ -14,6 +14,7 @@ import { CelestialAboutDisclosure, CelestialAnglesSection, LifeAreaBlurb } from 
 import { FindYourPlace } from '../components/celestial/FindYourPlace';
 import { DestinedPlaceBanner } from '../components/celestial/DestinedPlaceBanner';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
+import { useBirthTzBackfill } from '../components/horoscope/birthZone';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
@@ -86,6 +87,10 @@ export function CelestialMapPage() {
   const [showInsightPanel, setShowInsightPanel] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
+  // The lines are drawn from birth_utc, which the trigger reads in the birth
+  // place's zone once it is known. A profile without one (cast before F21)
+  // gets it here; the lines move when the profile comes back.
+  useBirthTzBackfill();
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
   const mapEngineRef = useRef<{ flyTo: (lonLat: [number, number]) => void } | null>(null);
 

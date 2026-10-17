@@ -147,8 +147,8 @@ export function AiCompanionPage() {
    * is on screen and the balance is checked before it goes (p8 F40).
    */
   const covered = conversationCovered(convo);
-  /** Its 24 hours ran out (a charge was seen, more than a day ago). */
-  const lapsed = history.length > 0 && typeof convo.chargedAt === 'number' && !covered;
+  /** Its 24 hours ran out (a charge was seen, more than a day ago). Premium pays nothing, so is told nothing. */
+  const lapsed = history.length > 0 && typeof convo.chargedAt === 'number' && !covered && !profile?.isPremium;
 
   const send = async () => {
     const trimmed = input.trim();

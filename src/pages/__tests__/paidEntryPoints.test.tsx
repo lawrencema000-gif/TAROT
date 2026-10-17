@@ -59,8 +59,9 @@ vi.mock('framer-motion', () => {
     return rest;
   };
   const motion = new Proxy({}, {
-    get: (_t, tag: string) => forwardRef<HTMLElement, Record<string, unknown> & { children?: ReactNode }>(function M(props, ref) {
-      return createElement(tag, { ...strip(props), ref }, props.children);
+    get: (_t, tag: string) => forwardRef<HTMLElement, Record<string, unknown>>(function M(props, ref) {
+      const { children, ...rest } = props as { children?: ReactNode } & Record<string, unknown>;
+      return createElement(tag, { ...strip(rest), ref }, children);
     }),
   });
   return {
@@ -77,7 +78,8 @@ import { TarotCompanionPage } from '../TarotCompanionPage';
 import { AiCompanionPage } from '../AiCompanionPage';
 import { MoodDiaryPage } from '../MoodDiaryPage';
 import { SoulmateScorePage } from '../SoulmateScorePage';
-import { SoulmatePortrait, resetPortraitSession } from '../../components/soulmate/SoulmatePortrait';
+import { SoulmatePortrait } from '../../components/soulmate/SoulmatePortrait';
+import { resetPortraitSession } from '../../components/soulmate/portraitPaint';
 
 /** Node 25 ships its own (file-less, broken) localStorage over jsdom's; give the code a real one. */
 function memoryStorage(): Storage {

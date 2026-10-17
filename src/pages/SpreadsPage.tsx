@@ -3,7 +3,7 @@ import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { Layers } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
-import { Badge, Button, Chip, ListRow, ListRowGroup, PageHeader, Section } from '../components/ui';
+import { Badge, Button, Chip, ListRow, ListRowGroup, Page, PageHeader, Section } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { spreadTypeToFeature } from '../services/premium';
 import { SpreadGlyph } from '../components/icons/SpreadGlyph';
@@ -87,8 +87,12 @@ export function SpreadsPage() {
     [category],
   );
 
+  // The shell (member or public) sets the measure and the 16px gutter; the
+  // page's own `max-w-3xl mx-auto px-4` doubled it to 32px and pushed the
+  // chip strip's bleed in from the screen edge (p8 F61). Same rhythm as
+  // /spreads/:slug.
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 space-y-6">
+    <Page className="py-6 sm:py-10">
       <PageHeader
         icon={<Layers />}
         title={t('spreads.pageTitle', { defaultValue: 'Tarot spreads' })}
@@ -163,7 +167,6 @@ export function SpreadsPage() {
           </ListRowGroup>
         </Section>
       ))}
-
-    </div>
+    </Page>
   );
 }

@@ -142,6 +142,107 @@ const C = {
 const DISPLAY = '"Cormorant Garamond", "Noto Serif JP", "Noto Serif KR", "Noto Serif SC", serif';
 const BODY = 'Inter, "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", sans-serif';
 
+// ── Figures in display text ─────────────────────────────────────────────
+//
+// Cormorant's default figures are old-style: a 4 hangs below the line like
+// a subscript ("ワンドの4" on the share image) and 100 reads "IOO" (p8 F80).
+// The DOM asks for lining ones (font-variant-numeric); a canvas cannot, so
+// the digits of a display-serif line are set in Inter, on the same baseline
+// — numbers are Inter in this design anyway.
+
+const DIGIT_RUNS = /(\d+)/;
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff]/;
+
+/**
+ * The font a display-serif block's digits are drawn in, or null when the
+ * block is not display serif or has none: Inter at the same weight and
+ * slant — at the same size beside kana, hangul and hanzi (it stands with
+ * them as the 4 of ワンドの4), and at the serif's cap height beside Latin,
+ * where a full-size Inter figure towers over "Life Path".
+ */
+function digitFontFor(ctx: CanvasRenderingContext2D, font: string, text: string): string | null {
+  if (!font.includes(DISPLAY) || !/\d/.test(text)) return null;
+  const inter = font.replace(DISPLAY, BODY);
+  if (CJK.test(text)) return inter;
+  ctx.font = font;
+  const serifCap = ctx.measureText('H').actualBoundingBoxAscent;
+  ctx.font = inter;
+  const interCap = ctx.measureText('H').actualBoundingBoxAscent;
+  if (!(serifCap > 0 && interCap > 0)) return inter;
+  return inter.replace(/(\d+(?:\.\d+)?)px/, (_, px: string) => `${Math.round(Number(px) * (serifCap / interCap))}px`);
+}
+
+function runsOf(text: string): { text: string; digits: boolean }[] {
+  return text.split(DIGIT_RUNS).filter(Boolean).map((part) => ({ text: part, digits: /^\d+$/.test(part) }));
+}
+
+/** Width of `text` with its digit runs in `digitFont`. */
+function mixedMeasurer(ctx: CanvasRenderingContext2D, font: string, digitFont: string): (s: string) => number {
+  return (s: string) =>
+    runsOf(s).reduce((w, run) => {
+      ctx.font = run.digits ? digitFont : font;
+      return w + ctx.measureText(run.text).width;
+    }, 0);
+}
+
+/**
+ * drawLines for a display line with figures: the same centres and pitch,
+ * every run on the line font's alphabetic baseline (each face's own
+ * "middle" sits at a different height above it).
+ */
+function drawMixedLines(
+  ctx: CanvasRenderingContext2D,
+  lines: readonly string[],
+  cx: number,
+  top: number,
+  lineHeight: number,
+  font: string,
+  digitFont: string,
+): void {
+  ctx.font = font;
+  ctx.textBaseline = 'middle';
+  const fromMiddle = ctx.measureText('H').actualBoundingBoxAscent;
+  ctx.textBaseline = 'alphabetic';
+  const fromBaseline = ctx.measureText('H').actualBoundingBoxAscent;
+  const drop = fromBaseline - fromMiddle;
+  const aligned = Number.isFinite(drop);
+  ctx.textBaseline = aligned ? 'alphabetic' : 'middle';
+  ctx.textAlign = 'left';
+  lines.forEach((line, i) => {
+    const mid = top + lineHeight / 2 + i * lineHeight;
+    const runs = runsOf(line).map((run) => {
+      ctx.font = run.digits ? digitFont : font;
+      return { ...run, width: ctx.measureText(run.text).width };
+    });
+    let x = cx - runs.reduce((w, r) => w + r.width, 0) / 2;
+    for (const run of runs) {
+      ctx.font = run.digits ? digitFont : font;
+      ctx.fillText(run.text, x, aligned ? mid + drop : mid);
+      x += run.width;
+    }
+  });
+  ctx.font = font;
+}
+
+/**
+ * A display block's text tools: the measure to wrap it with and the routine
+ * to draw its lines, figures in Inter when it has any (digitFontFor).
+ */
+function displayText(ctx: CanvasRenderingContext2D, font: string, text: string) {
+  const digitFont = digitFontFor(ctx, font, text);
+  return {
+    measure: digitFont ? mixedMeasurer(ctx, font, digitFont) : measurer(ctx, font),
+    draw: (lines: readonly string[], cx: number, top: number, lineHeight: number) => {
+      if (digitFont) {
+        drawMixedLines(ctx, lines, cx, top, lineHeight, font, digitFont);
+      } else {
+        ctx.font = font;
+        drawLines(ctx, lines, cx, top, lineHeight);
+      }
+    },
+  };
+}
+
 /**
  * Radius roles at canvas scale. The card is viewed at roughly 0.36×, so the
  * 8 / 12 / 16 / 24 CSS steps become these.
@@ -241,10 +342,10 @@ class Flow {
     const text = raw.trim();
     if (!text) return 0;
     const shown = style.quote ? `“${text}”` : text;
-    const measure = measurer(this.ctx, style.font);
+    const block = displayText(this.ctx, style.font, shown);
     const lines = style.tracking
-      ? wrapText(measure, shown.replace(/\s+/g, ' '), this.width, { maxLines: 1 })
-      : wrapText(measure, shown, this.width, { maxLines: style.maxLines });
+      ? wrapText(measurer(this.ctx, style.font), shown.replace(/\s+/g, ' '), this.width, { maxLines: 1 })
+      : wrapText(block.measure, shown, this.width, { maxLines: style.maxLines });
     const { ctx, cx } = this;
     this.ops.push({
       height: lines.length * style.lineHeight,
@@ -254,7 +355,7 @@ class Flow {
         if (style.tracking) {
           drawTracked(ctx, lines[0], cx, top + style.lineHeight / 2, style.tracking);
         } else {
-          drawLines(ctx, lines, cx, top, style.lineHeight);
+          block.draw(lines, cx, top, style.lineHeight);
         }
       },
     });
@@ -536,11 +637,11 @@ async function buildTarot(ctx: CanvasRenderingContext2D, flow: Flow, opts: Tarot
       ctx.restore();
     } else {
       // No art: the name on the surface, not a fake back.
-      ctx.font = cssFont(500, 40 * g.type, DISPLAY);
+      const name = displayText(ctx, cssFont(500, 40 * g.type, DISPLAY), opts.cardName);
       ctx.fillStyle = C.ink300;
-      const lines = wrapText(measurer(ctx, ctx.font), opts.cardName, w - 80, { maxLines: 3 });
+      const lines = wrapText(name.measure, opts.cardName, w - 80, { maxLines: 3 });
       const lh = Math.round(50 * g.type);
-      drawLines(ctx, lines, flow.cx, top + h / 2 - (lines.length * lh) / 2, lh);
+      name.draw(lines, flow.cx, top + h / 2 - (lines.length * lh) / 2, lh);
     }
   });
 
@@ -811,7 +912,9 @@ function buildSoulmate(ctx: CanvasRenderingContext2D, flow: Flow, opts: Soulmate
       ctx.arc(flow.cx, cy, ringR, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * score) / 100);
       ctx.stroke();
     }
-    ctx.font = cssFont(600, 220 * g.type, DISPLAY);
+    // The score is a number, and numbers are Inter: in the display serif's
+    // old-style figures a perfect 100 read "IOO" (p8 F80).
+    ctx.font = cssFont(600, 200 * g.type, BODY);
     ctx.fillStyle = C.gold;
     drawLines(ctx, [String(score)], flow.cx, cy - 130 * g.type, 200 * g.type);
     ctx.font = cssFont(400, 32 * g.type, BODY);
@@ -913,6 +1016,8 @@ async function ensureFonts(opts: ShareCardOpts): Promise<void> {
     '400 40px Inter',
     '500 40px Inter',
     '600 40px Inter',
+    // A quotation's figures (drawMixedLines sets them in Inter, italic too).
+    'italic 400 40px Inter',
   ];
   const loads = Promise.all(wanted.map((f) => document.fonts.load(f, text)));
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, FONT_WAIT_MS));

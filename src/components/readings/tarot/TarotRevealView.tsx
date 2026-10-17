@@ -18,8 +18,8 @@
  */
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Info, Brain, Loader2 } from 'lucide-react';
-import { Button, Chip, TarotFace } from '../../ui';
+import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Info, Loader2 } from 'lucide-react';
+import { Button, TarotFace } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import { flipHaptics } from '../../../utils/haptics';
@@ -28,6 +28,7 @@ import type { TarotCard } from '../../../types';
 import type { SpreadLayoutPosition } from '../../../data/tarotSpreads';
 import type { DrawnCard, FocusArea } from './types';
 import { TarotReadingResult } from './TarotReadingResult';
+import { AiInterpretationChip } from './AiInterpretationChip';
 
 /*
  * The flip.
@@ -280,8 +281,8 @@ export function TarotRevealView(props: TarotRevealViewProps) {
       </div>
 
       <div className="text-center">
-        {focusReadingLabel && <p className="font-display-eyebrow text-mystic-300">{focusReadingLabel}</p>}
-        <h2 className="heading-display-md text-mystic-100">{spreadTitle}</h2>
+        {focusReadingLabel && <p className="font-display-eyebrow text-mystic-300 lining-nums">{focusReadingLabel}</p>}
+        <h2 className="heading-display-md text-mystic-100 lining-nums">{spreadTitle}</h2>
       </div>
 
       {currentSpread === 'celtic-cross' ? (
@@ -432,22 +433,13 @@ export function TarotRevealView(props: TarotRevealViewProps) {
               // spread is told why rather than charged for a refusal.
               <p className="text-meta text-mystic-400 text-right">{aiUnavailable}</p>
             ) : (
-              <Chip
-                variant="outline"
-                size="sm"
-                onClick={() => { if (!loadingAI) onGetAIInterpretation(); }}
-                disabled={loadingAI}
-                icon={loadingAI ? <Loader2 className="animate-spin" /> : <Brain />}
-                label={
-                  loadingAI
-                    ? t('readings.revealView.generating')
-                    : aiInterpretation
-                      // Already generated for this reading: the chip shows it again, free.
-                      ? t('readings.revealView.showAIReading', { defaultValue: 'Show the AI reading' })
-                      : isPremium
-                        ? t('readings.revealView.getAIInsight')
-                        : t('readings.revealView.premiumAI')
-                }
+              // Priced for a free reader (50 Moonstones, and their balance);
+              // already generated for this reading, it shows it again, free.
+              <AiInterpretationChip
+                isPremium={isPremium}
+                loading={loadingAI}
+                ready={!!aiInterpretation}
+                onClick={onGetAIInterpretation}
               />
             )}
           </div>

@@ -8,18 +8,28 @@ import {
   Bullets,
   CloseCall,
   Prose,
+  ReadingFirst,
   ResultBody,
   ResultSection,
   ScoreRow,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
 
 const DOSHAS: readonly Dosha[] = ['vata', 'pitta', 'kapha'];
 
+/**
+ * A tie at the top names every tied dosha (close call, "Shared with", the
+ * bars) and reads the first one's card as "first", not as the one leading.
+ * In the exact three-way tie (10/10/10) the tridoshic block above already
+ * says all three are level, so the close call and the "Shared with" line
+ * are not repeated there; the bars and the heading still say it.
+ */
 export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewProps<DoshaScore>) {
   const { t } = useT('app');
   const share = useQuizShare();
@@ -37,6 +47,11 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const dietTips = list('dietTips');
   const lifestyleTips = list('lifestyleTips');
   const tridoshic = result.tridoshic === true;
+  const tied = tiedKeys<Dosha>(key, result.tied, result.coPrimary, result.isTie).filter((d) => DOSHA_INFO[d]);
+  const shared = tied.length >= 2;
+  // 10/10/10: every dosha level, which the tridoshic copy already says.
+  const allLevel = tied.length === DOSHAS.length;
+  const others = tied.slice(1).map(nameOf);
 
   return (
     <ResultLayout
@@ -50,10 +65,17 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
               {t('ayurveda.withSecondary', { defaultValue: 'with secondary {{sec}}', sec: nameOf(result.secondary) })}
             </span>
           )}
+          {shared && !allLevel && <SharedWith names={others} />}
           <span className="block">{tridoshic ? t('ayurveda.tridoshic.tagline', { defaultValue: TRIDOSHIC_INFO.tagline }) : localized('tagline', info.tagline)}</span>
         </>
       }
-      summary={tridoshic ? t('ayurveda.tridoshic.summary', { defaultValue: TRIDOSHIC_INFO.summary }) : localized('summary', info.summary)}
+      summary={
+        tridoshic
+          ? t('ayurveda.tridoshic.summary', { defaultValue: TRIDOSHIC_INFO.summary })
+          : shared
+            ? undefined
+            : localized('summary', info.summary)
+      }
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -70,7 +92,7 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {result.isTie && result.coPrimary && DOSHA_INFO[result.coPrimary] && <CloseCall a={name} b={nameOf(result.coPrimary)} />}
+          {shared && !allLevel && <CloseCall names={[name, ...others]} />}
 
           <ResultSection title={t('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}>
             <div className="space-y-4">
@@ -81,16 +103,20 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
                   name={nameOf(d)}
                   value={result.scores?.[d] ?? 0}
                   max={30}
-                  emphasis={d === key}
+                  emphasis={d === key || tied.includes(d)}
                 />
               ))}
             </div>
           </ResultSection>
 
-          {tridoshic && (
-            <ResultSection title={t('ayurveda.tridoshic.readingAs', { defaultValue: 'Reading {{dosha}} as the one leading today', dosha: name })}>
-              <Prose>{localized('summary', info.summary)}</Prose>
-            </ResultSection>
+          {shared ? (
+            <ReadingFirst name={name}>{localized('summary', info.summary)}</ReadingFirst>
+          ) : (
+            tridoshic && (
+              <ResultSection title={t('ayurveda.tridoshic.readingAs', { defaultValue: 'Reading {{dosha}} as the one leading today', dosha: name })}>
+                <Prose>{localized('summary', info.summary)}</Prose>
+              </ResultSection>
+            )
           )}
 
           <ResultSection title={t('ayurveda.thrivingLabel', { defaultValue: 'When you are in balance' })}>

@@ -64,13 +64,23 @@ function isPlayingCardRow(row: MirrorReadingRow): boolean {
   return cards.some((c) => c?.deck === 'playing');
 }
 
+/**
+ * The card's canonical English name — by its id first. The id is the card;
+ * the saved name may be localized: the pre-Phase-7 client and the Android
+ * v1.2.0 app saved the name on screen ('ワンドの5', '완드 5', '权杖五'), which
+ * the English suit and rank parsers below cannot read — every such card
+ * counted as a Major Arcana card with no suit and no rank — and which split
+ * one card into two entries beside a newer row's 'Five of Wands' (p8 F04,
+ * O#46). The saved name is read only for a row without a known id.
+ */
 function extractCardName(c: SavedCardLike, nameById?: ReadonlyMap<number, string>): string | null {
   if (!c || c.deck === 'playing') return null;
+  const id = typeof c.cardId === 'number' ? c.cardId : typeof c.id === 'number' ? c.id : null;
+  const byId = id !== null ? nameById?.get(id) : undefined;
+  if (byId) return byId;
   if (typeof c.cardName === 'string' && c.cardName) return c.cardName;
   if (typeof c.name === 'string' && c.name) return c.name;
   if (typeof c.card?.name === 'string' && c.card.name) return c.card.name;
-  const id = typeof c.cardId === 'number' ? c.cardId : typeof c.id === 'number' ? c.id : null;
-  if (id !== null && nameById) return nameById.get(id) ?? null;
   return null;
 }
 
@@ -204,7 +214,7 @@ export function aggregateMirror(
   };
 }
 
-/** Canonical English names by card id, for rows that saved only an id. */
+/** Canonical English names by card id: how every saved card is read. */
 async function loadNameById(): Promise<Map<number, string>> {
   try {
     const { fullDeck } = await import('../data/tarotDeck');
@@ -228,6 +238,7 @@ export async function getMirrorStats(userId: string, period: MirrorPeriod = 'mon
     return { ...EMPTY_STATS, suitBreakdown: { ...EMPTY_STATS.suitBreakdown } };
   }
   const rows = data as MirrorReadingRow[];
-  const needsIds = rows.some((r) => (r.cards ?? []).some((c) => c && !c.cardName && !c.name && !c.card?.name));
-  return aggregateMirror(rows, needsIds ? await loadNameById() : undefined);
+  // Every row is read by its card ids (extractCardName), so the index is
+  // always needed once there is anything to read.
+  return aggregateMirror(rows, rows.length ? await loadNameById() : undefined);
 }

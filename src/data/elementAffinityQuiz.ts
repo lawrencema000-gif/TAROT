@@ -92,6 +92,14 @@ export interface ElementAffinityResult {
   isTie: boolean;
   /** The other element in an unbroken tie. */
   coPrimary?: Element;
+  /**
+   * When `isTie`: every element in the unbroken tie, primary first. With
+   * ten votes it is always two (a three-way split leaves the fourth element
+   * at most one vote, so el3 or el9 lands inside the tie and settles it);
+   * the field has the same shape as the other quizzes' so the screen reads
+   * them all one way.
+   */
+  tied?: Element[];
 }
 
 /**
@@ -114,7 +122,7 @@ export function calculateElementAffinity(answers: Record<string, number>): Eleme
     const pick = ELEMENT_BY_VALUE[answers[qid]];
     if (pick && tied.includes(pick)) return { primary: pick, scores, isTie: false };
   }
-  return { primary: tied[0], scores, isTie: true, coPrimary: tied[1] };
+  return { primary: tied[0], scores, isTie: true, coPrimary: tied[1], tied };
 }
 
 export interface ElementInfo {

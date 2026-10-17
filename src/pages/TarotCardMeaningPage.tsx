@@ -7,6 +7,7 @@ import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { AffirmationPanel, Button, Disclaimer, EmptyState, Input, KeywordRow, PageGrid, PageHeader, Paper, ReadingProse, TarotFace, Disclosure } from '../components/ui';
 import { affirmationFor, enrichmentFor, firstSentences, focusSections } from '../components/readings/tarot/readingText';
 import { cardIdFromName, cardIdFromSlug, cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
+import { cardYesNo, yesNoVerdict, type YesNoVerdict } from '../components/readings/tarot/cardYesNo';
 import { fullDeck } from '../data/tarotDeck';
 import { useContentOverlay, ct, type ContentOverlay } from '../i18n/contentOverlay';
 import { getBundledFullPath } from '../config/bundledImages';
@@ -27,47 +28,6 @@ const cardToSlug = (name: string) => {
 /** "All speak to …" → "all speak to …" for a clause after a dash; a CJK sentence is left as it is. */
 function lowerFirst(text: string): string {
   return text ? text.charAt(0).toLowerCase() + text.slice(1) : text;
-}
-
-// Yes/No determination based on card energy
-const YES_CARDS = new Set([
-  'The Fool', 'The Magician', 'The Empress', 'The Emperor', 'The Lovers',
-  'The Chariot', 'Strength', 'Wheel of Fortune', 'The Star', 'The Sun',
-  'The World', 'Judgement', 'Temperance',
-]);
-const NO_CARDS = new Set([
-  'The Tower', 'The Devil', 'Death', 'The Hanged Man',
-]);
-// Everything else is "Maybe" — depends on context
-
-type YesNoVerdict = 'yes' | 'no' | 'maybe';
-
-function getYesNoVerdict(card: TarotCard): { verdict: YesNoVerdict; keywords: string[] } {
-  if (YES_CARDS.has(card.name)) return { verdict: 'yes', keywords: [] };
-  if (NO_CARDS.has(card.name)) return { verdict: 'no', keywords: [] };
-  const positiveKeywords = ['success', 'joy', 'abundance', 'victory', 'celebration', 'love', 'harmony', 'fulfillment', 'completion'];
-  const negativeKeywords = ['loss', 'defeat', 'betrayal', 'grief', 'conflict', 'anxiety', 'burden', 'deception', 'stagnation'];
-  const kw = card.keywords.map((k) => k.toLowerCase());
-  const posMatch = kw.some((k) => positiveKeywords.some((p) => k.includes(p)));
-  const negMatch = kw.some((k) => negativeKeywords.some((n) => k.includes(n)));
-  const first2 = card.keywords.slice(0, 2);
-  if (posMatch && !negMatch) return { verdict: 'yes', keywords: first2 };
-  if (negMatch && !posMatch) return { verdict: 'no', keywords: first2 };
-  return { verdict: 'maybe', keywords: [] };
-}
-
-/** Render-time localized Yes/No for the active locale. */
-function getYesNo(card: TarotCard, t: (key: string, opts?: Record<string, unknown>) => string, localizedName: string): { verdict: YesNoVerdict; answer: string; explanation: string } {
-  const { verdict, keywords } = getYesNoVerdict(card);
-  const answer = t(`cardMeaning.yesNo.answer.${verdict}`);
-  const kw = keywords.join(
-    t('cardMeaning.yesNo.keywordSeparator', { defaultValue: ' and ' }),
-  );
-  const explanationKey = keywords.length > 0
-    ? `cardMeaning.yesNo.explanationKeywords.${verdict}`
-    : `cardMeaning.yesNo.explanation.${verdict}`;
-  const explanation = t(explanationKey, { name: localizedName, keywords: kw });
-  return { verdict, answer, explanation };
 }
 
 // Get cards in same group for navigation grid
@@ -252,7 +212,8 @@ export function TarotCardMeaningPage() {
     () => (enCard ? getRelatedCards(enCard).map(c => localizeCard(c, locale)) : []),
     [enCard, locale],
   );
-  const yesNo = enCard && card ? getYesNo(enCard, t, card.name) : null;
+  // The verdict from the English card, explained in the reader's words (cardYesNo).
+  const yesNo = enCard && card ? cardYesNo(enCard, card, t) : null;
 
   useEffect(() => {
     if (!card || !enCard) return;
@@ -304,7 +265,8 @@ export function TarotCardMeaningPage() {
     });
     // FAQPage schema — drives "People also ask" rich results
     // SEO JSON-LD always uses English — Google indexes canonical EN URLs.
-    const { verdict, keywords } = getYesNoVerdict(enCard);
+    const { verdict, keywordIndexes } = yesNoVerdict(enCard);
+    const keywords = keywordIndexes.map((i) => enCard.keywords[i]);
     const yn = {
       answer: verdict === 'yes' ? 'Yes' : verdict === 'no' ? 'No' : 'Maybe',
       explanation:
@@ -459,7 +421,8 @@ export function TarotCardMeaningPage() {
             <div className="sm:row-span-2">
               <TarotFace card={card} size="fill" radius="card" loading="eager" alt="" />
             </div>
-            <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-0 pt-1 min-w-0" />
+            {/* lining-nums: "ワンドの3" in the display serif, not an old-style 3 below the line (p8 F80). */}
+            <PageHeader as="h1" eyebrow={suitLabel || undefined} title={<span className="lining-nums">{card.name}</span>} className="mb-0 pt-1 min-w-0" />
             {/* Under both on a phone, beside the face from sm up. */}
             <KeywordRow keywords={card.keywords.slice(0, 4)} align="start" className="col-span-2 sm:col-span-1 sm:col-start-2" />
           </div>

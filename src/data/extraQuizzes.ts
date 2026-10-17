@@ -41,12 +41,18 @@ export interface DimensionalResult<K extends string = string> {
   scores: Record<string, number>;
   /** Likert mean per scored dimension — the number the primary is decided on. */
   averages: Record<string, number>;
-  /** Top two means within TIE_MARGIN (0.25 Likert points): the screen names both. */
+  /** Top two means within TIE_MARGIN (0.25 Likert points): the screen names every tied result. */
   isTie: boolean;
   /** Top mean minus runner-up mean. */
   margin: number;
   /** The runner-up, for the "close call" line. */
   secondary?: K;
+  /**
+   * When `isTie`: every result level at the top (within TIE_MARGIN of it),
+   * primary first. A row saved before this field existed has only
+   * `secondary`, and the screen falls back to that pair.
+   */
+  tied?: K[];
   /** Dedicated scorers attach facts the renderer reads (self-compassion's weakest component, the PHQ-2 total). */
   extra?: Record<string, string | number>;
 }
@@ -79,7 +85,7 @@ export function calculateDimensional<K extends string>(
 ): DimensionalResult<K> {
   const { scores, averages } = likertMeans(quiz, answers, dimensions);
   const ranked = rankDimensions(averages, dimensions);
-  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary };
+  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary, tied: ranked.tied };
 }
 
 // ---------------------------------------------------------------
@@ -406,7 +412,15 @@ export function scoreBoundaries(answers: Record<string, number>): DimensionalRes
   const wallsVsPores = Math.abs(a.rigid - a.porous);
   const isTie = (primary === 'rigid' || primary === 'porous') && wallsVsPores <= TIE_MARGIN;
   const secondary = isTie ? (primary === 'rigid' ? 'porous' : 'rigid') : undefined;
-  return { primary, scores, averages: a, isTie, margin: primary === 'rigid' || primary === 'porous' ? wallsVsPores : 0, secondary };
+  return {
+    primary,
+    scores,
+    averages: a,
+    isTie,
+    margin: primary === 'rigid' || primary === 'porous' ? wallsVsPores : 0,
+    secondary,
+    tied: secondary ? [primary, secondary] : undefined,
+  };
 }
 
 // ---------------------------------------------------------------
@@ -1007,7 +1021,7 @@ export function calculateExtraQuiz(quizId: string, answers: Record<string, numbe
   // A flat or all-low profile is not "strongest around narcissism"; when
   // nothing is elevated the honest answer is the low card.
   if (entry.lowResult && result.averages[result.primary] < LOW_SIGNAL) {
-    return { ...result, primary: entry.lowResult, isTie: false, secondary: undefined };
+    return { ...result, primary: entry.lowResult, isTie: false, secondary: undefined, tied: undefined };
   }
   return result;
 }

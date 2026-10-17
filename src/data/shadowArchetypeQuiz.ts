@@ -74,6 +74,8 @@ export interface ShadowResult {
   isTie: boolean;
   /** Top sum minus runner-up sum, in raw Likert points (three items each). */
   margin: number;
+  /** When `isTie`: every archetype in the unbroken tie, winner first (all seven on an all-Neutral run). */
+  tied?: ShadowArchetype[];
 }
 
 /**
@@ -103,7 +105,8 @@ export function calculateShadowArchetype(answers: Record<string, number>): Shado
   );
   const [winner, secondary] = ranked;
   const isTie = scores[winner] === scores[secondary] && fives[winner] === fives[secondary];
-  return { archetype: winner, scores, secondary, isTie, margin: scores[winner] - scores[secondary] };
+  const tied = isTie ? ranked.filter((a) => scores[a] === scores[winner] && fives[a] === fives[winner]) : undefined;
+  return { archetype: winner, scores, secondary, isTie, margin: scores[winner] - scores[secondary], tied };
 }
 
 export interface ShadowArchetypeInfo {

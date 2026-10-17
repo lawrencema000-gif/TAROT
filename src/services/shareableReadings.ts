@@ -1,4 +1,5 @@
 import { isNative } from '../utils/platform';
+import i18n, { getLocale, normalizeLocale, LOCALE_STORAGE_KEY, type SupportedLocale } from '../i18n/config';
 // URL-shareable readings.
 //
 // Encodes a reading (cards + reversed flags + spread + optional question)
@@ -99,14 +100,77 @@ export function sharedDeck(payload: SharedReadingPayload): 'tarot' | 'playing' {
 const CANONICAL_ORIGIN = 'https://tarotlife.app';
 
 /**
+ * The query parameter a share link names its reading's language with
+ * (`?hl=ja`). Outside the token, so the token stays byte for byte what
+ * every app build decodes. Not `lang`: `?lang=` is the app-wide language
+ * preference — the language detector reads it at boot and stores it — and
+ * opening a friend's link must not switch the reader's own app, nor (in an
+ * installed build, which reads `lang` the same way) their profile.
+ */
+export const SHARE_LOCALE_PARAM = 'hl';
+
+/**
  * The link a reading is shared under. Inside the Android app the page's
  * origin is the Capacitor shell (https://localhost), which used to leak
  * into the share text now that native sharing exists; only a public
  * tarotlife.app origin (or a local dev server) is trusted, everything else
  * gets the canonical domain.
+ *
+ * A reading shared in Japanese, Korean or Chinese names its language
+ * (`?hl=`), so the shared page can open in it for a visitor who has not
+ * chosen one (SharedReadingPage): the i18n detector ignores the browser's
+ * language by design, and the link was the only place left to carry it
+ * (p8 F76). English needs no parameter; it is the default.
  */
-export function buildShareUrl(token: string): string {
+export function buildShareUrl(token: string, locale: SupportedLocale = getLocale()): string {
   const here = typeof window !== 'undefined' ? window.location.origin : '';
   const trusted = !isNative() && /^(https:\/\/(www\.)?tarotlife\.app|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(here);
-  return `${trusted ? here : CANONICAL_ORIGIN}/reading/${token}`;
+  const query = locale !== 'en' ? `?${SHARE_LOCALE_PARAM}=${locale}` : '';
+  return `${trusted ? here : CANONICAL_ORIGIN}/reading/${token}${query}`;
+}
+
+/** The language a share link was made in (`?hl=`), when it names one other than English. */
+export function sharedReadingLocale(search: string): SupportedLocale | null {
+  let raw: string | null = null;
+  try {
+    raw = new URLSearchParams(search).get(SHARE_LOCALE_PARAM);
+  } catch {
+    return null;
+  }
+  const locale = normalizeLocale(raw);
+  return locale && locale !== 'en' ? locale : null;
+}
+
+/** Calls of showVisitIn still running, and the stored language the first of them found. */
+let visitSwitches = 0;
+let storedBeforeVisit: string | null = null;
+
+/**
+ * Show the rest of this visit in `locale` without making it the reader's
+ * language. i18next stores every language it changes to (the detector's
+ * localStorage cache), so the stored choice is put back as it was: a reload,
+ * or the next visit, opens in the reader's own language again. Overlapping
+ * calls (a remount) put back what the first one found, not each other's.
+ */
+export async function showVisitIn(locale: SupportedLocale): Promise<void> {
+  if (visitSwitches === 0) {
+    storedBeforeVisit = null;
+    try {
+      storedBeforeVisit = localStorage.getItem(LOCALE_STORAGE_KEY);
+    } catch {
+      // Storage blocked: nothing is stored either way.
+    }
+  }
+  visitSwitches++;
+  try {
+    await i18n.changeLanguage(locale);
+  } finally {
+    visitSwitches--;
+    try {
+      if (storedBeforeVisit === null) localStorage.removeItem(LOCALE_STORAGE_KEY);
+      else localStorage.setItem(LOCALE_STORAGE_KEY, storedBeforeVisit);
+    } catch {
+      // Storage blocked.
+    }
+  }
 }

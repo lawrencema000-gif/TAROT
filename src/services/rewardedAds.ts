@@ -147,9 +147,20 @@ class RewardedAdsService {
   private creditsResetAt = 0;
   /** Earliest moment the server accepts the next credit (ms epoch). */
   private nextCreditAt = 0;
+  /**
+   * The account the credit figures belong to. Bumped on every change of
+   * account; ad-config's daily stats are trusted only once a fetch begun
+   * after the change has landed (`statsEpoch`), because the cached config
+   * still holds the previous account's count until then (p8 F07).
+   */
+  private accountEpoch = 0;
+  private statsEpoch = 0;
+  private statsRefresh: Promise<void> | null = null;
 
   async initialize(userId: string | null = null): Promise<void> {
-    this.currentUserId = userId;
+    // A different account than the one already adopted is a switch.
+    if (this.currentUserId !== null && userId !== this.currentUserId) this.setUserId(userId);
+    else this.currentUserId = userId;
 
     if (!isNative()) return;
 
@@ -282,6 +293,12 @@ class RewardedAdsService {
   getCreditsRemaining(): number | null {
     if (this.creditsLeft !== null && Date.now() >= this.creditsResetAt) this.creditsLeft = null;
     if (this.creditsLeft !== null) return this.creditsLeft;
+    // Right after a change of account the cached ad-config is still the
+    // previous account's: unknown until this account's own config lands.
+    if (this.statsEpoch !== this.accountEpoch) {
+      if (this.currentUserId) void this.refreshStats();
+      return null;
+    }
     const stats = adConfigService.getDailyStats();
     if (!stats) return null;
     const server = adConfigService.getRewardedRemaining();
@@ -303,8 +320,52 @@ class RewardedAdsService {
     return this.pluginAvailable && this.isAdReady;
   }
 
+  /**
+   * The signed-in account changed (App.tsx / sign-out, through
+   * adsService.setUserId). The credit figures were the previous account's:
+   * a second person signing in on the same phone must not inherit "0 ads
+   * left today" (p8 F07). Forget them, and learn this account's count from
+   * a fresh ad-config fetch. The same id again changes nothing.
+   */
   setUserId(userId: string | null): void {
+    if (userId === this.currentUserId) return;
     this.currentUserId = userId;
+    this.creditsLeft = null;
+    this.creditsResetAt = 0;
+    this.nextCreditAt = 0;
+    this.accountEpoch += 1;
+    this.statsRefresh = null;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('rewarded:credits', { detail: null }));
+    }
+    if (userId) void this.refreshStats();
+  }
+
+  /** Fetch ad-config for the current account and trust its daily stats once it lands. */
+  private refreshStats(): Promise<void> {
+    if (this.statsRefresh) return this.statsRefresh;
+    const epoch = this.accountEpoch;
+    const run = (async () => {
+      try {
+        // A fetch already in flight was begun for the previous account (or
+        // none): let it finish, then fetch again for this one.
+        await adConfigService.fetchConfig().catch(() => null);
+        if (epoch !== this.accountEpoch) return;
+        adConfigService.invalidate();
+        const config = await adConfigService.fetchConfig();
+        if (epoch !== this.accountEpoch || !config) return;
+        this.statsEpoch = epoch;
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('rewarded:credits', { detail: this.getCreditsRemaining() }));
+        }
+      } catch {
+        // Stays unknown; the next read tries again.
+      } finally {
+        if (this.statsRefresh === run) this.statsRefresh = null;
+      }
+    })();
+    this.statsRefresh = run;
+    return run;
   }
 
   /**

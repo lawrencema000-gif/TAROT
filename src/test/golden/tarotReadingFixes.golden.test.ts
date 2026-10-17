@@ -91,7 +91,8 @@ describe('focus meanings are read the right way up (#16, #43)', () => {
   });
 
   it('keeps labelled texts on their labels and leaves an upright-only text whole', () => {
-    expect(focusSections(LABELLED)).toEqual({ intro: 'Intro sentence about the card.', upright: 'Upright love text.', reversed: 'Reversed love text.' });
+    // The introduction reads the upright card (p8 O#43): it opens the upright part.
+    expect(focusSections(LABELLED)).toEqual({ intro: '', upright: 'Intro sentence about the card.\n\nUpright love text.', reversed: 'Reversed love text.' });
     expect(focusSections(UPRIGHT_ONLY)).toEqual({ intro: UPRIGHT_ONLY });
     // "upright or reversed" in passing is not a turn.
     expect(focusSections('A card of fathers. For some, this card—upright or reversed—matters.')).toEqual({
@@ -112,6 +113,27 @@ describe('focus meanings are read the right way up (#16, #43)', () => {
     // Money reads the career text, and a ja upright-only text is upright-only.
     expect(leadMeaningFor(uprightOnly, true, 'Money')).toBe(uprightOnly.meaningReversed);
     expect(leadMeaningFor(uprightOnly, false, 'Money')).toBe(ARIA_JA);
+  });
+
+  it('a labelled text’s introduction is the upright reading, never a reversed card’s (p8 O#43)', () => {
+    // The production shape of ids 32–44 (love and career): a two-sentence
+    // introduction that reads the upright card, then the two labels.
+    const nineOfCups = card({
+      id: 44,
+      name: 'Nine of Cups',
+      loveMeaning:
+        'In matters of love and relationships, the Nine of Cups brings exceptionally positive energy, suggesting emotional fulfillment. This card speaks to love that delivers what the heart has been seeking.\n\n' +
+        'UPRIGHT LOVE MEANING: When upright, wishes come true in love.\n\n' +
+        'REVERSED LOVE MEANING: Reversed, the Nine of Cups suggests that what you wished for may not satisfy you.',
+      meaningReversed: 'Dissatisfaction, materialism. More.',
+    });
+    expect(focusMeaningFor(nineOfCups, 'Love', true)).toBe('Reversed, the Nine of Cups suggests that what you wished for may not satisfy you.');
+    expect(focusMeaningFor(nineOfCups, 'Love', false)).toMatch(/^In matters of love and relationships, the Nine of Cups brings exceptionally positive energy/);
+    expect(focusMeaningFor(nineOfCups, 'Love', false)).toMatch(/When upright, wishes come true in love\.$/);
+    expect(uprightFocusFor(nineOfCups, 'Love', true)).toBeUndefined();
+    const summary = synthesisFor([{ card: nineOfCups, reversed: true }], 'Love');
+    expect(summary).toBe('Reversed, the Nine of Cups suggests that what you wished for may not satisfy you.');
+    expect(summary).not.toMatch(/exceptionally positive/);
   });
 
   it('the summary of a reversed Lovers in a Love reading never says "upright"', () => {

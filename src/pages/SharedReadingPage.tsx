@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
 import { Button, Disclaimer, Page, PageHeader, Paper, ListSkeleton, TarotFace } from '../components/ui';
-import { decodeReading, sharedDeck } from '../services/shareableReadings';
+import { decodeReading, sharedDeck, sharedReadingLocale, showVisitIn } from '../services/shareableReadings';
+import { useAuth } from '../context/AuthContext';
+import { calendarDay } from '../components/readings/tarot/readingDates';
 import { fullDeck } from '../data/tarotDeck';
 import { getCartoSpread, getPlayingCard } from '../data/cartomancy';
 import type { PlayingCard } from '../types/cartomancy';
@@ -10,7 +12,7 @@ import type { TarotCard } from '../types';
 import { PlayingCardFace } from '../components/cartomancy/PlayingCardFace';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
-import { getLocale } from '../i18n/config';
+import { getLocale, setLocale } from '../i18n/config';
 import { localizeCard } from '../i18n/localizeCard';
 import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { cartoPositionLabel } from '../components/cartomancy/cartoFlow';
@@ -54,8 +56,40 @@ export function SharedReadingPage() {
   const { t } = useT('app');
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const { user } = useAuth();
   const [shareCopied, setShareCopied] = useState(false);
   const locale = getLocale();
+
+  /*
+   * The language the reading was shared in (`?hl=`, buildShareUrl). A friend
+   * opening a Japanese reader's link signed out, in English — the language
+   * every first visit starts in, since the detector ignores the browser's
+   * — sees the page in Japanese, for this visit only (showVisitIn stores
+   * nothing). A reader who is signed in, or reads the app in a language of
+   * their own, keeps theirs (p8 F76). Taking the page's own invitation into
+   * the app ("Get your own reading", in Japanese) keeps the language: that
+   * is a choice, where opening a link is not.
+   */
+  const [visitLocale] = useState(() => {
+    const shared = sharedReadingLocale(search);
+    return shared && !user && locale === 'en' ? shared : null;
+  });
+  const [adopting, setAdopting] = useState(visitLocale !== null);
+  useEffect(() => {
+    if (!visitLocale) return;
+    let live = true;
+    showVisitIn(visitLocale)
+      .catch(() => {})
+      .finally(() => {
+        if (live) setAdopting(false);
+      });
+    return () => {
+      live = false;
+    };
+    // Once, on arrival: the link's language, before anything is drawn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const payload = useMemo(() => (token ? decodeReading(token) : null), [token]);
   const deck = payload ? sharedDeck(payload) : 'tarot';
@@ -128,6 +162,17 @@ export function SharedReadingPage() {
     );
   }, [payload, deck, cards.length, t]);
 
+  // The link's language is on its way (showVisitIn): nothing in English first.
+  if (adopting) {
+    return (
+      <Page className="max-w-2xl mx-auto py-6 sm:py-10">
+        <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+          <ListSkeleton count={3} />
+        </div>
+      </Page>
+    );
+  }
+
   if (!payload) {
     return (
       <Page className="max-w-2xl mx-auto py-16">
@@ -163,6 +208,14 @@ export function SharedReadingPage() {
   };
 
   const reversedLabel = t('readings.revealView.reversed');
+  // Links made before Phase 7 carry a date-only `d` ('2026-09-01'): that is
+  // the sharer's calendar day, not UTC midnight (the day before in the
+  // Americas). Newer links carry the instant. A malformed one shows no date.
+  const drawnOn = payload.d ? calendarDay(payload.d) : null;
+  const drawnLabel =
+    drawnOn && !Number.isNaN(drawnOn.getTime())
+      ? t('sharedReading.drawn', { defaultValue: 'Drawn {{date}}', date: drawnOn.toLocaleDateString(locale, { dateStyle: 'medium' }) })
+      : null;
   // The table: one card large in the middle, two side by side, three or more in rows of three.
   const table =
     cards.length === 1
@@ -180,16 +233,12 @@ export function SharedReadingPage() {
             ? t('cartomancy.shared.eyebrow', { defaultValue: 'Shared playing-card reading' })
             : t('sharedReading.eyebrow', { defaultValue: 'Shared reading' })
         }
-        title={spreadName}
+        title={<span className="lining-nums">{spreadName}</span>}
         subtitle={
-          payload.q || payload.d ? (
+          payload.q || drawnLabel ? (
             <>
               {payload.q && <span className="block italic text-mystic-200">“{payload.q}”</span>}
-              {payload.d && (
-                <span className="block text-meta mt-1">
-                  {t('sharedReading.drawn', { defaultValue: 'Drawn {{date}}', date: new Date(payload.d).toLocaleDateString(locale, { dateStyle: 'medium' }) })}
-                </span>
-              )}
+              {drawnLabel && <span className="block text-meta mt-1">{drawnLabel}</span>}
             </>
           ) : undefined
         }
@@ -231,7 +280,7 @@ export function SharedReadingPage() {
               const meaning = item.reversed ? item.card.meaningReversed ?? item.card.meaningUpright : item.card.meaningUpright;
               return (
                 <section key={idx} className="py-4 first:pt-0 last:pb-0">
-                  <p className="font-display-eyebrow">{positionLabel(idx + 1)}</p>
+                  <p className="font-display-eyebrow lining-nums">{positionLabel(idx + 1)}</p>
                   <h3 className="mt-1 text-ui font-semibold text-ink">
                     {item.card.name}
                     {item.reversed && <span className="ml-2 text-meta font-medium text-ink-coral">{reversedLabel}</span>}
@@ -250,7 +299,15 @@ export function SharedReadingPage() {
           <Link2 className="w-4 h-4" aria-hidden />
           {shareCopied ? t('common:actions.copied', { defaultValue: 'Copied.' }) : t('sharedReading.copyLink', { defaultValue: 'Copy share link' })}
         </Button>
-        <Button variant="gold" className="flex-1" onClick={() => navigate(deck === 'playing' ? '/cartomancy' : '/')}>
+        <Button
+          variant="gold"
+          className="flex-1"
+          onClick={() => {
+            // Into the app in the language the page was read in (see visitLocale).
+            if (visitLocale && getLocale() === visitLocale) void setLocale(visitLocale);
+            navigate(deck === 'playing' ? '/cartomancy' : '/');
+          }}
+        >
           {deck === 'playing'
             ? t('cartomancy.shared.cta', { defaultValue: 'Read the deck yourself on Arcana' })
             : t('sharedReading.cta', { defaultValue: 'Get your own reading on Arcana' })}

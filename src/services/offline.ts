@@ -1,5 +1,6 @@
 import type { EnhancedHoroscope, TarotCard, ZodiacSign } from '../types';
 import { appStorage } from '../lib/appStorage';
+import { localDateStr } from '../utils/localDate';
 
 const CACHE_KEYS = {
   DAILY_HOROSCOPE: 'arcana_daily_horoscope',
@@ -146,12 +147,68 @@ export async function getCachedDailyRitual(userId: string, date: string): Promis
   return null;
 }
 
+// ── The free tier's daily reading allowance ────────────────────────────────
+// Three readings a local day, counted on the device. The count belongs to the
+// ACCOUNT: it is keyed by user id, so signing out and back in does not hand
+// out three fresh readings, and a second person signing in on the same phone
+// starts from their own count (p8 F52). Signed out, the device keys of before
+// count (the guest's allowance). These keys are deliberately NOT cleared on
+// sign-out. TarotSection and CartomancySection share this one count.
+
+const DAILY_READINGS_KEY = 'arcana_daily_readings';
+const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
+
+/** The storage keys of one account's daily count (the device's when signed out). */
+export function dailyReadingKeys(userId?: string | null): { count: string; date: string } {
+  return userId
+    ? { count: `${DAILY_READINGS_KEY}:${userId}`, date: `${DAILY_READINGS_DATE_KEY}:${userId}` }
+    : { count: DAILY_READINGS_KEY, date: DAILY_READINGS_DATE_KEY };
+}
+
+/** Readings this account has started today (its local day); 0 on a new day. */
+export async function getDailyReadingCount(userId?: string | null, today: string = localDateStr()): Promise<number> {
+  try {
+    const keys = dailyReadingKeys(userId);
+    const storedDate = await appStorage.get(keys.date);
+    if (storedDate !== today) {
+      await appStorage.set(keys.date, today);
+      await appStorage.set(keys.count, '0');
+      return 0;
+    }
+    const n = parseInt((await appStorage.get(keys.count)) || '0', 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Count one more reading for this account today. */
+export async function incrementDailyReadingCount(userId?: string | null, today: string = localDateStr()): Promise<void> {
+  try {
+    const current = await getDailyReadingCount(userId, today);
+    const keys = dailyReadingKeys(userId);
+    await appStorage.set(keys.date, today);
+    await appStorage.set(keys.count, (current + 1).toString());
+  } catch {
+    // silent
+  }
+}
+
+/**
+ * Where an account's playing-card lesson ticks belong ("1 of 12 lessons
+ * done"). cartoFlow.ts keeps them under the device key `arcana_carto_lessons`
+ * today, which the next account on the phone inherited (p8 F52); that key is
+ * cleared on sign-out below until the lessons move to this per-account key.
+ */
+export function cartoLessonsKey(userId?: string | null): string {
+  return userId ? `arcana_carto_lessons:${userId}` : 'arcana_carto_lessons';
+}
+
 // Keys that identify per-user state and must be cleared on sign-out
 // to prevent User A's data leaking into User B's session. Device-level
 // preferences (onboarding, locale, anon_id, attribution) are preserved.
+// The daily reading allowance is not here: it is keyed by account above.
 const PER_USER_EXACT_KEYS = [
-  'arcana_daily_readings',
-  'arcana_daily_readings_date',
   'arcana_rewarded_ad_count',
   'arcana_rewarded_ad_date',
   'arcana_last_ad_time',
@@ -163,6 +220,14 @@ const PER_USER_EXACT_KEYS = [
   'arcana_guest_history',
   'arcana_guest_favorites',
 ];
+
+/**
+ * Per-user keys a module writes straight to window.localStorage on every
+ * platform, which appStorage (Capacitor Preferences on native) does not
+ * reach: cartoFlow's device-wide lesson ticks, which are not the next
+ * account's (p8 F52).
+ */
+const PER_USER_LOCAL_STORAGE_KEYS = ['arcana_carto_lessons'];
 
 const PER_USER_PREFIXES = [
   'arcana_daily_horoscope_',
@@ -179,6 +244,13 @@ export async function clearUserCache(): Promise<void> {
 
   for (const key of PER_USER_EXACT_KEYS) {
     await appStorage.remove(key);
+  }
+  for (const key of PER_USER_LOCAL_STORAGE_KEYS) {
+    try {
+      if (typeof window !== 'undefined') window.localStorage?.removeItem(key);
+    } catch {
+      // storage blocked: nothing was kept there either
+    }
   }
 
   const allKeys = await appStorage.keys();

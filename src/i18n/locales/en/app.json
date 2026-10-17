@@ -500,7 +500,9 @@
       "showCardMeaningsPlain": "Show card meanings",
       "aiTooManyCards": "AI readings take spreads of up to {{n}} cards",
       "sharing": "Preparing the share image",
-      "showAIReading": "Show the AI reading"
+      "showAIReading": "Show the AI reading",
+      "aiCost": "Uses <gold>{{n}} Moonstones</gold>",
+      "aiStillWriting": "Your AI interpretation is still being written. Try again in a few seconds — you won’t be charged twice."
     },
     "celticCross": {
       "caption": "The cross and the staff"
@@ -2113,6 +2115,11 @@
       "yourTraitScores": "Your trait scores",
       "closeCall": "Close call",
       "closeCallBody": "{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.",
+      "closeCallBodyMany": "{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.",
+      "listSeparator": ", ",
+      "listLastSeparator": " and ",
+      "readingFirst": "Reading {{name}} first",
+      "sharedWithMany": "Shared with {{n}} others",
       "axisStrengths": "Where you lean",
       "borderline": "Borderline",
       "pairedWith": "Types people often pair you with",
@@ -5269,7 +5276,23 @@
         "loadEventsFailed": "Couldn’t load moderation events — tap Refresh to try again.",
         "loadFlagsFailed": "Couldn’t load crisis flags — tap Refresh to try again.",
         "markReviewedFailed": "Couldn’t mark that event reviewed — refresh and try again.",
-        "acknowledgeFailed": "Couldn’t acknowledge that flag — refresh and try again."
+        "acknowledgeFailed": "Couldn’t acknowledge that flag — refresh and try again.",
+        "loadFlaggedFailed": "Couldn’t load flagged posts — tap Refresh to try again.",
+        "decideFailed": "Couldn’t save that decision — refresh and try again."
+      },
+      "flagged": {
+        "heading": "Flagged — waiting for a decision",
+        "intro": "Only their authors can see these until you publish them.",
+        "empty": "Nothing flagged.",
+        "post": "Post",
+        "comment": "Comment",
+        "anonymous": "anonymous",
+        "crisis": "crisis",
+        "publish": "Publish",
+        "keepHidden": "Keep hidden",
+        "published": "Published",
+        "keptHidden": "Kept hidden",
+        "alreadyDecided": "That one was already decided."
       }
     },
     "blog": {
@@ -6582,6 +6605,7 @@
     "contract": "The server sent something this version couldn’t read — try again in a moment.",
     "geocodeNone": "No places matched — try the nearest city, or add the country.",
     "geocodeUnavailable": "Place search isn’t responding — check your connection and try again.",
+    "geocodeRegionMissed": "None of these places is in {{region}}. Check the spelling, or try the place’s English name.",
     "chartMissing": "Your birth chart isn’t set up yet. Open Horoscope to cast it, then try again."
   },
   "savedSheet": {
@@ -7126,7 +7150,7 @@
     "tridoshic": {
       "name": "Tridoshic",
       "tagline": "All three in near-equal measure.",
-      "summary": "Your answers spread almost evenly across Vata, Pitta and Kapha. In Ayurveda this is called a tridoshic constitution: no single dosha runs the show, so the question is less \"which one am I\" and more \"which one is out of balance this season\". Read the dosha below as the one currently leading, not as a fixed type.",
+      "summary": "Your answers spread almost evenly across Vata, Pitta and Kapha. In Ayurveda this is called a tridoshic constitution: no single dosha runs the show, so the question is less \"which one am I\" and more \"which one is out of balance this season\". Read the dosha below as a place to start, not as a fixed type.",
       "readingAs": "Reading {{dosha}} as the one leading today"
     }
   },
@@ -9195,7 +9219,7 @@
         "low": {
           "name": "Low self-compassion",
           "tagline": "The inner voice is mostly a critic right now.",
-          "summary": "When things go wrong you tend to come down hard on yourself, feel alone in it and get carried off by the feeling. That is the most common starting point, and it is learnable: self-compassion is a skill, not a temperament. The component below is where the practice will pay off first.",
+          "summary": "When things go wrong you tend to come down hard on yourself, feel alone in it and get carried off by the feeling. That is the most common starting point, and it is learnable: self-compassion is a skill, not a temperament.",
           "strengths": [
             "High standards — the drive is real",
             "Honest with yourself about what hurts"
@@ -9210,7 +9234,7 @@
         "moderate": {
           "name": "Growing self-compassion",
           "tagline": "Kind on some days, hard on others.",
-          "summary": "You already treat yourself with some care, and you also still slip into judgment, isolation or over-identification when the pressure rises. Most people live here. The component below is the one pulling your total down — a small, deliberate practice there moves the whole picture.",
+          "summary": "You already treat yourself with some care, and you also still slip into judgment, isolation or over-identification when the pressure rises. Most people live here.",
           "strengths": [
             "Access to kindness when you remember to use it",
             "Some perspective on hard feelings",
@@ -9248,7 +9272,9 @@
       },
       "whereToPractise": "Where to practise",
       "weakestBody": "The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.",
-      "weakestBodyTwo": "The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture."
+      "weakestBodyTwo": "The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture.",
+      "weakestBodyThree": "The three components pulling your total down are {{a}}, {{b}} and {{c}}. One small, deliberate practice in any of them moves the whole picture.",
+      "levelBody": "No single component is lower than the rest, so there is no one place to start. One small, deliberate practice in any of them moves the whole picture."
     },
     "mood-screener": {
       "title": "Mood screener",
@@ -10196,7 +10222,9 @@
       "placeholder": "What needs to be said but has no audience?",
       "send": "Send whisper",
       "empty": "The well is quiet. Be the first to whisper.",
-      "replyAnonymous": "Replies here are anonymous"
+      "replyAnonymous": "Replies here are anonymous",
+      "deleteWhisper": "Delete whisper",
+      "deleteTitle": "Delete this whisper?"
     },
     "publishPost": "Publish my post",
     "youMarker": "You",
@@ -10214,7 +10242,18 @@
       "moon": "Moon",
       "sparkle": "Sparkle"
     },
-    "unnamedMember": "A member"
+    "unnamedMember": "A member",
+    "deletePost": "Delete post",
+    "deletePostTitle": "Delete this post?",
+    "deletePostBody": "It’s removed for everyone, along with its comments and reactions. This can’t be undone.",
+    "postDeleted": "Post deleted",
+    "deleteComment": "Delete comment",
+    "deleteCommentTitle": "Delete this comment?",
+    "deleteCommentBody": "It’s removed for everyone. This can’t be undone.",
+    "commentDeleted": "Comment deleted",
+    "deleteFailed": "Couldn’t delete it — check your connection and try again.",
+    "underReview": "Under review",
+    "onlyYouCanSee": "Only you can see this"
   },
   "common": {
     "mainContent": "Main content",

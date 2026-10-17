@@ -196,22 +196,96 @@ export function ScoreRow({
   );
 }
 
-/** Named when the scorer reports a tie: both names, so a coin flip is not read as a verdict. */
-export function CloseCall({ a, b }: { a: string; b: string }) {
+/**
+ * The keys a result shares its top with, primary first, or [] when it is
+ * not a tie. `tied` is what the scorers report now (every key level at the
+ * top); a row saved before it existed carries only the one co-key, and
+ * falls back to that pair.
+ */
+export function tiedKeys<K>(
+  primary: K,
+  tied: readonly K[] | undefined,
+  coKey: K | null | undefined,
+  isTie: boolean | undefined,
+): K[] {
+  if (!isTie) return [];
+  if (Array.isArray(tied) && tied.length >= 2) return [primary, ...tied.filter((k, i) => k !== primary && tied.indexOf(k) === i)];
+  return coKey !== undefined && coKey !== null && coKey !== primary ? [primary, coKey] : [];
+}
+
+/**
+ * Names joined the way the locale lists them: "A and B" / "A, B and C"
+ * (en), 「A、B、C」 (ja), "A, B, C" (ko), "A、B和C" (zh).
+ */
+export function useNameList() {
   const { t } = useT('app');
+  return (names: readonly string[]): string => {
+    if (names.length <= 1) return names.join('');
+    const sep = t('quizzes.resultSections.listSeparator', { defaultValue: ', ' });
+    const last = t('quizzes.resultSections.listLastSeparator', { defaultValue: ' and ' });
+    return `${names.slice(0, -1).join(sep)}${last}${names[names.length - 1]}`;
+  };
+}
+
+/**
+ * Named when the scorer reports a tie: every tied name, so a coin flip is
+ * not read as a verdict. A three-way tie used to name two of the three.
+ */
+export function CloseCall({ names }: { names: readonly string[] }) {
+  const { t } = useT('app');
+  const list = useNameList();
+  if (names.length < 2) return null;
   return (
     <div className="rounded-control border border-paper-hairline bg-ink/5 px-4 py-3">
       <EyebrowLabel tone="ink" align="left">
         {t('quizzes.resultSections.closeCall', { defaultValue: 'Close call' })}
       </EyebrowLabel>
       <p className="reading-copy mt-1">
-        {t('quizzes.resultSections.closeCallBody', {
-          defaultValue: '{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.',
-          a,
-          b,
-        })}
+        {names.length === 2
+          ? t('quizzes.resultSections.closeCallBody', {
+              defaultValue: '{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.',
+              a: names[0],
+              b: names[1],
+            })
+          : t('quizzes.resultSections.closeCallBodyMany', {
+              defaultValue: '{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.',
+              names: list(names),
+            })}
       </p>
     </div>
+  );
+}
+
+/**
+ * The verdict block's line when the top is shared: "Shared with B and C".
+ * The verdict alone would read as the one result. Past three names (an
+ * all-Neutral enneagram ties nine types) the headline gives the count and
+ * the close call below names them all.
+ */
+export function SharedWith({ names }: { names: readonly string[] }) {
+  const { t } = useT('app');
+  const list = useNameList();
+  if (names.length === 0) return null;
+  return (
+    <span className="block">
+      {names.length > 3
+        ? t('quizzes.resultSections.sharedWithMany', { defaultValue: 'Shared with {{n}} others', n: names.length })
+        : t('quizzes.resultSections.coPrimary', { defaultValue: 'Shared with {{name}}', name: list(names) })}
+    </span>
+  );
+}
+
+/**
+ * When the top is shared, the first card's summary is not the verdict
+ * block's lede (it says "you are this one"); it is read here, as the first
+ * of the tied results.
+ */
+export function ReadingFirst({ name, children }: { name: string; children: ReactNode }) {
+  const { t } = useT('app');
+  return (
+    <ResultSection title={t('quizzes.resultSections.readingFirst', { defaultValue: 'Reading {{name}} first', name })}>
+      <Prose>{children}</Prose>
+    </ResultSection>
   );
 }
 

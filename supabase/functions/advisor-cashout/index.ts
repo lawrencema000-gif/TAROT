@@ -29,12 +29,26 @@
  * advisor is told it is pending. Reconciling a stuck `processing` row is a
  * retry with idempotencyKey `cashout_<id>` within 24 h, or a look-up of the
  * transfer by metadata.cashout_id in the Stripe dashboard after that.
+ *
+ * The verdict is taken over EVERY HTTP attempt, not the last error (p8
+ * O#117): the SDK's own retries used to hide an attempt that executed — a
+ * lost answer followed by a 429 on the SDK's same-key retry failed and
+ * refunded a transfer that had been made. The client now runs with
+ * maxNetworkRetries 0 and a fetch that records each attempt (./transfer.ts);
+ * one attempt that could have executed keeps the row `processing`.
  */
 
 import Stripe from "npm:stripe@14.10.0";
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
-import { isDefinitiveStripeError } from "./stripe-errors.ts";
+import {
+  CASHOUT_RETRY_DELAY_MS,
+  CASHOUT_TRANSFER_TRIES,
+  MONEY_CLIENT_OPTIONS,
+  recordingFetch,
+  settleTransfer,
+  type StripeAttempt,
+} from "./transfer.ts";
 
 const RequestSchema = z.object({
   moonstones: z.number().int().min(100).max(100_000),
@@ -96,9 +110,12 @@ Deno.serve(handler<Req, Resp>({
       throw new AppError("STRIPE_ACCOUNT_MISSING", "Payout account not found", 500);
     }
 
+    // Every HTTP attempt the SDK makes for this cashout, as Stripe answered it.
+    const attempts: StripeAttempt[] = [];
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2024-11-20.acacia",
-      httpClient: Stripe.createFetchHttpClient(),
+      httpClient: Stripe.createFetchHttpClient(recordingFetch(fetch, attempts)),
+      ...MONEY_CLIENT_OPTIONS,
     });
 
     // Mark processing
@@ -120,19 +137,20 @@ Deno.serve(handler<Req, Resp>({
         { idempotencyKey: `cashout_${cashoutId}` },
       );
 
-    let transfer: Awaited<ReturnType<typeof createTransfer>> | null = null;
-    let lastErr: unknown = null;
-    for (let attempt = 0; attempt < 2 && !transfer; attempt++) {
-      try {
-        transfer = await createTransfer();
-      } catch (e) {
-        lastErr = e;
-        if (isDefinitiveStripeError(e)) break;
-        ctx.log.warn("advisor_cashout.transfer_ambiguous", { cashoutId, attempt, err: errMessage(e) });
-      }
-    }
+    const outcome = await settleTransfer(createTransfer, attempts, {
+      tries: CASHOUT_TRANSFER_TRIES,
+      retryDelayMs: CASHOUT_RETRY_DELAY_MS,
+      onAmbiguous: (call, e) =>
+        ctx.log.warn("advisor_cashout.transfer_ambiguous", {
+          cashoutId,
+          call,
+          attempts: attempts.map((a) => a.status),
+          err: errMessage(e),
+        }),
+    });
 
-    if (transfer) {
+    if (outcome.state === "paid") {
+      const transfer = outcome.transfer;
       await ctx.supabase
         .from("advisor_cashouts")
         .update({
@@ -153,17 +171,24 @@ Deno.serve(handler<Req, Resp>({
       };
     }
 
-    if (isDefinitiveStripeError(lastErr)) {
-      // Stripe refused: no transfer exists. Fail the row and return the stones.
-      const msg = errMessage(lastErr);
+    if (outcome.state === "failed") {
+      // Stripe refused every attempt it saw: no transfer exists. Fail the
+      // row and return the stones.
+      const msg = errMessage(outcome.error);
       await failCashout(ctx.supabase, cashoutId, msg);
-      ctx.log.error("advisor_cashout.failed", { cashoutId, err: msg });
+      ctx.log.error("advisor_cashout.failed", { cashoutId, err: msg, attempts: attempts.map((a) => a.status) });
       throw new AppError("STRIPE_TRANSFER_FAILED", msg, 502);
     }
 
-    // Unknown whether Stripe made the transfer: keep the row `processing`
-    // and the stones debited. Refunding here is how a payout happened twice.
-    ctx.log.error("advisor_cashout.pending_reconcile", { cashoutId, err: errMessage(lastErr) });
+    // Unknown whether Stripe made the transfer (an attempt went unanswered,
+    // answered 2xx/409/5xx, or was followed by a refusal): keep the row
+    // `processing` and the stones debited. Refunding here is how a payout
+    // happened twice.
+    ctx.log.error("advisor_cashout.pending_reconcile", {
+      cashoutId,
+      err: errMessage(outcome.error),
+      attempts: attempts.map((a) => a.status),
+    });
     return {
       cashoutId,
       state: "processing",

@@ -114,7 +114,7 @@ export function TarotReadingResult({
               <section key={i} aria-label={`${getPositionLabel(i)}: ${card.name}`}>
                 <div className="text-center">
                   <Tag tone="neutral" size="md">{getPositionLabel(i)}</Tag>
-                  <h3 className="heading-display-md heading-strong text-title text-ink mt-3">{card.name}</h3>
+                  <h3 className="heading-display-md heading-strong text-title text-ink mt-3 lining-nums">{card.name}</h3>
                   <p
                     className={`mt-1 inline-flex items-center gap-1 text-meta font-medium ${
                       reversed ? 'text-ink-gold' : 'text-ink-teal'

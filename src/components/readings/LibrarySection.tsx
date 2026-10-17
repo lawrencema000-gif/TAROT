@@ -20,6 +20,7 @@ import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localize
 import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
 import { tArray } from '../../utils/tArray';
+import { calendarDay } from './tarot/readingDates';
 import { CARTO_LESSONS, getPlayingCard } from '../../data/cartomancy';
 import { localizeCartoLesson, localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
@@ -287,13 +288,28 @@ export function LibrarySection() {
     ? savedHighlights
     : savedHighlights.filter(h => h.highlight_type === savedFilter);
 
-  const formatDate = (dateStr: string) => {
+  /**
+   * A row's day, as the reader's own calendar names it. A date-only value
+   * ('2026-10-07', the `date` columns) is that calendar day: `new Date()`
+   * would read it as UTC midnight, which is the day before anywhere west of
+   * UTC — every saved reading in the Americas was listed a day early. A
+   * timestamp is the instant, shown in the reader's time zone.
+   */
+  const formatDate = (value: string) => {
     const localeToBcp47: Record<string, string> = { en: 'en-US', ja: 'ja-JP', ko: 'ko-KR', zh: 'zh-CN' };
-    return new Date(dateStr).toLocaleDateString(localeToBcp47[getLocale()] ?? 'en-US', {
+    return calendarDay(value).toLocaleDateString(localeToBcp47[getLocale()] ?? 'en-US', {
       month: 'short',
       day: 'numeric',
     });
   };
+
+  /**
+   * The day a saved reading was made: the moment it was saved, in the
+   * reader's time zone. Its `date` column held the UTC day until p8 (a
+   * reading saved at 02:05 in Tokyo was filed under the day before), so a
+   * row that has `created_at` is dated by it; `date` is the fallback.
+   */
+  const readingDay = (reading: TarotReading) => reading.created_at || reading.date;
 
   // Saved playing-card readings name their cards from the cartomancy
   // corpus, which ja/ko/zh fetch on demand: only when one is in the list.
@@ -382,7 +398,7 @@ export function LibrarySection() {
                         <button
                           type="button"
                           onClick={() => setSelectedTarot(reading)}
-                          aria-label={t('library.openReading', { defaultValue: 'Open {{name}} from {{date}}', name: asked ?? name, date: formatDate(reading.date) })}
+                          aria-label={t('library.openReading', { defaultValue: 'Open {{name}} from {{date}}', name: asked ?? name, date: formatDate(readingDay(reading)) })}
                           className="flex-1 min-w-0 flex items-start gap-3 text-left rounded-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
                         >
                           <span className="w-12 h-12 shrink-0 rounded-inset bg-mystic-800 text-gold inline-flex items-center justify-center" aria-hidden>
@@ -414,7 +430,7 @@ export function LibrarySection() {
                             )}
                             <span className="mt-1 flex items-center gap-1 text-meta text-mystic-500">
                               <Calendar className="w-3 h-3" aria-hidden />
-                              {formatDate(reading.date)}
+                              {formatDate(readingDay(reading))}
                             </span>
                           </span>
                         </button>
@@ -712,7 +728,7 @@ export function LibrarySection() {
               <ListSkeleton count={2} />
             </div>
           ) : (
-            <SavedReadingSheet reading={selectedTarot} dateLabel={formatDate(selectedTarot.date)} />
+            <SavedReadingSheet reading={selectedTarot} dateLabel={formatDate(readingDay(selectedTarot))} />
           )
         )}
       </Sheet>

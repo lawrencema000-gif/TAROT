@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check, Trash2 } from 'lucide-react';
 import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
@@ -13,6 +13,7 @@ import { getZodiacSign } from '../utils/zodiac';
 import { awardXP } from '../services/levelSystem';
 import { publishContent, type ModerationSurface, type ModerationResult } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
+import { ConfirmDeleteSheet } from '../components/community/ConfirmDeleteSheet';
 
 type CrisisResources = NonNullable<ModerationResult['crisisResources']>;
 
@@ -136,9 +137,16 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     [mySign],
   );
 
-  // Load feed. Blocked authors are left out server-side by the feed view
-  // (20261003000014) — the client cannot filter anonymous posts by author,
-  // because it is never told who wrote them.
+  // Delete-your-own: the post waiting on its confirmation sheet. The target
+  // outlives `deleteOpen` so the sheet keeps its title while it slides away.
+  const [deleteTarget, setDeleteTarget] = useState<CommunityPost | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Load feed. Blocked authors are left out by the feed view
+  // (20261003000014), or by the DAL itself while the view is not there yet —
+  // the client cannot filter anonymous posts by author, because it is never
+  // told who wrote them.
   const loadFeed = useCallback(async () => {
     setLoading(true);
     const topic = isWhisperingWell ? 'whispering-well' as const : (selectedTopic === 'all' ? undefined : selectedTopic);
@@ -207,17 +215,71 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const handleBlock = async (post: CommunityPost) => {
     if (!user) return;
     // By post: the server resolves the author, so blocking works on an
-    // anonymous post without revealing who wrote it.
+    // anonymous post without revealing who wrote it. (Before 20261003000014
+    // only named rows offer it: the fallback needs the author id.)
     const res = await community.blockAuthor({ postId: post.id }, { blockerId: user.id, blockedId: post.userId });
-    if (res.ok) {
+    if (res.ok && res.data) {
       setPosts((ps) => ps.filter((p) => p.id !== post.id && (post.userId === null || p.userId !== post.userId)));
       toast(t('community.blocked', { defaultValue: 'User blocked' }), 'success');
-      // The feed view now leaves out everything else by that author too.
+      // Blocked from the post's own page: that page is gone for them now.
+      if (selectedPost?.id === post.id) {
+        setSelectedPost(null);
+        setView('feed');
+      }
+      // The reload leaves out the rest of that author's posts: the view
+      // does it server-side, the fallback filters by the block list.
       void loadFeed();
     } else {
       toast(t('community.blockFailed', { defaultValue: 'Could not block' }), 'error');
+      // false = nothing to block any more (hidden or removed meanwhile).
+      if (res.ok) void loadFeed();
     }
   };
+
+  const requestDelete = (post: CommunityPost) => {
+    // A toast from the last action sat over the sheet's buttons at 390.
+    dismissToasts();
+    setDeleteTarget(post);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    const post = deleteTarget;
+    if (!post || deleting) return;
+    setDeleting(true);
+    const res = await community.deletePost(post.id);
+    setDeleting(false);
+    if (!res.ok) {
+      // The sheet stays up, so "Delete" is right there to try again.
+      toast(t('community.deleteFailed', { defaultValue: 'Couldn’t delete it — check your connection and try again.' }), 'error');
+      return;
+    }
+    setDeleteOpen(false);
+    setPosts((ps) => ps.filter((p) => p.id !== post.id));
+    if (selectedPost?.id === post.id) {
+      setSelectedPost(null);
+      setView('feed');
+    }
+    toast(t('community.postDeleted', { defaultValue: 'Post deleted' }), 'success');
+  };
+
+  const deleteSheet = (
+    <ConfirmDeleteSheet
+      open={deleteOpen}
+      title={
+        deleteTarget?.topic === 'whispering-well'
+          ? t('community.whisperingWell.deleteTitle', { defaultValue: 'Delete this whisper?' })
+          : t('community.deletePostTitle', { defaultValue: 'Delete this post?' })
+      }
+      body={t('community.deletePostBody', {
+        defaultValue: 'It’s removed for everyone, along with its comments and reactions. This can’t be undone.',
+      })}
+      excerpt={deleteTarget?.content}
+      busy={deleting}
+      onCancel={() => setDeleteOpen(false)}
+      onConfirm={confirmDelete}
+    />
+  );
 
   // Resolves true when the report landed, so the card can switch its
   // Report action to a "Reported" state instead of offering it again.
@@ -265,9 +327,11 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
+          onDelete={requestDelete}
           onCrisisDetected={openCrisisBanner}
         />
         {crisisBanner}
+        {deleteSheet}
       </>
     );
   }
@@ -420,12 +484,14 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
+          onDelete={requestDelete}
           onOpenComments={() => { setSelectedPost(post); setView('post-detail'); }}
           t={t}
         />
       ))}
     </Page>
     {crisisBanner}
+    {deleteSheet}
     </>
   );
 }
@@ -441,11 +507,26 @@ interface PostCardProps {
   onReact: (post: CommunityPost, r: ReactionType) => void;
   onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
+  onDelete: (post: CommunityPost) => void;
   onOpenComments: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
-function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, onOpenComments, t }: PostCardProps) {
+/**
+ * Your own post or comment that nobody else can see yet (or ever): it reads
+ * as published to you otherwise, because the feed shows your own rows
+ * whatever their moderation state.
+ */
+function ReviewStateTag({ state, t }: { state: CommunityPost['moderationStatus']; t: PostCardProps['t'] }) {
+  if (state === 'allowed') return null;
+  return state === 'blocked' ? (
+    <Tag tone="neutral">{t('community.onlyYouCanSee', { defaultValue: 'Only you can see this' })}</Tag>
+  ) : (
+    <Tag tone="blue">{t('community.underReview', { defaultValue: 'Under review' })}</Tag>
+  );
+}
+
+function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, onDelete, onOpenComments, t }: PostCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reported, setReported] = useState(false);
@@ -469,6 +550,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
               {t('community.reportedTag', { defaultValue: 'Reported' })}
             </Tag>
           )}
+          {isOwn && <ReviewStateTag state={post.moderationStatus} t={t} />}
         </div>
         <div className="relative">
           <button
@@ -498,8 +580,10 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                     </button>
                   )}
                   {/* Blocking goes by post id (community_block_author), so an
-                      anonymous author can be blocked without being named. */}
-                  {(
+                      anonymous author can be blocked without being named.
+                      Before that RPC exists only named rows can be blocked,
+                      and the row says so (canBlockAuthor). */}
+                  {post.canBlockAuthor && (
                     <button
                       role="menuitem"
                       onClick={() => { setMenuOpen(false); onBlock(post); }}
@@ -511,9 +595,17 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                 </>
               )}
               {isOwn && (
-                <div className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-500 flex items-center">
-                  {t('community.yourPost', { defaultValue: 'Your post' })}
-                </div>
+                <button
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onDelete(post); }}
+                  className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-coral-light hover:bg-mystic-700 flex items-center gap-2"
+                >
+                  <Trash2 className="w-3 h-3" aria-hidden />{' '}
+                  {/* By topic, like the sheet's title: "All" lists whispers too. */}
+                  {post.topic === 'whispering-well'
+                    ? t('community.whisperingWell.deleteWhisper', { defaultValue: 'Delete whisper' })
+                    : t('community.deletePost', { defaultValue: 'Delete post' })}
+                </button>
               )}
             </div>
           )}
@@ -748,10 +840,11 @@ interface PostDetailProps {
   onReact: (post: CommunityPost, r: ReactionType) => void;
   onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
+  onDelete: (post: CommunityPost) => void;
   onCrisisDetected: (resources?: CrisisResources) => void;
 }
 
-function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected }: PostDetailProps) {
+function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCrisisDetected }: PostDetailProps) {
   const { t } = useT('app');
   const { user } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
@@ -761,6 +854,24 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
   const inWell = post.topic === 'whispering-well';
   const [isAnonComment, setIsAnonComment] = useState(post.isAnonymous || inWell);
   const [submitting, setSubmitting] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<CommunityComment | null>(null);
+  const [commentDeleteOpen, setCommentDeleteOpen] = useState(false);
+  const [deletingComment, setDeletingComment] = useState(false);
+
+  const confirmDeleteComment = async () => {
+    const c = commentToDelete;
+    if (!c || deletingComment) return;
+    setDeletingComment(true);
+    const res = await community.deleteComment(c.id);
+    setDeletingComment(false);
+    if (!res.ok) {
+      toast(t('community.deleteFailed', { defaultValue: 'Couldn’t delete it — check your connection and try again.' }), 'error');
+      return;
+    }
+    setCommentDeleteOpen(false);
+    setComments((cs) => cs.filter((x) => x.id !== c.id));
+    toast(t('community.commentDeleted', { defaultValue: 'Comment deleted' }), 'success');
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -836,6 +947,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
         onReact={onReact}
         onReport={onReport}
         onBlock={onBlock}
+        onDelete={onDelete}
         onOpenComments={() => {}}
         t={t}
       />
@@ -855,19 +967,42 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       <div className="space-y-3">
         {comments.map((c) => (
           <Card key={c.id} padding="md" className="bg-mystic-800/20">
-            <div className="flex items-center gap-2 text-meta text-mystic-500 mb-2">
-              <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
-                {c.isAnonymous
-                  ? t('community.anonymous', { defaultValue: 'Anonymous' })
-                  : c.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' })}
-              </span>
-              <span>·</span>
-              <span>{formatRelativeTime(c.createdAt)}</span>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center flex-wrap gap-2 text-meta text-mystic-500 min-w-0">
+                <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
+                  {c.isAnonymous
+                    ? t('community.anonymous', { defaultValue: 'Anonymous' })
+                    : c.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' })}
+                </span>
+                <span>·</span>
+                <span>{formatRelativeTime(c.createdAt)}</span>
+                {c.isMine && <ReviewStateTag state={c.moderationStatus} t={t} />}
+              </div>
+              {c.isMine && (
+                <button
+                  type="button"
+                  onClick={() => { dismissToasts(); setCommentToDelete(c); setCommentDeleteOpen(true); }}
+                  className="shrink-0 -my-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-coral-light"
+                  aria-label={t('community.deleteComment', { defaultValue: 'Delete comment' })}
+                >
+                  <Trash2 className="w-4 h-4" aria-hidden />
+                </button>
+              )}
             </div>
             <p className="text-mystic-200 text-ui whitespace-pre-wrap">{c.content}</p>
           </Card>
         ))}
       </div>
+
+      <ConfirmDeleteSheet
+        open={commentDeleteOpen}
+        title={t('community.deleteCommentTitle', { defaultValue: 'Delete this comment?' })}
+        body={t('community.deleteCommentBody', { defaultValue: 'It’s removed for everyone. This can’t be undone.' })}
+        excerpt={commentToDelete?.content}
+        busy={deletingComment}
+        onCancel={() => setCommentDeleteOpen(false)}
+        onConfirm={confirmDeleteComment}
+      />
 
       {user && (
         <Card padding="md">

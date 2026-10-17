@@ -86,9 +86,16 @@ export function splitLede(text: string): { lede: string; rest: string } {
 /*
  * Some love / career meanings in the card table carry both orientations in
  * one string: an introduction, then "UPRIGHT LOVE MEANING: …" and
- * "REVERSED LOVE MEANING: …" (13 of the 78, as of Phase 7). Printing the
- * whole string put shouted labels mid-paragraph and gave a reversed card
- * its upright reading first.
+ * "REVERSED LOVE MEANING: …" (the love and career texts of ids 32–44, 26
+ * fields, as of Phase 7). Printing the whole string put shouted labels
+ * mid-paragraph and gave a reversed card its upright reading first.
+ *
+ * The introduction is not neutral. Every one in production reads the
+ * upright card ("In matters of love and relationships, the Nine of Cups
+ * brings exceptionally positive energy, suggesting emotional fulfillment,
+ * romantic wishes coming true…"), so it belongs to the upright reading: a
+ * reversed card's focus text is its REVERSED section alone (p8 O#43 — the
+ * summary of a reversed Nine of Cups quoted that sentence).
  */
 const ORIENTATION_LABEL = /(?:^|\n+)[ \t]*(UPRIGHT|REVERSED)\s+(?:[A-Z]+\s+)*MEANING:\s*/;
 
@@ -115,20 +122,24 @@ const REVERSAL_OPENER = new RegExp(
 );
 
 export interface FocusSections {
-  /** Text that belongs to both orientations (a labelled string's introduction), or the whole of an upright-only string. */
+  /** The whole of a string that names no orientation and turns to none: written for the upright card. Empty otherwise. */
   intro: string;
+  /** The upright reading — a labelled string's introduction included, since it reads the upright card. */
   upright?: string;
   reversed?: string;
 }
 
 /**
- * A focus meaning cut by orientation: at its labels when it has them, at
- * the turn to the reversed card when it has one, else whole (`intro` only —
- * written for the upright card).
+ * A focus meaning cut by orientation: at its labels when it has them (the
+ * introduction joining the upright part), at the turn to the reversed card
+ * when it has one, else whole (`intro` only — written for the upright card).
  */
 export function focusSections(text: string): FocusSections {
   const labelled = meaningSections(text);
-  if (labelled.upright !== undefined || labelled.reversed !== undefined) return labelled;
+  if (labelled.upright !== undefined || labelled.reversed !== undefined) {
+    const upright = [labelled.intro, labelled.upright].filter(Boolean).join('\n\n');
+    return { intro: '', upright: upright || undefined, reversed: labelled.reversed };
+  }
 
   const trimmed = text.trim();
   // The turn usually opens a paragraph; failing that, a sentence inside one.
@@ -154,19 +165,16 @@ export function focusSections(text: string): FocusSections {
 }
 
 /**
- * The part of a focus meaning that belongs to this orientation: the
- * introduction plus the matching labelled section, labels removed. Text
- * without the labels is returned as it is.
+ * The part of a labelled focus meaning that belongs to this orientation,
+ * labels removed: upright, the introduction and the UPRIGHT section;
+ * reversed, the REVERSED section alone (the introduction reads the upright
+ * card). Text without the labels is returned as it is.
  */
 export function orientedMeaning(text: string, reversed: boolean): string {
   const parts = text.split(new RegExp(ORIENTATION_LABEL.source, 'g'));
   if (parts.length < 3) return text;
-  const intro = parts[0].trim();
-  let picked = '';
-  for (let i = 1; i + 1 < parts.length; i += 2) {
-    if ((parts[i] === 'REVERSED') === reversed) picked = parts[i + 1].trim();
-  }
-  return [intro, picked].filter(Boolean).join('\n\n');
+  const s = focusSections(text);
+  return (reversed ? s.reversed : s.upright) ?? '';
 }
 
 /** A focus meaning cut at its labels: the introduction, and each orientation's part when written. */

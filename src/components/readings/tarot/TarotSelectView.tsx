@@ -67,7 +67,7 @@ export function TarotSelectView({
       </button>
 
       <div className="text-center space-y-1">
-        <h2 className="heading-display-lg text-mystic-100" aria-live="polite">
+        <h2 className="heading-display-lg text-mystic-100 lining-nums" aria-live="polite">
           {needsMore > 0
             ? t('readings.selectView.chooseMore', { count: needsMore })
             : t('readings.selectView.readyReveal')}

@@ -354,7 +354,7 @@ export function scoreWellnessType(answers: Record<string, number>): DimensionalR
     return { primary: 'unclear', scores, averages, isTie: false, margin: 0 };
   }
   const ranked = rankDimensions(averages, trio);
-  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary };
+  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary, tied: ranked.tied };
 }
 void TIE_MARGIN;
 

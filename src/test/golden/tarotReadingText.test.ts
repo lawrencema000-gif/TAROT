@@ -32,9 +32,10 @@ function card(over: Partial<TarotCard>): TarotCard {
 }
 
 describe('focus meanings with both orientations in one string', () => {
-  it('keeps the introduction and the part for the orientation, labels removed', () => {
+  it('keeps the part for the orientation, labels removed; the introduction reads the upright card', () => {
     expect(orientedMeaning(LABELLED, false)).toBe('Intro sentence about the card.\n\nUpright love text. More upright.');
-    expect(orientedMeaning(LABELLED, true)).toBe('Intro sentence about the card.\n\nReversed love text.');
+    // p8 O#43: every production introduction describes the upright card.
+    expect(orientedMeaning(LABELLED, true)).toBe('Reversed love text.');
   });
 
   it('leaves unlabelled text alone', () => {

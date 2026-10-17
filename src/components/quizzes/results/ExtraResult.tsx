@@ -11,12 +11,15 @@ import {
   Bullets,
   CloseCall,
   Prose,
+  ReadingFirst,
   ResultBody,
   ResultSection,
   ScoreRow,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
@@ -28,6 +31,11 @@ import {
  * supplied them, raw sums for older saved results), names a close call,
  * and carries the two quiz-specific panels: self-compassion's weakest
  * component and the mood screener's crisis resources.
+ *
+ * A tie names every result level at the top: in the close call, in a
+ * "Shared with" line under the verdict, and in the bars. The card's
+ * summary ("Your shadow is strongest around narcissism") then leaves the
+ * verdict block for the body, read as the first of the tied results.
  */
 export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewProps<DimensionalResult>) {
   const { t } = useT('app');
@@ -58,9 +66,22 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const rawMax = Math.max(1, ...entry.dimensions.map((d) => result.scores?.[d] ?? 0));
   const scaleMax = dimensionScaleMax(quiz, entry.dimensions);
   const mixedScales = new Set(entry.dimensions.map((d) => scaleMax[d])).size > 1;
-  const weakest = typeof result.extra?.weakest === 'string' && entry.dimensions.includes(result.extra.weakest) ? result.extra.weakest : null;
-  const weakestAlso =
-    weakest && typeof result.extra?.weakestAlso === 'string' && entry.dimensions.includes(result.extra.weakestAlso) ? result.extra.weakestAlso : null;
+  // Self-compassion's "where to practise": up to three components at the
+  // bottom, in the scorer's order, each a scored dimension.
+  const isComponent = (v: unknown): v is string => typeof v === 'string' && entry.dimensions.includes(v);
+  const extra = result.extra ?? {};
+  const weakestList: string[] = [];
+  for (const k of ['weakest', 'weakestAlso', 'weakestThird'] as const) {
+    const v = extra[k];
+    if (!isComponent(v) || weakestList.includes(v)) break;
+    weakestList.push(v);
+  }
+  // A low or moderate band with no component below the rest still answers
+  // "where to practise" — honestly: anywhere.
+  const levelPractice = quiz.id === 'self-compassion-v1' && weakestList.length === 0 && (resultKey === 'low' || resultKey === 'moderate');
+  const tied = tiedKeys(resultKey, result.tied, result.secondary, result.isTie).filter((d) => entry.dimensions.includes(d) || d in entry.info);
+  const shared = tied.length >= 2;
+  const emphasised = new Set([resultKey, ...tied, ...weakestList]);
   const isScreener = quiz.id === 'mood-screener-v1';
   const showCrisis = isScreener && (resultKey === 'seek-support' || resultKey === 'moderate');
 
@@ -69,8 +90,17 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       eyebrow={quiz.title}
       glyph={<QuizGlyph icon={EXTRA_QUIZ_METADATA[quiz.id]?.icon ?? ''} />}
       verdict={name}
-      subtitle={tagline}
-      summary={summary}
+      subtitle={
+        shared ? (
+          <>
+            <span className="block">{tagline}</span>
+            <SharedWith names={tied.slice(1).map(dimName)} />
+          </>
+        ) : (
+          tagline
+        )
+      }
+      summary={shared ? undefined : summary}
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -91,7 +121,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
             </AfterResult>
           }
         >
-          {result.isTie && result.secondary && <CloseCall a={name} b={dimName(result.secondary)} />}
+          {shared && <CloseCall names={[name, ...tied.slice(1).map(dimName)]} />}
 
           {showCrisis && (
             <aside className="rounded-control border border-ink-coral/40 bg-ink/5 px-4 py-3" aria-label={t('extraQuizzes.mood-screener.crisisLabel', { defaultValue: 'Crisis resources' })}>
@@ -116,7 +146,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
                     value={avg !== undefined ? avg : raw}
                     max={avg !== undefined ? max : rawMax}
                     display={avg !== undefined ? (mixedScales ? `${avg.toFixed(1)} / ${max}` : avg.toFixed(1)) : raw}
-                    emphasis={d === resultKey || d === weakest || d === weakestAlso}
+                    emphasis={emphasised.has(d)}
                   />
                 );
               })}
@@ -132,19 +162,32 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
             )}
           </ResultSection>
 
-          {weakest && (
+          {shared && <ReadingFirst name={name}>{summary}</ReadingFirst>}
+
+          {(weakestList.length > 0 || levelPractice) && (
             <ResultSection title={t('extraQuizzes.self-compassion.whereToPractise', { defaultValue: 'Where to practise' })}>
               <Prose>
-                {weakestAlso
-                  ? t('extraQuizzes.self-compassion.weakestBodyTwo', {
-                      defaultValue: 'The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture.',
-                      a: dimName(weakest),
-                      b: dimName(weakestAlso),
+                {weakestList.length === 3
+                  ? t('extraQuizzes.self-compassion.weakestBodyThree', {
+                      defaultValue: 'The three components pulling your total down are {{a}}, {{b}} and {{c}}. One small, deliberate practice in any of them moves the whole picture.',
+                      a: dimName(weakestList[0]),
+                      b: dimName(weakestList[1]),
+                      c: dimName(weakestList[2]),
                     })
-                  : t('extraQuizzes.self-compassion.weakestBody', {
-                      defaultValue: 'The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.',
-                      component: dimName(weakest),
-                    })}
+                  : weakestList.length === 2
+                    ? t('extraQuizzes.self-compassion.weakestBodyTwo', {
+                        defaultValue: 'The two components pulling your total down are {{a}} and {{b}}. One small, deliberate practice in either moves the whole picture.',
+                        a: dimName(weakestList[0]),
+                        b: dimName(weakestList[1]),
+                      })
+                    : weakestList.length === 1
+                      ? t('extraQuizzes.self-compassion.weakestBody', {
+                          defaultValue: 'The component pulling your total down is {{component}}. One small, deliberate practice there moves the whole picture.',
+                          component: dimName(weakestList[0]),
+                        })
+                      : t('extraQuizzes.self-compassion.levelBody', {
+                          defaultValue: 'No single component is lower than the rest, so there is no one place to start. One small, deliberate practice in any of them moves the whole picture.',
+                        })}
               </Prose>
             </ResultSection>
           )}

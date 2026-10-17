@@ -68,6 +68,8 @@ export interface EnneagramResult {
   isTie: boolean;
   /** The other type in an unbroken tie. */
   coPrimary?: number;
+  /** When `isTie`: every type in the unbroken tie, primary first (all nine on an all-Neutral run). */
+  tied?: number[];
 }
 
 /** The three centres: body 8-9-1, heart 2-3-4, head 5-6-7. */
@@ -129,24 +131,28 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
     .map(([type, score]) => ({ type: parseInt(type.replace('type', '')), score }))
     .sort((a, b) => b.score - a.score);
 
-  // Primary tie rule: when two types share the top sum, prefer the one
-  // whose adjacent wing scores higher (the type that is better supported
-  // by its neighbours); if that is equal too, keep declared order and say
-  // so with isTie so the screen can name both.
+  // Primary tie rule: when types share the top sum, prefer the one whose
+  // adjacent wing scores higher (the type that is better supported by its
+  // neighbours). Every type at the top takes part, not only the first two:
+  // with three tied, comparing two could crown one while the third was as
+  // well supported, or better. Several sharing the best support keep
+  // declared order and are reported with isTie, all of them, so the
+  // screen can name each.
   const bestWingScore = (t: number) =>
     Math.max(typeScores[`type${t === 1 ? 9 : t - 1}`], typeScores[`type${t === 9 ? 1 : t + 1}`]);
-  let primaryType = sorted[0].type;
+  const atTop = sorted.filter((s) => s.score === sorted[0].score).map((s) => s.type);
+  let primaryType = atTop[0];
   let isTie = false;
   let coPrimary: number | undefined;
-  if (sorted[1] && sorted[1].score === sorted[0].score) {
-    const a = sorted[0].type;
-    const b = sorted[1].type;
-    const wa = bestWingScore(a);
-    const wb = bestWingScore(b);
-    if (wb > wa) primaryType = b;
-    else if (wa === wb) {
+  let tied: number[] | undefined;
+  if (atTop.length > 1) {
+    const best = Math.max(...atTop.map(bestWingScore));
+    const supported = atTop.filter((t) => bestWingScore(t) === best);
+    primaryType = supported[0];
+    if (supported.length > 1) {
       isTie = true;
-      coPrimary = b;
+      coPrimary = supported[1];
+      tied = supported;
     }
   }
 
@@ -178,6 +184,7 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
     tritype,
     isTie,
     coPrimary,
+    tied,
   };
 }
 

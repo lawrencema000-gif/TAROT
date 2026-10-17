@@ -193,12 +193,24 @@ export async function markAchievementNotified(
 }
 
 /**
- * Report an activity to the server, which decides what it means for each
- * badge (migration 20261003000004): counters count (one per call for a user
- * session), level / XP / streak / rank badges compare against the profile,
- * and set badges — spread_types_used, quiz_types_complete — need `value`
- * (the spread type, the quiz type) to make progress. Per-card badges need the
- * card name as `value`. Only badges unlocked by this call come back.
+ * Tell the server something happened. The call is only a trigger
+ * (migration 20261003000018): the server re-derives every badge from its own
+ * records — the XP ledger award_xp writes, the ritual rows, quiz_results, the
+ * profile — so repeating a call changes nothing, `increment` is ignored, and
+ * an unlock happens (and pays its XP) once.
+ *
+ * Facts only the device sees are kept as claims and need `value`:
+ *  - reading facts — the spread id (spread_types_used), the card's canonical
+ *    English name (specific_card_drawn), the playing-card spread slug, and the
+ *    bare celtic_cross / cartomancy / new-year / witching-hour reports — count
+ *    once matched to the reading's own reading_complete XP row, so report
+ *    them for the reading awardXP(user, 'reading_complete') was called for;
+ *  - morning_ritual / evening_ritual count once matched to the ritual's
+ *    ritual_complete XP row;
+ *  - views (cards_explored with the card id, zodiac_signs_viewed with the
+ *    sign id, cartomancy_lesson_complete with the lesson slug) count once per
+ *    distinct value, at a bounded number per UTC day.
+ * Only badges unlocked by this call come back.
  */
 export async function checkAchievementProgress(
   userId: string,
@@ -271,9 +283,10 @@ export async function checkLevelMilestones(
 /**
  * A drawn card is reported as a `specific_card_drawn` event with the card
  * name; the server counts it only against badges whose unlock_condition
- * names that card (The Chariot, The Tower, The Fool in the seed). This used
- * to write user_achievements directly from the client — a write any user
- * could point at any badge — and that privilege is revoked (20261003000003).
+ * names that card (The Chariot, The Tower, The Fool in the seed), once per
+ * reading the XP ledger recorded (20261003000018). This used to write
+ * user_achievements directly from the client — a write any user could point
+ * at any badge — and that privilege is revoked (20261003000003).
  */
 export async function checkSpecificCardAchievement(userId: string, cardName: string): Promise<void> {
   if (!cardName) return;
@@ -281,16 +294,16 @@ export async function checkSpecificCardAchievement(userId: string, cardName: str
 }
 
 /*
- * Value reporters for the badges that count WHICH thing, not how many times
- * (migration 20261003000004). Each sends the stable value the server
- * compares against the seed (20260127070447); a bare checkAchievementProgress
- * call with no value cannot advance these badges.
+ * Value reporters for the badges that count WHICH thing, not how many times.
+ * Each sends the stable value the server compares against the seed
+ * (20260127070447); a bare checkAchievementProgress call with no value cannot
+ * advance these badges (20261003000018 ignores it).
  *
  * Counter activities (reading_complete, reading_saved, horoscope_viewed,
- * quiz_complete, journal_entry, ritual_complete, community_*) are reported by
- * awardXP() in services/levelSystem.ts — call that once per activity and do
- * NOT also call checkAchievementProgress for the same type: that counts the
- * activity twice (p7 #36).
+ * quiz_complete, journal_entry, ritual_complete, community_*) are counted
+ * from the XP ledger: awardXP() in services/levelSystem.ts pays the activity
+ * and then triggers the re-derivation. A second report of the same type no
+ * longer counts twice (p7 #36), but it is a wasted round trip.
  */
 
 /** The five quiz types the "Quiz Master" set lists — Quiz.type values in src/data. */

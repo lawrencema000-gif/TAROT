@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
-import { filterByQualifiers, splitPlace } from "./qualifier.ts";
+import { searchOpenMeteo, type GeoResult } from "./openmeteo.ts";
 
 /**
  * Forward-geocode a birth place string. Called during onboarding BEFORE the
@@ -31,19 +31,22 @@ import { filterByQualifiers, splitPlace } from "./qualifier.ts";
  * back with `qualifierMatched: false` so the picker can say they are not
  * in the region typed. Each displayName carries its region and country, so
  * same-name places are told apart.
+ *
+ * In every language (p8 O#35): the qualifier used to be compared with the
+ * region names Open-Meteo returns in the request's language (ミズーリ州), so
+ * under a ja/ko/zh Accept-Language "Springfield, Vermont" matched nothing —
+ * and Nominatim answers the edge with 403, so nothing rescued it. Each place
+ * is now matched in the user's language AND in English (./openmeteo.ts), and
+ * a city typed in kana/hangul/han is retried under its English name.
  */
-
-interface GeoResult {
-  lat: number;
-  lon: number;
-  displayName: string;
-  /** IANA zone when the provider knows it (Open-Meteo does). */
-  timezone?: string;
-}
 
 interface GeocodeRequest {
   birthPlace?: unknown;
+  /** The app's language (useAstrology's callFn sends it); names come back in it. */
+  locale?: unknown;
 }
+
+const APP_LANGUAGES = new Set(["en", "ja", "ko", "zh"]);
 
 const MAX_BIRTH_PLACE_LEN = 200;
 // Strip ASCII control chars (including tab / newline — neither belongs in a
@@ -137,58 +140,11 @@ async function nominatim(place: string, acceptLanguage: string): Promise<GeoResu
     .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lon) && r.displayName);
 }
 
-interface OpenMeteoRow {
-  name: string;
-  latitude: number;
-  longitude: number;
-  country?: string;
-  country_code?: string;
-  admin1?: string;
-  admin2?: string;
-  timezone?: string;
-}
-
-const RESULT_LIMIT = 5;
-
-async function openMeteo(
+function openMeteo(
   place: string,
   language: string,
 ): Promise<{ results: GeoResult[]; qualified: boolean; matched: boolean }> {
-  // Open-Meteo matches on the place NAME; a "City, Region" string finds
-  // nothing, so search on the first comma-separated part and check the
-  // rest against each candidate's region and country.
-  const { name, qualifiers } = splitPlace(place);
-  const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
-  url.searchParams.set("name", name.slice(0, 100));
-  url.searchParams.set("count", qualifiers.length ? "20" : String(RESULT_LIMIT));
-  url.searchParams.set("language", language);
-  url.searchParams.set("format", "json");
-  const res = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT, "Accept": "application/json" },
-    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-  });
-  if (!res.ok) {
-    throw new Error(`open-meteo ${res.status}`);
-  }
-  const data = await res.json();
-  const all: OpenMeteoRow[] = Array.isArray(data?.results) ? data.results : [];
-  const matching = filterByQualifiers(all, qualifiers);
-  const matched = matching.length > 0;
-  const rows = (matched ? matching : all).slice(0, RESULT_LIMIT);
-  const results = rows
-    .map((r) => {
-      const parts = [r.name, r.admin1, r.country].filter(
-        (p, i, arr): p is string => typeof p === "string" && p.length > 0 && arr.indexOf(p) === i,
-      );
-      return {
-        lat: r.latitude,
-        lon: r.longitude,
-        displayName: parts.join(", "),
-        timezone: r.timezone,
-      };
-    })
-    .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lon) && r.displayName);
-  return { results, qualified: qualifiers.length > 0, matched };
+  return searchOpenMeteo(place, language, fetch, { userAgent: USER_AGENT, timeoutMs: UPSTREAM_TIMEOUT_MS });
 }
 
 Deno.serve(
@@ -207,8 +163,14 @@ Deno.serve(
         );
       }
 
-      const acceptLanguage = (ctx.req.headers.get("accept-language") || "en").slice(0, 64);
-      const language = acceptLanguage.split(",")[0].split("-")[0].trim().toLowerCase() || "en";
+      const headerLanguage = (ctx.req.headers.get("accept-language") || "en").slice(0, 64);
+      // The app's own language first (a phone set to English can run the app
+      // in Japanese), then the device's.
+      const appLanguage = typeof body.locale === "string" ? body.locale.toLowerCase().split("-")[0] : "";
+      const language = APP_LANGUAGES.has(appLanguage)
+        ? appLanguage
+        : headerLanguage.split(",")[0].split("-")[0].trim().toLowerCase() || "en";
+      const acceptLanguage = APP_LANGUAGES.has(appLanguage) ? `${appLanguage},${headerLanguage}`.slice(0, 64) : headerLanguage;
       const cacheKey = `${language}|${birthPlace.toLowerCase()}`;
 
       const cached = cacheGet(cacheKey);

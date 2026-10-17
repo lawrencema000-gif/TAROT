@@ -39,6 +39,7 @@ import { TarotSelectView } from './tarot/TarotSelectView';
 import { TarotRevealView } from './tarot/TarotRevealView';
 import { TarotHomeView } from './tarot/TarotHomeView';
 import { FOCUS_AREA_I18N_KEY, type FocusArea, type PickerSpread } from './tarot/types';
+import { newReadingId } from './tarot/readingId';
 import { localDateStr } from '../../utils/localDate';
 
 /*
@@ -270,6 +271,19 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [deckCards, setDeckCards] = useState<number[]>([]);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  /**
+   * The reading on the table, by id: minted when its cards are dealt and
+   * sent as the requestId of every AI request for it, so the server treats
+   * a second request for the same reading as a free replay (readingId.ts).
+   */
+  const readingIdRef = useRef<string | null>(null);
+  /**
+   * The reading whose AI interpretation is on its way. Set before the first
+   * await, so a second tap during the balance check or the request is
+   * ignored: `loadingAI` only lands with the next render, and a double tap
+   * used to get two requests out 3 ms apart, each charged (p8 F09).
+   */
+  const aiInFlightRef = useRef<string | null>(null);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
@@ -303,7 +317,6 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     [],
   );
 
-  const today = new Date().toISOString().split('T')[0];
   const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
 
   const getCardImage = (card: TarotCard): string | undefined => {
@@ -669,6 +682,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       }
     })();
 
+    // A new reading on the table: its own id, and no AI request of its own
+    // yet (one still running for the last reading answers into nothing).
+    readingIdRef.current = newReadingId();
+    setLoadingAI(false);
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
@@ -839,10 +856,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       await reportShare(outcome, shareText);
     });
 
-  /** The row a saved reading is written as. */
+  /**
+   * The row a saved reading is written as. `date` is the reader's own
+   * calendar day (localDateStr), as the ritual, the journal and the mood
+   * diary write theirs: the UTC day filed a reading saved before 09:00 in
+   * Tokyo under the day before, and one saved in the evening in the
+   * Americas under the day after (p8 F14, F47, F73).
+   */
   const savedRow = (interpretation: string | null) => ({
     userId: user!.id,
-    date: today,
+    date: localDateStr(),
     spreadType: currentSpread,
     focusArea: selectedFocus,
     cards: drawnCards.map((d, i) => ({
@@ -912,7 +935,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const aiTooManyCards = drawnCards.length > MAX_AI_TAROT_CARDS;
 
   const handleGetAIInterpretation = async () => {
-    if (!user || drawnCards.length === 0 || loadingAI) return;
+    const readingId = readingIdRef.current;
+    if (!user || drawnCards.length === 0 || !readingId) return;
+    // This reading's interpretation is already on its way: a second tap
+    // does nothing. Checked and set before the first await (see aiInFlightRef).
+    if (aiInFlightRef.current === readingId) return;
 
     // The interpretation for this reading is already here (the reader had
     // switched back to the card meanings): show it again. Asking the server
@@ -925,13 +952,15 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     // a request that cannot succeed (the chip says so, see the reveal).
     if (aiTooManyCards) return;
 
-    // 50 ms per AI interpretation. Premium = no debit (soft cap server-side).
-    // The hook opens the earn-Moonstones sheet on insufficient balance.
-    const ok = await tryConsumeAi();
-    if (!ok) return;
-
+    aiInFlightRef.current = readingId;
     setLoadingAI(true);
     try {
+      // 50 Moonstones per AI interpretation (the chip shows the price to a
+      // free reader). Premium = no debit (soft cap server-side). The hook
+      // opens the earn-Moonstones sheet on insufficient balance.
+      const ok = await tryConsumeAi();
+      if (!ok) return;
+
       const readingCards = drawnCards.map(d => tarotCardToReadingCard(d.card, d.reversed));
       const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
 
@@ -949,7 +978,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         question: question.trim() || undefined,
         zodiacSign: zodiacSign,
         goals: profile?.goals,
+        // The reading's id, not a fresh one per call: a repeat of this
+        // request is the same request to the server, answered without a
+        // second charge.
+        requestId: readingId,
       });
+
+      // The reader has moved on to another reading while this one was being
+      // read: the text belongs to the reading it was asked for, not to the
+      // one on the table now (nor to that one's saved row).
+      if (readingIdRef.current !== readingId) return;
 
       if (result.fallback === true) {
         // Every AI provider failed and the server sent the cards' own
@@ -979,26 +1017,37 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     } catch (error) {
       await refundAi();
       console.error('Failed to generate AI interpretation:', error);
+      if (readingIdRef.current !== readingId) return;
       // The edge function refunds the Moonstone debit itself when the reading
       // fails, so a failure never costs the user anything. Map the server's
-      // error code (embedded in the thrown message) to a message that says
-      // what happened and what to do; never surface the raw text.
+      // error (generatePremiumReading throws the envelope's message, not its
+      // code) to a message that says what happened and what to do; never
+      // surface the raw text.
       const raw = error instanceof Error ? error.message : '';
-      const errorMessage = raw.includes('INSUFFICIENT_BALANCE')
+      const errorMessage = /INSUFFICIENT_BALANCE|enough Moonstones/i.test(raw)
         ? t('readings.toasts.aiInsufficient', { defaultValue: 'Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.' })
         : // generate-reading answers 429 DAILY_LIMIT_REACHED with the message
           // "Daily reading limit reached" — the same mapping as CartomancySection.
-          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit/i.test(raw)
+          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit|today's AI limit/i.test(raw)
           ? t('readings.toasts.aiLimit', { defaultValue: 'You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.' })
           : /TOO_MANY_CARDS|Maximum \d+ cards/i.test(raw)
           ? t('readings.toasts.aiTooManyCards', {
               n: MAX_AI_TAROT_CARDS,
               defaultValue: 'AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.',
             })
+          : // 409 REQUEST_IN_FLIGHT: an earlier request for this reading (one
+            // the connection dropped) is still being written. It was charged
+            // once; asking again returns it without a second charge.
+            /REQUEST_IN_FLIGHT|still being worked on/i.test(raw)
+          ? t('readings.revealView.aiStillWriting', {
+              defaultValue: 'Your AI interpretation is still being written. Try again in a few seconds — you won’t be charged twice.',
+            })
           : t('readings.toasts.aiFailed', { defaultValue: 'Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.' });
       toast(errorMessage, 'error');
     } finally {
-      setLoadingAI(false);
+      if (aiInFlightRef.current === readingId) aiInFlightRef.current = null;
+      // A newer reading has its own state (reset when it was dealt).
+      if (readingIdRef.current === readingId) setLoadingAI(false);
     }
   };
 

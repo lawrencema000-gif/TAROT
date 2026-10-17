@@ -9,6 +9,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 type Listener = (...args: unknown[]) => unknown;
 const listeners = new Map<string, Listener>();
 const invoke = vi.fn();
+/** What ad-config answers: the signed-in account's daily stats (null = none yet). */
+const adConfig = vi.hoisted(() => ({
+  stats: null as { rewardedRemaining: number } | null,
+  /** The stats the NEXT fetch brings back (the account the session now belongs to). */
+  next: null as { rewardedRemaining: number } | null,
+  fetches: 0,
+}));
 
 vi.mock('@capacitor-community/admob', () => ({
   AdMob: {
@@ -41,10 +48,14 @@ vi.mock('./adConfig', () => ({
   adConfigService: {
     trackEvent: () => Promise.resolve(),
     invalidate: () => {},
-    fetchConfig: () => Promise.resolve(null),
+    fetchConfig: () => {
+      adConfig.fetches += 1;
+      if (adConfig.next) adConfig.stats = adConfig.next;
+      return Promise.resolve(adConfig.stats ? { dailyStats: adConfig.stats } : null);
+    },
     getAdUnitId: () => 'test-unit',
-    getDailyStats: () => null,
-    getRewardedRemaining: () => 999999,
+    getDailyStats: () => adConfig.stats,
+    getRewardedRemaining: () => (adConfig.stats ? adConfig.stats.rewardedRemaining : 999999),
   },
 }));
 
@@ -68,6 +79,9 @@ async function freshService() {
 
 beforeEach(() => {
   invoke.mockReset();
+  adConfig.stats = null;
+  adConfig.next = null;
+  adConfig.fetches = 0;
 });
 
 describe('rewardedAdsService and the daily cap', () => {
@@ -124,5 +138,75 @@ describe('rewardedAdsService and the daily cap', () => {
     invoke.mockResolvedValueOnce({ data: null, error: { name: 'FunctionsFetchError', message: 'Failed to fetch' } });
     expect(await rewardedAdsService.showRewardedAd()).toBe('persist-failed');
     expect(rewardedAdsService.getCreditsRemaining()).toBeNull();
+  });
+});
+
+describe('rewardedAdsService across a change of account (p8 F07)', () => {
+  /** Account A uses its sixth ad of the day: 0 left. */
+  async function serviceAfterSixthAd() {
+    const mod = await freshService();
+    invoke.mockResolvedValueOnce({ data: { data: { newBalance: 300, creditsRemaining: 0, resetAt: '2099-01-01T00:00:00.000Z' } }, error: null });
+    expect(await mod.rewardedAdsService.showRewardedAd()).toBe('credited');
+    expect(mod.rewardedAdsService.getCreditsRemaining()).toBe(0);
+    // ad-config, as cached on the device, still says A has nothing left.
+    adConfig.stats = { rewardedRemaining: 0 };
+    return mod;
+  }
+
+  it('the next account does not inherit "0 ads left": it gets its own count and can watch', async () => {
+    const { rewardedAdsService } = await serviceAfterSixthAd();
+    const events: unknown[] = [];
+    const onCredits = (e: Event) => events.push((e as CustomEvent).detail);
+    window.addEventListener('rewarded:credits', onCredits);
+    try {
+      rewardedAdsService.setUserId(null);
+      // Signed out: A's figures are gone (unknown, not 0).
+      expect(rewardedAdsService.getCreditsRemaining()).toBeNull();
+      // B signs in; B's ad-config says 6 left.
+      adConfig.next = { rewardedRemaining: 6 };
+      rewardedAdsService.setUserId('user-B');
+      // Until B's own config lands the cached (A's) 0 is not believed.
+      expect(rewardedAdsService.getCreditsRemaining()).toBeNull();
+      await new Promise((r) => setTimeout(r, 0));
+      expect(rewardedAdsService.getCreditsRemaining()).toBe(6);
+      expect(await rewardedAdsService.canWatchAd()).toBe(true);
+      expect(events).toContain(6);
+      // And B's ad plays and is credited.
+      invoke.mockClear();
+      invoke.mockResolvedValueOnce({ data: { data: { newBalance: 50, creditsRemaining: 5, resetAt: '2099-01-01T00:00:00.000Z' } }, error: null });
+      expect(await rewardedAdsService.showRewardedAd()).toBe('credited');
+      expect(invoke).toHaveBeenCalledTimes(1);
+      expect(rewardedAdsService.getCreditsRemaining()).toBe(5);
+    } finally {
+      window.removeEventListener('rewarded:credits', onCredits);
+    }
+  });
+
+  it('a switch straight from A to B (no sign-out in between) resets too', async () => {
+    const { rewardedAdsService } = await serviceAfterSixthAd();
+    adConfig.next = { rewardedRemaining: 4 };
+    rewardedAdsService.setUserId('user-B');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(rewardedAdsService.getCreditsRemaining()).toBe(4);
+    expect(await rewardedAdsService.showRewardedAd({})).not.toBe('daily-cap');
+  });
+
+  it('the same account again keeps what the server said', async () => {
+    const { rewardedAdsService } = await serviceAfterSixthAd();
+    const before = adConfig.fetches;
+    rewardedAdsService.setUserId('user-1');
+    expect(rewardedAdsService.getCreditsRemaining()).toBe(0);
+    expect(await rewardedAdsService.showRewardedAd()).toBe('daily-cap');
+    expect(adConfig.fetches).toBe(before);
+  });
+
+  it('B really capped: its own config says 0, and the ad is not offered', async () => {
+    const { rewardedAdsService } = await serviceAfterSixthAd();
+    rewardedAdsService.setUserId(null);
+    adConfig.next = { rewardedRemaining: 0 };
+    rewardedAdsService.setUserId('user-B');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(rewardedAdsService.getCreditsRemaining()).toBe(0);
+    expect(await rewardedAdsService.canWatchAd()).toBe(false);
   });
 });

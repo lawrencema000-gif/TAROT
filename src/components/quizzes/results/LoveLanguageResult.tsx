@@ -9,12 +9,15 @@ import {
   CloseCall,
   Prose,
   Quote,
+  ReadingFirst,
   ResultBody,
   ResultSection,
   ScoreRow,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
@@ -32,6 +35,11 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, sav
   const copy = (field: string, fallback: string) => tResultCopy(`loveLanguage.${primary}.${field}`, fallback);
   const list = (field: string, fallback: readonly string[]) => tResultCopy(`loveLanguage.${primary}.${field}`, fallback);
   const section = (key: string, fallback: string) => t(`quizzes.resultSections.${key}`, { defaultValue: fallback });
+  // Every language in the unbroken tie (all five on an all-Neutral run), not
+  // just the one co-primary a two-name line had room for.
+  const tied = tiedKeys(primary, result.tied, result.coPrimary, result.isTie).filter((k) => loveLanguageDescriptions[k]);
+  const shared = tied.length >= 2;
+  const whatItMeans = copy('whatItMeans', info.whatItMeans);
 
   return (
     <ResultLayout
@@ -39,13 +47,13 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, sav
       glyph={<QuizIcons.LoveLanguagesIcon />}
       verdict={name(primary)}
       subtitle={
-        secondaryKey
-          ? result.isTie
-            ? t('quizzes.resultSections.coPrimary', { defaultValue: 'Shared with {{name}}', name: name(secondaryKey) })
-            : t('quizzes.resultSections.secondaryIs', { defaultValue: 'Secondary: {{name}}', name: name(secondaryKey) })
-          : undefined
+        shared ? (
+          <SharedWith names={tied.slice(1).map(name)} />
+        ) : secondaryKey ? (
+          t('quizzes.resultSections.secondaryIs', { defaultValue: 'Secondary: {{name}}', name: name(secondaryKey) })
+        ) : undefined
       }
-      summary={copy('whatItMeans', info.whatItMeans)}
+      summary={shared ? undefined : whatItMeans}
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -65,15 +73,17 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, sav
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {result.isTie && secondaryKey && <CloseCall a={name(primary)} b={name(secondaryKey)} />}
+          {shared && <CloseCall names={tied.map(name)} />}
 
           <ResultSection title={section('yourScores', 'Your scores')}>
             <div className="space-y-4">
               {sorted.map(([lang, score]) => (
-                <ScoreRow key={lang} name={name(lang)} value={score} max={15} emphasis={lang === primary} />
+                <ScoreRow key={lang} name={name(lang)} value={score} max={15} emphasis={lang === primary || tied.includes(lang)} />
               ))}
             </div>
           </ResultSection>
+
+          {shared && <ReadingFirst name={name(primary)}>{whatItMeans}</ReadingFirst>}
 
           <ResultSection title={section('whatYouNeed', 'What you need')}>
             <Bullets items={list('whatYouNeed', info.whatYouNeed)} />

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { aggregateMirror, computeStreak, type MirrorReadingRow } from './mirror';
+import { fullDeck } from '../data/tarotDeck';
 
 // The shapes tarot_readings.cards actually holds (P7 #46): TarotSection saves
 // { cardId, cardName, position, reversed }; cartomancy adds deck: 'playing'.
@@ -46,6 +47,49 @@ describe('aggregateMirror', () => {
     expect(s.suitBreakdown.Wands).toBe(2);
     expect(s.topCards.map((c) => c.name)).toContain('The Magician');
     expect(['ace', 'knight']).toContain(s.mostDrawnNumber?.value);
+  });
+
+  // Rows saved by the pre-Phase-7 client and the Android v1.2.0 app: the
+  // card's id, and its name as the screen showed it (p8 F04, O#46).
+  const deckNames = new Map(fullDeck.map((c) => [c.id, c.name]));
+  const LEGACY: Record<'ja' | 'ko' | 'zh', Record<number, string>> = {
+    ja: { 3: '女帝', 19: '太陽', 26: 'ワンドの5', 30: 'ワンドの9', 64: 'ペンタクルのエース', 77: 'ペンタクルのキング' },
+    ko: { 3: '여황제', 19: '태양', 26: '완드 5', 30: '완드 9', 64: '펜타클 에이스', 77: '펜타클 왕' },
+    zh: { 3: '女皇', 19: '太阳', 26: '权杖五', 30: '权杖九', 64: '星币一', 77: '星币国王' },
+  };
+
+  it.each(['ja', 'ko', 'zh'] as const)('reads a %s row saved with localized names by its card ids', (lng) => {
+    const names = LEGACY[lng];
+    const s = aggregateMirror(
+      [tarotRow('2026-04-20', [[26, names[26], false], [19, names[19], true], [77, names[77], false]])],
+      deckNames,
+      new Date(2026, 3, 20),
+    );
+    expect(s.totalCardsDrawn).toBe(3);
+    expect(s.arcanaBreakdown).toEqual({ major: 1, minor: 2 });
+    expect(s.suitBreakdown).toEqual({ Wands: 1, Cups: 0, Swords: 0, Pentacles: 1 });
+    expect(s.topCards.map((c) => c.name).sort()).toEqual(['Five of Wands', 'King of Pentacles', 'The Sun']);
+    expect(['5', 'king']).toContain(s.mostDrawnNumber?.value);
+  });
+
+  it('counts one card once across old localized and new English rows', () => {
+    const ja = LEGACY.ja;
+    const s = aggregateMirror(
+      [
+        tarotRow('2026-10-07', [[3, 'The Empress', false], [14, 'Temperance', true], [30, 'Nine of Wands', false]]),
+        tarotRow('2026-04-19', [[3, ja[3], false], [30, ja[30], false], [64, ja[64], false]]),
+      ],
+      deckNames,
+      new Date(2026, 9, 7),
+    );
+    expect(s.topCards.slice(0, 2)).toEqual([
+      { name: 'The Empress', count: 2 },
+      { name: 'Nine of Wands', count: 2 },
+    ]);
+    expect(s.topCards.map((c) => c.name)).not.toContain(ja[3]);
+    expect(s.suitBreakdown).toEqual({ Wands: 2, Cups: 0, Swords: 0, Pentacles: 1 });
+    expect(s.arcanaBreakdown).toEqual({ major: 3, minor: 3 });
+    expect(s.mostDrawnNumber).toEqual({ value: '9', count: 2 });
   });
 
   it('returns the empty shape when there is nothing tarot', () => {

@@ -52,7 +52,14 @@ const ELEMENT_DEFAULT: Record<string, string> = {
 export function ProfilePage() {
   const { t } = useT('app');
   const locale = getLocale();
+  // The love-language quiz saves its dimension ids (words, time, gifts, acts,
+  // touch); the long slugs are older saves.
   const loveLanguageLabels: Record<string, string> = {
+    words: t('profile.loveLanguages.words-of-affirmation'),
+    time: t('profile.loveLanguages.quality-time'),
+    gifts: t('profile.loveLanguages.receiving-gifts'),
+    acts: t('profile.loveLanguages.acts-of-service'),
+    touch: t('profile.loveLanguages.physical-touch'),
     'words-of-affirmation': t('profile.loveLanguages.words-of-affirmation'),
     'quality-time': t('profile.loveLanguages.quality-time'),
     'receiving-gifts': t('profile.loveLanguages.receiving-gifts'),

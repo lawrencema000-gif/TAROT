@@ -203,6 +203,8 @@ export interface LoveLanguageResult {
   isTie: boolean;
   /** The other language in an unbroken tie, so the result screen can name both. */
   coPrimary?: string;
+  /** When `isTie`: every language in the unbroken tie, primary first (all five on an all-Neutral run). */
+  tied?: string[];
 }
 
 /**
@@ -234,8 +236,9 @@ export function calculateLoveLanguage(scores: Record<string, number>): LoveLangu
   const [primary, top] = ranked[0];
   const [second, next] = ranked[1];
   const isTie = top === next && fives[primary] === fives[second];
+  const tied = isTie ? ranked.filter(([k, v]) => v === top && fives[k] === fives[primary]).map(([k]) => k) : undefined;
 
-  return { primary, scores: totals, isTie, coPrimary: isTie ? second : undefined };
+  return { primary, scores: totals, isTie, coPrimary: isTie ? second : undefined, tied };
 }
 
 export interface MBTITypeInfo {

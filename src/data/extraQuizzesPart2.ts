@@ -63,18 +63,22 @@ export function likertMeans<K extends string>(
 /**
  * Highest mean wins; declared order breaks an exact tie but the tie is
  * reported. `margin` is top minus runner-up; `isTie` when it is within
- * TIE_MARGIN.
+ * TIE_MARGIN. `tied` is every dimension within TIE_MARGIN of the top, in
+ * rank order (primary first): a three-way tie names all three, where
+ * `secondary` alone used to leave the third out.
  */
 export function rankDimensions<K extends string>(
   averages: Record<K, number>,
   dimensions: readonly K[],
-): { primary: K; secondary?: K; margin: number; isTie: boolean } {
+): { primary: K; secondary?: K; margin: number; isTie: boolean; tied?: K[] } {
   const ranked = [...dimensions].sort((a, b) => averages[b] - averages[a]);
   const primary = ranked[0];
   const secondary = ranked[1];
   const margin = secondary === undefined ? 0 : averages[primary] - averages[secondary];
   const isTie = secondary !== undefined && margin <= TIE_MARGIN;
-  return { primary, secondary: isTie ? secondary : undefined, margin, isTie };
+  // The same test `isTie` puts the runner-up through, so `tied` always holds it.
+  const tied = isTie ? ranked.filter((d) => averages[primary] - averages[d] <= TIE_MARGIN) : undefined;
+  return { primary, secondary: isTie ? secondary : undefined, margin, isTie, tied };
 }
 
 // 1. Jungian Cognitive Functions ----------------------------------
@@ -254,7 +258,7 @@ export function scoreEmpathHsp(answers: Record<string, number>): DimensionalResu
   const margin = Math.abs(empath - hsp);
   const isTie = (primary === 'empath' || primary === 'hsp') && margin <= TIE_MARGIN;
   const secondary: EmpathType | undefined = isTie ? (primary === 'empath' ? 'hsp' : 'empath') : undefined;
-  return { primary, scores, averages, isTie, margin, secondary };
+  return { primary, scores, averages, isTie, margin, secondary, tied: secondary ? [primary, secondary] : undefined };
 }
 
 export const EMPATH_INFO: Record<EmpathType, DimensionalResultInfo> = {
@@ -315,7 +319,7 @@ export const SELF_COMPASSION_INFO: Record<SelfCompassionType, DimensionalResultI
   low: {
     name: 'Low self-compassion',
     tagline: 'The inner voice is mostly a critic right now.',
-    summary: 'When things go wrong you tend to come down hard on yourself, feel alone in it and get carried off by the feeling. That is the most common starting point, and it is learnable: self-compassion is a skill, not a temperament. The component below is where the practice will pay off first.',
+    summary: 'When things go wrong you tend to come down hard on yourself, feel alone in it and get carried off by the feeling. That is the most common starting point, and it is learnable: self-compassion is a skill, not a temperament.',
     strengths: ['High standards — the drive is real', 'Honest with yourself about what hurts'],
     shadow: ['Shame spirals that slow recovery', 'Treating a bad moment as evidence about your worth', 'Isolation when you most need company'],
     affirmation: 'I can hold a high standard and still be on my own side.',
@@ -323,7 +327,7 @@ export const SELF_COMPASSION_INFO: Record<SelfCompassionType, DimensionalResultI
   moderate: {
     name: 'Growing self-compassion',
     tagline: 'Kind on some days, hard on others.',
-    summary: 'You already treat yourself with some care, and you also still slip into judgment, isolation or over-identification when the pressure rises. Most people live here. The component below is the one pulling your total down — a small, deliberate practice there moves the whole picture.',
+    summary: 'You already treat yourself with some care, and you also still slip into judgment, isolation or over-identification when the pressure rises. Most people live here.',
     strengths: ['Access to kindness when you remember to use it', 'Some perspective on hard feelings', 'Willingness to look at how you treat yourself'],
     shadow: ['Kindness that depends on the day going well', 'Perspective that evaporates under stress'],
     affirmation: 'The way I speak to myself is a habit, and habits can change.',
@@ -345,12 +349,15 @@ export const SELF_COMPASSION_INFO: Record<SelfCompassionType, DimensionalResultI
  * decimal.
  *
  * `extra.weakest` is the component with the lowest compassion-coded mean —
- * the "where to practise" card — and `extra.weakestAlso` a second component
- * exactly level with it. Neither is set when the components are level
- * (highest minus lowest within TIE_MARGIN) or when three or more share the
- * lowest mean: a flat profile, the maximum score included, has no
- * component "pulling the total down", and the card used to name
- * Self-kindness, the first declared, for every one of them.
+ * the "where to practise" card — and `extra.weakestAlso` / `extra.weakestThird`
+ * the components exactly level with it, so up to three are named together
+ * (agreeing with every statement puts all three negative components at the
+ * bottom, and they are what holds the total down). None is set when the
+ * components are level (highest minus lowest within TIE_MARGIN) or when four
+ * or more share the lowest mean: a flat profile, the maximum score
+ * included, has no component "pulling the total down", and the card used to
+ * name Self-kindness, the first declared, for every one of them. The band
+ * summaries make no claim about a component either way; the card says it.
  */
 export function scoreSelfCompassion(answers: Record<string, number>): DimensionalResult<SelfCompassionType> {
   const { scores, averages } = likertMeans(selfCompassionQuiz, answers, SELF_COMPASSION_COMPONENTS);
@@ -368,12 +375,13 @@ export function scoreSelfCompassion(answers: Record<string, number>): Dimensiona
   const level = Math.max(...codedValues) - lowest <= TIE_MARGIN;
   const atLowest = SELF_COMPASSION_COMPONENTS.filter((c) => Math.abs(coded[c] - lowest) < 1e-9);
   const extra: Record<string, string | number> = { total: Math.round(total * 10) / 10 };
-  // One or two components at the bottom are a place to practise; three or
-  // more level there are not "the" component (they would be named by
-  // declaration order, which is what the card used to do).
-  if (!level && atLowest.length <= 2) {
+  // Up to three components at the bottom (half the profile) are a place to
+  // practise and are all named; four or more level there are most of the
+  // profile, not the part pulling it down.
+  if (!level && atLowest.length <= 3) {
     extra.weakest = atLowest[0];
-    if (atLowest.length === 2) extra.weakestAlso = atLowest[1];
+    if (atLowest.length >= 2) extra.weakestAlso = atLowest[1];
+    if (atLowest.length === 3) extra.weakestThird = atLowest[2];
   }
   return {
     primary,

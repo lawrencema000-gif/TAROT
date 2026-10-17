@@ -90,7 +90,7 @@ export function CourtMatchResult({ quiz, result, onBack, onRetake }: QuizResultV
                   defaultValue: 'Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.',
                 })}
               </p>
-              {otherSuit && <CloseCall a={name} b={cardName(result.rank, otherSuit)} />}
+              {otherSuit && <CloseCall names={[name, cardName(result.rank, otherSuit)]} />}
             </div>
           )}
           {result.rankTie && (
@@ -100,7 +100,7 @@ export function CourtMatchResult({ quiz, result, onBack, onRetake }: QuizResultV
                   defaultValue: 'Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere.',
                 })}
               </p>
-              {otherRank && <CloseCall a={name} b={cardName(otherRank, result.element)} />}
+              {otherRank && <CloseCall names={[name, cardName(otherRank, result.element)]} />}
             </div>
           )}
 

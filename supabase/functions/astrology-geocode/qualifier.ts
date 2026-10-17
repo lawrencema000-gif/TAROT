@@ -10,15 +10,29 @@
  * The qualifier is now parsed and every Open-Meteo row is checked against
  * it (region, sub-region, country, country code, US state and common
  * country abbreviations). Pure — exercised from Node by
- * src/test/golden/geocode-qualifier.test.ts.
+ * src/test/golden/geocode-qualifier.test.ts and geocode-languages.test.ts.
+ *
+ * In any language (p8 O#35): Open-Meteo names the region in the language it
+ * is asked for — a Japanese phone gets ミズーリ州 / バーモント州 — so
+ * "Springfield, Vermont" matched nothing under ja/ko/zh and the five most
+ * populous Springfields came back. A place is now a Candidate: its row in
+ * the user's language AND the same place in English (rows share `id`), and a
+ * qualifier may match either, so "Vermont" and "バーモント州" both find it.
  */
 
 export interface GeoRow {
+  id?: number;
   name: string;
   admin1?: string;
   admin2?: string;
   country?: string;
   country_code?: string;
+}
+
+/** One place: the row to show (the user's language) and the same place in English, when known. */
+export interface Candidate<T extends GeoRow = GeoRow> {
+  loc: T;
+  en?: T;
 }
 
 /** "Springfield, Vermont, USA" → { name: "Springfield", qualifiers: ["Vermont", "USA"] }. */
@@ -83,4 +97,47 @@ export function qualifierMatches(qualifier: string, row: GeoRow): boolean {
 export function filterByQualifiers<T extends GeoRow>(rows: T[], qualifiers: string[]): T[] {
   if (qualifiers.length === 0) return rows;
   return rows.filter((row) => qualifiers.every((q) => qualifierMatches(q, row)));
+}
+
+/**
+ * Pair the user's-language rows with the English rows of the same places
+ * (by `id`): the localized order first (most populous first), then English
+ * rows the localized search did not return, shown in English.
+ */
+export function pairById<T extends GeoRow>(loc: T[], en: T[]): Candidate<T>[] {
+  const enById = new Map<number, T>();
+  for (const r of en) if (typeof r.id === "number") enById.set(r.id, r);
+  const seen = new Set<number>();
+  const out: Candidate<T>[] = [];
+  for (const r of loc) {
+    const twin = typeof r.id === "number" ? enById.get(r.id) : undefined;
+    if (typeof r.id === "number") seen.add(r.id);
+    out.push(twin ? { loc: r, en: twin } : { loc: r });
+  }
+  for (const r of en) {
+    if (typeof r.id === "number" && seen.has(r.id)) continue;
+    out.push({ loc: r, en: r });
+  }
+  return out;
+}
+
+/** Does every qualifier describe this place, in the user's language or in English? */
+export function candidateMatches(qualifiers: string[], c: Candidate): boolean {
+  return qualifiers.every((q) => qualifierMatches(q, c.loc) || (!!c.en && qualifierMatches(q, c.en)));
+}
+
+/** Candidates that match EVERY qualifier, in order. */
+export function filterCandidates<T extends GeoRow>(cands: Candidate<T>[], qualifiers: string[]): Candidate<T>[] {
+  if (qualifiers.length === 0) return cands;
+  return cands.filter((c) => candidateMatches(qualifiers, c));
+}
+
+/**
+ * A name typed in kana, hangul or han (スプリングフィールド, 스프링필드,
+ * 斯普林菲尔德). Open-Meteo finds a place by such a name only when that
+ * place carries one in that script — the small Springfield in Vermont does
+ * not — so the caller also searches the English name of what it found.
+ */
+export function isNonLatinName(name: string): boolean {
+  return /[぀-ヿ㐀-鿿가-힯ｦ-ﾟ]/.test(name);
 }

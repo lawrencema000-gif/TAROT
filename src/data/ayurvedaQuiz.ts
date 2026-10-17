@@ -186,6 +186,12 @@ export interface DoshaResult {
   isTie?: boolean;
   /** The dosha level with `primary` in an exact tie. */
   coPrimary?: Dosha;
+  /**
+   * When `isTie`: every dosha level at the top, primary first. All three in
+   * 10/10/10, the one exact three-way tie thirty answers allow. A row saved
+   * before this field existed has only `coPrimary`.
+   */
+  tied?: Dosha[];
 }
 
 export function calculateDosha(answers: Record<string, number>): DoshaResult {
@@ -201,14 +207,20 @@ export function calculateDosha(answers: Record<string, number>): DoshaResult {
   const isTie = sorted[0][1] === sorted[1][1];
   const secondary = !isTie && sorted[0][1] - sorted[1][1] <= 3 ? sorted[1][0] : undefined;
   const tridoshic = sorted[0][1] - sorted[2][1] <= 3;
-  return { primary, secondary, scores, tridoshic, isTie, coPrimary: isTie ? sorted[1][0] : undefined };
+  const tied = isTie ? sorted.filter(([, n]) => n === sorted[0][1]).map(([d]) => d) : undefined;
+  return { primary, secondary, scores, tridoshic, isTie, coPrimary: isTie ? sorted[1][0] : undefined, tied };
 }
 
-/** Copy for the balanced constitution; the per-dosha cards still render for the leading dosha. */
+/**
+ * Copy for the balanced constitution; the per-dosha cards still render for
+ * the dosha read first. The summary does not call that dosha "the one
+ * leading": in a tie at the top (10/10/10 included) none leads, and the
+ * section heading below says which case it is.
+ */
 export const TRIDOSHIC_INFO = {
   name: 'Tridoshic',
   tagline: 'All three in near-equal measure.',
-  summary: 'Your answers spread almost evenly across Vata, Pitta and Kapha. In Ayurveda this is called a tridoshic constitution: no single dosha runs the show, so the question is less "which one am I" and more "which one is out of balance this season". Read the dosha below as the one currently leading, not as a fixed type.',
+  summary: 'Your answers spread almost evenly across Vata, Pitta and Kapha. In Ayurveda this is called a tridoshic constitution: no single dosha runs the show, so the question is less "which one am I" and more "which one is out of balance this season". Read the dosha below as a place to start, not as a fixed type.',
 };
 
 export interface DoshaInfo {

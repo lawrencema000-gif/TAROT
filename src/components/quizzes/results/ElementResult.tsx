@@ -10,11 +10,14 @@ import {
   Bullets,
   CloseCall,
   Prose,
+  ReadingFirst,
   ResultBody,
   ResultSection,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
@@ -36,14 +39,28 @@ export function ElementResult({ quiz, result, onBack, onRetake }: QuizResultView
   // Behavioural element vs the chart's native element (from the birth date).
   const natal = profile?.birthDate ? getZodiacElement(getZodiacSign(profile.birthDate)) : null;
   const match = natal !== null && natal === key;
+  // Every element in the unbroken tie (two, with ten votes; the list keeps one shape for every quiz).
+  const tied = tiedKeys<string>(key, result.tied, result.coPrimary, result.isTie).filter((e) => ELEMENT_INFO[e as Element]);
+  const shared = tied.length >= 2;
+  const tagline = localized('tagline', info.tagline);
+  const description = localized('description', info.description);
 
   return (
     <ResultLayout
       eyebrow={quiz.title}
       glyph={<ElementGlyph element={key} />}
       verdict={name}
-      subtitle={localized('tagline', info.tagline)}
-      summary={localized('description', info.description)}
+      subtitle={
+        shared ? (
+          <>
+            <span className="block">{tagline}</span>
+            <SharedWith names={tied.slice(1).map(nameOf)} />
+          </>
+        ) : (
+          tagline
+        )
+      }
+      summary={shared ? undefined : description}
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -60,7 +77,8 @@ export function ElementResult({ quiz, result, onBack, onRetake }: QuizResultView
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {result.isTie && result.coPrimary && <CloseCall a={name} b={nameOf(result.coPrimary)} />}
+          {shared && <CloseCall names={[name, ...tied.slice(1).map(nameOf)]} />}
+          {shared && <ReadingFirst name={name}>{description}</ReadingFirst>}
 
           {natal && (
             <ResultSection title={t('quizzes.elements.chartVsBehaviour', { defaultValue: 'Chart vs. behaviour' })}>

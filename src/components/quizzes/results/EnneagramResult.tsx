@@ -9,11 +9,14 @@ import {
   Facts,
   Prose,
   Quote,
+  ReadingFirst,
   ResultBody,
   ResultSection,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
@@ -35,6 +38,11 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, saved,
   // A row saved by the pre-Phase-7 scorer carries an impossible tritype
   // (3-3-3); displayTritype recomputes it from the saved scores or hides it.
   const tritype = displayTritype(result);
+  // Every type in the unbroken tie (all nine on an all-Neutral run).
+  const tied = tiedKeys<number>(n, result.tied, result.coPrimary, result.isTie).filter((k) => enneagramDescriptions[k]);
+  const shared = tied.length >= 2;
+  const fullName = (k: number) => `${typeLabel(k)} ${k === n ? name : typeName(k)}`;
+  const description = copy('description', info.description);
 
   return (
     <ResultLayout
@@ -50,9 +58,10 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, saved,
               {t('quizzes.resultSections.wingIs', { defaultValue: 'Wing {{n}} · {{name}}', n: result.wing, name: wingName })}
             </span>
           )}
+          {shared && <SharedWith names={tied.slice(1).map(fullName)} />}
         </>
       }
-      summary={copy('description', info.description)}
+      summary={shared ? undefined : description}
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -72,7 +81,8 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, saved,
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {result.isTie && result.coPrimary && <CloseCall a={`${typeLabel(n)} ${name}`} b={`${typeLabel(result.coPrimary)} ${typeName(result.coPrimary)}`} />}
+          {shared && <CloseCall names={tied.map(fullName)} />}
+          {shared && <ReadingFirst name={fullName(n)}>{description}</ReadingFirst>}
 
           <ResultSection title={section('corePattern', 'Core pattern')}>
             <Facts

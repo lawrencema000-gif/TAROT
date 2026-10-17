@@ -194,6 +194,11 @@ async function geocodeClientFallback(query: string): Promise<GeoResult[]> {
   }));
 }
 
+/** "Springfield, Vermont, USA" → "Vermont, USA": what the user typed after the city. */
+export function typedRegion(birthPlace: string): string {
+  return birthPlace.split(/[,，、]/).slice(1).map((p) => p.trim()).filter(Boolean).join(', ');
+}
+
 export function useGeocode() {
   const [results, setResults] = useState<GeoResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -204,29 +209,65 @@ export function useGeocode() {
    * entirely; callers show a non-blocking "approximate location" notice.
    */
   const [usedFallback, setUsedFallback] = useState(false);
+  /**
+   * True when the user typed a region ("Springfield, Vermont") and none of
+   * the places listed is in it — the server's `qualifierMatched: false` (p8
+   * O#35). The places are still listed (a misspelt region must not hide the
+   * city), but `error` then says they are elsewhere, so nobody picks a
+   * same-name city believing it is theirs. Before that, the device's own
+   * Nominatim search gets the full string: the edge is refused by Nominatim,
+   * a phone is not.
+   */
+  const [regionMissed, setRegionMissed] = useState(false);
 
   const search = useCallback(async (birthPlace: string) => {
-    if (!birthPlace.trim()) { setResults([]); setUsedFallback(false); return; }
+    if (!birthPlace.trim()) { setResults([]); setUsedFallback(false); setRegionMissed(false); return; }
     setLoading(true);
     setError(null);
     setUsedFallback(false);
+    setRegionMissed(false);
+    /** Same-name places outside the region typed: listed, with a notice, if nothing better turns up. */
+    let elsewhere: GeoResult[] = [];
     try {
-      const data = await callFn<{ results: GeoResult[] }>('astrology-geocode', { birthPlace });
+      const data = await callFn<{ results: GeoResult[]; qualifierMatched?: boolean }>('astrology-geocode', { birthPlace });
       if (data.results?.length) {
-        setResults(data.results);
-        setLoading(false);
-        return;
+        if (data.qualifierMatched !== false) {
+          setResults(data.results);
+          setLoading(false);
+          return;
+        }
+        elsewhere = data.results;
       }
     } catch { /* fall through to client-side */ }
 
+    const showElsewhere = () => {
+      setResults(elsewhere);
+      setRegionMissed(true);
+      setError(i18n.t('astrologyErrors.geocodeRegionMissed', {
+        ns: 'app',
+        region: typedRegion(birthPlace),
+        defaultValue: 'None of these places is in {{region}}. Check the spelling, or try the place’s English name.',
+      }));
+    };
+
     try {
       const fallbackResults = await geocodeClientFallback(birthPlace);
+      if (!fallbackResults.length && elsewhere.length) {
+        showElsewhere();
+        return;
+      }
       setResults(fallbackResults);
-      setUsedFallback(fallbackResults.length > 0);
+      // An answer to the full "City, Region" string is not approximate; a
+      // rescue after the server failed outright is.
+      setUsedFallback(fallbackResults.length > 0 && elsewhere.length === 0);
       if (!fallbackResults.length) {
         setError(tErr('geocodeNone', 'No places matched — try the nearest city, or add the country.'));
       }
     } catch (e) {
+      if (elsewhere.length) {
+        showElsewhere();
+        return;
+      }
       console.error('[astrology] geocode fallback failed:', e);
       setResults([]);
       setError(tErr('geocodeUnavailable', 'Place search isn’t responding — check your connection and try again.'));
@@ -235,7 +276,7 @@ export function useGeocode() {
     }
   }, []);
 
-  return { results, loading, error, search, usedFallback };
+  return { results, loading, error, search, usedFallback, regionMissed };
 }
 
 interface ChartResponse {

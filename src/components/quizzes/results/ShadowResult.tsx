@@ -9,9 +9,11 @@ import {
   Prose,
   ResultBody,
   ResultSection,
+  SharedWith,
   StaleResult,
   VerdictActions,
   shareFileName,
+  tiedKeys,
   useQuizShare,
   type QuizResultViewProps,
 } from '../shared';
@@ -26,13 +28,26 @@ export function ShadowResult({ quiz, result, onBack, onRetake }: QuizResultViewP
   const nameOf = (k: string) => t(`quizzes.shadowArchetypes.${k}.name`, { defaultValue: SHADOW_ARCHETYPES[k as keyof typeof SHADOW_ARCHETYPES]?.name ?? k });
   const name = localized('name', info.name);
   const section = (k: string, fallback: string) => t(`quizzes.resultSections.${k}`, { defaultValue: fallback });
+  // Every archetype in the unbroken tie (all seven on an all-Neutral run).
+  const tied = tiedKeys<string>(key, result.tied, result.secondary, result.isTie).filter((k) => k in SHADOW_ARCHETYPES);
+  const shared = tied.length >= 2;
+  const tagline = localized('tagline', info.tagline);
 
   return (
     <ResultLayout
       eyebrow={quiz.title}
       glyph={<QuizIcons.ShadowMaskIcon />}
       verdict={name}
-      subtitle={localized('tagline', info.tagline)}
+      subtitle={
+        shared ? (
+          <>
+            <span className="block">{tagline}</span>
+            <SharedWith names={tied.slice(1).map(nameOf)} />
+          </>
+        ) : (
+          tagline
+        )
+      }
       onBack={onBack}
       backLabel={t('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
       actions={
@@ -49,7 +64,7 @@ export function ShadowResult({ quiz, result, onBack, onRetake }: QuizResultViewP
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {result.isTie && result.secondary && <CloseCall a={name} b={nameOf(result.secondary)} />}
+          {shared && <CloseCall names={[name, ...tied.slice(1).map(nameOf)]} />}
           <ResultSection title={section('gift', 'The gift')}>
             <Prose>{localized('gift', info.gift)}</Prose>
           </ResultSection>

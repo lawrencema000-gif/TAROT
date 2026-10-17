@@ -263,8 +263,11 @@ export function CityInsightPanel({
         // place meanwhile, it shows there only when the reader comes back.
         setKept((k) => ({ ...k, [sent]: res.data }));
       } else {
-        // Answered once and no longer replayable: the next press is a new request.
-        if (res.error === 'REQUEST_ALREADY_USED') pending.current.delete(sent);
+        // Answered once and no longer replayable (REQUEST_ALREADY_USED), or
+        // refused before the debit (INSUFFICIENT_BALANCE): the next press is
+        // a new request behind the gate — the Earn sheet when the balance is
+        // short — never this id again (p9 RQA-2).
+        if (res.error === 'REQUEST_ALREADY_USED' || res.error === 'INSUFFICIENT_BALANCE') pending.current.delete(sent);
         setFailure({ signature: sent, error: res.error });
       }
     } finally {
@@ -437,9 +440,16 @@ export function CityInsightPanel({
               <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-3">
                 <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
                 <p className="text-ui text-coral-light">
-                  {t('celestial.city.aiReading.error', {
-                    defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
-                  })}
+                  {readingError === 'REQUEST_ALREADY_USED'
+                    // Paid for and gone: pressing again is a new reading at
+                    // the price on the button, not the free retry the
+                    // general message promises.
+                    ? t('celestial.city.aiReading.errorSpent', {
+                        defaultValue: 'This reading was already given once and can’t be shown again. The button below starts a new one, charged as usual.',
+                      })
+                    : t('celestial.city.aiReading.error', {
+                        defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
+                      })}
                 </p>
               </div>
             )}

@@ -196,6 +196,7 @@
         "ctaPremium": "Generate reading",
         "ctaMoonstones": "Unlock for 250 Moonstones",
         "error": "Could not generate the reading just now. Please try again in a moment.",
+        "errorSpent": "This reading was already given once and can’t be shown again. The button below starts a new one, charged as usual.",
         "label": "Your reading",
         "cautionsLabel": "Watch for",
         "practiceLabel": "First three days here"
@@ -319,7 +320,8 @@
         "title": "We couldn’t finish your reading",
         "retry": "Try the reading again",
         "body": "Check your connection and try again.",
-        "noPlace": "No strong place found for this intent — try a different life area."
+        "noPlace": "No strong place found for this intent — try a different life area.",
+        "spent": "This reading was already given once and can’t be shown again. Trying again starts a new one, charged as usual."
       },
       "hero": {
         "eyebrow": "Your destined place"

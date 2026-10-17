@@ -121,6 +121,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * rate prompt run twice (p9 R11; the tarot reveal's guard).
    */
   const savingRef = useRef<string | null>(null);
+  /** The table on screen is being saved: the bookmark spins and waits (savingRef is the guard, this is its face). */
+  const [saving, setSaving] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [deckCards, setDeckCards] = useState<number[]>([]);
@@ -410,6 +412,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    setSaving(false);
     savedIdRef.current = null;
     setView('reveal');
   };
@@ -486,6 +489,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     if (!user || drawnCards.length === 0 || !readingId) return;
     if (isSaved || savedIdRef.current || savingRef.current === readingId) return;
     savingRef.current = readingId;
+    setSaving(true);
     let res: Awaited<ReturnType<typeof tarotReadings.insertReturningId>>;
     try {
       res = await tarotReadings.insertReturningId({
@@ -503,6 +507,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       });
     } finally {
       if (savingRef.current === readingId) savingRef.current = null;
+      // A newer table has its own bookmark (reset when it was dealt).
+      if (readingIdRef.current === readingId) setSaving(false);
     }
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
@@ -668,6 +674,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         focus={focusForAI}
         allRevealed={allRevealed}
         isSaved={isSaved}
+        saving={saving}
         sharing={sharing}
         isPremium={!!profile?.isPremium}
         cardBackUrl={profile?.card_back_url}

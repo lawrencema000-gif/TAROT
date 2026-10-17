@@ -285,6 +285,53 @@ function DiagnosticsSync() {
   return null;
 }
 
+/** What Android Back acts on once no sheet is up: the shell's overlay, the page, the tab. */
+export interface AndroidBackShell {
+  activeOverlay: string | null;
+  closeOverlay: () => void;
+  pathname: string;
+  navigateBack: () => void;
+  activeTab: string | null;
+  goHome: () => void;
+  exitApp: () => void;
+}
+
+/**
+ * Android Back, one layer at a time: the sheet on top → the shell's overlay
+ * → a deep page → the home tab → out of the app.
+ *
+ * A sheet closes the way Escape closes it, because only the sheet on top
+ * answers Escape (Sheet.tsx, through the focus-trap stack), and a dialog
+ * over it with a trap of its own (the trial reminder, the ad sheet) answers
+ * it in its place. Back used to start at the shell's overlay: a reading
+ * opened from the Saved sheet went with the list instead of back to it, and
+ * a sheet opened on a page stayed up while Back left the page, or the app,
+ * under it. The body holds `sheet-open` while any sheet is up.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- exported for its unit test (src/__tests__/androidBack.test.tsx)
+export function androidBack(shell: AndroidBackShell): void {
+  if (document.body.classList.contains('sheet-open')) {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    return;
+  }
+  if (shell.activeOverlay) {
+    shell.closeOverlay();
+    return;
+  }
+  // Deep pages (/people/:id, /pick-a-card, /reports/*…) resolve to
+  // activeTab='home', so without the isTabRoot check a single back press
+  // from any of them exited the app outright.
+  if (!isTabRoot(shell.pathname)) {
+    shell.navigateBack();
+    return;
+  }
+  if (shell.activeTab !== 'home') {
+    shell.goHome();
+    return;
+  }
+  shell.exitApp();
+}
+
 function AppContent() {
   const { t } = useT('app');
   // The advisor marketplace is unfinished and takes real money. Its routes were
@@ -472,26 +519,20 @@ function AppContent() {
     return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [setActiveTab, navigate]);
 
-  // Android hardware back button: close overlay → back out of deep pages →
-  // go home → exit app. Deep pages (/people/:id, /pick-a-card, /reports/*…)
-  // resolve to activeTab='home', so without the isTabRoot check a single
-  // back press from any of them exited the app outright.
+  // Android hardware back button: the sheet on top → the overlay → back out
+  // of deep pages → go home → exit app (androidBack).
   useEffect(() => {
     if (!isNative()) return;
     const listener = CapApp.addListener('backButton', () => {
-      if (activeOverlay) {
-        closeOverlay();
-        return;
-      }
-      if (!isTabRoot(location.pathname)) {
-        navigate(-1);
-        return;
-      }
-      if (activeTab !== 'home') {
-        setActiveTab('home');
-        return;
-      }
-      CapApp.exitApp();
+      androidBack({
+        activeOverlay,
+        closeOverlay,
+        pathname: location.pathname,
+        navigateBack: () => navigate(-1),
+        activeTab,
+        goHome: () => setActiveTab('home'),
+        exitApp: () => { void CapApp.exitApp(); },
+      });
     });
     return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [activeOverlay, closeOverlay, activeTab, setActiveTab, location.pathname, navigate]);

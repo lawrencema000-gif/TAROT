@@ -103,6 +103,40 @@ describe('CartomancySection: save once (p9 R11)', () => {
     expect(checkAndShowAd).toHaveBeenCalledTimes(1);
   });
 
+  it('the bookmark spins and waits while the insert is on its way (p9 RQB-2)', async () => {
+    const insert = deferred<{ ok: true; data: { id: string } }>();
+    insertReturningId.mockReturnValue(insert.promise);
+    const save = await dealAndRevealThree();
+    expect(save.getAttribute('aria-busy')).toBeNull();
+
+    fireEvent.click(save);
+    // The guard's ref has a face now: busy, spinning, not taking taps.
+    const busy = await screen.findByRole('button', { name: 'Save this reading', busy: true });
+    expect((busy as HTMLButtonElement).disabled).toBe(true);
+    expect(busy.querySelector('svg.animate-spin')).not.toBeNull();
+
+    await act(async () => { insert.resolve({ ok: true, data: { id: 'row-3' } }); });
+    const saved = await screen.findByRole('button', { name: 'Saved' });
+    expect(saved.getAttribute('aria-busy')).toBeNull();
+    expect(saved.querySelector('svg.animate-spin')).toBeNull();
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failed save stops spinning and can be tried again', async () => {
+    const insert = deferred<{ ok: false; error: string }>();
+    insertReturningId.mockReturnValueOnce(insert.promise).mockResolvedValueOnce({ ok: true, data: { id: 'row-4' } });
+    const save = await dealAndRevealThree();
+    fireEvent.click(save);
+    await screen.findByRole('button', { name: 'Save this reading', busy: true });
+    await act(async () => { insert.resolve({ ok: false, error: 'offline' }); });
+    const again = await screen.findByRole('button', { name: 'Save this reading' });
+    expect(again.getAttribute('aria-busy')).toBeNull();
+    expect((again as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(again);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toBeTruthy());
+    expect(insertReturningId).toHaveBeenCalledTimes(2);
+  });
+
   it('a failed save can be tried again', async () => {
     insertReturningId.mockResolvedValueOnce({ ok: false, error: 'offline' }).mockResolvedValueOnce({ ok: true, data: { id: 'row-2' } });
     const save = await dealAndRevealThree();

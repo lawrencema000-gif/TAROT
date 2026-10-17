@@ -84,7 +84,8 @@ type Phase =
   | { kind: 'computing' }
   | { kind: 'reading'; result: PlaceScore }
   | { kind: 'done'; result: PlaceScore; reading: CelestialReadingResponse }
-  | { kind: 'error'; result: PlaceScore | null; message: string };
+  /** `priced`: "Try the reading again" is a new, charged request (no id of this request is pending), so its price goes beside it. */
+  | { kind: 'error'; result: PlaceScore | null; message: string; priced?: boolean };
 
 export function FindYourPlace({
   allLines,
@@ -182,7 +183,14 @@ export function FindYourPlace({
     }
     busy.current = true;
     setWorking(true);
-    const failed = () => setPhase({ kind: 'error', result: target, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
+    const failed = (message: string = t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' })) => setPhase({
+      kind: 'error',
+      result: target,
+      message,
+      // With this request's id still pending the retry is the server's free
+      // replay; without one it is a new reading, charged (p9 R04, RQA-2).
+      priced: !isPremium && !pending.current.has(signature),
+    });
     try {
       let requestId = pending.current.get(signature);
       if (!requestId) {
@@ -209,9 +217,17 @@ export function FindYourPlace({
         setKept((k) => ({ ...k, [signature]: res.data }));
         setPhase({ kind: 'done', result: target, reading: res.data });
       } else {
-        // Answered once and no longer replayable: the next press is a new request.
-        if (res.error === 'REQUEST_ALREADY_USED') pending.current.delete(signature);
-        failed();
+        // Answered once and no longer replayable (REQUEST_ALREADY_USED), or
+        // refused before the debit (INSUFFICIENT_BALANCE): the next press is
+        // a new request behind the gate — the Earn sheet when the balance is
+        // short — never this id again (p9 RQA-2).
+        const spent = res.error === 'REQUEST_ALREADY_USED';
+        if (spent || res.error === 'INSUFFICIENT_BALANCE') pending.current.delete(signature);
+        failed(spent
+          ? t('celestial.findPlace.error.spent', {
+              defaultValue: 'This reading was already given once and can’t be shown again. Trying again starts a new one, charged as usual.',
+            })
+          : undefined);
       }
     } catch {
       failed();
@@ -360,6 +376,8 @@ export function FindYourPlace({
                     <RefreshCw className="w-3 h-3 mr-1.5" aria-hidden />
                     {t('celestial.findPlace.error.retry', { defaultValue: 'Try the reading again' })}
                   </Button>
+                  {/* A retry that is a new reading names its price before the tap (p9 R04). */}
+                  {view.priced && <MoonstoneCostLine cost={250} className="mt-2" />}
                 </div>
               </div>
             </div>

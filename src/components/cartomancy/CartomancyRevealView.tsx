@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { ChevronLeft, Bookmark, BookmarkCheck, Brain } from 'lucide-react';
+import { ChevronLeft, Bookmark, BookmarkCheck, Brain, Loader2 } from 'lucide-react';
 import { Button, Chip, EyebrowLabel, ResultSheet, Tag } from '../ui';
 import { useT } from '../../i18n/useT';
 import { flipHaptics } from '../../utils/haptics';
@@ -39,6 +39,8 @@ export interface CartomancyRevealViewProps {
   focus: CartoFocus;
   allRevealed: boolean;
   isSaved: boolean;
+  /** The save is in flight: the bookmark is busy and ignores taps (TarotRevealView's). */
+  saving?: boolean;
   /** A share image is rendering: the share control waits (one tap, one share). */
   sharing: boolean;
   isPremium: boolean;
@@ -74,6 +76,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
     focus,
     allRevealed,
     isSaved,
+    saving = false,
     sharing,
     isPremium,
     cardBackUrl,
@@ -234,15 +237,23 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
         </button>
         <div className="flex items-center gap-1">
           <ShareIconButton onShare={onShare} sharing={sharing} disabled={!allRevealed} />
+          {/* The tarot reveal's bookmark: busy while the save is on its way, spent once it is saved (one table, one row). */}
           <button
             type="button"
             onClick={onSave}
-            disabled={!allRevealed}
+            disabled={!allRevealed || saving || isSaved}
+            aria-busy={saving || undefined}
             aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
             aria-pressed={isSaved}
-            className={`${ICON_BUTTON} ${isSaved ? 'text-gold' : 'text-mystic-300'}`}
+            className={`${ICON_BUTTON} ${isSaved ? 'text-gold disabled:opacity-100' : 'text-mystic-300'} ${saving ? 'disabled:opacity-100' : ''}`}
           >
-            {isSaved ? <BookmarkCheck className="w-5 h-5" aria-hidden /> : <Bookmark className="w-5 h-5" aria-hidden />}
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden />
+            ) : isSaved ? (
+              <BookmarkCheck className="w-5 h-5" aria-hidden />
+            ) : (
+              <Bookmark className="w-5 h-5" aria-hidden />
+            )}
           </button>
         </div>
       </div>

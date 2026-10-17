@@ -49,38 +49,18 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     }
   }, [canAutoCompute, autoComputeAttempted]);
 
+  // A birth place typed but never picked from a list (the OAuth onboarding
+  // saves it without coordinates) is searched here and its places LISTED,
+  // for the reader to pick one (p9 R27). It used to cast the first row
+  // without asking — 京都 was cast in Guangdong, 福岡 in Saitama — and
+  // rewrote the profile to that place.
   useEffect(() => {
     if (autoResolveAttempted.current) return;
     if (profile?.birthPlace && !profile?.birthLat && !profile?.birthLon) {
       autoResolveAttempted.current = true;
-      handleAutoResolveLocation(profile.birthPlace);
+      void geoSearch(profile.birthPlace);
     }
-  }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon]);
-
-  const handleAutoResolveLocation = async (place: string) => {
-    setComputing(true);
-    setComputeError('');
-    try {
-      await geoSearch(place);
-    } catch {
-      setComputing(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!autoResolveAttempted.current || !computing) return;
-    if (geoLoading) return;
-
-    if (geoResults.length > 0 && !selectedLocation && profile?.birthDate) {
-      const best = geoResults[0];
-      setSelectedLocation(best);
-      setLocationQuery(best.displayName);
-      doCompute(best);
-    } else if (!geoLoading && geoResults.length === 0 && computing) {
-      setComputing(false);
-      setComputeError(t('horoscope.onboarding.errors.couldNotFindLocation'));
-    }
-  }, [geoResults, geoLoading]);
+  }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon, geoSearch]);
 
   const handleAutoCompute = async () => {
     if (!profile?.birthDate || !profile?.birthLat || !profile?.birthLon) return;

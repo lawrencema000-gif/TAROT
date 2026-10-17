@@ -76,6 +76,15 @@ const callsTo = (fn: string) => invoke.mock.calls.filter((c) => c[0] === fn);
 const bodyOf = (fn: string, i: number) => (callsTo(fn)[i][1] as { body: Record<string, unknown> }).body;
 /** No response at all: the debit may have landed, so the retry must be the same request. */
 const dropped = () => later({ data: null, error: { name: 'FunctionsFetchError', message: 'Failed to send a request to the Edge Function' } });
+/** A non-2xx answer as supabase-js gives it: a generic message, the envelope on `context`. */
+const httpError = (status: number, code: string) => later({
+  data: null,
+  error: {
+    name: 'FunctionsHttpError',
+    message: 'Edge Function returned a non-2xx status code',
+    context: new Response(JSON.stringify({ error: { code, message: 'server text' } }), { status }),
+  },
+});
 
 type Lines = GeoJSON.FeatureCollection<GeoJSON.LineString, { planet: PlanetName; angle: Angle }>;
 /** Two meridian lines at `lon`, sampled densely enough that every listed city near them scores. */
@@ -309,5 +318,100 @@ describe('R31 — the panel names and reads the place that was picked', () => {
     expect(city).toMatchObject({ lat: spot.lat, lon: spot.lon });
     expect(city.name).not.toBe('Shanghai');
     expect(`${city.name} ${city.country}`).toContain('远洋 / 偏远地区');
+  });
+});
+
+/*
+ * RQA-2: an id the server can no longer replay (409 REQUEST_ALREADY_USED —
+ * charged, and its answer gone) is dropped, and the member is told: the next
+ * press is a new reading at the usual price, behind the gate. The DAL used to
+ * return the generic FunctionsHttpError message, so the check never matched:
+ * the spent id went out again on every press and the place could not be read
+ * again for the rest of the visit. A 402 drops the id too (nothing was
+ * charged), so the next press goes through the gate and its Earn sheet.
+ */
+describe('RQA-2 — a spent request id is dropped, and the next press is a new, priced request', () => {
+  it('City Insight Panel: lost reply, then REQUEST_ALREADY_USED on the free retry — says so; the next press is a new id, gated', async () => {
+    const trySpend = vi.fn(() => later(true));
+    invoke.mockImplementationOnce(dropped);
+    invoke.mockImplementationOnce(() => httpError(409, 'REQUEST_ALREADY_USED'));
+    invoke.mockImplementation(() => later({ data: { data: cityReading }, error: null }));
+    panelAt(PARIS, trySpend);
+    const unlock = () => screen.getByRole('button', { name: /Unlock for 250 Moonstones/ });
+    fireEvent.click(unlock());
+    await screen.findByText(/Could not generate the reading/, undefined, { timeout: 3000 });
+    await waitFor(() => expect(unlock()).not.toBeDisabled());
+    fireEvent.click(unlock());
+    await screen.findByText(/already given once and can’t be shown again/, undefined, { timeout: 3000 });
+    expect(screen.getByText(/starts a new one, charged as usual/)).toBeInTheDocument();
+    await waitFor(() => expect(unlock()).not.toBeDisabled());
+    fireEvent.click(unlock());
+    await screen.findByText('Paris suits you.', undefined, { timeout: 3000 });
+    const ids = callsTo('celestial-travel-reading').map((_, i) => bodyOf('celestial-travel-reading', i).requestId);
+    expect(ids).toHaveLength(3);
+    expect(ids[1]).toBe(ids[0]);
+    expect(ids[2]).not.toBe(ids[1]);
+    expect(trySpend).toHaveBeenCalledTimes(2);
+  });
+
+  it('in Japanese too', async () => {
+    await i18n.changeLanguage('ja');
+    invoke.mockImplementationOnce(() => httpError(409, 'REQUEST_ALREADY_USED'));
+    panelAt(PARIS, vi.fn(() => later(true)));
+    fireEvent.click(screen.getByRole('button', { name: /ムーンストーン250個で解放する/ }));
+    expect(await screen.findByText('このリーディングはすでに一度お届けしたため、もう一度表示することはできません。下のボタンを押すと新しいリーディングが始まり、通常どおり料金がかかります。', undefined, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it('City Insight Panel: 402 INSUFFICIENT_BALANCE drops the id — the next press goes through the gate, and nothing is sent when it says no', async () => {
+    const trySpend = vi.fn<() => Promise<boolean>>().mockImplementationOnce(() => later(true)).mockImplementation(() => later(false));
+    invoke.mockImplementation(() => httpError(402, 'INSUFFICIENT_BALANCE'));
+    panelAt(PARIS, trySpend);
+    const unlock = () => screen.getByRole('button', { name: /Unlock for 250 Moonstones/ });
+    fireEvent.click(unlock());
+    await screen.findByText(/Could not generate the reading/, undefined, { timeout: 3000 });
+    await waitFor(() => expect(unlock()).not.toBeDisabled());
+    fireEvent.click(unlock());
+    await waitFor(() => expect(trySpend).toHaveBeenCalledTimes(2));
+    await act(async () => { await later(null, 60); });
+    expect(callsTo('celestial-travel-reading')).toHaveLength(1);
+  });
+
+  it('Find Your Place: lost reply, then REQUEST_ALREADY_USED — says so, prices "Try the reading again", and that press is a new id, gated', async () => {
+    const trySpend = vi.fn(() => later(true));
+    invoke.mockImplementationOnce(dropped);
+    invoke.mockImplementationOnce(() => httpError(409, 'REQUEST_ALREADY_USED'));
+    invoke.mockImplementation(() => later({ data: { data: placeReading }, error: null }));
+    finder(trySpend);
+    fireEvent.click(card());
+    const retry = await screen.findByRole('button', { name: /Try the reading again/ }, { timeout: 4000 });
+    // The first failure is a free retry of the same request: no price beside it.
+    expect(screen.getByRole('dialog')).not.toHaveTextContent('250 Moonstones');
+    await waitFor(() => expect(retry).not.toBeDisabled());
+    fireEvent.click(retry);
+    await screen.findByText(/already given once and can’t be shown again/, undefined, { timeout: 4000 });
+    const again = screen.getByRole('button', { name: /Try the reading again/ });
+    await waitFor(() => expect(again.parentElement).toHaveTextContent('Each reading uses 250 Moonstones · You have 300'));
+    await waitFor(() => expect(again).not.toBeDisabled());
+    fireEvent.click(again);
+    await screen.findByText('Your place.', undefined, { timeout: 4000 });
+    const ids = callsTo('celestial-travel-reading').map((_, i) => bodyOf('celestial-travel-reading', i).requestId);
+    expect(ids).toHaveLength(3);
+    expect(ids[1]).toBe(ids[0]);
+    expect(ids[2]).not.toBe(ids[1]);
+    expect(trySpend).toHaveBeenCalledTimes(2);
+  });
+
+  it('Find Your Place: 402 INSUFFICIENT_BALANCE — "Try the reading again" is priced and goes through the gate', async () => {
+    const trySpend = vi.fn<() => Promise<boolean>>().mockImplementationOnce(() => later(true)).mockImplementation(() => later(false));
+    invoke.mockImplementation(() => httpError(402, 'INSUFFICIENT_BALANCE'));
+    finder(trySpend);
+    fireEvent.click(card());
+    const retry = await screen.findByRole('button', { name: /Try the reading again/ }, { timeout: 4000 });
+    await waitFor(() => expect(retry.parentElement).toHaveTextContent('Each reading uses 250 Moonstones'));
+    await waitFor(() => expect(retry).not.toBeDisabled());
+    fireEvent.click(retry);
+    await waitFor(() => expect(trySpend).toHaveBeenCalledTimes(2));
+    await act(async () => { await later(null, 60); });
+    expect(callsTo('celestial-travel-reading')).toHaveLength(1);
   });
 });

@@ -28,7 +28,7 @@ import {
 import { migrateGuestData } from '../services/storage';
 import { syncStreak } from '../dal/dailyRituals';
 import { localDateStr } from '../utils/localDate';
-import { getLocale } from '../i18n/config';
+import { getLocale, chosenLocaleQuery } from '../i18n/config';
 import i18n from 'i18next';
 
 interface AuthContextType {
@@ -314,27 +314,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isPremiumRef.current = profile.isPremium;
       setProfile(profile);
 
-      // Sync locale between profile and client i18n state.
-      // Client wins: the locale the user just picked on this device is always
-      // authoritative over a stale `profile.locale` from a prior session or
-      // another device. We only fall BACK to profile.locale when this device
-      // has no saved choice yet (first install, empty localStorage).
+      // Settle the language between this device and the account. A language
+      // chosen on this device (the picker, "Get your own reading", a ?lang=
+      // link: chosenLocale) wins, and the account takes it so the member's
+      // other devices follow. With nothing chosen here, the device follows
+      // the account. A language the device merely opens in is no choice:
+      // the detector stores the default English of every first visit, and
+      // reading that as one wrote 'en' over the account of every member who
+      // signed in on a new device (p9 RQB-1). The choice, not the language
+      // on screen, is what is saved: a shared reading shows its own (p8 F76).
       try {
-        const { getLocale, setLocale, normalizeLocale, LOCALE_STORAGE_KEY } = await import('../i18n/config');
+        const { getLocale, chosenLocale, followAccountLocale, normalizeLocale } = await import('../i18n/config');
         const profileLocale = normalizeLocale(profile.locale ?? null);
-        const clientLocale = getLocale();
-        const hasExplicitClientChoice = (() => {
-          try { return !!localStorage.getItem(LOCALE_STORAGE_KEY); } catch { return false; }
-        })();
+        const chosen = chosenLocale();
 
-        if (hasExplicitClientChoice) {
-          // Push client → server so other devices pick it up on next sign-in.
-          if (profileLocale !== clientLocale) {
-            await supabase.from('profiles').update({ locale: clientLocale }).eq('id', userId);
+        if (chosen) {
+          if (profileLocale !== chosen) {
+            await supabase.from('profiles').update({ locale: chosen }).eq('id', userId);
           }
-        } else if (profileLocale && profileLocale !== clientLocale) {
-          // No local choice yet — adopt the profile's saved preference.
-          await setLocale(profileLocale);
+        } else if (profileLocale && profileLocale !== getLocale()) {
+          await followAccountLocale(profileLocale);
         }
       } catch (e) {
         console.warn('[Auth] Locale sync failed:', e);
@@ -893,8 +892,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     logInfo('auth.signUp.start', 'Starting email sign up');
 
-    // Propagate the user's active locale through email confirmation:
-    //   - emailRedirectTo carries ?lang=xx so the post-confirm landing page boots in the right language
+    // A new account takes the language its visitor was reading in, through email confirmation:
+    //   - emailRedirectTo carries ?lang=xx so the post-confirm landing page boots in it; a ja / ko / zh
+    //     there is a choice, which the first profile load saves to the account (English is the column default)
     //   - options.data.locale lives in auth.users.raw_user_meta_data so Supabase template helpers + downstream services can localize
     const locale = getLocale();
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -1083,8 +1083,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Web: standard OAuth redirect flow
         const webOAuthSpan = startSpan('auth.google.webOAuth');
-        const localeParam = `?lang=${getLocale()}`;
-        const redirectUrl = window.location.origin + window.location.pathname + localeParam;
+        // Back in the language chosen here, if any: the return makes a
+        // ?lang= a choice, and the default it used to carry was written
+        // over the account of the member signing in (p9 RQB-1).
+        const redirectUrl = window.location.origin + window.location.pathname + chosenLocaleQuery();
 
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -1197,7 +1199,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow, and
-      // come back the way Google does — to this screen, in this language.
+      // come back the way Google does — to this screen, in the language
+      // chosen here, if any.
       // It used to return to the bare origin, so the person landed on Home:
       // /signin and /signup are where the signed-in app sends them on to
       // the `next` they arrived with (App.tsx keeps it in sessionStorage,
@@ -1205,7 +1208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // never asked.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        options: { redirectTo: `${window.location.origin}${window.location.pathname}?lang=${getLocale()}` },
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}${chosenLocaleQuery()}` },
       });
       if (error) {
         setOAuthProcessing(false);

@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowUp, ArrowDown, Check, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
-import { AffirmationPanel, Button, Disclaimer, EmptyState, Input, KeywordRow, PageGrid, PageHeader, Paper, ReadingProse, TarotFace, Disclosure } from '../components/ui';
+import { AffirmationPanel, Button, Disclaimer, EmptyState, Input, KeywordRow, ListSkeleton, PageGrid, PageHeader, Paper, ReadingProse, TarotFace, Disclosure } from '../components/ui';
+import { endVisit, keepVisitLanguage, sharedReadingLocale, showVisitIn } from '../services/shareableReadings';
 import { affirmationFor, enrichmentFor, firstSentences, focusSections } from '../components/readings/tarot/readingText';
 import { cardIdFromName, cardIdFromSlug, cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
 import { cardYesNo, yesNoVerdict, type YesNoVerdict } from '../components/readings/tarot/cardYesNo';
@@ -181,8 +182,42 @@ export function TarotCardMeaningPage() {
   const { t } = useT('app');
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { search, hash } = useLocation();
   const { user } = useAuth();
   const locale = getLocale();
+
+  /*
+   * The language the card was shared in (`?hl=`: a card shared from a
+   * reading in Japanese, Korean or Chinese, TarotSection — p9 R13), read as
+   * the shared reading page reads it (p8 F76, p9 R12). A signed-out visitor
+   * in English — the language every first visit starts in, since the
+   * detector ignores the browser's — sees the page in it, on this page only
+   * (showVisitIn stores nothing). A member who is signed in, or a visitor
+   * who reads the app in a language of their own, keeps theirs. Leaving the
+   * page ends it (endVisit); the page's own invitation into the app ("Try a
+   * free reading") keeps it, since that is a choice where opening a link is
+   * not. The card used to open in English under Japanese share text.
+   */
+  const [visitLocale] = useState(() => {
+    const shared = sharedReadingLocale(search);
+    return shared && !user && locale === 'en' ? shared : null;
+  });
+  const [adopting, setAdopting] = useState(visitLocale !== null);
+  useEffect(() => {
+    if (!visitLocale) return;
+    let live = true;
+    showVisitIn(visitLocale)
+      .catch(() => {})
+      .finally(() => {
+        if (live) setAdopting(false);
+      });
+    return () => {
+      live = false;
+      void endVisit();
+    };
+    // Once, on arrival: the link's language, before anything is drawn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // `enCard` keeps the English content used for slug lookups, Yes/No classification,
   // and JSON-LD (which should stay English for search indexing).
@@ -195,12 +230,14 @@ export function TarotCardMeaningPage() {
   const { overlay: enrichOverlay } = useContentOverlay('enrichment');
 
   // An older spelling of the slug moves to the canonical one, so the page
-  // has one address (the one the sitemap lists).
+  // has one address (the one the sitemap lists) — with the link's query and
+  // hash: `?hl`, the language it was shared in, and any campaign tags. The
+  // move used to drop them.
   useEffect(() => {
     if (enCard && slug !== cardMeaningSlug(enCard.id)) {
-      navigate(cardMeaningPath(enCard.id), { replace: true });
+      navigate(`${cardMeaningPath(enCard.id)}${search}${hash}`, { replace: true });
     }
-  }, [enCard, slug, navigate]);
+  }, [enCard, slug, navigate, search, hash]);
   const cardIndex = enCard ? fullDeck.indexOf(enCard) : -1;
   const enPrev = cardIndex > 0 ? fullDeck[cardIndex - 1] : null;
   const enNext = cardIndex < fullDeck.length - 1 ? fullDeck[cardIndex + 1] : null;
@@ -312,6 +349,17 @@ export function TarotCardMeaningPage() {
     });
     window.scrollTo(0, 0);
   }, [card, enCard]);
+
+  // The link's language is on its way (showVisitIn): nothing in English first.
+  if (adopting) {
+    return (
+      <div className="tm-page py-16">
+        <div role="status" aria-busy="true" aria-label={t('common:labels.loading', { defaultValue: 'Loading…' })}>
+          <ListSkeleton count={3} />
+        </div>
+      </div>
+    );
+  }
 
   if (!card || !enCard) {
     return (
@@ -642,7 +690,9 @@ export function TarotCardMeaningPage() {
       {!user && (
         <div className="tm-bottom-cta">
           <p className="tm-bottom-text">{t('tarot.experienceInReading', { name: card.name })}</p>
-          <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
+          {/* Into the app in the language the page was read in (see visitLocale):
+              stored before the page loads "/", so the app opens in it. */}
+          <a href="/" className="tm-bottom-btn" onClick={() => { void keepVisitLanguage(); }}>{t('tarot.tryFreeReading')}</a>
         </div>
       )}
     </div>

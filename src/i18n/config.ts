@@ -2,10 +2,16 @@
  * i18next configuration — English bundled, every other locale lazy.
  *
  * Resolution order for the active language:
- *   1. ?lang=XX URL param (debug / deep-link override)
- *   2. profiles.locale (authenticated user — set via setLocale())
- *   3. localStorage 'arcana_locale' (anonymous user preference)
- *   4. 'en' fallback
+ *   1. ?lang=XX URL param (deep link; ja, ko or zh is also a choice, below)
+ *   2. localStorage 'arcana_locale' (the language this device opens in)
+ *   3. 'en' fallback
+ * and, once a member's profile loads, AuthContext settles the device and the
+ * account: a language chosen on this device (chosenLocale) is saved to
+ * profiles.locale; with none, the device follows profiles.locale.
+ *
+ * A stored language is not a choice. The detector stores every language it
+ * settles on or changes to, the default English of a first visit included,
+ * so the choice is kept apart ('arcana_locale_choice', LOCALE_CHOICE_KEY).
  *
  * Namespaces (all five load for the active locale before the app renders):
  *   - common     — navigation, buttons, toasts, errors, validation
@@ -57,7 +63,28 @@ export const CARTO_CORPUS_NS = 'cartomancy';
 // (ensureCartomancyCorpus in localizePlayingCard.ts), not with every boot.
 const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS];
 
+/**
+ * The language this device opens in. i18next's detector stores here every
+ * language it settles on or changes to; the boot preload script
+ * (vite.config.ts) and the prerendered hero's guard (scripts/seo-body.mjs)
+ * read it before the app has loaded.
+ */
 export const LOCALE_STORAGE_KEY = 'arcana_locale';
+
+/**
+ * The language the person chose on this device: the language picker, the
+ * shared page's "Get your own reading" (keepVisitLanguage), or a `?lang=`
+ * link that names ja, ko or zh. Empty: nothing chosen. Read it through
+ * chosenLocale().
+ *
+ * It is not LOCALE_STORAGE_KEY, because the detector stores the language a
+ * device merely opens in there too: the English of every first visit, and
+ * the language the app follows from a member's account. AuthContext took
+ * any stored language for the member's choice and wrote it into the
+ * account, so a member whose account read Japanese signed in on a new
+ * phone and the account turned English, on every device (p9 RQB-1).
+ */
+export const LOCALE_CHOICE_KEY = 'arcana_locale_choice';
 
 function isSupported(code: string): code is SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(code);
@@ -155,6 +182,63 @@ const lazyBundleBackend: BackendModule = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// The choice (LOCALE_CHOICE_KEY). Storage can be missing or blocked (a
+// private window); then nothing is stored and nothing is chosen.
+// ---------------------------------------------------------------------------
+
+function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Unavailable: the language still changes for this visit.
+  }
+}
+
+/** The language a `?lang=` link names, found where the detector looks: the query, else a query inside the hash. */
+function linkedLocale(): SupportedLocale | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const { search, hash } = window.location;
+    const query = search || (hash.includes('?') ? hash.slice(hash.indexOf('?')) : '');
+    const named = new URLSearchParams(query).getAll('lang');
+    return normalizeLocale(named[named.length - 1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Before the detector reads storage. Builds before this one kept a single
+ * value, and the detector wrote the English of every first visit into it:
+ * that English is carried over as no choice. Any other language there came
+ * from the picker, a "Get your own reading" or a `?lang=` link, and stays a
+ * choice. Done once; the empty value marks it done, so the language the app
+ * later follows from an account never turns into a choice on a later boot.
+ *
+ * A link that names ja, ko or zh chooses it. `?lang=en` chooses nothing: it
+ * is how the app's own redirects (an OAuth return, a password-reset link)
+ * carried the default English of a visitor who had chosen nothing, and a
+ * member arriving on one keeps the language of their account.
+ */
+function settleChoiceAtBoot(): void {
+  if (readStored(LOCALE_CHOICE_KEY) === null) {
+    const earlier = normalizeLocale(readStored(LOCALE_STORAGE_KEY));
+    writeStored(LOCALE_CHOICE_KEY, earlier && earlier !== 'en' ? earlier : '');
+  }
+  const linked = linkedLocale();
+  if (linked && linked !== 'en') writeStored(LOCALE_CHOICE_KEY, linked);
+}
+settleChoiceAtBoot();
+
 const initPromise = i18n
   .use(lazyBundleBackend)
   .use(LanguageDetector)
@@ -229,14 +313,52 @@ export const i18nReady: Promise<void> = initPromise.then(
   () => undefined,
 );
 
-/** Change language at runtime + persist to localStorage. */
+/**
+ * The person chose `locale` (the language picker, "Get your own reading"):
+ * change to it, open in it from now on, and keep it as this device's choice.
+ * Both are stored before the bundles load, so of two quick picks the last
+ * one is what stays.
+ */
 export async function setLocale(locale: SupportedLocale): Promise<void> {
+  writeStored(LOCALE_CHOICE_KEY, locale);
+  writeStored(LOCALE_STORAGE_KEY, locale);
   await i18n.changeLanguage(locale);
-  try {
-    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  } catch {
-    // localStorage may be unavailable (private mode); i18next state still changes
-  }
+}
+
+/**
+ * Show the app in the language a member's account names, without making it
+ * this device's choice. The device opens in it next time, and when the
+ * account's language changes on another device, this one follows again.
+ */
+export async function followAccountLocale(locale: SupportedLocale): Promise<void> {
+  // The detector stores it as well; stored here too, so a choice made
+  // earlier can no longer read as the language the device opens in.
+  writeStored(LOCALE_STORAGE_KEY, locale);
+  await i18n.changeLanguage(locale);
+}
+
+/**
+ * The language the person chose on this device, while it is still the one
+ * the device opens in. Null when nothing was chosen, and when the language
+ * has changed since without a choice (a `?lang=en` link, a member's account
+ * followed): a default or a followed language is not a member's choice, and
+ * only a choice is saved to the account (AuthContext).
+ */
+export function chosenLocale(): SupportedLocale | null {
+  const chosen = normalizeLocale(readStored(LOCALE_CHOICE_KEY));
+  return chosen !== null && chosen === normalizeLocale(readStored(LOCALE_STORAGE_KEY)) ? chosen : null;
+}
+
+/**
+ * The `?lang=` a redirect back into the app carries (an OAuth return, an
+ * email link): the language chosen on this device, or nothing. The language
+ * on screen is not enough: arriving with it would make it a choice, and an
+ * account's own language would be written over by a default or a language
+ * this device only followed.
+ */
+export function chosenLocaleQuery(): string {
+  const chosen = chosenLocale();
+  return chosen ? `?lang=${chosen}` : '';
 }
 
 /** Current locale, normalised. */

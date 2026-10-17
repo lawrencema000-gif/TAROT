@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
 import { useT } from '../i18n/useT';
-import { getLocale } from '../i18n/config';
+import { chosenLocaleQuery } from '../i18n/config';
 import { setPageMeta } from '../utils/seo';
 import { isAndroid } from '../utils/platform';
 
@@ -112,7 +112,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         // if Supabase JS doesn't auto-fire the PASSWORD_RECOVERY event
         // (e.g. native webview cold start). App.tsx force-renders
         // ResetPasswordPage on this path regardless of auth state.
-        redirectTo: `${window.location.origin}/reset-password?lang=${getLocale()}`,
+        redirectTo: `${window.location.origin}/reset-password${chosenLocaleQuery()}`,
       });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');

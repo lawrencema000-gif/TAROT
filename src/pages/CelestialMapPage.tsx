@@ -84,6 +84,18 @@ export function CelestialMapPage() {
   const [activeFilter, setActiveFilter] = useState<LifeArea>('all');
   const [showPaywall, setShowPaywall] = useState(false);
   const [tappedPoint, setTappedPoint] = useState<{ lon: number; lat: number } | null>(null);
+  /**
+   * The place `tappedPoint` was picked as (p9 R31): a search pick — any town
+   * the place search knows, not only the listed cities, and for a ja/ko/zh
+   * reader every search goes there — a listed city, a power place, the place
+   * Find Your Place revealed, or the destined place. The panel names it and
+   * reads it, and the paywall's preview counts the lines through it. Null
+   * after a tap on the map, which is named by the nearest listed city. Set
+   * wherever `tappedPoint` is, so the two never disagree: a pick used to open
+   * the panel, and sell the reading, for the nearest of the listed cities
+   * (福岡 read as Busan, 213 km away).
+   */
+  const [pickedPlace, setPickedPlace] = useState<City | null>(null);
   const [showInsightPanel, setShowInsightPanel] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
@@ -110,6 +122,7 @@ export function CelestialMapPage() {
   // centre. The map section is then scrolled into view if needed.
   function handleCityPick(city: City) {
     setTappedPoint({ lon: city.lon, lat: city.lat });
+    setPickedPlace(city);
     setShowInsightPanel(true);
     mapEngineRef.current?.flyTo([city.lon, city.lat]);
     requestAnimationFrame(() => {
@@ -239,7 +252,11 @@ export function CelestialMapPage() {
       features: allLines.features.filter((f) => FREE_TIER_PLANETS.has(f.properties!.planet)),
     };
     if (tappedPoint) {
-      const near = nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
+      // Named as the panel names it: the place picked, else the nearest
+      // listed city within 300 km of the tap.
+      const near = pickedPlace
+        ? { city: pickedPlace, distanceKm: 0 }
+        : nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
       if (near && near.distanceKm <= 300) {
         const all = linesNearPoint(tappedPoint.lat, tappedPoint.lon, allLines, 700).length;
         const free = linesNearPoint(tappedPoint.lat, tappedPoint.lon, freeLines, 700).length;
@@ -248,7 +265,7 @@ export function CelestialMapPage() {
     }
     const hidden = allLines.features.length - freeLines.features.length;
     return hidden > 0 ? { count: hidden, city: null } : null;
-  }, [allLines, isPremium, tappedPoint]);
+  }, [allLines, isPremium, tappedPoint, pickedPlace]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
   // Inline birth-data form: most users entered this at signup, but
@@ -409,6 +426,9 @@ export function CelestialMapPage() {
               onMapClick={(lonLat) => {
                 const [lon, lat] = lonLat;
                 setTappedPoint({ lon, lat });
+                // A tap is a spot, not a place picked: even at the spot a
+                // pick was at, the panel names the nearest listed city.
+                setPickedPlace(null);
                 setShowInsightPanel(true);
               }}
               onLineClick={(planet, angle) => {
@@ -459,6 +479,7 @@ export function CelestialMapPage() {
             const dp = profile.destinedPlace!;
             mapEngineRef.current?.flyTo([dp.city.lon, dp.city.lat]);
             setTappedPoint({ lon: dp.city.lon, lat: dp.city.lat });
+            setPickedPlace({ ...dp.city, pop: 0 });
             setShowInsightPanel(true);
           }}
           onDismiss={async () => {
@@ -511,6 +532,7 @@ export function CelestialMapPage() {
             // beacon to replay if a user re-reveals the same place).
             mapEngineRef.current?.flyTo([city.lon, city.lat]);
             setTappedPoint({ lon: city.lon, lat: city.lat });
+            setPickedPlace(city);
             setRevealedPlace({
               city: { name: city.name, country: city.country, cc: city.cc, lat: city.lat, lon: city.lon },
               intent: activeFilter,
@@ -552,6 +574,7 @@ export function CelestialMapPage() {
           open={showInsightPanel}
           onClose={() => setShowInsightPanel(false)}
           point={tappedPoint}
+          place={pickedPlace}
           visibleLines={filteredLines}
           allLines={allLines}
           isPremium={isPremium}

@@ -10,7 +10,7 @@ import { render, screen, fireEvent, cleanup, within, waitFor, act } from '@testi
  * dropped the rest. Ties are named whole now, and an even map names none.
  */
 
-const renderShareCard = vi.fn(async (_data: Record<string, unknown>) => new Blob());
+const renderShareCard = vi.fn<(data: Record<string, unknown>) => Promise<Blob>>(async () => new Blob());
 const shareOrDownload = vi.fn(async () => 'shared');
 
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ profile: null }) }));

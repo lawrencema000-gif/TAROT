@@ -83,7 +83,9 @@ export function MoonstoneCostLine({ cost = ACTION_COST, wording = 'reading', cla
         {balance !== null && (
           <>
             {' · '}
-            <span className={`tabular-nums ${insufficient ? 'text-coral' : ''}`}>
+            {/* One unit: 「所持：250個」 broke 「所/持」 at the end of a line (QU1 R-e).
+                It moves to the next line whole, after the " · ". */}
+            <span className={`whitespace-nowrap tabular-nums ${insufficient ? 'text-coral' : ''}`}>
               {t('moonstones.youHave', { defaultValue: 'You have {{n}}', n: balance })}
             </span>
           </>

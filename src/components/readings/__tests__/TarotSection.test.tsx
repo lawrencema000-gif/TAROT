@@ -65,7 +65,8 @@ async function shareTheDevil(): Promise<string> {
   return shareOrDownloadCard.mock.calls[0][2] as string;
 }
 
-describe('TarotSection: a shared card names its language (p9 R13)', () => {
+// The deck library draws 78 faces: about 3 s alone, past the 5 s default under a full parallel run.
+describe('TarotSection: a shared card names its language (p9 R13)', { timeout: 20_000 }, () => {
   beforeEach(() => {
     cleanup();
     shareOrDownloadCard.mockReset().mockResolvedValue('shared');

@@ -19,7 +19,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Info, Loader2 } from 'lucide-react';
-import { Button, TarotFace } from '../../ui';
+import { Button, Sheet, TarotFace } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import { flipHaptics } from '../../../utils/haptics';
@@ -108,6 +108,55 @@ interface TarotRevealViewProps {
   onGetAIInterpretation: () => void;
   onHideAIInterpretation: () => void;
   onNewReading: () => void;
+}
+
+export interface LeaveReadingSheetProps {
+  open: boolean;
+  /**
+   * The interpretation is filed under the Library's AI readings: true for
+   * every one generate-reading wrote, false for one it served from its cache
+   * (which it does not file). The sheet says where the text is, or that it
+   * would go.
+   */
+  inLibrary: boolean;
+  /** The save is on its way: "Save and leave" spins and ignores taps. */
+  saving: boolean;
+  /** Stay on the reading (the sheet's close, Escape, the scrim). */
+  onStay: () => void;
+  onSaveAndLeave: () => void;
+  onLeave: () => void;
+}
+
+/**
+ * Asked before "Start a new reading" or Back leaves an unsaved reveal whose
+ * AI interpretation was bought (QU1 R-c): one tap used to throw it away.
+ * Shared by the reveals that sell one; the section decides when to ask.
+ */
+export function LeaveReadingSheet({ open, inLibrary, saving, onStay, onSaveAndLeave, onLeave }: LeaveReadingSheetProps) {
+  const { t } = useT('app');
+  return (
+    <Sheet open={open} onClose={onStay} title={t('readings.revealView.leaveConfirm.title', { defaultValue: 'Leave without saving?' })}>
+      <div className="space-y-5">
+        <p className="text-ui text-mystic-300 leading-relaxed">
+          {inLibrary
+            ? t('readings.revealView.leaveConfirm.inLibrary', {
+                defaultValue: 'This reading isn’t saved yet. Its AI interpretation stays in your Library, under AI readings.',
+              })
+            : t('readings.revealView.leaveConfirm.notInLibrary', {
+                defaultValue: 'This reading isn’t saved yet. If you leave now, its AI interpretation goes with it. Save the reading to keep it.',
+              })}
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button variant="gold" fullWidth onClick={onSaveAndLeave} loading={saving}>
+            {t('readings.revealView.leaveConfirm.save', { defaultValue: 'Save and leave' })}
+          </Button>
+          <Button variant="ghost" fullWidth onClick={onLeave} disabled={saving}>
+            {t('readings.revealView.leaveConfirm.leave', { defaultValue: 'Leave without saving' })}
+          </Button>
+        </div>
+      </div>
+    </Sheet>
+  );
 }
 
 /** Rows of three, for a spread that brought no layout. */

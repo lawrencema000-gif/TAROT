@@ -49,6 +49,7 @@ import enLanding from './locales/en/landing.json';
 // routeNamespacePlugin); ensureRouteStrings below adds them on /quizzes.
 import enApp from './locales/en/app.json?boot';
 import { CJK_FONTS, cjkFontHref } from './cjkFonts';
+import { resolveKoParticles } from './koJosa';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -239,10 +240,38 @@ function settleChoiceAtBoot(): void {
 }
 settleChoiceAtBoot();
 
+/**
+ * Korean particles that agree with the word put into a string (p9 QT2).
+ *
+ * A Korean value that interpolates a word it cannot know (a card, a person,
+ * a theme, an element) writes the particle after it in both forms:
+ * "{{name}}을(를) 삭제했어요", and the member read both. This runs on every
+ * t() result once it is interpolated. In Korean, each two-form marker
+ * (이(가), 을(를), 은(는), 과(와), (으)로, (이)에요, …) becomes the one form the
+ * syllable before it takes, by the rules the edge functions use too
+ * (koJosa.ts). A word whose last sound is unknown (a Latin name) keeps both
+ * forms rather than a wrong one. Any other language, and any value without
+ * a marker, comes back exactly as it went in.
+ *
+ * The language is the call's (`lng`, which a getFixedT also sets), else the
+ * one on screen. An English fallback inside the Korean UI has no marker.
+ */
+export const koParticlesPostProcessor = {
+  type: 'postProcessor' as const,
+  name: 'koParticles',
+  process(value: string, _key: string | string[], options?: { lng?: string }, translator?: { language?: string }): string {
+    // Every marker holds a "(": nothing else is even looked at.
+    if (typeof value !== 'string' || value.indexOf('(') === -1) return value;
+    if (normalizeLocale(options?.lng ?? translator?.language) !== 'ko') return value;
+    return resolveKoParticles(value);
+  },
+};
+
 const initPromise = i18n
   .use(lazyBundleBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
+  .use(koParticlesPostProcessor)
   .init({
     resources: {
       // The empty tarot and cartomancy corpora mark the namespaces as present
@@ -280,6 +309,9 @@ const initPromise = i18n
     interpolation: {
       escapeValue: false, // React already escapes
     },
+
+    // Korean particles that follow the interpolated word (above).
+    postProcess: [koParticlesPostProcessor.name],
 
     react: {
       useSuspense: false, // safer default — components decide per-hook

@@ -395,10 +395,13 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
           <div className="pt-4 border-t border-mystic-700 space-y-4">
             <div>
               <h4 className="heading-display-md text-mystic-100 mb-3">{t('horoscope.luckyFocus')}</h4>
+              {/* A third of the card each: the colour and the vibe are labels,
+                  so a long katakana colour (オブシディアン) breaks between
+                  phrases, not inside the word (QU1 R-f; index.css .keep-phrases). */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.color')}</p>
-                  <p className="text-ui text-mystic-200 font-medium">{horoscope.luckyColor}</p>
+                  <p className="keep-phrases text-ui text-mystic-200 font-medium">{horoscope.luckyColor}</p>
                 </div>
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.number')}</p>
@@ -406,7 +409,7 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
                 </div>
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.vibe')}</p>
-                  <p className="text-ui text-mystic-200 font-medium">
+                  <p className="keep-phrases text-ui text-mystic-200 font-medium">
                     {vibeLabel}
                   </p>
                 </div>
@@ -463,7 +466,10 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
                     </div>
                   <div>
                     <p className="text-ui text-gold font-medium">{tarotCard.name}</p>
-                    <p className="text-meta text-mystic-400 mt-0.5">{tarotCard.keywords.slice(0, 3).join(', ')}</p>
+                    {/* Listed as the locale lists (、 in ja and zh), not with a Latin comma (QU2 R3 a). */}
+                    <p className="text-meta text-mystic-400 mt-0.5">
+                      {tarotCard.keywords.slice(0, 3).join(t('cardMeaning.listSeparator', { defaultValue: ', ' }))}
+                    </p>
                   </div>
                 </div>
               </div>

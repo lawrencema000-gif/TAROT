@@ -35,7 +35,7 @@ import { SPREAD_LAYOUTS } from '../icons/SpreadGlyph';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
 import { TarotSelectView } from './tarot/TarotSelectView';
-import { TarotRevealView } from './tarot/TarotRevealView';
+import { TarotRevealView, LeaveReadingSheet } from './tarot/TarotRevealView';
 import { TarotHomeView } from './tarot/TarotHomeView';
 import { FOCUS_AREA_I18N_KEY, type FocusArea, type PickerSpread } from './tarot/types';
 import { newReadingId } from './tarot/readingId';
@@ -256,6 +256,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * used to get two requests out 3 ms apart, each charged (p8 F09).
    */
   const aiInFlightRef = useRef<string | null>(null);
+  /**
+   * The interpretation on the table is filed under the Library's AI
+   * readings. generate-reading inserts a premium_readings row for every
+   * interpretation it writes, but returns one served from its cache
+   * (`cached: true`) before that insert — charged all the same — so that
+   * one is only here, and leaving says so (QU1 R-c).
+   */
+  const [aiInLibrary, setAiInLibrary] = useState(false);
+  /** "Start a new reading" or Back on an unsaved reveal with a bought interpretation: asked first. */
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
@@ -444,6 +454,27 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const goHome = () => {
     setCurrentSpread(DAILY_SPREAD);
     setView('home');
+  };
+
+  /**
+   * The reveal's "Start a new reading" and Back. A bought AI interpretation
+   * on a reading that is not saved (nor being saved) went with one tap; the
+   * reader is asked first (LeaveReadingSheet), and told where the text is.
+   */
+  const leaveReveal = () => {
+    const unsaved = !isSaved && !savedIdRef.current && !savingRef.current;
+    if (aiInterpretation && unsaved) {
+      setConfirmLeave(true);
+      return;
+    }
+    goHome();
+  };
+
+  /** The sheet's "Save and leave": home once the row is written; a failed save stays (its toast says so). */
+  const saveAndLeave = async () => {
+    const saved = await handleSaveReading();
+    setConfirmLeave(false);
+    if (saved) goHome();
   };
 
   // Auto-launch into the reading flow when arriving from the custom-spread
@@ -879,11 +910,14 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * a second tap or a double tap during the insert left two copies in the
    * Library. A save in flight or already made is a no-op — read from refs
    * as well as `isSaved`, which renders only after the insert has answered
-   * (savedIdRef is set in the same tick the insert returns).
+   * (savedIdRef is set in the same tick the insert returns). Resolves true
+   * once the reading on screen is saved (now or before), false when it is
+   * not, so "Save and leave" (LeaveReadingSheet) leaves only a saved reading.
    */
-  const handleSaveReading = async () => {
-    if (!user || drawnCards.length === 0) return;
-    if (isSaved || savedIdRef.current || savingRef.current) return;
+  const handleSaveReading = async (): Promise<boolean> => {
+    if (!user || drawnCards.length === 0) return false;
+    if (isSaved || savedIdRef.current) return true;
+    if (savingRef.current) return false;
     savingRef.current = true;
     setSaving(true);
     const res = await tarotReadings.insertReturningId(savedRow(aiInterpretation));
@@ -892,6 +926,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
+      return false;
     } else {
       savedIdRef.current = res.data.id;
       setIsSaved(true);
@@ -907,6 +942,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         await ratePromptService.recordPromptShown(user.id);
         openRatePrompt();
       }
+      return true;
     }
   };
 
@@ -998,6 +1034,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         return;
       }
 
+      setAiInLibrary(result.cached !== true);
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
       void attachInterpretationToSaved(result.interpretation);
@@ -1170,15 +1207,15 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         loadingAI={loadingAI}
         focusReadingLabel={selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}
         getPositionLabel={getPositionLabel}
-        onBack={goHome}
-        onSave={handleSaveReading}
+        onBack={leaveReveal}
+        onSave={() => void handleSaveReading()}
         onShare={handleShareReading}
         onRevealCard={handleRevealCard}
         onRevealAll={revealAll}
         onCardClick={openDrawnCard}
         onGetAIInterpretation={handleGetAIInterpretation}
         onHideAIInterpretation={() => setShowAIInterpretation(false)}
-        onNewReading={goHome}
+        onNewReading={leaveReveal}
       />
     );
   } else {
@@ -1199,6 +1236,18 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   return (
     <>
       {stage}
+
+      <LeaveReadingSheet
+        open={confirmLeave && view === 'reveal'}
+        inLibrary={aiInLibrary}
+        saving={saving}
+        onStay={() => setConfirmLeave(false)}
+        onSaveAndLeave={() => void saveAndLeave()}
+        onLeave={() => {
+          setConfirmLeave(false);
+          goHome();
+        }}
+      />
 
       <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title={t('readings.browse.title')}>
         <DeckLibrary cards={tarotCards} onSelect={openDeckCard} />

@@ -9,8 +9,8 @@ import userEvent from '@testing-library/user-event';
  * now, named by their sentences, and their state reaches the profile.
  */
 
-const signUp = vi.fn(async (_creds: { email: string; password: string }) => ({ data: { user: { id: 'u1' } }, error: null }));
-const upsert = vi.fn(async (_row: Record<string, unknown>) => ({ error: null }));
+const signUp = vi.fn<(creds: { email: string; password: string }) => Promise<{ data: { user: { id: string } }; error: null }>>(async () => ({ data: { user: { id: 'u1' } }, error: null }));
+const upsert = vi.fn<(row: Record<string, unknown>) => Promise<{ error: null }>>(async () => ({ error: null }));
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ signInWithGoogle: vi.fn(), signInWithApple: vi.fn() }),

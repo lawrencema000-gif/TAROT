@@ -83,6 +83,8 @@ interface DbProfile {
   id: string;
   email: string;
   display_name: string;
+  /** Absent before 20261003000014 (`select('*')` has no such column then). */
+  community_name?: string | null;
   birth_date: string;
   birth_time?: string;
   birth_place?: string;
@@ -122,6 +124,10 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     id: db.id,
     email: db.email,
     displayName: db.display_name,
+    // undefined, not null, when unset: a profile passed back to
+    // updateProfile then leaves the column alone (and, before 014, does not
+    // name a column the server lacks).
+    communityName: db.community_name ?? undefined,
     birthDate: db.birth_date,
     // Optional fields are declared `string | undefined` on UserProfile, but a
     // NULL column arrives as `null`. Passing it through makes the type a lie
@@ -169,6 +175,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
 // ritual_streak() RPC (migration 20260928000000); nothing else writes them.
 const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   displayName: 'display_name',
+  // The member's chosen name in Community; the column's CHECK holds its shape.
+  communityName: 'community_name',
   birthDate: 'birth_date',
   birthTime: 'birth_time',
   birthPlace: 'birth_place',

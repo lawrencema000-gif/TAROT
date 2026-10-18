@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse, ResultSheet, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
+import { useNatalChart } from '../hooks/useAstrology';
+import { useBirthTzBackfill, birthZoneOf, castParamsFor } from '../components/horoscope/birthZone';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { SectionDivider } from '../components/ui';
@@ -19,6 +21,15 @@ import { MOONSTONES_PER_AD } from '../services/rewardedAds';
  * Monetization refactor 2026-04-25: one-off Stripe per-report purchases
  * removed. Premium unlocks every feature; Moonstones are the per-report
  * unlock currency; every rewarded ad credits +50 Moonstones.
+ *
+ * No chart, no sale (p9 QS R-3, as the natal report since Q01). The
+ * forecast is drawn from the stored natal chart, which neither onboarding
+ * casts. The page offered "Unlock for 300" on birth data alone, took the
+ * Moonstones, and astrology-year-ahead then answered NATAL_CHART_MISSING:
+ * a card with no header that said to re-enter birth data that was complete.
+ * A missing chart is now cast here the way the Horoscope setup casts it
+ * (the birth place's zone, castParamsFor), the unlock is offered only once
+ * a chart exists, and the forecast is asked for only beside one.
  */
 
 const YEAR_AHEAD_COST = 300;
@@ -58,6 +69,11 @@ const INTENSITY_COLORS: Record<'soft' | 'neutral' | 'hard', string> = {
 export function YearAheadReportPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
+  const { chart, loading: chartLoading, error: chartError, fetchChart, computeChart } = useNatalChart();
+  // A chart cast in the signup zone (before F21) is recast before the
+  // forecast reads it; reload when the recast lands.
+  useBirthTzBackfill(fetchChart);
+  const natal = chart?.natalChart ?? null;
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
@@ -69,7 +85,35 @@ export function YearAheadReportPage() {
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasNatalChart = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
+  // The birth data the forecast asks for. Having it is not having a chart:
+  // the chart is read (useNatalChart) and, when there is none, cast below.
+  const hasBirthData = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
+  const birthLat = profile?.birthLat;
+  const birthLon = profile?.birthLon;
+  const hasBirthPlace = typeof birthLat === 'number' && Number.isFinite(birthLat)
+    && typeof birthLon === 'number' && Number.isFinite(birthLon);
+  // 'done' and 'failed' both end the attempt; a retry goes back to 'idle'.
+  const [castState, setCastState] = useState<'idle' | 'casting' | 'done' | 'failed'>('idle');
+  // Guards the cast effect against a second cast (StrictMode runs it twice).
+  const castTried = useRef(false);
+  const castChart = useCallback(async () => {
+    if (!profile?.birthDate || typeof profile.birthLat !== 'number' || typeof profile.birthLon !== 'number') return;
+    castTried.current = true;
+    setCastState('casting');
+    try {
+      const { tz } = await birthZoneOf(profile);
+      const cast = await computeChart(castParamsFor({ ...profile, birthLat: profile.birthLat, birthLon: profile.birthLon }, tz));
+      setCastState(cast?.natalChart ? 'done' : 'failed');
+    } catch {
+      setCastState('failed');
+    }
+  }, [profile, computeChart]);
+  /** Read the chart again, and cast it when there is still none. */
+  const retryChart = () => {
+    castTried.current = false;
+    setCastState('idle');
+    void fetchChart();
+  };
   const currentYear = new Date().getFullYear();
   // Rewarded ads only exist inside the native shell (R5 M-9).
   const adNative = isNative();
@@ -103,6 +147,13 @@ export function YearAheadReportPage() {
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
+  // Once astrology-get-chart has answered "none", cast it (once; a retry
+  // reloads and comes back here).
+  useEffect(() => {
+    if (!user || !hasBirthData || !hasBirthPlace || natal || chartLoading || chartError || castTried.current) return;
+    void castChart();
+  }, [user, hasBirthData, hasBirthPlace, natal, chartLoading, chartError, castChart]);
+
   const loadData = useCallback(async () => {
     setLoadingData(true);
     setError(null);
@@ -132,11 +183,24 @@ export function YearAheadReportPage() {
     setData(payload);
   }, [currentYear]);
 
+  // The forecast is asked for once, beside a chart the server can read: not
+  // while the chart is being read or cast, and not again by itself after a
+  // failure — every failure used to start the next request, without end.
+  // Each error state has its own retry.
+  const castingChart = castState === 'casting';
   useEffect(() => {
-    if (unlocked && !data && !loadingData) loadData();
-  }, [unlocked, data, loadingData, loadData]);
+    if (unlocked && natal && !chartLoading && !castingChart && !data && !loadingData && !error) void loadData();
+  }, [unlocked, natal, chartLoading, castingChart, data, loadingData, error, loadData]);
+
+  /** The server had no chart for the forecast: read (or cast) it again, then the forecast loads. */
+  const retryMissingChart = () => {
+    setError(null);
+    retryChart();
+  };
 
   const handleUnlock = async () => {
+    // The unlock is offered only beside a chart; never charge without one.
+    if (!natal || unlocking) return;
     setUnlocking(true);
     const res = await reportUnlocks.unlockWithMoonstones(
       'year-ahead',
@@ -156,6 +220,10 @@ export function YearAheadReportPage() {
         }),
         'error',
       );
+    } else if (res.error === 'chart-missing') {
+      // The server holds no chart for this account and refused before the
+      // debit: read it again (and cast it), then the unlock is offered again.
+      retryChart();
     } else {
       toast(
         t('yearAhead.unlockFailed', {
@@ -166,13 +234,31 @@ export function YearAheadReportPage() {
     }
   };
 
-  if (!hasNatalChart) {
+  const yearHeader = (
+    <PageHeader
+      icon={<Calendar />}
+      title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
+    />
+  );
+
+  /** The chart could not be read or drawn: say so, and try again (a retry reads it and casts it when missing). */
+  const chartRetryCard = (onRetry: () => void) => (
+    <Card padding="lg" className="text-center">
+      <p className="text-ui text-mystic-300 mb-4" role="alert">
+        {t('natalReport.errorChartMissing', {
+          defaultValue: 'We couldn’t draw your chart just now. Check your connection and try again.',
+        })}
+      </p>
+      <Button variant="outline" onClick={onRetry}>
+        {t('common:actions.retry', { defaultValue: 'Try again' })}
+      </Button>
+    </Card>
+  );
+
+  if (!hasBirthData) {
     return (
       <Page spacing="sm">
-        <PageHeader
-          icon={<Calendar />}
-          title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
-        />
+        {yearHeader}
         <EmptyState
           icon={<AlertCircle />}
           title={t('yearAhead.needsBirthData', { defaultValue: 'Add your full birth data first' })}
@@ -185,11 +271,47 @@ export function YearAheadReportPage() {
     );
   }
 
-  if (checking) {
+  // The chart is being cast here (or is about to be): the page, not a bare
+  // loading line.
+  if (castingChart
+    || (castState === 'idle' && !natal && hasBirthPlace && !chartLoading && !checking && !chartError)) {
+    return (
+      <Page spacing="sm">
+        {yearHeader}
+        <Card padding="lg" className="text-center">
+          <p className="text-ui text-mystic-300" role="status" aria-live="polite">
+            {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
+          </p>
+        </Card>
+      </Page>
+    );
+  }
+
+  if (checking || chartLoading) {
     return (
       <div className="py-12 text-center text-mystic-500">
         {t('common:actions.loading', { defaultValue: 'Loading…' })}
       </div>
+    );
+  }
+
+  // No chart: nothing is sold and no forecast is asked for. Either it could
+  // not be read or cast — try again — or there is no birth place to cast it
+  // for (a typed place with no coordinates).
+  if (!natal) {
+    return (
+      <Page spacing="sm">
+        {yearHeader}
+        {chartError || hasBirthPlace ? chartRetryCard(retryChart) : (
+          <EmptyState
+            icon={<AlertCircle />}
+            title={t('natalReport.needsBirthPlace', { defaultValue: 'Add your birth place' })}
+            description={t('natalReport.needsBirthPlaceBody', {
+              defaultValue: 'Your chart is drawn for the place you were born. Pick it in Profile → Edit profile, then open this page again.',
+            })}
+          />
+        )}
+      </Page>
     );
   }
 
@@ -371,27 +493,30 @@ export function YearAheadReportPage() {
     );
   }
 
+  // The server found no chart for the forecast (it was paid for, or Premium
+  // covers it): the page, and a retry that reads or casts the chart again.
+  // The birth data is not the problem, and is not asked for again.
   if (error === 'natal-missing') {
     return (
-      <Card padding="lg" variant="glow">
-        <p className="text-ui text-mystic-300">
-          {t('yearAhead.errorNatalMissing', {
-            defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
-          })}
-        </p>
-      </Card>
+      <Page spacing="sm">
+        {yearHeader}
+        {chartRetryCard(retryMissingChart)}
+      </Page>
     );
   }
   if (error) {
     return (
-      <Card padding="lg">
-        <p className="text-ui text-mystic-300">
-          {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
-        </p>
-        <Button variant="primary" onClick={loadData} className="mt-3">
-          {t('yearAhead.retry', { defaultValue: 'Reload the forecast' })}
-        </Button>
-      </Card>
+      <Page spacing="sm">
+        {yearHeader}
+        <Card padding="lg">
+          <p className="text-ui text-mystic-300" role="alert">
+            {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
+          </p>
+          <Button variant="primary" onClick={loadData} className="mt-3">
+            {t('yearAhead.retry', { defaultValue: 'Reload the forecast' })}
+          </Button>
+        </Card>
+      </Page>
     );
   }
   if (!data) return null;

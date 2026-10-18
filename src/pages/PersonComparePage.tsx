@@ -76,9 +76,15 @@ export function PersonComparePage() {
   const load = useCallback(async () => {
     if (!id || !profile) return;
     setLoading(true); setErr(null);
-    if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
     const pRes = await peopleDal.getById(id);
     if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
+    // A pet reads by temperament on its own page; there is no chart
+    // comparison for it. Q13 took the button off the pet's page, but this
+    // URL still opened a human synastry for the cat (QU2 R2). Checked before
+    // the viewer's own birth date, which a pet's page does not need, and
+    // replaced, so Back does not land here again.
+    if (pRes.data.relationship === 'pet') { navigate(`/people/${id}`, { replace: true }); return; }
+    if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
     // Saved before F25 without a place: give their birth time a zone before
     // their chart is cast (the trigger read it as UTC).
     await ensurePersonZone(pRes.data);
@@ -90,7 +96,7 @@ export function PersonComparePage() {
     if (!own || !other) { setErr(t('people.compare.castFailed', { defaultValue: "Couldn't cast both charts — check your connection and try again." })); setLoading(false); return; }
     setMine(own); setTheirs(other);
     setLoading(false);
-  }, [id, profile, t]);
+  }, [id, profile, t, navigate]);
 
   useEffect(() => { load(); }, [load]);
 

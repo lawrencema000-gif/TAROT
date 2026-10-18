@@ -261,9 +261,11 @@ export function CartoCardSections({
 
 /**
  * An AI reading's body under its summary: each block the model headed
- * ("The situation — Seven of Clubs") under its heading, the rest as prose.
- * The summary above is the opening paragraph (cartoSummary), so it is not
- * repeated here.
+ * ("The situation — Seven of Clubs") under its heading, a block of "- "
+ * lines as a list (splitAiReading's `items`, as the tarot result prints
+ * them: the actions read "- Write it down." raw here, QU1 R-b), the rest as
+ * prose. The summary above is the opening paragraph (cartoSummary), so it
+ * is not repeated here.
  */
 export function CartoAiSections({ text }: { text: string }) {
   const { sections } = splitAiReading(text);
@@ -273,7 +275,15 @@ export function CartoAiSections({ text }: { text: string }) {
       {sections.map((section, i) => (
         <div key={i}>
           {section.heading && <h3 className="text-ui font-semibold text-ink">{section.heading}</h3>}
-          {section.body && <ReadingProse text={section.body} lede={false} className={section.heading ? 'mt-1' : ''} />}
+          {section.items ? (
+            <ul className={`reading-copy list-disc space-y-1.5 pl-5 marker:text-ink-muted ${section.heading ? 'mt-1' : ''}`}>
+              {section.items.map((item, j) => (
+                <li key={j}>{item}</li>
+              ))}
+            </ul>
+          ) : section.body ? (
+            <ReadingProse text={section.body} lede={false} className={section.heading ? 'mt-1' : ''} />
+          ) : null}
         </div>
       ))}
     </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Heart,
   Users,
@@ -15,8 +16,9 @@ import {
   Star,
   TrendingUp,
 } from 'lucide-react';
-import { Card, Button, Input, Chip, Tag, Progress, ProgressRing } from '../ui';
+import { Card, Button, Input, Chip, Progress, ProgressRing } from '../ui';
 import { ZODIAC_ICONS } from '../icons';
+import { LearnLinkList } from '../learn/LearnEntryTemplate';
 import { useAuth } from '../../context/AuthContext';
 import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac';
 import type { ZodiacSign } from '../../types';
@@ -521,13 +523,26 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
       <Card padding="md">
         <h3 className="font-medium text-mystic-200 mb-3">{t('compatibility.bestMatches')}</h3>
         <p className="text-sm text-mystic-400 mb-4">{t('compatibility.bestMatchesSubtitle', { sign: localizeSignName(userInfo.name as ZodiacSignPC) })}</p>
-        <div className="flex gap-2 flex-wrap">
-          {getTopMatches(userSign).map(sign => (
-            <Tag key={sign} tone="neutral" size="md">
-              {localizeSignName(zodiacData[sign].name as ZodiacSignPC)}
-            </Tag>
-          ))}
-        </div>
+        {/* Each match opens its page in the Astrology guide (the member route
+            renders it in the app; Zodiac Scholar counts the sign pages read),
+            and the guide itself is one tap further. */}
+        <LearnLinkList
+          links={getTopMatches(userSign).map((sign) => {
+            const Glyph = ZODIAC_ICONS[zodiacData[sign].name as ZodiacSignPC];
+            return {
+              href: `/astrology/${sign}`,
+              label: localizeSignName(zodiacData[sign].name as ZodiacSignPC),
+              symbol: Glyph ? <Glyph size={20} strokeWidth={1.5} /> : undefined,
+            };
+          })}
+        />
+        <Link
+          to="/astrology"
+          className="mt-2 inline-flex items-center gap-1 min-h-[44px] text-meta text-gold no-underline [@media(hover:hover)]:hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 rounded-control"
+        >
+          {t('learn.astrology.backToHub', { defaultValue: 'All astrology entries' })}
+          <ChevronRight className="w-4 h-4" aria-hidden />
+        </Link>
       </Card>
     </div>
   );

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useId, useRef } from 'react';
 import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check, Trash2 } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast, dismissToasts } from '../components/ui';
+import { Card, Button, Chip, Input, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
@@ -170,7 +170,17 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     loadFeed();
   }, [loadFeed]);
 
+  // A name chosen in the composer or a comment box shows on the member's
+  // named rows as soon as the views are read again (they read it live).
+  const reloadAfterNameChange = useCallback(() => {
+    void loadFeed();
+  }, [loadFeed]);
+
   const visiblePosts = posts;
+
+  // The open post follows the feed: a reload (a name chosen on its page) and
+  // an optimistic reaction both reach it, which a copy taken on open never did.
+  const openPost = selectedPost ? (posts.find((p) => p.id === selectedPost.id) ?? selectedPost) : null;
 
   // One banner for the whole page, whichever view is showing. It used to be
   // mounted inside the composer branch, and `onSuccess` swapped that branch
@@ -311,6 +321,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
             loadFeed();
           }}
           onCrisisDetected={openCrisisBanner}
+          onNameSaved={reloadAfterNameChange}
         />
         {crisisBanner}
       </>
@@ -318,17 +329,18 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   }
 
   // Post detail with comments
-  if (view === 'post-detail' && selectedPost) {
+  if (view === 'post-detail' && openPost) {
     return (
       <>
         <PostDetail
-          post={selectedPost}
+          post={openPost}
           onBack={() => { setView('feed'); setSelectedPost(null); loadFeed(); }}
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
           onDelete={requestDelete}
           onCrisisDetected={openCrisisBanner}
+          onNameSaved={reloadAfterNameChange}
         />
         {crisisBanner}
         {deleteSheet}
@@ -662,6 +674,162 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
 }
 
 // ==================================================================
+// The name Community shows
+// ==================================================================
+
+/**
+ * The shape 20261003000014 holds profiles.community_name to (its CHECK), on
+ * a value already trimmed: at most 32 characters, no control characters, no
+ * "@" (an email address is never a community name). Checked here so the
+ * member hears it before the round trip; the server's own refusal reads the
+ * same way (CommunityNameLine).
+ */
+const COMMUNITY_NAME_MAX = 32;
+function isCommunityNameShape(name: string): boolean {
+  return name.length <= COMMUNITY_NAME_MAX && !name.includes('@') && !/\p{Cc}/u.test(name);
+}
+
+/**
+ * Under "Post anonymously" and "Comment anonymously": the name a named post
+ * or comment carries (P9 Q00). 20261003000014 shows other members only the
+ * name a member chose for Community, so until they choose one their named
+ * rows read "A member". The field starts from that chosen name alone: never
+ * the email, never the display name, which sign-up fills from the email
+ * address or an OAuth profile and which the member never chose to publish.
+ *
+ * Saving re-reads the feed (and the comments): the views name the rows by
+ * the profile, so the member's earlier rows carry the new name too. Not
+ * offered once this session has seen a server without 014; if a save fails
+ * anyway (no column yet, no connection), a toast says so and everything
+ * else on the screen, the draft included, stays as it was.
+ */
+function CommunityNameLine({ onSaved }: { onSaved: () => void }) {
+  const { t } = useT('app');
+  const { profile, updateProfile } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState('');
+  const [invalid, setInvalid] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const lineId = useId();
+  const inputId = useId();
+  const hintId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(false);
+
+  // Into the field when it opens; back to the line's button when it closes.
+  useEffect(() => {
+    if (editing) {
+      wasEditing.current = true;
+      inputRef.current?.focus();
+    } else if (wasEditing.current) {
+      wasEditing.current = false;
+      toggleRef.current?.focus();
+    }
+  }, [editing]);
+
+  if (!profile || !community.serverResolvesAuthors()) return null;
+  const name = profile.communityName || null;
+
+  const startEditing = () => {
+    setValue(profile.communityName ?? '');
+    setInvalid(false);
+    setEditing(true);
+  };
+
+  const save = async () => {
+    if (saving) return;
+    const v = value.trim();
+    if (v && !isCommunityNameShape(v)) {
+      setInvalid(true);
+      return;
+    }
+    setSaving(true);
+    let failure: 'shape' | 'other' | null = null;
+    try {
+      // Empty clears the name: the rows read "A member" again.
+      const { error } = await updateProfile({ communityName: v || null });
+      if (error) failure = /community_name_shape/.test(error.message) ? 'shape' : 'other';
+    } catch {
+      failure = 'other';
+    }
+    setSaving(false);
+    if (failure === 'shape') {
+      setInvalid(true);
+      return;
+    }
+    if (failure) {
+      toast(t('community.nameSaveFailed', { defaultValue: 'Couldn’t save your name — check your connection and try again.' }), 'error');
+      return;
+    }
+    setEditing(false);
+    onSaved();
+  };
+
+  if (editing) {
+    const errorId = `${inputId}-error`;
+    return (
+      <div className="mt-4 space-y-2">
+        <Input
+          ref={inputRef}
+          id={inputId}
+          label={t('community.nameLabel', { defaultValue: 'Your name in Community' })}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setInvalid(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              void save();
+            }
+          }}
+          maxLength={COMMUNITY_NAME_MAX}
+          autoComplete="off"
+          spellCheck={false}
+          disabled={saving}
+          aria-describedby={invalid ? `${errorId} ${hintId}` : hintId}
+          error={invalid ? t('community.nameInvalid', { defaultValue: 'Use 1 to 32 characters, without “@”.' }) : undefined}
+        />
+        <p id={hintId} className="text-caption text-mystic-500">
+          {t('community.nameHint', {
+            defaultValue: 'Shown on your posts and comments that aren’t anonymous, earlier ones included. Up to 32 characters, no email address.',
+          })}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary" size="sm" onClick={() => void save()} loading={saving} disabled={saving}>
+            {t('community.nameSave', { defaultValue: 'Save name' })}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+            {t('common:actions.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-x-2 text-meta text-mystic-500">
+      <span id={lineId}>
+        {name
+          ? t('community.postingAs', { name, defaultValue: 'Posting as {{name}}' })
+          : t('community.postingAsUnnamed', { defaultValue: 'Your name shows as “A member” until you choose one' })}
+      </span>
+      <button
+        ref={toggleRef}
+        type="button"
+        onClick={startEditing}
+        aria-describedby={lineId}
+        className="inline-flex items-center min-h-[44px] text-gold underline-offset-2 [@media(hover:hover)]:hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 rounded-control"
+      >
+        {name ? t('community.changeName', { defaultValue: 'Change' }) : t('community.chooseName', { defaultValue: 'Choose a name' })}
+      </button>
+    </div>
+  );
+}
+
+// ==================================================================
 // Composer
 // ==================================================================
 
@@ -671,12 +839,14 @@ function Composer({
   onBack,
   onSuccess,
   onCrisisDetected,
+  onNameSaved,
 }: {
   mode: 'normal' | 'whispering-well';
   topic: CommunityTopic;
   onBack: () => void;
   onSuccess: () => void;
   onCrisisDetected: (resources?: CrisisResources) => void;
+  onNameSaved: () => void;
 }) {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -814,6 +984,9 @@ function Composer({
             </span>
           </label>
         )}
+        {/* A named post carries the member's community name: say which, and
+            let them choose it here. Not in the Well, nor on an anonymous post. */}
+        {!isWW && !isAnon && <CommunityNameLine onSaved={onNameSaved} />}
       </Card>
 
       {/* Dead until there is something to publish: an enabled button that
@@ -842,9 +1015,11 @@ interface PostDetailProps {
   onBlock: (post: CommunityPost) => void;
   onDelete: (post: CommunityPost) => void;
   onCrisisDetected: (resources?: CrisisResources) => void;
+  /** The member chose a community name here: the feed reads it again. */
+  onNameSaved: () => void;
 }
 
-function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCrisisDetected }: PostDetailProps) {
+function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCrisisDetected, onNameSaved }: PostDetailProps) {
   const { t } = useT('app');
   const { user } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
@@ -952,8 +1127,10 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
         t={t}
       />
 
+      {/* One string with the count in it: the brackets and the space around
+          them are the language's own (コメント（3）, 评论（3）). */}
       <h3 className="font-medium text-mystic-200 pt-2">
-        {t('community.commentsHeading', { defaultValue: 'Comments' })} ({comments.length})
+        {t('community.commentsHeadingCount', { n: comments.length, defaultValue: 'Comments ({{n}})' })}
       </h3>
 
       {loading && <p className="text-mystic-500 text-ui">{t('common.loading', { defaultValue: 'Loading…' })}</p>}
@@ -1036,6 +1213,16 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
               {t('community.send', { defaultValue: 'Post my comment' })}
             </Button>
           </div>
+          {/* As in the composer: the name a named comment carries. Replies in
+              the Well are anonymous, and so is a ticked comment. */}
+          {!inWell && !isAnonComment && (
+            <CommunityNameLine
+              onSaved={() => {
+                void load();
+                onNameSaved();
+              }}
+            />
+          )}
         </Card>
       )}
     </Page>

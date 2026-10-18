@@ -9,7 +9,7 @@ import { render, screen, fireEvent, cleanup, act, waitFor } from '@testing-libra
  * Capricorn born that day. The field now starts empty and Continue waits.
  */
 
-const updateProfile = vi.fn(async (_updates: Record<string, unknown>) => ({ error: null }));
+const updateProfile = vi.fn<(updates: Record<string, unknown>) => Promise<{ error: null }>>(async () => ({ error: null }));
 let profile: Record<string, unknown>;
 
 vi.mock('../../context/AuthContext', () => ({

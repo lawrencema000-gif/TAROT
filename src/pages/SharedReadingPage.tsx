@@ -240,7 +240,12 @@ export function SharedReadingPage() {
         subtitle={
           payload.q || drawnLabel ? (
             <>
-              {payload.q && <span className="block italic text-mystic-200">“{payload.q}”</span>}
+              {/* Quoted as the locale quotes (「…」 in ja), not in Latin marks built here (QU2 R3 d). */}
+              {payload.q && (
+                <span className="block italic text-mystic-200">
+                  {t('spreadDetail.quoted', { text: payload.q, defaultValue: '“{{text}}”' })}
+                </span>
+              )}
               {drawnLabel && <span className="block text-meta mt-1">{drawnLabel}</span>}
             </>
           ) : undefined
@@ -266,9 +271,11 @@ export function SharedReadingPage() {
                 alt=""
               />
             )}
-            <p className="mt-2 text-caption text-mystic-400 leading-tight">{positionLabel(idx + 1)}</p>
-            <p className="mt-0.5 text-meta font-medium text-mystic-100 leading-snug">{item.card.name}</p>
-            {item.reversed && <p className="text-caption text-gold">{reversedLabel}</p>}
+            {/* Labels in a third of the page: they break between phrases, not
+                inside a word (「ソードの/8」, QU1 R-d; index.css .keep-phrases). */}
+            <p className="mt-2 keep-phrases text-caption text-mystic-400 leading-tight">{positionLabel(idx + 1)}</p>
+            <p className="mt-0.5 keep-phrases text-meta font-medium text-mystic-100 leading-snug">{item.card.name}</p>
+            {item.reversed && <p className="keep-phrases text-caption text-gold">{reversedLabel}</p>}
           </div>
         ))}
       </div>

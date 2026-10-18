@@ -405,7 +405,9 @@ export function QuickReadingPage() {
 
   const handleShare = async () => {
     if (!result) return;
-    const text = `"${question.trim()}"\n\n${result.reading}\n\n— ${shownCard?.name ?? 'Arcana'}`;
+    // The question quoted as the locale quotes (「…」 in ja), not in ASCII quotes built here (QU2 R3 c).
+    const quoted = t('spreadDetail.quoted', { text: question.trim(), defaultValue: '“{{text}}”' });
+    const text = `${quoted}\n\n${result.reading}\n\n— ${shownCard?.name ?? 'Arcana'}`;
     // The platform's share sheet when there is one: Capacitor's in the app
     // (its WebView has no navigator.share), the browser's on the web.
     // Closing the sheet is a choice, not a failure — nothing is copied and

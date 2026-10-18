@@ -348,8 +348,10 @@ export function HomePage() {
   const handleTarotShare = async () => {
     if (!drawnTarot) return;
 
+    // The locale's reversed-card form, as the Library writes it: ソードの8（逆位置）,
+    // not a Latin " (…)" built here (QU2 R3 b).
     const name = drawnTarot.reversed
-      ? `${drawnTarot.card.name} (${t('home.ritualCards.reversed')})`
+      ? t('library.cardReversed', { name: drawnTarot.card.name, defaultValue: '{{name}} (Reversed)' })
       : drawnTarot.card.name;
     const text = t('home.shareCard', {
       name,

@@ -2,6 +2,8 @@ import { AppError, handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
 import { localeInstruction } from "../_shared/locale.ts";
+import { waiveForCrisis } from "../_shared/crisis-reply.ts";
+import { SYSTEM, moodCrisis, moodCrisisLetter, readLetter, type ModelLetter, type MoodLetter } from "./reply.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -18,6 +20,13 @@ import { z } from "npm:zod@3.24.1";
  *
  * Rate limit: 5/min per user (these letters are called manually, not
  * on every mood log).
+ *
+ * Crisis (p9 QS R-5): notes about self-harm or suicide — read by the shared
+ * multilingual detector before the model, or by the model, which answers
+ * them with {"crisis": true} — get the app's letter in the member's
+ * language with their own helplines (./reply.ts), never a US number from the
+ * prompt. That letter is not charged (the charge is given back) and is not
+ * cached.
  */
 
 const EntrySchema = z.object({
@@ -37,33 +46,17 @@ const RequestSchema = z.object({
 
 type Req = z.infer<typeof RequestSchema>;
 
-interface Resp {
-  letter: string;              // full letter (~3 short paragraphs)
-  dominantTheme: string;       // 1-phrase theme label
-  careSuggestion: string;      // 1 concrete self-care practice
-}
+type Resp = MoodLetter;
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-mood-v2`;
+// v3: the prompt no longer carries a US crisis line, and the key is the
+// entries, not the prompt — a cached v2 letter (one the model wrote with 988
+// in it, say) is not served again.
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-mood-v3`;
 
-const SYSTEM = `You are a warm, grounded emotional companion — like a wise older sibling or a seasoned therapist friend. The user has logged their mood daily for the past week or two. Their log is below.
+// The system prompt (SYSTEM) and the crisis letter: ./reply.ts.
 
-Write a short letter to them, in second person ("you"). Structure:
-
-PARAGRAPH 1 — "This week I notice…": name the pattern you see honestly. Be specific to THEIR entries (reference specific days if useful, specific category shifts, specific notes they wrote). Don't over-dramatize — if it's been a steady week, say so.
-
-PARAGRAPH 2 — "Underneath the pattern…": gently surface what might be moving beneath the surface. Tie it to what they wrote. Never diagnose. Never say "you are X". Say what you see and offer it back.
-
-PARAGRAPH 3 — "As you move into the next week…": one concrete, tiny, do-able practice. Not a lifestyle overhaul. Something they could actually do this week. Then close with a single sentence of genuine care.
-
-Rules:
-- 2-4 sentences per paragraph. Total letter ≤ 500 words.
-- If their notes mention self-harm or suicidal ideation, acknowledge warmly and direct to 988 / a trusted person. Do NOT try to counsel them on crisis.
-- Never moralize. Never use "should".
-- Don't be mystical or woo; this is emotional companionship, not divination.
-- Output MUST be valid JSON: { "letter": string, "dominantTheme": string (1 short phrase), "careSuggestion": string (1 sentence) }`;
-
-async function callAI(entries: Req["entries"], context: Req["userContext"]): Promise<Resp> {
+async function callAI(entries: Req["entries"], context: Req["userContext"]): Promise<ModelLetter> {
   // Shared per-locale instruction (_shared/locale.ts) closes the system
   // prompt; JSON keys stay English, values follow the user's language.
   const system = `${SYSTEM}\n\n${localeInstruction(context?.locale, { jsonKeys: true, keepVoice: true })}`;
@@ -83,18 +76,18 @@ async function callAI(entries: Req["entries"], context: Req["userContext"]): Pro
 
   const userPrompt = `${nameLine}\n\nMood log (most recent last):\n${entryLines}\n\nReply with ONLY the JSON object.`;
 
-  const parsed = await callAIJson<Resp>({
+  const parsed = await callAIJson<unknown>({
     system,
     userPrompt,
     temperature: 0.75,
     maxOutputTokens: 700,
   });
 
-  if (!parsed.letter || !parsed.dominantTheme || !parsed.careSuggestion) {
+  const answer = readLetter(parsed);
+  if (!answer) {
     throw new AppError("AI_MALFORMED_RESPONSE", "AI response missing required fields", 502);
   }
-
-  return parsed;
+  return answer;
 }
 
 Deno.serve(handler<Req, Resp>({
@@ -108,6 +101,14 @@ Deno.serve(handler<Req, Resp>({
   spend: { actionKey: "mood-letter", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
+    // Notes about self-harm or suicide (the shared multilingual detector):
+    // the app's letter with the member's own helplines, before the cache
+    // and the model, and not charged.
+    if (moodCrisis(body.entries)) {
+      await waiveForCrisis(ctx, "ai-mood-letter", "detector");
+      return moodCrisisLetter(body.userContext?.locale);
+    }
+
     // Cache by entries + context. Same recent entries = same letter.
     // Short-ish TTL (24h) since users typically log fresh entries daily.
     const entriesKey = JSON.stringify(body.entries);
@@ -116,7 +117,14 @@ Deno.serve(handler<Req, Resp>({
     const cached = await aiCacheGet<Resp>(ctx, cacheKey);
     if (cached) return cached;
 
-    const fresh = await callAI(body.entries, body.userContext);
+    const answer = await callAI(body.entries, body.userContext);
+    // The model read a crisis the detector did not: the same letter,
+    // uncharged and never cached.
+    if (answer.kind === "crisis") {
+      await waiveForCrisis(ctx, "ai-mood-letter", "model");
+      return moodCrisisLetter(body.userContext?.locale);
+    }
+    const fresh = answer.letter;
     await aiCacheStore(ctx, {
       cacheKey,
       model: CACHE_MODEL_TAG,

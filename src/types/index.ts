@@ -13,6 +13,15 @@ export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
+  /**
+   * The name other members see on this member's named community posts and
+   * comments (profiles.community_name, 20261003000014). Unset until they
+   * choose one, and those rows then read "A member"; never filled in from
+   * the email or displayName. `null` in an update clears it, as with the
+   * birth fields below; a profile read from the database holds a name or
+   * undefined, so it can never write the column back by accident.
+   */
+  communityName?: string | null;
   birthDate: string;
   // The five birth fields below take `null` in an update: null clears the
   // column (EditProfileForm, when the person empties it), while undefined

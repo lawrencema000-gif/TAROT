@@ -239,6 +239,19 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
       ? nextStepAfterCheckin(tr, new Date())
       : tr('moonstones.earnSheet.nextStepCheckin', { defaultValue: 'Check in below for today’s Moonstones, or go Premium.' });
 
+  // The header is one run of sentences per locale — the price, the balance
+  // when it is known, then the next step — so each language sets the space
+  // between them: none after 。 in ja and zh. They were three pieces glued
+  // with {' '} in code: 「…が必要です。 所持：20個。 下で…」 (QU2 R3 f).
+  const withBalance = balance !== null;
+  const header = isBrowse
+    ? withBalance
+      ? { key: 'moonstones.earnSheet.browseLineBalance', en: 'Each AI reading costs <gold>{{cost}} Moonstones</gold>. You have <strong>{{n}}</strong>. {{next}}' }
+      : { key: 'moonstones.earnSheet.browseLine', en: 'Each AI reading costs <gold>{{cost}} Moonstones</gold>. {{next}}' }
+    : withBalance
+      ? { key: 'moonstones.earnSheet.insufficientLineBalance', en: 'You need <gold>{{cost}} Moonstones</gold> to continue. You have <strong>{{n}}</strong>. {{next}}' }
+      : { key: 'moonstones.earnSheet.insufficientLine', en: 'You need <gold>{{cost}} Moonstones</gold> to continue. {{next}}' };
+
   const sheets = (
     <>
       <Sheet open={open} onClose={onClose} title={title} variant="glow">
@@ -265,36 +278,13 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, c
             <div className="flex items-start gap-3 rounded-control bg-mystic-800/50 p-4">
               <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" aria-hidden />
               <div className="text-ui leading-relaxed text-mystic-100">
-                {isBrowse ? (
-                  <Trans
-                    t={t}
-                    i18nKey="moonstones.earnSheet.browseBody"
-                    defaults="Each AI reading costs <gold>{{cost}} Moonstones</gold>."
-                    values={{ cost }}
-                    components={{ gold }}
-                  />
-                ) : (
-                  <Trans
-                    t={t}
-                    i18nKey="moonstones.earnSheet.insufficientBody"
-                    defaults="You need <gold>{{cost}} Moonstones</gold> to continue."
-                    values={{ cost }}
-                    components={{ gold }}
-                  />
-                )}
-                {balance !== null && (
-                  <>
-                    {' '}
-                    <Trans
-                      t={t}
-                      i18nKey="moonstones.earnSheet.youHave"
-                      defaults="You have <strong>{{n}}</strong>."
-                      values={{ n: balance }}
-                      components={{ strong }}
-                    />
-                  </>
-                )}{' '}
-                {nextStep}
+                <Trans
+                  t={t}
+                  i18nKey={header.key}
+                  defaults={header.en}
+                  values={{ cost, n: balance ?? 0, next: nextStep }}
+                  components={{ gold, strong }}
+                />
               </div>
             </div>
           )}

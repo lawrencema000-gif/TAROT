@@ -17,6 +17,7 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "npm:zod@3.24.1";
+import { redactProfile, type RedactDb } from "./redact.ts";
 
 const RequestSchema = z.object({}).strict();
 type Req = z.infer<typeof RequestSchema>;
@@ -45,27 +46,11 @@ Deno.serve(handler<Req, Resp>({
 
     const userId = ctx.userId!;
 
-    await admin
-      .from("profiles")
-      .update({
-        display_name: "Deleted user",
-        email: null,
-        is_guest: true,
-        birth_date: null,
-        birth_time: null,
-        birth_place: null,
-        birth_lat: null,
-        birth_lon: null,
-        timezone: null,
-        goals: null,
-        mbti_type: null,
-        love_language: null,
-        tone_preference: null,
-        avatar_seed: null,
-        background_url: null,
-        card_back_url: null,
-      })
-      .eq("id", userId);
+    // The profile is redacted first (./redact.ts): what stays if deleteUser
+    // fails. The chosen Community name and the later personal columns are
+    // cleared in updates of their own, so one this schema lacks yet never
+    // voids the rest (p9 QS R-6).
+    await redactProfile(admin as unknown as RedactDb, userId, ctx.log);
 
     const { error: deleteErr } = await admin.auth.admin.deleteUser(userId);
     if (deleteErr) {

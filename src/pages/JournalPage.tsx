@@ -76,6 +76,18 @@ import { awardXP } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
 import { getDailyPrompt } from '../data/dailyPrompts';
 import { localDateStr, parseLocalDate } from '../utils/localDate';
+import { CrisisBanner } from '../components/community/CrisisBanner';
+
+/**
+ * What ai-journal-coach answers. `crisis: true` comes with an entry about
+ * self-harm or suicide (the shared detector, or the model): the observation
+ * and prompts then carry the member's own helplines, in their language.
+ */
+interface CoachReply {
+  observation: string;
+  prompts: string[];
+  crisis?: boolean;
+}
 
 /**
  * The ten moods. `value` is what the row stores; the label comes from
@@ -230,7 +242,10 @@ export function JournalPage() {
   const { triggerLevelUp } = useGamification();
   const journalCoachEnabled = useFeatureFlag('journal-coach');
   const [coachLoading, setCoachLoading] = useState(false);
-  const [coachResult, setCoachResult] = useState<{ observation: string; prompts: string[] } | null>(null);
+  const [coachResult, setCoachResult] = useState<CoachReply | null>(null);
+  // The helplines, opened by a crisis reply from the coach (QS R-4).
+  const [crisisOpen, setCrisisOpen] = useState(false);
+  const closeCrisis = useCallback(() => setCrisisOpen(false), []);
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1022,6 +1037,7 @@ export function JournalPage() {
   );
 
   return (
+    <>
     <Page spacing="sm">
       <PageHeader
         title={t('journal.title')}
@@ -1360,8 +1376,16 @@ export function JournalPage() {
                       toast(t('journalCoach.failed', { defaultValue: 'Couldn’t reach the coach — check your connection and try again.' }), 'error');
                       return;
                     }
-                    const payload = (data?.data ?? data) as { observation: string; prompts: string[] } | null;
-                    if (payload) setCoachResult(payload);
+                    const payload = (data?.data ?? data) as CoachReply | null;
+                    if (!payload) return;
+                    // The reply stays on screen; a crisis one also opens the
+                    // helplines over the editor, as Community does. Nothing
+                    // else talks while they are up.
+                    setCoachResult(payload);
+                    if (payload.crisis === true) {
+                      dismissToasts();
+                      setCrisisOpen(true);
+                    }
                   }}
                   disabled={coachLoading}
                   className="-ml-2 gap-1"
@@ -1580,6 +1604,11 @@ export function JournalPage() {
         )}
       </Sheet>
     </Page>
+    {/* At the page root, not inside the editor: it portals over the open
+        sheet, holds focus above it, and closing it leaves the sheet, the
+        entry and the coach's reply as they were. */}
+    <CrisisBanner open={crisisOpen} onClose={closeCrisis} />
+    </>
   );
 }
 

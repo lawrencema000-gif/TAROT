@@ -83,7 +83,6 @@ const HELPERS =
   "keep|kept|thinking|think|thought|dream|dreaming|tempted|ready|try|tried|trying|considering|contemplating|to|of|" +
   "go|gone|decided|decide|deciding|intend|intending|intended|finally|probably|definitely|totally|already|" +
   "eventually|soon|prepared|preparing|willing|get|getting|got|start|starting|started|hope|hoping|wish|wishing)";
-const FIRST_PERSON = `${I_SUBJECT}(?:\\s+${HELPERS}){0,6}\\s+`;
 // For a stated method (jump / step in front of…), any words may stand between
 // the writer and the verb — "I'm so close to jumping", "I keep picturing
 // myself jumping", "I've made up my mind to jump", "I'd rather jump" — as long

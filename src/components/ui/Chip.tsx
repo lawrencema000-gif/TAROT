@@ -132,8 +132,13 @@ export function Chip({
   className = '',
   ...aria
 }: ChipProps) {
+  // max-w-full: a chip does not shrink (a filter row scrolls instead), so a
+  // label longer than its row widened the row and the page scrolled sideways
+  // (QU1 R-a, p9 Q30: ja Quick reading suggestions of 333–357 px in a 328 px
+  // row). Held to the row's width, a long label wraps inside the chip; the
+  // icon keeps its size (shrink-0).
   const baseStyles =
-    `inline-flex items-center rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
+    `inline-flex items-center max-w-full rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
   const iconNode = icon ? <span className="inline-flex shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5" aria-hidden>{icon}</span> : null;
 
   const variantStyles = {

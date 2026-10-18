@@ -331,7 +331,8 @@ export function YearAheadReportPage() {
             {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
           </h2>
           <SectionDivider width="w-32" className="mx-auto mb-3" />
-          <p className="text-ui text-mystic-200 italic mb-4">
+          {/* Centred under the title: breaks between phrases (keep-phrases), not 「トランジ/ット」. */}
+          <p className="keep-phrases text-ui text-mystic-200 italic mb-4">
             {t('yearAhead.cardSub', {
               defaultValue: 'A month-by-month map of the biggest transits to your natal chart.',
             })}

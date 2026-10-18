@@ -16,12 +16,29 @@
  * Every card is the Arcana back at 2:3. The strip is 78 buttons and 78
  * images of one SVG, which the browser decodes once; nothing animates while
  * the reader is scrolling.
+ *
+ * The deck is the thing to touch, so the screen opens with it in view,
+ * above the fixed call to action (pre-release pass): under the slots of a
+ * five-card spread it sat beneath the button, showing through it, and the
+ * Celtic Cross's was wholly below the fold.
  */
+import { useEffect, useRef } from 'react';
 import { ChevronLeft, Eye } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { tap } from '../../../utils/haptics';
 import { cardBackSrc } from '../../../utils/imageUrl';
+import { scrollBehavior } from '../../../utils/motion';
+import { withColumnHyphens } from './columnHyphens';
+
+/**
+ * The fixed call-to-action bar's height: a hairline, 1rem above and below,
+ * and the 56px `lg` Button. The room left at the foot of the page is the
+ * same, so the deck can always be scrolled clear of the bar.
+ */
+const CTA_BAR_HEIGHT = 'calc(2rem + 57px)';
+/** Breathing room between the deck and the bar when the screen brings the deck into view. */
+const DECK_CLEARANCE_PX = 8;
 
 interface TarotSelectViewProps {
   deckCards: number[];
@@ -55,6 +72,23 @@ export function TarotSelectView({
     tap();
     onCardSelect(cardId);
   };
+
+  // On arrival, scroll just far enough that the whole deck sits above the
+  // fixed bar — after the parents' own scroll-to-top on a change of view,
+  // which runs in the same commit, hence the frame. Once: picking a card
+  // changes no heights, and the reader's own scrolling is theirs.
+  const deckRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const deck = deckRef.current?.getBoundingClientRect();
+      const bar = barRef.current?.getBoundingClientRect();
+      if (!deck || !bar || deck.height === 0 || bar.height === 0) return;
+      const hidden = deck.bottom + DECK_CLEARANCE_PX - bar.top;
+      if (hidden > 0) window.scrollBy({ top: hidden, behavior: scrollBehavior() });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <div className="flex flex-col space-y-5">
@@ -126,8 +160,13 @@ export function TarotSelectView({
                   auto-phrase, ko keep-all), over the column's full width —
                   never beyond it: a six-character phrase like 「伸ばしている」
                   does not fit the card's 64 px, so 「魂が手を伸/ばしている/先」
-                  broke inside 伸ばす (p8 F84). */}
-              <span className={`keep-phrases w-full text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
+                  broke inside 伸ばす (p8 F84). An English word wider than
+                  the column hyphenates inside it ("Subcon-/scious"): its
+                  break points ride along as soft hyphens (columnHyphens,
+                  which says why not hyphens: auto). overflow-wrap:
+                  anywhere is the floor for a word no list knows (a custom
+                  spread's): no name is ever wider than its column. */}
+              <span className={`keep-phrases w-full text-caption text-center leading-tight [overflow-wrap:anywhere] ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{withColumnHyphens(label)}</span>
             </div>
           );
         })}
@@ -135,6 +174,7 @@ export function TarotSelectView({
 
       {/* The deck, spread across the table. */}
       <div
+        ref={deckRef}
         className="-mx-4 px-4 overflow-x-auto scrollbar-hide pb-2"
         role="group"
         aria-label={t('readings.selectView.deck', { defaultValue: 'The deck' })}
@@ -170,8 +210,13 @@ export function TarotSelectView({
       </div>
       <style>{`@keyframes arcana-spread { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
+      {/* Opaque, on the page's own ground, with a hairline for its edge. It
+          was a scrim fading to transparent, and the disabled button (50%
+          opacity) let the slots and the deck show through both. Above any
+          raised (focused) card; under the nav. */}
       <div
-        className="fixed left-0 right-0 px-4 bg-gradient-to-t from-mystic-950 via-mystic-950 to-transparent pt-4 pb-4"
+        ref={barRef}
+        className="fixed left-0 right-0 z-20 px-4 pt-4 pb-4 bg-mystic-950 border-t border-mystic-800"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <Button variant="gold" fullWidth disabled={needsMore > 0} onClick={onReveal} size="lg">
@@ -179,8 +224,8 @@ export function TarotSelectView({
           <Eye className="w-4 h-4" aria-hidden />
         </Button>
       </div>
-      {/* room for the fixed CTA */}
-      <div className="h-24" aria-hidden />
+      {/* Room for the fixed bar, the bar's own height. */}
+      <div style={{ height: CTA_BAR_HEIGHT }} aria-hidden />
     </div>
   );
 }

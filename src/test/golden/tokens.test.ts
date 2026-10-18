@@ -133,8 +133,10 @@ const RULES: Rule[] = [
   {
     // Two surfaces, no gradients as decoration. The ones that earn it:
     // the gold Button fill, the Progress gradient variant, Ornament's
-    // hairline fades, the Tabs scroller fade and TarotSelectView's CTA
-    // scrim. Everything after those five is the burn-down list.
+    // hairline fades and the Tabs scroller fade. Everything after those
+    // four is the burn-down list. (TarotSelectView's CTA scrim left the
+    // list in the pre-release pass: the bar is opaque now — its fade let
+    // the slots and the deck show through the disabled button.)
     name: 'gradients outside the ones that earn them',
     re: /\bbg-gradient-to-(?:r|l|t|b|tr|tl|br|bl)\b/,
     allowed: new Set([
@@ -142,7 +144,6 @@ const RULES: Rule[] = [
       'src/components/ui/Progress.tsx',
       'src/components/ui/Ornament.tsx',
       'src/components/ui/Tabs.tsx',
-      'src/components/readings/tarot/TarotSelectView.tsx',
       // burn-down (offenders on 2026-10-02)
       'src/components/bazi/BaziAIReading.tsx',
       'src/components/celestial/CelestialMapIntroLoader.tsx',

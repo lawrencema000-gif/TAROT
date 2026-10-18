@@ -110,3 +110,38 @@ describe('CJK line breaks: body copy inside a control keeps the default breaking
     for (const id of ['desc', 'meta', 'name', 'label', 'eyebrow', 'heading']) expect(breaking(d.getElementById(id)!)).toBe(DEFAULT);
   });
 });
+
+/**
+ * Pre-release pass: display-size text split words at 19–22px, where a line
+ * holds 13–17 characters — the Fool's affirmation 「感じ/る」, the Playing
+ * cards intro 「仕/事」, the not-found page 「可能/性」. A reading quote keeps
+ * its phrases by its class; the affirmation, the centred lede and an empty
+ * state's line opt in (keep-phrases). The paragraphs R26 reset — a clickable
+ * card's description, a clamped meta line — stay as they were.
+ */
+const DISPLAY = `
+  <blockquote id="quote" class="reading-quote">私はどんな新しい始まりへ呼ばれているのか？</blockquote>
+  <p id="verdict" class="reading-quote">あなたの場所は海の近くにあります。</p>
+  <aside class="rounded-control p-5 text-center"><p id="affirmation" class="keep-phrases mt-3 font-display font-semibold text-title text-balance">私は、準備ができたと感じる前に一歩を踏み出します。</p></aside>
+  <section class="text-center"><p id="lede" class="keep-phrases reading-lede mx-auto text-balance">普通のトランプを、昔ながらの方法で読みます。</p></section>
+  <div class="flex flex-col items-center text-center"><p class="heading-display-md">このページは存在しません</p><p id="empty" class="keep-phrases text-sm text-mystic-400 leading-relaxed max-w-sm">リンクが間違っているか、ページが移動した可能性があります。</p></div>
+  <p id="lede-body" class="reading-lede">本文の最初の段落は既定の改行のままです。</p>`;
+
+describe('CJK line breaks: display-size text keeps its phrases (pre-release)', () => {
+  it.each([
+    ['ja', 'auto-phrase / strict / anywhere'],
+    ['zh', 'auto-phrase / auto / anywhere'],
+    ['ko', 'keep-all / auto / anywhere'],
+  ])('%s: a reading quote, the affirmation, the centred lede and an empty state’s line; a reading’s first paragraph is body copy', (lang, kept) => {
+    const d = page(lang, DISPLAY + ACHIEVEMENT);
+    for (const id of ['quote', 'verdict', 'affirmation', 'lede', 'empty']) expect(breaking(d.getElementById(id)!), id).toBe(kept);
+    expect(breaking(d.getElementById('lede-body')!)).toBe(DEFAULT);
+    // R26 holds: the achievement's clamped description is still body copy.
+    expect(breaking(d.getElementById('desc')!)).toBe(DEFAULT);
+  });
+
+  it('en: nothing of this applies', () => {
+    const d = page('en', DISPLAY);
+    for (const id of ['quote', 'verdict', 'affirmation', 'lede', 'empty', 'lede-body']) expect(breaking(d.getElementById(id)!)).toBe(DEFAULT);
+  });
+});

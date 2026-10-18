@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, Wind, Target, Share2 } from 'lucide-react';
 import { Card, Button, Chip, Input, toast, Page, PageHeader, Section, Disclosure, Tag, EyebrowLabel, ResultSheet } from '../components/ui';
 import { useT } from '../i18n/useT';
@@ -30,6 +30,7 @@ import {
 import { ROOM_GUIDANCE, type Room } from '../data/fengShuiRooms';
 import { FENG_SHUI_PROBLEMS } from '../data/fengShuiProblems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { scrollBehavior } from '../utils/motion';
 
 const ELEMENT_EN: Record<string, string> = { Water: 'Water', Earth: 'Earth', Wood: 'Wood', Metal: 'Metal', Fire: 'Fire' };
 const TRIGRAM_EN: Record<string, string> = { Kan: 'Kan', Kun: 'Kun', Zhen: 'Zhen', Xun: 'Xun', Qian: 'Qian', Dui: 'Dui', Gen: 'Gen', Li: 'Li' };
@@ -90,6 +91,25 @@ export function FengShuiPage() {
 
   const annual = useMemo(() => getAnnualReading(new Date().getFullYear()), []);
 
+  // Each stage opens at its top. Reveal sits at the foot of the rating
+  // form, and the result kept that scroll: it opened on the annual flying
+  // stars, two screens below the map and the reading (pre-release pass).
+  // "Rate the areas again" is at the foot of the result, so the form
+  // comes back at its top too. The stage's own top, not the window's:
+  // on Readings → More systems the page sits under the screen's title and
+  // tabs (scroll-mt-4 keeps the title off the screen's edge). A smooth
+  // scroll unless the reader asked for reduced motion.
+  // Keyed on a change of stage, not on the first run, so StrictMode's
+  // second mount does not scroll.
+  const stageTop = useRef<HTMLDivElement>(null);
+  const shownStage = useRef(stage);
+  useEffect(() => {
+    if (shownStage.current === stage) return;
+    shownStage.current = stage;
+    const top = stageTop.current;
+    if (top && typeof top.scrollIntoView === 'function') top.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+  }, [stage]);
+
   const compute = () => {
     setReading(computeBaguaReading(scores));
     setStage('result');
@@ -97,7 +117,7 @@ export function FengShuiPage() {
 
   if (stage === 'rate') {
     return (
-      <Page spacing="md">
+      <Page spacing="md" ref={stageTop} className="scroll-mt-4">
         <PageHeader
           icon={<Home />}
           title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
@@ -279,7 +299,7 @@ export function FengShuiPage() {
     };
 
     return (
-      <Page spacing="sm">
+      <Page spacing="sm" ref={stageTop} className="scroll-mt-4">
         <PageHeader
           icon={<Home />}
           title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}

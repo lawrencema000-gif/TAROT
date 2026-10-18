@@ -128,7 +128,8 @@ let forecasts: Forecast[] = [];
 const callsTo = (fn: string) => calls.filter((c) => c.fn === fn);
 const yearAheadCalls = () => invoke.mock.calls.filter((c) => c[0] === 'astrology-year-ahead');
 const unlockButton = () => screen.queryByRole('button', { name: /ムーンストーン300個で解放/ });
-const header = () => screen.getByRole('heading', { name: '来年の見通し' });
+// The report is the calendar year it was bought for, not "next year" (来年).
+const header = () => screen.getByRole('heading', { name: '一年の見通し' });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 30)); });
 
 function renderPage() {

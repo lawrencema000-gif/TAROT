@@ -103,7 +103,8 @@ function CartomancyPageBody() {
 
       <section className="text-center space-y-5">
         <DeckFan back={profile?.card_back_url} size="lg" />
-        <p className="reading-lede mx-auto text-balance">
+        {/* Centred at 19px: breaks between phrases (keep-phrases), not 「仕/事」. */}
+        <p className="keep-phrases reading-lede mx-auto text-balance">
           {t('cartomancy.home.lede', {
             defaultValue: 'An ordinary deck, read the old way: Hearts for feeling, Clubs for work, Diamonds for money and news, Spades for what must be faced.',
           })}

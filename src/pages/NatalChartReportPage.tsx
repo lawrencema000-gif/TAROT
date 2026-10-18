@@ -476,7 +476,8 @@ export function NatalChartReportPage() {
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
           <SectionDivider width="w-32" className="mx-auto mb-3" />
-          <p className="text-ui text-mystic-200 italic mb-4">
+          {/* Centred under the title: breaks between phrases (keep-phrases). */}
+          <p className="keep-phrases text-ui text-mystic-200 italic mb-4">
             {t('natalReport.cardSub', {
               defaultValue: 'Every planet in its sign and house, every aspect, with interpretations.',
             })}

@@ -63,8 +63,22 @@ function rate(area: BaguaArea, n: number) {
   fireEvent.click(within(row).getByRole('button', { name: String(n) }));
 }
 
-beforeEach(() => { renderShareCard.mockClear(); });
-afterEach(() => cleanup());
+// jsdom has no scrolling (no scrollIntoView at all): every Reveal scrolls
+// the result's top into view, so each call is recorded with its element.
+const scrolls: Array<{ el: Element; arg: unknown }> = [];
+const realScrollIntoView = Element.prototype.scrollIntoView;
+beforeEach(() => {
+  renderShareCard.mockClear();
+  scrolls.length = 0;
+  Element.prototype.scrollIntoView = function scrollIntoView(this: Element, arg?: boolean | ScrollIntoViewOptions) {
+    scrolls.push({ el: this, arg });
+  };
+});
+afterEach(() => {
+  cleanup();
+  Element.prototype.scrollIntoView = realScrollIntoView;
+  vi.unstubAllGlobals();
+});
 afterAll(async () => { await i18n.changeLanguage('en'); });
 
 describe('FengShuiPage result (p9 Q24)', () => {
@@ -121,5 +135,43 @@ describe('FengShuiPage result (p9 Q24)', () => {
     await waitFor(() => expect(screen.getByText(zhFs.bagua.health.lowReading)).toBeInTheDocument());
     expect(screen.getByRole('heading', { name: areaName('career') })).toBeInTheDocument();
     expect(screen.queryByText(zhFs.bagua.wealth.lowReading)).toBeNull();
+  });
+});
+
+/*
+ * Pre-release pass: Reveal sits at the foot of the rating form, and the
+ * result opened where the form had been scrolled to — on the annual flying
+ * stars, below the map and the reading. Each stage opens at its top now.
+ */
+describe('FengShuiPage opens each stage at its top (pre-release)', () => {
+  /** The stage's column: the element whose first child is the page title. */
+  const column = (el: Element) => el.firstElementChild?.querySelector('h1')?.textContent === i18n.t('app:fengshui.title');
+
+  it('Reveal scrolls the result’s top into view, smoothly; Rate again, the form’s', async () => {
+    await i18n.changeLanguage('en');
+    render(<FengShuiPage />);
+    expect(scrolls).toHaveLength(0);
+    reveal();
+    const map = await screen.findByRole('heading', { name: i18n.t('app:fengshui.mapLabel') });
+    expect(scrolls).toHaveLength(1);
+    expect(scrolls[0].arg).toEqual({ block: 'start', behavior: 'smooth' });
+    // The result's own column (its title, then the map), not the window's top.
+    expect(column(scrolls[0].el)).toBe(true);
+    expect(scrolls[0].el.contains(map)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('app:fengshui.reRate') }));
+    const revealButton = screen.getByRole('button', { name: i18n.t('app:fengshui.reveal') });
+    expect(scrolls).toHaveLength(2);
+    expect(scrolls[1].arg).toEqual({ block: 'start', behavior: 'smooth' });
+    expect(column(scrolls[1].el)).toBe(true);
+    expect(scrolls[1].el.contains(revealButton)).toBe(true);
+  });
+
+  it('jumps instead when the reader asked for reduced motion', async () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('reduce'), media: q, addEventListener() {}, removeEventListener() {} }));
+    await i18n.changeLanguage('en');
+    render(<FengShuiPage />);
+    reveal();
+    expect(await screen.findByRole('heading', { name: i18n.t('app:fengshui.mapLabel') })).toBeInTheDocument();
+    expect(scrolls.map((s) => s.arg)).toEqual([{ block: 'start', behavior: 'auto' }]);
   });
 });

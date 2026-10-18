@@ -160,7 +160,8 @@ export function CareerReportPage() {
           <h2 className="heading-display-lg text-mystic-100 mb-2">
             {archetype.name}
           </h2>
-          <p className="text-ui text-mystic-200 italic mb-4">
+          {/* Centred under the title: breaks between phrases (keep-phrases). */}
+          <p className="keep-phrases text-ui text-mystic-200 italic mb-4">
             {archetype.tagline}
           </p>
           <p className="text-ui text-mystic-300 text-left max-w-xs mx-auto mb-5">

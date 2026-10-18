@@ -40,7 +40,9 @@ export function AffirmationPanel({ text, surface = 'paper', className = '' }: Af
         </EyebrowLabel>
         <SparkleFourPoint size={10} />
       </div>
-      <p className="mt-3 font-display font-semibold text-title text-balance">{text}</p>
+      {/* Display size: in ja a line holds about a dozen characters, so it
+          breaks between phrases (keep-phrases), not 「感じ/る」. */}
+      <p className="keep-phrases mt-3 font-display font-semibold text-title text-balance">{text}</p>
     </aside>
   );
 }

@@ -39,9 +39,11 @@ async function lines(lng: string): Promise<string[]> {
 }
 
 const produced: Record<string, string[]> = {};
+// Loads four locale bundles and renders every daily line: under a loaded
+// full-suite run this has taken longer than the 10 s hook default.
 beforeAll(async () => {
   for (const lng of ['en', 'ja', 'ko', 'zh']) produced[lng] = await lines(lng);
-});
+}, 60_000);
 afterAll(async () => {
   await i18n.changeLanguage('en');
 });

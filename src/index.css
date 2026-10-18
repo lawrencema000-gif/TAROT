@@ -719,6 +719,21 @@
     letter-spacing: 0.04em;
   }
 
+  /* Japanese, Korean and Chinese have no italic. The CJK faces carry no
+     italic style, so `italic` (and em, i, cite) made the browser slant the
+     glyphs itself — a fake oblique that reads as a rendering fault: the
+     Companion's persona line, the Whispering Well's intro, the reports'
+     subtitles (pre-release pass). Text in these languages stays upright;
+     a span marked lang="en" inside them keeps its italic, and so does
+     every English screen. :lang() is the element's own language, and the
+     (0,2,0) specificity outranks the `italic` utility wherever it is
+     emitted. */
+  :is(.italic, em, i, cite, dfn, var, address):lang(ja),
+  :is(.italic, em, i, cite, dfn, var, address):lang(ko),
+  :is(.italic, em, i, cite, dfn, var, address):lang(zh) {
+    font-style: normal;
+  }
+
   /* The bottom-nav labels, for the same reason: 12px kana and hangul
      close up. 13px only from 360px up: the five ja labels need ~307px at
      13px and a 320px phone's row has 304, and every CJK character is a
@@ -761,6 +776,15 @@
      `.keep-phrases` opts in any other short label (a span under a card, a
      tile caption).
 
+     Display-size text keeps its phrases too (pre-release pass): a quote
+     set at 22px (.reading-quote: a reflection prompt, a reading's
+     verdict), and by opting in, an affirmation, a centred lede and an
+     empty state's line. At 19–22px a phone's line holds 13–17 characters,
+     and the default split a word across the break: the Fool's
+     affirmation 「感じ/る」, the Playing cards intro 「仕/事」, the
+     not-found page 「可能/性」. None of these sits in a control or under
+     a line clamp, so the R26 reset below never had them to reach.
+
      The three properties inherit, so the body copy inside a control — a
      paragraph, or a line clamped to a count — is set back to the default
      first (p9 R26): phrase breaking reached the description of every
@@ -770,21 +794,21 @@
      its phrases, and an element that is itself a label (an eyebrow
      paragraph, a clamped .keep-phrases span) matches the rules below too,
      which come later at the same zero specificity and win. */
-  :where(html:lang(ja), html:lang(zh), html:lang(ko)) :where(button, [role="button"], [role="tab"], label, summary) :where(p, [class*="line-clamp-"]):not(:where(h1, h2, h3, h4, h5, h6, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) *) {
+  :where(html:lang(ja), html:lang(zh), html:lang(ko)) :where(button, [role="button"], [role="tab"], label, summary) :where(p, [class*="line-clamp-"]):not(:where(h1, h2, h3, h4, h5, h6, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) *) {
     word-break: normal;
     line-break: auto;
     overflow-wrap: normal;
   }
-  :where(html:lang(ja)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+  :where(html:lang(ja)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
     word-break: auto-phrase;
     line-break: strict;
     overflow-wrap: anywhere;
   }
-  :where(html:lang(zh)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+  :where(html:lang(zh)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
     word-break: auto-phrase;
     overflow-wrap: anywhere;
   }
-  :where(html:lang(ko)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .keep-phrases) {
+  :where(html:lang(ko)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
     word-break: keep-all;
     overflow-wrap: anywhere;
   }

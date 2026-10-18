@@ -103,3 +103,34 @@ describe('p9 Q35 — the shared playing card’s corner index has lining figures
     expect(king.font).toBe('600 22px "Cormorant Garamond", Georgia, serif');
   });
 });
+
+/*
+ * Pre-release pass: Japanese, Korean and Chinese have no italic. A quiz
+ * result's affirmation is drawn as a quotation, in the italic serif; for
+ * CJK text the canvas slanted the glyphs itself. It is set upright now, as
+ * index.css sets italic CJK text in the app; English keeps its italic.
+ */
+describe('a shared quotation in Japanese, Korean or Chinese is upright (pre-release)', () => {
+  const quiz = (affirmation: string) => ({ variant: 'quiz' as const, quizName: 'Quiz', resultName: 'Result', affirmation });
+  const quoteFonts = (text: string) => rec.calls.filter((c) => c.text.includes(text)).map((c) => c.font);
+
+  it.each([
+    ['ja', '私は、準備ができたと感じる前に一歩を踏み出します。'],
+    ['ko', '나는 준비되기 전에 한 걸음을 내딛어요.'],
+    ['zh', '我在准备好之前就迈出一步。'],
+  ])('%s: no italic in the quotation', async (_lng, text) => {
+    rec.calls.length = 0;
+    await generateShareCardImage(quiz(text));
+    const fonts = quoteFonts(text.slice(0, 3));
+    expect(fonts.length).toBeGreaterThan(0);
+    for (const f of fonts) expect(f).not.toMatch(/italic/);
+  });
+
+  it('en: the quotation keeps its italic', async () => {
+    rec.calls.length = 0;
+    await generateShareCardImage(quiz('I step forward before I feel ready.'));
+    const fonts = quoteFonts('I step');
+    expect(fonts.length).toBeGreaterThan(0);
+    for (const f of fonts) expect(f).toMatch(/^italic /);
+  });
+});

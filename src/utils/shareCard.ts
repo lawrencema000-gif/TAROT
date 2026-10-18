@@ -342,15 +342,19 @@ class Flow {
     const text = raw.trim();
     if (!text) return 0;
     const shown = style.quote ? `“${text}”` : text;
-    const block = displayText(this.ctx, style.font, shown);
+    // Japanese, Korean and Chinese have no italic: their faces carry none,
+    // and the canvas slants the glyphs itself. A quotation in them is set
+    // upright, as index.css sets italic CJK text in the app (pre-release).
+    const font = CJK.test(text) ? style.font.replace(/^italic /, '') : style.font;
+    const block = displayText(this.ctx, font, shown);
     const lines = style.tracking
-      ? wrapText(measurer(this.ctx, style.font), shown.replace(/\s+/g, ' '), this.width, { maxLines: 1 })
+      ? wrapText(measurer(this.ctx, font), shown.replace(/\s+/g, ' '), this.width, { maxLines: 1 })
       : wrapText(block.measure, shown, this.width, { maxLines: style.maxLines });
     const { ctx, cx } = this;
     this.ops.push({
       height: lines.length * style.lineHeight,
       draw: (top) => {
-        ctx.font = style.font;
+        ctx.font = font;
         ctx.fillStyle = style.color;
         if (style.tracking) {
           drawTracked(ctx, lines[0], cx, top + style.lineHeight / 2, style.tracking);

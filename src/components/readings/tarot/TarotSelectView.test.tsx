@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, act, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -106,8 +106,10 @@ describe('the select screen’s position names keep a gutter and their phrases (
     const g = geometry(list, items);
     for (const [i, item] of items.entries()) {
       const name = item.lastElementChild as HTMLElement;
-      expect(name.textContent).toBe(labels[i]);
-      expect(classes(name)).toEqual(expect.arrayContaining(['keep-phrases', 'text-center']));
+      // The name as given, plus soft hyphens in a word wider than the column (pre-release).
+      expect(name.textContent!.split('­').join('')).toBe(labels[i]);
+      if (labels[i].includes('Subconscious')) expect(name.textContent).toContain('Sub­con­scious');
+      expect(classes(name)).toEqual(expect.arrayContaining(['keep-phrases', 'text-center', '[overflow-wrap:anywhere]']));
       // The card stays 64 px, centred in its column.
       expect(classes(item)).toEqual(expect.arrayContaining(['flex', 'flex-col', 'items-center']));
       expect(classes(item.firstElementChild!)).toContain('w-16');
@@ -117,9 +119,11 @@ describe('the select screen’s position names keep a gutter and their phrases (
     expect(5 * g.column + 4 * g.gap).toBeGreaterThan(390 - 32);
     // A name is never wider than the pitch less a real gutter (HEAD: a 76 px box on a 76 px pitch, 0).
     expect(g.nameGutter).toBeGreaterThanOrEqual(8);
-    // The worst en pair (Celtic Cross row 1): "Challenge or" beside "Subconscious",
-    // a word wider than any box, which spills out centred. HEAD: 0.03 px apart.
-    expect(g.pitch - (71.94 + 80.0) / 2).toBeGreaterThanOrEqual(8);
+    // The worst en pair (Celtic Cross row 1): "Challenge or" beside "Subconscious".
+    // An 80 px word, wider than any box, it spilled out centred (HEAD: 0.03 px
+    // apart; then 3 px past each edge of its column). It breaks inside the
+    // column now ("Subcon-/scious"), so no name is wider than its column.
+    expect(g.pitch - (71.94 + g.column) / 2).toBeGreaterThanOrEqual(8);
   });
 
   it.each(['celtic-cross', 'career-path', 'relationship-cross', 'job-decision', 'crossroads'])('%s (ja): a six-character phrase fits a column, a seventh character never did', async (slug) => {
@@ -139,5 +143,67 @@ describe('the select screen’s position names keep a gutter and their phrases (
     } finally {
       await act(async () => { await i18n.changeLanguage('en'); });
     }
+  });
+});
+
+/*
+ * Pre-release pass: the fixed call to action. It was a scrim fading to
+ * transparent over a half-opaque disabled button, so the slots and the deck
+ * showed through it; and the deck — the thing to touch — sat under it (a
+ * five-card spread) or wholly below the fold (the Celtic Cross) when the
+ * screen opened. The bar is opaque, the page leaves the bar's height at its
+ * foot, and the screen opens with the deck scrolled clear of the bar.
+ */
+describe('the call to action and the deck (pre-release)', () => {
+  const rect = (top: number, height: number) => ({ top, bottom: top + height, height, left: 0, right: 390, width: 390, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+  /** Lay out the deck strip and the fixed bar at the given tops; run frames at once; record scrolls. */
+  function arrive({ deckTop, barTop, reduce = false }: { deckTop: number; barTop: number; reduce?: boolean }) {
+    const scrollBy = vi.fn();
+    vi.stubGlobal('scrollBy', scrollBy);
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: reduce && q.includes('reduce'), media: q, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { cb(0); return 1; });
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.getAttribute('role') === 'group') return rect(deckTop, 120);
+      if (classes(this).includes('fixed')) return rect(barTop, 89);
+      return rect(0, 0);
+    });
+    mountSpread('celtic-cross');
+    return scrollBy;
+  }
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('the bar is opaque and above any raised card; the page keeps the bar’s height at its foot', () => {
+    mountSpread('relationship-cross');
+    const button = screen.getByRole('button', { name: /Select 5 more/ });
+    const bar = button.parentElement!;
+    expect(classes(bar)).toEqual(expect.arrayContaining(['fixed', 'bg-mystic-950', 'z-20', 'pt-4', 'pb-4', 'border-t']));
+    expect(bar.className).not.toMatch(/gradient|transparent|\/\d+\b/);
+    // The bar: a 1 px hairline, 1rem above and below, the 56 px lg button.
+    expect(classes(button)).toContain('min-h-[56px]');
+    const spacer = bar.nextElementSibling as HTMLElement;
+    expect(spacer.getAttribute('aria-hidden')).toBe('true');
+    // calc(2rem + 57px), in whichever order the CSSOM serialises it.
+    expect(spacer.style.height).toMatch(/^calc\((2rem \+ 57px|57px \+ 2rem)\)$/);
+  });
+
+  it('opens with the deck scrolled just clear of the bar, smoothly', () => {
+    // Celtic Cross at 390×844: the deck's strip at 835–955, the bar's top at 675.
+    const scrollBy = arrive({ deckTop: 835, barTop: 675 });
+    expect(scrollBy).toHaveBeenCalledTimes(1);
+    expect(scrollBy).toHaveBeenCalledWith({ top: 835 + 120 + 8 - 675, behavior: 'smooth' });
+  });
+
+  it('jumps instead when the reader asked for reduced motion', () => {
+    const scrollBy = arrive({ deckTop: 691, barTop: 675, reduce: true });
+    expect(scrollBy).toHaveBeenCalledWith({ top: 691 + 120 + 8 - 675, behavior: 'auto' });
+  });
+
+  it('does not move a screen whose deck is already in view', () => {
+    const scrollBy = arrive({ deckTop: 400, barTop: 675 });
+    expect(scrollBy).not.toHaveBeenCalled();
   });
 });

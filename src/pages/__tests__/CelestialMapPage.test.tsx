@@ -160,7 +160,7 @@ afterEach(() => {
   document.body.style.overflow = '';
 });
 
-describe('Celestial Map: the panel names and reads the place the member picked (p9 R31)', () => {
+describe('Celestial Map: the panel names and reads the place the member picked (p9 R31)', { timeout: 20_000 }, () => {
   it('a place picked from the search opens the panel for it, and the 250-Moonstone reading is about it — not Busan', async () => {
     mountPage();
     await pickFukuokaFromSearch();

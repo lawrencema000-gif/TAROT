@@ -160,9 +160,13 @@ describe('p9 R09 — Companion: a lost first reply, then the free retry', () => 
     await send('Follow-up');
     await waitFor(() => expect(chats()).toHaveLength(3));
     expect(gateCalls()).toBe(1);
+    // The follow-up's reply is on screen (and filed) before the reload. Left
+    // in flight, it was filed after the test ended, into the next test's
+    // fresh storage: three replies there on a slow runner (CI).
+    await waitFor(() => expect(screen.getAllByText('Answer.')).toHaveLength(2));
     cleanup();
     mount(<AiCompanionPage />);
-    await screen.findByText('Answer.');
+    expect(await screen.findAllByText('Answer.')).toHaveLength(2);
     expect(screen.queryByText(/A conversation uses/)).toBeNull();
   });
 

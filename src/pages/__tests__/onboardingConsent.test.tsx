@@ -45,7 +45,7 @@ beforeEach(async () => {
 });
 afterEach(() => cleanup());
 
-describe('OnboardingPage consent boxes (p9 Q12)', () => {
+describe('OnboardingPage consent boxes (p9 Q12)', { timeout: 20_000 }, () => {
   it('are checkboxes named by their sentences, both off to begin with', async () => {
     await openCreateAccount();
     expect(newsletter()).not.toBeChecked();

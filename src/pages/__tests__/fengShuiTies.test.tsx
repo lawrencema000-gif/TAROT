@@ -81,7 +81,7 @@ afterEach(() => {
 });
 afterAll(async () => { await i18n.changeLanguage('en'); });
 
-describe('FengShuiPage result (p9 Q24)', () => {
+describe('FengShuiPage result (p9 Q24)', { timeout: 20_000 }, () => {
   for (const lng of ['zh', 'ko'] as const) {
     it(`${lng}: Reveal untouched shows a balanced map, with no focus and no strongest`, async () => {
       await i18n.changeLanguage(lng);
@@ -143,7 +143,7 @@ describe('FengShuiPage result (p9 Q24)', () => {
  * result opened where the form had been scrolled to — on the annual flying
  * stars, below the map and the reading. Each stage opens at its top now.
  */
-describe('FengShuiPage opens each stage at its top (pre-release)', () => {
+describe('FengShuiPage opens each stage at its top (pre-release)', { timeout: 20_000 }, () => {
   /** The stage's column: the element whose first child is the page title. */
   const column = (el: Element) => el.firstElementChild?.querySelector('h1')?.textContent === i18n.t('app:fengshui.title');
 

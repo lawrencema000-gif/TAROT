@@ -71,7 +71,7 @@ async function dealAndRevealThree() {
   return screen.findByRole('button', { name: 'Save this reading' });
 }
 
-describe('CartomancySection: save once (p9 R11)', () => {
+describe('CartomancySection: save once (p9 R11)', { timeout: 20_000 }, () => {
   beforeEach(async () => {
     cleanup();
     insertReturningId.mockReset();

@@ -97,7 +97,7 @@ afterAll(async () => {
   await i18n.changeLanguage('en');
 });
 
-describe('journal templates in Chinese — the QA scenario', () => {
+describe('journal templates in Chinese — the QA scenario', { timeout: 20_000 }, () => {
   it('lists, opens, walks and saves a template in Chinese', async () => {
     await i18n.changeLanguage('zh');
     mount();

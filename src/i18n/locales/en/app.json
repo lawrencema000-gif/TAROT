@@ -11285,6 +11285,7 @@
     "planetAria": "{{planet}} in {{sign}}, {{deg}}°, house {{house}}",
     "planetAriaNoHouse": "{{planet}} in {{sign}}, {{deg}}°",
     "retrograde": "Retrograde",
+    "retrogradeSuffix": ", Retrograde",
     "orb": "Orb {{deg}}°",
     "readMore": "Read the full interpretation",
     "planetsInHouse": "Planets here: {{list}}",

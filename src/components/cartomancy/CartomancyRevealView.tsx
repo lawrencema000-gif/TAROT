@@ -157,7 +157,7 @@ export function CartomancyRevealView(props: CartomancyRevealViewProps) {
         badgeCorner={drawn.reversed ? 'bottom-left' : 'top-right'}
         aria-label={
           drawn.revealed
-            ? t('readings.revealView.openCard', { name: drawn.reversed ? `${card.name}, ${reversedLabel}` : card.name, defaultValue: 'Open {{name}}' })
+            ? t('readings.revealView.openCard', { name: drawn.reversed ? `${card.name}${t('cardMeaning.listSeparator', { defaultValue: ', ' })}${reversedLabel}` : card.name, defaultValue: 'Open {{name}}' })
             : t('readings.revealView.revealPosition', { position, defaultValue: 'Reveal {{position}}' })
         }
         onClick={() => (drawn.revealed ? onCardClick(index) : revealCard(index))}

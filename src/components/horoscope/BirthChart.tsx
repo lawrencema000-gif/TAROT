@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { Card, Sheet, Skeleton, Progress, Tag, type Tone } from '../ui';
+import { LearnLinkList } from '../learn/LearnEntryTemplate';
 import { ChartWheel } from '../chart/ChartWheel';
 import { houseTheme } from '../chart/houseThemes';
 import { useNatalChart } from '../../hooks/useAstrology';
@@ -76,6 +77,7 @@ export function BirthChart() {
   useBirthTzBackfill(fetchChart);
   const interp = useInterpData();
   const [expandedBigThree, setExpandedBigThree] = useState(false);
+  const bigThreePanelId = useId();
   const [selectedPlacement, setSelectedPlacement] = useState<PlanetPlacement | null>(null);
   const [selectedAspect, setSelectedAspect] = useState<Aspect | null>(null);
 
@@ -106,42 +108,70 @@ export function BirthChart() {
 
   return (
     <div className="p-4 space-y-5">
-      <Card variant="accent" padding="md" interactive className="nebula-veil" onClick={() => setExpandedBigThree(!expandedBigThree)}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-display-hero text-xl text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</h3>
-          {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" /> : <ChevronDown className="w-4 h-4 text-mystic-400" />}
-        </div>
-        <div className="flex gap-3 mt-3">
-          {[
-            { label: 'Sun', labelI18n: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
-            { label: 'Moon', labelI18n: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
-            ...(bigThree.rising ? [{ label: 'Rising', labelI18n: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
-          ].map((item) => (
-            <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-control flex flex-col items-center">
-              <ZodiacGlyph sign={item.sign} size={26} className="text-gold mb-1" />
-              <div className="text-meta text-mystic-400">{item.labelI18n}</div>
-              <div className="text-ui font-medium text-mystic-100">{localizeSignName(item.sign)}</div>
-            </div>
-          ))}
-        </div>
-        {expandedBigThree && (
-          <div className="mt-4 space-y-3 animate-fade-in">
-            {[
-              { planet: 'Sun' as const, planetLabel: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
-              { planet: 'Moon' as const, planetLabel: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
-              ...(bigThree.rising ? [{ planet: 'Rising' as const, planetLabel: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
-            ].map(({ planet, planetLabel, sign }) => {
-              const signInterp = interp.getPlanetInSign?.(planet, sign);
-              if (!signInterp) return null;
-              return (
-                <div key={planet} className="p-3 bg-mystic-800/30 rounded-control">
-                  <div className="text-ui font-medium text-mystic-100 mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
-                  <p className="reading-copy">{signInterp.core}</p>
+      {/* The summary is the toggle: a real button that says whether it is
+          open, not the card. A card that acts is role="button", and a link
+          inside a button is presentational to assistive tech — so the card
+          keeps only the hover and press styling, and the panel the button
+          opens holds the links. */}
+      <Card variant="accent" padding="md" interactive className="nebula-veil">
+        <h3>
+          <button
+            type="button"
+            aria-expanded={expandedBigThree}
+            aria-controls={bigThreePanelId}
+            onClick={() => setExpandedBigThree((open) => !open)}
+            className="block w-full text-left rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-850"
+          >
+            <span className="flex items-center justify-between">
+              <span className="font-display-hero text-xl text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</span>
+              {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" aria-hidden /> : <ChevronDown className="w-4 h-4 text-mystic-400" aria-hidden />}
+            </span>
+            <span className="flex gap-3 mt-3">
+              {[
+                { label: 'Sun', labelI18n: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
+                { label: 'Moon', labelI18n: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
+                ...(bigThree.rising ? [{ label: 'Rising', labelI18n: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
+              ].map((item) => (
+                <span key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-control flex flex-col items-center">
+                  {/* The name beside it says the sign: the glyph is not read twice. */}
+                  <ZodiacGlyph sign={item.sign} size={26} className="text-gold mb-1" aria-hidden />
+                  <span className="text-meta text-mystic-400">{item.labelI18n}</span>
+                  <span className="text-ui font-medium text-mystic-100">{localizeSignName(item.sign)}</span>
+                </span>
+              ))}
+            </span>
+          </button>
+        </h3>
+        {/* Always in the DOM (hidden while closed), so aria-controls names an
+            element; the rows themselves render only when open. */}
+        <div id={bigThreePanelId} hidden={!expandedBigThree} className="mt-4 space-y-3 animate-fade-in">
+          {expandedBigThree && [
+            { planet: 'Sun' as const, planetLabel: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
+            { planet: 'Moon' as const, planetLabel: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
+            ...(bigThree.rising ? [{ planet: 'Rising' as const, planetLabel: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
+          ].map(({ planet, planetLabel, sign }) => {
+            const signInterp = interp.getPlanetInSign?.(planet, sign);
+            if (!signInterp) return null;
+            return (
+              <div key={planet} data-big-three-row className="p-3 bg-mystic-800/30 rounded-control">
+                <div className="text-ui font-medium text-mystic-100 mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
+                <p className="reading-copy">{signInterp.core}</p>
+                {/* The sign's page in the Astrology guide (the member route
+                    renders it in the app; Zodiac Scholar counts the sign pages
+                    read), as the best matches in Compatibility link theirs. */}
+                <div className="mt-2">
+                  <LearnLinkList
+                    links={[{
+                      href: `/astrology/${sign.toLowerCase()}`,
+                      label: localizeSignName(sign),
+                      symbol: <ZodiacGlyph sign={sign} size={20} aria-hidden />,
+                    }]}
+                  />
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
       </Card>
 
       <Card padding="sm">

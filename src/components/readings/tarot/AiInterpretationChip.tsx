@@ -101,7 +101,10 @@ export function AiInterpretationChip({ isPremium, loading, onClick, ready = fals
             {balance !== null && (
               <>
                 {' · '}
-                <span className={`tabular-nums ${short ? 'text-coral' : ''}`}>
+                {/* One unit: 「所持：250個」 broke 「所/持」 at the end of a line
+                    (p9 QZ-5, as MoonstoneCostLine's did in QU1 R-e). It moves to
+                    the next line whole, after the " · ". */}
+                <span className={`whitespace-nowrap tabular-nums ${short ? 'text-coral' : ''}`}>
                   {t('moonstones.youHave', { defaultValue: 'You have {{n}}', n: balance })}
                 </span>
               </>

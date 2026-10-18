@@ -13,6 +13,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { failedBeforeCharge } from '../components/reports/aiReading';
 import { paidFailureOf, sendPaid } from '../components/oracle/paidRequest';
+import { CrisisBanner } from '../components/community/CrisisBanner';
 
 /**
  * Dream interpretation page.
@@ -61,6 +62,9 @@ interface AiReading {
    *  for. Optional because older AI responses without the field still
    *  validate. */
   compensatoryMove?: string;
+  /** The server answered with the member's crisis helplines in this shape
+   *  instead of an interpretation (ai-dream-interpret/reply.ts, p9 QZ-1). */
+  crisis?: boolean;
 }
 
 interface LocalReading {
@@ -346,6 +350,9 @@ function AiResultView({
   dreamText: string;
 }) {
   const { t } = useT('app');
+  const crisis = reading.crisis === true;
+  // A crisis reply opens the member's helplines straight away.
+  const [crisisOpen, setCrisisOpen] = useState(crisis);
 
   const handleShare = async () => {
     try {
@@ -420,15 +427,22 @@ function AiResultView({
             </section>
           )}
 
-          <section className="border-t border-paper-hairline pt-6">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-ink-rose" aria-hidden />
-              <h3 className="heading-display-md heading-strong text-ink">
-                {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
-              </h3>
-            </div>
-            <blockquote className="reading-quote">{reading.shadowPrompt}</blockquote>
-          </section>
+          {/* A crisis reply's question is a caring one ("is there someone
+              you can reach now?"), not a shadow question: it keeps the
+              quote and loses the heading. */}
+          {reading.shadowPrompt && (
+            <section className="border-t border-paper-hairline pt-6">
+              {!crisis && (
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-4 h-4 text-ink-rose" aria-hidden />
+                  <h3 className="heading-display-md heading-strong text-ink">
+                    {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
+                  </h3>
+                </div>
+              )}
+              <blockquote className="reading-quote">{reading.shadowPrompt}</blockquote>
+            </section>
+          )}
 
           <section>
             <div className="flex items-center gap-2 mb-2">
@@ -471,14 +485,19 @@ function AiResultView({
       <DreamResources t={t} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" fullWidth onClick={handleShare}>
-          <Share2 className="w-4 h-4" aria-hidden />
-          {t('dream.share', { defaultValue: 'Share this interpretation' })}
-        </Button>
-        <Button variant="outline" fullWidth onClick={onReset}>
+        {/* Nothing to share from a crisis reply. */}
+        {!crisis && (
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4" aria-hidden />
+            {t('dream.share', { defaultValue: 'Share this interpretation' })}
+          </Button>
+        )}
+        <Button variant="outline" fullWidth onClick={onReset} className={crisis ? 'col-span-2' : undefined}>
           {t('dream.another', { defaultValue: 'Interpret another dream' })}
         </Button>
       </div>
+
+      <CrisisBanner open={crisisOpen} onClose={() => setCrisisOpen(false)} />
     </Page>
   );
 }

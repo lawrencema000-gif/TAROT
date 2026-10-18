@@ -161,7 +161,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     theme: db.theme || 'dark',
     card_back_url: db.card_back_url,
     background_url: db.background_url,
-    subscribedToNewsletter: db.subscribed_to_newsletter ?? true,
+    // Consent is never assumed: an unset flag is not an opt-in (20261003000020 defaults the column to false).
+    subscribedToNewsletter: db.subscribed_to_newsletter ?? false,
     createdAt: db.created_at,
     destinedPlace: db.destined_place ?? undefined,
   };

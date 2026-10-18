@@ -113,10 +113,10 @@ interface TarotRevealViewProps {
 export interface LeaveReadingSheetProps {
   open: boolean;
   /**
-   * The interpretation is filed under the Library's AI readings: true for
-   * every one generate-reading wrote, false for one it served from its cache
-   * (which it does not file). The sheet says where the text is, or that it
-   * would go.
+   * The interpretation is filed under the Library's AI readings. Since p9
+   * QZ-6 generate-reading files cache hits too; the caller still passes false
+   * for a cached answer, which an older deployed function did not file. The
+   * sheet says where the text is, or that it would go.
    */
   inLibrary: boolean;
   /** The save is on its way: "Save and leave" spins and ignores taps. */

@@ -11263,6 +11263,7 @@
     "planetAria": "{{sign}}の{{planet}}、{{deg}}°、第{{house}}ハウス",
     "planetAriaNoHouse": "{{sign}}の{{planet}}、{{deg}}°",
     "retrograde": "逆行",
+    "retrogradeSuffix": "、逆行",
     "orb": "オーブ {{deg}}°",
     "readMore": "解釈の全文を読む",
     "planetsInHouse": "ここにある惑星：{{list}}",

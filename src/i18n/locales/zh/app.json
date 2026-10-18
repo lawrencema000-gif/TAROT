@@ -11263,6 +11263,7 @@
     "planetAria": "{{planet}}在{{sign}} {{deg}}°，第{{house}}宫",
     "planetAriaNoHouse": "{{planet}}在{{sign}} {{deg}}°",
     "retrograde": "逆行",
+    "retrogradeSuffix": "，逆行",
     "orb": "容许度 {{deg}}°",
     "readMore": "阅读完整解读",
     "planetsInHouse": "此宫行星：{{list}}",

@@ -1,5 +1,5 @@
 import { AppError, handler } from "../_shared/handler.ts";
-import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
 import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
@@ -274,9 +274,11 @@ Deno.serve(handler<Req, Resp>({
       ctxKey,
     );
 
-    const gate = await aiGate<Resp>(ctx, { userId: ctx.userId, cacheKey: key });
-    if (gate.allowed === false) throw new AppError(gate.reason, gate.message, gate.status);
-    if (gate.cached) return gate.response;
+    // The killswitch and the daily ceiling ran once, in the handler (ai: true).
+    // Calling aiGate() here as well counted every travel reading twice
+    // against the member's daily AI ceiling (p9 QZ request b).
+    const cached = await aiCacheGet<Resp>(ctx, key);
+    if (cached) return cached;
 
     const fresh = await callAI(body);
     await aiCacheStore(ctx, { cacheKey: key, model: CACHE_MODEL_TAG, fnName: "celestial-travel-reading", response: fresh });

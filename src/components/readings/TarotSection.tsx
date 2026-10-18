@@ -258,10 +258,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const aiInFlightRef = useRef<string | null>(null);
   /**
    * The interpretation on the table is filed under the Library's AI
-   * readings. generate-reading inserts a premium_readings row for every
-   * interpretation it writes, but returns one served from its cache
-   * (`cached: true`) before that insert — charged all the same — so that
-   * one is only here, and leaving says so (QU1 R-c).
+   * readings. generate-reading files every interpretation it charges for —
+   * since p9 QZ-6 one served from its cache (`cached: true`) as well. A
+   * function deployed before that fix answered a cache hit before filing
+   * it, so for `cached: true` the leave sheet still says the text is only
+   * here (QU1 R-c): harmless once the fixed function is live.
    */
   const [aiInLibrary, setAiInLibrary] = useState(false);
   /** "Start a new reading" or Back on an unsaved reveal with a bought interpretation: asked first. */

@@ -7,9 +7,10 @@ import { MemoryRouter } from 'react-router-dom';
  * thrown away by one tap on "Start a new reading" or Back when the reading
  * had not been saved — 50 Moonstones for a free reader, and no word about
  * it. Leaving such a reveal now asks first, and says where the text is:
- * generate-reading files every interpretation it writes under the Library's
- * AI readings (p9 Q02). One it served from its cache it does not file
- * (cached: true), so for that one the sheet says it would go, and offers to
+ * generate-reading files every interpretation it charges for under the
+ * Library's AI readings (p9 Q02; cache hits too since p9 QZ-6). The client
+ * still treats a cached answer as unfiled — an older deployed function did
+ * not file it — so for that one the sheet says it would go, and offers to
  * save the reading with it.
  */
 

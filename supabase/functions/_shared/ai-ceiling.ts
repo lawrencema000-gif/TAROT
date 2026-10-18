@@ -3,9 +3,12 @@
  *
  * This logic used to live twice: once in `handler.ts` (for functions that
  * set `ai: true`) and once in `ai-gate.ts` (for functions that call
- * `aiGate()` themselves, e.g. dream and celestial). Two copies drift; this
- * module is the single implementation and both callers import it. It has
- * no dependency on handler.ts so there is no import cycle.
+ * `aiGate()` themselves, e.g. ai-journal-coach, which gates after its
+ * crisis check). Two copies drift; this module is the single implementation
+ * and both callers import it. It has no dependency on handler.ts so there
+ * is no import cycle. A function uses one path or the other, never both —
+ * both counted every request twice against the ceiling
+ * (src/test/golden/aiGateOnce.test.ts).
  *
  *   1. Killswitch — `feature_flags.ai-enabled = false` pauses every AI
  *      surface from the dashboard without a redeploy.

@@ -1,7 +1,8 @@
 import { AppError, handler } from "../_shared/handler.ts";
-import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
-import { localeInstruction } from "../_shared/locale.ts";
+import { waiveForCrisis } from "../_shared/crisis-reply.ts";
+import { buildSystem, dreamCrisis, dreamCrisisReading, readDream, type DreamReading, type ModelDream } from "./reply.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -19,6 +20,13 @@ import { z } from "npm:zod@3.24.1";
  * read, not a psychic prediction.
  *
  * Rate limit: 10/min per user.
+ *
+ * Crisis (p9 QZ-1): a dream told with self-harm or suicide in it — read by
+ * the shared multilingual detector before anything else, or by the model,
+ * which answers it with {"crisis": true} — gets the app's reading in the
+ * member's language with their own helplines (./reply.ts), never "988 in the
+ * US" from the prompt. That reading is not charged (the charge is given back)
+ * and is not cached.
  */
 
 const RequestSchema = z.object({
@@ -32,78 +40,18 @@ const RequestSchema = z.object({
 
 type Req = z.infer<typeof RequestSchema>;
 
-interface Symbol {
-  text: string;
-  meaning: string;
-  reflection: string;
-}
-
-interface Resp {
-  coreTheme: string;
-  emotionalTone: string;
-  archetypes: string[];
-  symbols: Symbol[];
-  shadowPrompt: string;
-  integrationSuggestion: string;
-  compensatoryMove?: string;
-}
+type Resp = DreamReading;
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-dream-v2`;
+// v3: the prompt no longer carries a US crisis line, and the key is the
+// dream, not the prompt — a cached v2 reading (one the model wrote with 988
+// in its integration practice, say) is not served again.
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-dream-v3`;
 
-const SYSTEM = `You are a Jungian dream interpreter. The user will describe a dream they had. Your job is NOT to predict the future or tell them what will happen. Your job is to:
+// The system prompt (SYSTEM) and the crisis reading: ./reply.ts.
 
-1. Identify the CORE THEME — what the dream is pointing at psychologically. One tight paragraph (2-3 sentences).
-2. Name the EMOTIONAL TONE in one evocative phrase (e.g. "longing wrapped in fear", "quiet grief settling", "manic upward energy").
-3. List the primary ARCHETYPES at work — 2 to 4 Jungian / universal archetypes. Use SPECIFIC named archetypes from this canonical list when they fit, rather than generic descriptions:
-   - The Shadow (rejected / unintegrated parts of self)
-   - The Anima (inner feminine in a male psyche)
-   - The Animus (inner masculine in a female psyche)
-   - The Persona (the social mask)
-   - The Self (the integrated whole, often as wise figure / mandala / sacred animal)
-   - The Wise Old Man (Senex)
-   - The Wise Old Woman (Crone)
-   - The Great Mother (nurturing or devouring)
-   - The Father / Patriarch
-   - The Puer Aeternus (eternal youth, refusal to age)
-   - The Puella Aeterna (eternal girl)
-   - The Trickster
-   - The Hero (and the call to adventure)
-   - The Threshold Guardian
-   - The Mentor
-   - The Innocent / Divine Child
-   - The Lover
-   - The Seeker / Wanderer
-   - The Magician
-   - The Outlaw / Rebel
-
-4. Pull out 2 to 5 key SYMBOLS the dreamer described verbatim. For each: (a) what the dream was, (b) its archetypal meaning in 1-2 sentences, (c) a single reflection question the dreamer can sit with.
-5. Name a SHADOW PROMPT — one piercing question that invites the dreamer to look at what the dream is showing them that they might be avoiding in waking life.
-6. Offer an INTEGRATION SUGGESTION — one concrete practice (journal, walk, conversation, ritual) they can do this week to metabolise the dream.
-7. Identify the COMPENSATORY MOVE — Jung said dreams compensate for what consciousness lacks. Name in one sentence what the dreamer's waking attitude is missing that this dream is offering.
-
-Rules:
-- Do NOT predict events. Dreams don't predict; they process.
-- Write with poetic precision, not florid mysticism. Each sentence should earn its place.
-- Do NOT moralise or give advice. Offer questions and observations.
-- If the dream contains references to self-harm or suicidal ideation, gently acknowledge and include in the integrationSuggestion a suggestion to reach out (988 in the US, or a trusted person/therapist).
-- Output MUST be valid JSON matching the schema. No markdown, no preamble.
-
-Schema:
-{
-  "coreTheme": string,
-  "emotionalTone": string,
-  "archetypes": string[] (2-4),
-  "symbols": [ { "text": string, "meaning": string, "reflection": string } ] (2-5),
-  "shadowPrompt": string,
-  "integrationSuggestion": string,
-  "compensatoryMove": string
-}`;
-
-async function callAI(dreamText: string, context: Req["userContext"]): Promise<Resp> {
-  // Shared per-locale instruction (_shared/locale.ts) closes the system
-  // prompt; JSON keys stay English, values follow the user's language.
-  const system = `${SYSTEM}\n\n${localeInstruction(context?.locale, { jsonKeys: true, keepVoice: true })}`;
+async function callAI(dreamText: string, context: Req["userContext"]): Promise<ModelDream> {
+  const system = buildSystem(context?.locale);
 
   const ctxLines: string[] = [];
   if (context?.zodiacSign) ctxLines.push(`- Sun sign: ${context.zodiacSign}`);
@@ -114,7 +62,7 @@ async function callAI(dreamText: string, context: Req["userContext"]): Promise<R
 
   const userPrompt = `${ctxBlock}\n\nDream:\n${dreamText}\n\nReply with ONLY the JSON object matching the schema, nothing else.`;
 
-  const parsed = await callAIJson<Resp>({
+  const parsed = await callAIJson<unknown>({
     system,
     userPrompt,
     temperature: 0.7,
@@ -124,19 +72,11 @@ async function callAI(dreamText: string, context: Req["userContext"]): Promise<R
   // Minimal shape validation — if required fields are missing, reject so
   // the client falls back to its local dictionary rather than displaying
   // a broken reading.
-  if (
-    !parsed.coreTheme ||
-    !parsed.emotionalTone ||
-    !Array.isArray(parsed.archetypes) ||
-    !Array.isArray(parsed.symbols) ||
-    parsed.symbols.length === 0 ||
-    !parsed.shadowPrompt ||
-    !parsed.integrationSuggestion
-  ) {
+  const answer = readDream(parsed);
+  if (!answer) {
     throw new AppError("AI_MALFORMED_RESPONSE", "AI response missing required fields", 502);
   }
-
-  return parsed;
+  return answer;
 }
 
 Deno.serve(handler<Req, Resp>({
@@ -146,26 +86,44 @@ Deno.serve(handler<Req, Resp>({
   auth: "required",
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
+  // The killswitch and the daily ceiling run here, once. (The function used
+  // to call aiGate() as well, which ran them again and counted every dream
+  // twice against the member's daily AI ceiling.)
   ai: true,
   spend: { actionKey: "dream-interpret", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
+    const locale = body.userContext?.locale;
+
+    // A dream told with self-harm or suicide in it (the shared multilingual
+    // detector): the app's reading with the member's own helplines, before
+    // the cache and the model, and not charged.
+    if (dreamCrisis(body.dreamText)) {
+      await waiveForCrisis(ctx, "ai-dream-interpret", "detector");
+      return dreamCrisisReading(locale);
+    }
+
     // Build a deterministic cache key from the inputs that affect the
     // response. Locale + dream text are the only shape-affecting bits;
     // zodiacSign / mbti are tonal so we hash them in too. Same dream from
     // the same archetype gets the same cached interpretation.
     const ctxKey = [
-      body.userContext?.locale ?? "en",
+      locale ?? "en",
       body.userContext?.zodiacSign ?? "",
       body.userContext?.mbtiType ?? "",
     ].join("|");
     const key = await aiCacheKey("ai-dream-interpret", CACHE_MODEL_TAG, body.dreamText.trim(), ctxKey);
+    const cached = await aiCacheGet<Resp>(ctx, key);
+    if (cached) return cached;
 
-    const gate = await aiGate<Resp>(ctx, { userId: ctx.userId, cacheKey: key });
-    if (gate.allowed === false) throw new AppError(gate.reason, gate.message, gate.status);
-    if (gate.cached) return gate.response;
-
-    const fresh = await callAI(body.dreamText, body.userContext);
+    const answer = await callAI(body.dreamText, body.userContext);
+    // The model read a crisis the detector did not: the same reading,
+    // uncharged and never cached.
+    if (answer.kind === "crisis") {
+      await waiveForCrisis(ctx, "ai-dream-interpret", "model");
+      return dreamCrisisReading(locale);
+    }
+    const fresh = answer.dream;
     await aiCacheStore(ctx, { cacheKey: key, model: CACHE_MODEL_TAG, fnName: "ai-dream-interpret", response: fresh });
     return fresh;
   },

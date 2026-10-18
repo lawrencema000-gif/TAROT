@@ -550,7 +550,7 @@ export function ChartWheel({
                 (p.house
                   ? t('chartWheel.planetAria', { defaultValue: '{{planet}} in {{sign}}, {{deg}}°, house {{house}}', planet: planetName, sign: signName, deg, house: p.house })
                   : t('chartWheel.planetAriaNoHouse', { defaultValue: '{{planet}} in {{sign}}, {{deg}}°', planet: planetName, sign: signName, deg })) +
-                (p.retrograde ? `, ${t('chartWheel.retrograde', { defaultValue: 'Retrograde' })}` : '');
+                (p.retrograde ? t('chartWheel.retrogradeSuffix', { defaultValue: ', Retrograde' }) : '');
               const faceFill = isSelected ? GOLD : CHART_TOKENS.canvas;
               const faceStroke = isSelected ? CHART_TOKENS.goldLight : isLinked ? CHART_TOKENS.goldLight : withAlpha(GOLD, 0.9);
               const glyphStroke = isSelected ? CHART_TOKENS.canvas : isLinked ? CHART_TOKENS.goldLight : CHART_TOKENS.goldLight;

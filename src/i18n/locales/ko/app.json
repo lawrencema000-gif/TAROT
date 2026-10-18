@@ -11263,6 +11263,7 @@
     "planetAria": "{{sign}} {{planet}}, {{deg}}°, {{house}}하우스",
     "planetAriaNoHouse": "{{sign}} {{planet}}, {{deg}}°",
     "retrograde": "역행",
+    "retrogradeSuffix": ", 역행",
     "orb": "오브 {{deg}}°",
     "readMore": "전체 해석 읽기",
     "planetsInHouse": "이 하우스의 행성: {{list}}",

@@ -10,6 +10,10 @@
  * banner shows for it, the model answers one the detector missed with a
  * marker alone and gets the same reply, no prompt names any helpline, and
  * the reply is never charged.
+ *
+ * p9 QZ-1: the Dream Interpreter was the last prompt still naming "988 in the
+ * US"; it now works the same way, with its crisis reading in the shape the
+ * dream page draws.
  */
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -31,6 +35,7 @@ import { journalCrisisReply } from '../../../supabase/functions/ai-journal-coach
 import { PERSONAS, buildSystemPrompt, companionCrisis, companionCrisisResponse } from '../../../supabase/functions/ai-companion-chat/reply';
 import { SYSTEM as MOOD_SYSTEM, moodCrisis, moodCrisisLetter, readLetter } from '../../../supabase/functions/ai-mood-letter/reply';
 import { buildSystem as quickSystem, quickCrisis, quickCrisisReading } from '../../../supabase/functions/ai-quick-reading/reply';
+import { buildSystem as dreamSystem, dreamCrisis, dreamCrisisReading, readDream } from '../../../supabase/functions/ai-dream-interpret/reply';
 import { fullDeck } from '../../data/tarotDeck';
 import { RUNES, runeId } from '../../data/runes';
 import { ARCHETYPAL_OBJECTS } from '../../data/archetypalObjects';
@@ -63,6 +68,8 @@ const PROMPTS: Array<[string, string]> = [
   ])),
   ...LOCALES.map((l) => [`mood letter ${l}`, `${MOOD_SYSTEM}\n\n${localeInstruction(l, { jsonKeys: true, keepVoice: true })}`] as [string, string]),
   ...LOCALES.flatMap((l) => (['tarot', 'playing'] as const).map((d) => [`quick reading ${d} ${l}`, quickSystem(d, l)] as [string, string])),
+  // p9 QZ-1: the Dream Interpreter still sent every member "988 in the US".
+  ...LOCALES.map((l) => [`dream interpreter ${l}`, dreamSystem(l)] as [string, string]),
 ];
 
 describe('no AI prompt names a helpline of any country (p9 QS R-5)', () => {
@@ -78,6 +85,8 @@ describe('no AI prompt names a helpline of any country (p9 QS R-5)', () => {
     expect(quickSystem('tarot', 'ja')).toContain(CRISIS_FLAG);
     expect(MOOD_SYSTEM).toContain('return exactly {"crisis": true} and nothing else');
     expect(MOOD_SYSTEM).not.toContain(CRISIS_FLAG);
+    expect(dreamSystem('ja')).toContain('return exactly {"crisis": true} and nothing else');
+    expect(dreamSystem('ja')).not.toContain(CRISIS_FLAG);
   });
 });
 
@@ -116,6 +125,37 @@ describe('the crisis reply: the member’s own lines, in their language', () => 
       expect(l.dominantTheme).not.toMatch(/[A-Za-z]/);
       expect(l.careSuggestion).not.toMatch(/[A-Za-z]/);
       expect(l.letter).not.toMatch(/988|741741/);
+    }
+  });
+
+  it.each(LOCALES)('%s: the Dream Interpreter’s crisis reading fills the fields its page always shows, in the member’s language', (lng) => {
+    const r = dreamCrisisReading(lng);
+    const lines = CRISIS_LINES[lng];
+    const paragraphs = crisisParagraphs(lng);
+    expect(r.crisis).toBe(true);
+    // The page shows a reading only when coreTheme is set, and maps archetypes
+    // and symbols as lists: empty, they are not drawn.
+    expect(r.archetypes).toEqual([]);
+    expect(r.symbols).toEqual([]);
+    expect('compensatoryMove' in r).toBe(false);
+    // Read first: not alone, the emergency footer and both of the language's lines.
+    expect(r.coreTheme).toBe(paragraphs.slice(0, 3).join('\n\n'));
+    expect(r.coreTheme).toContain(lines.phone.number);
+    expect(r.coreTheme).toContain(lines.text.number);
+    expect(r.coreTheme).toContain(lines.footer);
+    expect(r.coreTheme).toContain('findahelpline.com');
+    // The two sections the page always draws hold the person to reach, not a Jungian prompt.
+    expect(r.shadowPrompt).toBe(paragraphs[3]);
+    expect(r.integrationSuggestion).toBe(crisisLetter(lng).careSuggestion);
+    expect(r.emotionalTone).toBe(crisisLetter(lng).dominantTheme);
+    for (const field of [r.coreTheme, r.emotionalTone, r.shadowPrompt, r.integrationSuggestion]) {
+      expect(field.length).toBeGreaterThan(0);
+      expect(field).not.toMatch(/!/);
+      if (lng === 'ja' || lng === 'zh') expect(field).not.toMatch(ASCII_MARK_BY_CJK);
+    }
+    if (lng !== 'en') {
+      expect(r.coreTheme).not.toMatch(/988|741741/);
+      for (const field of [r.emotionalTone, r.shadowPrompt, r.integrationSuggestion]) expect(field).not.toMatch(/[A-Za-z]/);
     }
   });
 });
@@ -164,6 +204,31 @@ describe('a crisis message is answered by the app, before any model call', () =>
     expect(r.reading).toContain('400-161-9995');
   });
 
+  it('dream interpreter: a wish to die told with a dream, in any language, gets the member’s lines', () => {
+    expect(dreamCrisis('I keep having the same dream where I am falling. Honestly I don’t want to be alive anymore.')).toBe(true);
+    expect(dreamCrisis('夢の中で、もう消えたいと思いながら暗い海を歩いていました。')).toBe(true);
+    expect(dreamCrisis('꿈속에서 죽고 싶다는 생각만 했어요. 깨어나서도 마찬가지예요.')).toBe(true);
+    expect(dreamCrisis('梦里我站在楼顶，醒来后我真的不想活了。')).toBe(true);
+    const r = dreamCrisisReading('ja-JP');
+    expect(r).toEqual(dreamCrisisReading('ja'));
+    expect(r.coreTheme).toContain('よりそいホットライン');
+    expect(r.coreTheme).not.toMatch(/988|741741/);
+    expect(dreamCrisisReading('ko').coreTheme).toContain('109');
+    expect(dreamCrisisReading('zh-Hans').coreTheme).toContain('400-161-9995');
+    // A locale the app does not ship, or none: the English lines.
+    expect(dreamCrisisReading('fr-FR')).toEqual(dreamCrisisReading('en'));
+    expect(dreamCrisisReading(undefined).coreTheme).toContain('988');
+  });
+
+  it('dream interpreter: falling, dying and being chased in a dream are what the reading is for', () => {
+    expect(dreamCrisis('I was being chased through a dark forest, then I fell off a cliff and woke up just before I hit the ground.')).toBe(false);
+    expect(dreamCrisis('My grandmother, who died last year, was cooking in her old kitchen and handed me a key.')).toBe(false);
+    expect(dreamCrisis('I dreamed the Death card was pinned to my door and the house was flooding.')).toBe(false);
+    expect(dreamCrisis('夢の中で歯が全部抜けてしまい、誰かに追いかけられていました。')).toBe(false);
+    expect(dreamCrisis('꿈에서 높은 곳에서 떨어졌는데 바닥에 닿기 직전에 깼어요.')).toBe(false);
+    expect(dreamCrisis('我梦见自己在考试，却怎么也找不到教室。')).toBe(false);
+  });
+
   it('writesCrisis reads each text on its own and skips empty ones', () => {
     expect(writesCrisis([undefined, '', null, 'fine'])).toBe(false);
     expect(writesCrisis(['fine', 'I want to die'])).toBe(true);
@@ -190,6 +255,30 @@ describe('the model’s own crisis answer', () => {
     expect(readLetter({ letter: 'x', dominantTheme: 'y' })).toBeNull();
     expect(readLetter(null)).toBeNull();
     expect(readLetter('[[CRISIS]]')).toBeNull();
+  });
+
+  it('the Dream Interpreter reads {"crisis": true}, a full reading, or nothing', () => {
+    const withoutMove = {
+      coreTheme: 'A threshold you keep circling.',
+      emotionalTone: 'longing wrapped in fear',
+      archetypes: ['The Shadow', 'The Threshold Guardian'],
+      symbols: [{ text: 'a dark ocean', meaning: 'The unconscious.', reflection: 'What are you not looking at?' }],
+      shadowPrompt: 'What would you find if you went home?',
+      integrationSuggestion: 'Walk by water this week.',
+    };
+    const full = { ...withoutMove, compensatoryMove: 'Rest.' };
+    expect(readDream({ crisis: true })).toEqual({ kind: 'crisis' });
+    // A crisis answer wins over any reading around it.
+    expect(readDream({ ...full, crisis: true })).toEqual({ kind: 'crisis' });
+    expect(readDream({ ...full, crisis: false, extra: 1 })).toEqual({ kind: 'dream', dream: full });
+    expect(readDream(withoutMove)).toEqual({ kind: 'dream', dream: withoutMove });
+    expect(Object.keys((readDream({ ...withoutMove, compensatoryMove: '' }) as { dream: object }).dream)).not.toContain('compensatoryMove');
+    expect(readDream({ ...full, symbols: [] })).toBeNull();
+    expect(readDream({ ...full, coreTheme: '' })).toBeNull();
+    expect(readDream({ ...full, archetypes: 'The Shadow' })).toBeNull();
+    expect(readDream({ ...full, integrationSuggestion: undefined })).toBeNull();
+    expect(readDream(null)).toBeNull();
+    expect(readDream('[[CRISIS]]')).toBeNull();
   });
 });
 

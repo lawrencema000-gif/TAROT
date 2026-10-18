@@ -114,8 +114,10 @@ export function TarotFlipCard({
     setShowReversed(prev => !prev);
   };
 
+  // The locale's list separator, not a Latin ", " built here: 「愚者、正位置」 in
+  // ja and zh, "The Fool, Upright" in en and ko (p9 QZ-7).
   const cardDescription = isFlipped
-    ? `${card.name}, ${showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright')}`
+    ? `${card.name}${t('cardMeaning.listSeparator', { defaultValue: ', ' })}${showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright')}`
     : t('home.ritualCards.faceDownLabel', { defaultValue: 'Your card, face down. Tap to turn it over.' });
 
   return (

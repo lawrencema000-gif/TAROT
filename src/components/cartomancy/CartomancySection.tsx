@@ -24,6 +24,7 @@ import { ratePromptService } from '../../services/ratePrompt';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { TarotShuffleView } from '../readings/tarot/TarotShuffleView';
 import { TarotSelectView } from '../readings/tarot/TarotSelectView';
+import { LeaveReadingSheet } from '../readings/tarot/TarotRevealView';
 import { FOCUS_AREA_I18N_KEY, type FocusArea } from '../readings/tarot/types';
 import { newReadingId } from '../readings/tarot/readingId';
 import { CARTO_SPREADS, getPlayingCard, getPlayingCardBySlug } from '../../data/cartomancy';
@@ -141,6 +142,16 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * rendered: a double tap used to send two requests, each charged.
    */
   const aiInFlightRef = useRef<string | null>(null);
+  /**
+   * The interpretation on the table is filed under the Library's AI
+   * readings — every one generate-reading writes; for one it says it served
+   * from its cache (`cached: true`) the sheet says it would go instead. Since
+   * p9 QZ-6 the server files a cached one too, so that wording only errs on
+   * the side of saving (TarotSection reads it the same way).
+   */
+  const [aiInLibrary, setAiInLibrary] = useState(false);
+  /** "Start a new reading" or Back on an unsaved table with a bought interpretation: asked first (p9 QZ-4). */
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const { sharing, shareOnce } = useShareOnce();
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
@@ -308,6 +319,29 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
 
   const goHome = () => {
     setView('home');
+  };
+
+  /**
+   * The reveal's "Start a new reading" and Back. A bought AI interpretation
+   * on a table that is not saved (nor being saved) went with one tap; the
+   * reader is asked first (LeaveReadingSheet, the tarot reveal's), and told
+   * where the text is.
+   */
+  const leaveReveal = () => {
+    const tableId = readingIdRef.current;
+    const unsaved = !isSaved && !savedIdRef.current && !(tableId !== null && savingRef.current === tableId);
+    if (aiInterpretation && unsaved) {
+      setConfirmLeave(true);
+      return;
+    }
+    goHome();
+  };
+
+  /** The sheet's "Save and leave": home once the row is written; a failed save stays (its toast says so). */
+  const saveAndLeave = async () => {
+    const saved = await handleSaveReading();
+    setConfirmLeave(false);
+    if (saved) goHome();
   };
 
   const handleDraw = () => {
@@ -482,12 +516,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   /**
    * Save the table on screen — once. A table already saved, or whose save is
    * on its way, is a no-op: both are checked in refs, which a second tap
-   * reads before `isSaved` has rendered.
+   * reads before `isSaved` has rendered. Resolves true once the table on
+   * screen is saved (now or before), false when it is not, so "Save and
+   * leave" (LeaveReadingSheet) leaves only a saved table.
    */
-  const handleSaveReading = async () => {
+  const handleSaveReading = async (): Promise<boolean> => {
     const readingId = readingIdRef.current;
-    if (!user || drawnCards.length === 0 || !readingId) return;
-    if (isSaved || savedIdRef.current || savingRef.current === readingId) return;
+    if (!user || drawnCards.length === 0 || !readingId) return false;
+    if (isSaved || savedIdRef.current) return true;
+    if (savingRef.current === readingId) return false;
     savingRef.current = readingId;
     setSaving(true);
     let res: Awaited<ReturnType<typeof tarotReadings.insertReturningId>>;
@@ -512,12 +549,13 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     }
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
-      return;
+      return false;
     }
     // The row belongs to the table it was saved from. A reader who dealt
     // another table while the insert ran has that one on screen: it is not
     // saved, and an AI reading for it must not land on this row.
-    if (readingIdRef.current === readingId) {
+    const onScreen = readingIdRef.current === readingId;
+    if (onScreen) {
       savedIdRef.current = res.data.id;
       setIsSaved(true);
     }
@@ -530,6 +568,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       await ratePromptService.recordPromptShown(user.id);
       openRatePrompt();
     }
+    return onScreen;
   };
 
   const handleGetAIInterpretation = async () => {
@@ -586,6 +625,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         );
         return;
       }
+      setAiInLibrary(result.cached !== true);
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
       // Saved before the AI reading was asked for: the saved row carries
@@ -686,15 +726,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         loadingAI={loadingAI}
         getPositionLabel={getPositionLabel}
         localize={localize}
-        onBack={goHome}
-        onSave={handleSaveReading}
+        onBack={leaveReveal}
+        onSave={() => void handleSaveReading()}
         onShare={handleShareReading}
         onRevealCard={handleRevealCard}
         onRevealAll={revealAll}
         onCardClick={setSelectedIndex}
         onGetAIInterpretation={handleGetAIInterpretation}
         onToggleAI={setShowAIInterpretation}
-        onNewReading={goHome}
+        onNewReading={leaveReveal}
       />
     );
   } else if (launchPending) {
@@ -780,6 +820,18 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   return (
     <>
       {stage}
+
+      <LeaveReadingSheet
+        open={confirmLeave && view === 'reveal'}
+        inLibrary={aiInLibrary}
+        saving={saving}
+        onStay={() => setConfirmLeave(false)}
+        onSaveAndLeave={() => void saveAndLeave()}
+        onLeave={() => {
+          setConfirmLeave(false);
+          goHome();
+        }}
+      />
 
       <Sheet open={!!selected} onClose={() => setSelectedIndex(null)} title={selected ? localize(selected.card).name : undefined}>
         {selected && (

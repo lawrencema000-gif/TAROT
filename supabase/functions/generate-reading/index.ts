@@ -543,6 +543,48 @@ Deno.serve(
       let usedLlm = false;
       let notCharged = false;
 
+      /**
+       * File a charged interpretation under the Library's AI readings: the
+       * premium_readings row the Library lists and the daily limit above
+       * counts. A failed insert fails the request, so the handler gives the
+       * charge back — never charged for a reading the Library does not show.
+       * Written once per charge: a replay of an answered request is served
+       * the stored response by the handler and never reaches `run`.
+       */
+      const fileReading = async (content: string, llm: boolean) => {
+        const { error: saveError } = await ctx.supabase.from("premium_readings").insert({
+          user_id: ctx.userId!,
+          reading_type: body.spreadType,
+          content,
+          context: {
+            question: body.question,
+            zodiacSign: body.zodiacSign,
+            goals: body.goals,
+            focusArea: body.focusArea,
+            deck,
+            verdict: body.verdict ? sanitizeUserInput(body.verdict, MAX_VERDICT_LENGTH) : undefined,
+            usedLlm: llm,
+          },
+          cards: body.cards.map((c) => ({
+            id: c.id,
+            name: c.name,
+            reversed: c.reversed,
+          })),
+        });
+
+        if (saveError) {
+          ctx.log.error("generate_reading.save_failed", { err: saveError });
+          // Do NOT leak the raw DB error message to the client — it can expose
+          // schema details. The correlation ID in the envelope is enough for
+          // us to find the full error in our logs.
+          throw new AppError(
+            "READING_SAVE_FAILED",
+            "Could not save your reading. Please try again.",
+            500,
+          );
+        }
+      };
+
       // Cache by system + full prompt — same cards + spread + focus + zodiac
       // + locale = same reading. Interpretations are deterministic given the
       // same inputs, so we cache aggressively (7d TTL). The tag is bumped on
@@ -552,6 +594,13 @@ Deno.serve(
       const cacheKey = await aiCacheKey("generate-reading", CACHE_MODEL_TAG, system, prompt);
       const cachedReading = await aiCacheGet<string>(ctx, cacheKey);
       if (cachedReading) {
+        // The handler took the charge before `run`: a cached interpretation
+        // is filed like a fresh one before it is answered (p9 QZ-6). It used
+        // to return here, before the insert — charged, missing from the
+        // Library, and outside the daily limit. `cached: true` stays in the
+        // answer; the reveals' "not in your Library" wording for it now only
+        // errs on the side of saving.
+        await fileReading(cachedReading, true);
         return new Response(
           JSON.stringify({
             interpretation: cachedReading,
@@ -637,37 +686,7 @@ Deno.serve(
       }
 
       // --- Save to premium_readings ---
-      const { error: saveError } = await ctx.supabase.from("premium_readings").insert({
-        user_id: ctx.userId!,
-        reading_type: body.spreadType,
-        content: interpretation,
-        context: {
-          question: body.question,
-          zodiacSign: body.zodiacSign,
-          goals: body.goals,
-          focusArea: body.focusArea,
-          deck,
-          verdict: body.verdict ? sanitizeUserInput(body.verdict, MAX_VERDICT_LENGTH) : undefined,
-          usedLlm,
-        },
-        cards: body.cards.map((c) => ({
-          id: c.id,
-          name: c.name,
-          reversed: c.reversed,
-        })),
-      });
-
-      if (saveError) {
-        ctx.log.error("generate_reading.save_failed", { err: saveError });
-        // Do NOT leak the raw DB error message to the client — it can expose
-        // schema details. The correlation ID in the envelope is enough for
-        // us to find the full error in our logs.
-        throw new AppError(
-          "READING_SAVE_FAILED",
-          "Could not save your reading. Please try again.",
-          500,
-        );
-      }
+      await fileReading(interpretation, usedLlm);
 
       // Return the legacy shape (callers consume {interpretation,usedLlm,cardCount}
       // directly, not via {data}). `deck` is additive.

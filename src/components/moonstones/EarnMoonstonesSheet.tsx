@@ -3,20 +3,30 @@
 //
 // Replaces MoonstoneTopUpSheet's purchase products with earning paths only.
 // Direct Moonstone purchases were removed; Premium subscription is the only
-// paid upgrade.
+// paid upgrade — and it opens here, in place: "Get Premium" used to navigate
+// to /profile?upgrade=1, which dropped the user on Profile mid-task and left
+// "Not now" with nowhere sensible to return to (R7).
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { Trans } from 'react-i18next';
 import { Moon, CalendarCheck, Gift, Crown, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
+import { ListRow, ListRowGroup } from '../ui/ListRow';
 import { useAuth } from '../../context/AuthContext';
 import { isNative } from '../../utils/platform';
 import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
-import { doDailyCheckin, hasCheckedInToday } from '../../dal/moonstones';
+import { doDailyCheckin, getBalance, hasCheckedInToday } from '../../dal/moonstones';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
+import { PaywallSheet } from '../premium/PaywallSheet';
+import { checkinOpening, nextClaimLabel } from '../home/checkinOpening';
+import { useAdCreditsLeft } from './useAdCreditsLeft';
+
+/** How long the ad row stays disabled after a "too soon" refusal. */
+const AD_COOLDOWN_MS = 5_000;
 
 export type EarnSheetReason = 'insufficient' | 'soft-cap' | 'browse' | null;
 
@@ -26,11 +36,18 @@ interface Props {
   reason: EarnSheetReason;
   balance: number | null;
   resetAt: string | null;
+  /**
+   * What the blocked action costs. Defaults to the standard reading price;
+   * useMoonstoneSpend passes its own `cost` so a 150-Moonstone portrait does
+   * not read "You need 50 Moonstones".
+   */
+  cost?: number;
   onBalanceChange?: (newBalance: number) => void;
 }
 
-// The daily check-in's reward range, as the server pays it (5 on day one,
-// rising with the streak to 50).
+// The daily check-in's reward ladder, as the server pays it: 100 on the very
+// first check-in (the welcome bonus), then 5 a day rising with the streak to 50.
+const CHECKIN_WELCOME = 100;
 const CHECKIN_MIN = 5;
 const CHECKIN_MAX = 50;
 
@@ -45,16 +62,64 @@ function formatTimeUntil(iso: string, t: Translate): string {
   return t('moonstones.earnSheet.timeM', { defaultValue: '{{m}}m', m: minutes });
 }
 
-export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, onBalanceChange }: Props) {
+/*
+ * The check-in and the ad credits both belong to the UTC day (the server's
+ * CURRENT_DATE), so the next ones open at UTC midnight: 9:00 the same
+ * morning in Tokyo for a claim made at 8:30, 5:00 PM the same afternoon in
+ * Los Angeles. This sheet said "tomorrow" for both, beside Home's widget
+ * naming the hour (p8 F56). Every line here now names it the same way, and
+ * says "tomorrow" alone only where the opening is the reader's midnight.
+ */
+
+/** The header's next step once today's check-in is claimed and no ad is offered. */
+function nextStepAfterCheckin(t: Translate, now: Date): string {
+  const opening = checkinOpening(now, getLocale());
+  if (opening.atMidnight) {
+    return t('moonstones.earnSheet.nextStepTomorrow', { defaultValue: 'Come back tomorrow for your check-in, or go Premium.' });
+  }
+  return opening.day === 'today'
+    ? t('moonstones.earnSheet.nextStepAt', {
+        defaultValue: 'Come back at {{time}} for your next check-in, or go Premium.',
+        time: opening.time,
+      })
+    : t('moonstones.earnSheet.nextStepTomorrowAt', {
+        defaultValue: 'Come back tomorrow at {{time}} for your next check-in, or go Premium.',
+        time: opening.time,
+      });
+}
+
+/** Today's six ad credits are used up: when ads earn again. */
+function adCapLine(t: Translate, now: Date): string {
+  const opening = checkinOpening(now, getLocale());
+  if (opening.atMidnight) {
+    return t('moonstones.earnSheet.adDailyCap', { defaultValue: 'You’ve watched today’s ads. Come back tomorrow.' });
+  }
+  return opening.day === 'today'
+    ? t('moonstones.earnSheet.adDailyCapAt', {
+        defaultValue: 'You’ve watched today’s ads. Ads earn again at {{time}}.',
+        time: opening.time,
+      })
+    : t('moonstones.earnSheet.adDailyCapTomorrowAt', {
+        defaultValue: 'You’ve watched today’s ads. Ads earn again tomorrow at {{time}}.',
+        time: opening.time,
+      });
+}
+
+export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, cost = ACTION_COST, onBalanceChange }: Props) {
   const { t } = useT('app');
   const tr: Translate = (key, options) => t(key, options) as string;
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [adBusy, setAdBusy] = useState(false);
   const [checkinBusy, setCheckinBusy] = useState(false);
   const [checkinDone, setCheckinDone] = useState<boolean | null>(null);
   const [adAvailable, setAdAvailable] = useState(false);
+  /** A short pause after the server said the ad came too soon after the last one. */
+  const [adCooling, setAdCooling] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const native = isNative();
+  // Today's six ad credits used up: an ad would earn nothing, so none is offered.
+  const adsCapped = useAdCreditsLeft() === 0;
 
   useEffect(() => {
     if (!open || !user) return;
@@ -62,13 +127,19 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
     hasCheckedInToday(user.id).then((res) => {
       if (res.ok) setCheckinDone(res.data);
     });
-    if (isNative()) {
+    if (native) {
       setAdAvailable(rewardedAdsService.isReady());
     }
-  }, [open, user]);
+  }, [open, user, native]);
+
+  useEffect(() => {
+    if (!adCooling) return;
+    const timer = window.setTimeout(() => setAdCooling(false), AD_COOLDOWN_MS);
+    return () => window.clearTimeout(timer);
+  }, [adCooling]);
 
   async function handleWatchAd() {
-    if (!isNative()) return;
+    if (!native) return;
     setAdBusy(true);
     setFeedback(null);
     try {
@@ -88,6 +159,12 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
         );
       } else if (outcome === 'dismissed') {
         setFeedback(tr('moonstones.earnSheet.adDismissed', { defaultValue: 'Ad closed early — watch it to the end to earn Moonstones.' }));
+      } else if (outcome === 'daily-cap') {
+        // The service has already broadcast 0 credits left, so the ad row goes.
+        setFeedback(adCapLine(tr, new Date()));
+      } else if (outcome === 'too-soon') {
+        setFeedback(tr('moonstones.earnSheet.adTooSoon', { defaultValue: 'Give it a few seconds, then try again.' }));
+        setAdCooling(true);
       } else {
         setFeedback(tr('moonstones.earnSheet.adsUnavailable', { defaultValue: 'Ads aren’t available on this device.' }));
       }
@@ -101,7 +178,20 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
     setFeedback(null);
     try {
       const res = await doDailyCheckin();
-      if (res.ok) {
+      if (res.ok && (res.data.alreadyCheckedIn || res.data.amountAwarded <= 0)) {
+        // Claimed earlier today (another tab, another device): nothing was
+        // added, so no "+0 Moonstones". The row turns into "already checked in".
+        setFeedback(tr('moonstones.earnSheet.checkinAlready', { defaultValue: 'Already claimed today' }));
+        setCheckinDone(true);
+        // That claim credited the balance elsewhere: re-read it, so the line
+        // above is right and the hook can close the sheet if it now covers
+        // the action.
+        if (user) {
+          void getBalance(user.id).then((b) => {
+            if (b.ok && b.data !== balance) onBalanceChange?.(b.data);
+          });
+        }
+      } else if (res.ok) {
         setFeedback(
           tr('moonstones.earnSheet.checkinDone', {
             defaultValue: '{{n}} Moonstones added — day {{day}} of your streak.',
@@ -110,7 +200,11 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
           }),
         );
         setCheckinDone(true);
-        setTimeout(onClose, 1200);
+        // Tell the hook the new balance: its header line updates, and when
+        // the check-in covers the action it closes the sheet so the user can
+        // retry. Otherwise the sheet lingers so the line above can be read.
+        if (res.data.amountAwarded > 0) onBalanceChange?.((balance ?? 0) + res.data.amountAwarded);
+        setTimeout(onClose, 1600);
       } else {
         setFeedback(tr('moonstones.earnSheet.checkinFailed', { defaultValue: 'Couldn’t check in. Check your connection and try again.' }));
       }
@@ -119,9 +213,11 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
     }
   }
 
-  function handleGetPremium() {
-    onClose();
-    navigate('/profile?upgrade=1');
+  // The paywall stacks over this sheet. When it closes on a successful
+  // purchase the gate no longer applies, so the earn sheet goes with it.
+  function handlePaywallClose() {
+    setShowPaywall(false);
+    if (profile?.isPremium) onClose();
   }
 
   const isSoftCap = reason === 'soft-cap';
@@ -132,173 +228,155 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
   const gold = <span className="font-semibold text-gold" />;
   const strong = <span className="font-semibold" />;
 
-  return (
-    <Sheet open={open} onClose={onClose} title={title} variant="glow">
-      <div className="space-y-5 px-1 pb-24">
-        {/* Header line */}
-        {isSoftCap ? (
-          <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
-            <Clock className="mt-0.5 h-5 w-5 flex-none text-gold" />
-            <div className="text-sm leading-relaxed text-mystic-100">
-              <Trans
-                t={t}
-                i18nKey="moonstones.earnSheet.softCapBody"
-                defaults="You’ve done 50 readings in the last 24 hours — the limit that keeps AI quality high for everyone. Your next reading opens in <gold>{{when}}</gold>, and slots free up one at a time as older readings age out. Premium stays on throughout."
-                values={{
-                  when: resetAt
-                    ? formatTimeUntil(resetAt, tr)
-                    : tr('moonstones.earnSheet.softCapSoon', { defaultValue: 'a few hours' }),
-                }}
-                components={{ gold }}
-              />
+  // What the user can actually do from here. On the web there is no ad to
+  // watch, so "Earn more below" promised a row that was never there (R6
+  // A15); the line now names the one path that exists today. The same goes
+  // for the app once today's ads are used up: the ad row is gone then.
+  const offersAd = native && !adsCapped;
+  const nextStep = offersAd
+    ? tr('moonstones.earnSheet.earnBelow', { defaultValue: 'Earn more below.' })
+    : checkinDone
+      ? nextStepAfterCheckin(tr, new Date())
+      : tr('moonstones.earnSheet.nextStepCheckin', { defaultValue: 'Check in below for today’s Moonstones, or go Premium.' });
+
+  // The header is one run of sentences per locale — the price, the balance
+  // when it is known, then the next step — so each language sets the space
+  // between them: none after 。 in ja and zh. They were three pieces glued
+  // with {' '} in code: 「…が必要です。 所持：20個。 下で…」 (QU2 R3 f).
+  const withBalance = balance !== null;
+  const header = isBrowse
+    ? withBalance
+      ? { key: 'moonstones.earnSheet.browseLineBalance', en: 'Each AI reading costs <gold>{{cost}} Moonstones</gold>. You have <strong>{{n}}</strong>. {{next}}' }
+      : { key: 'moonstones.earnSheet.browseLine', en: 'Each AI reading costs <gold>{{cost}} Moonstones</gold>. {{next}}' }
+    : withBalance
+      ? { key: 'moonstones.earnSheet.insufficientLineBalance', en: 'You need <gold>{{cost}} Moonstones</gold> to continue. You have <strong>{{n}}</strong>. {{next}}' }
+      : { key: 'moonstones.earnSheet.insufficientLine', en: 'You need <gold>{{cost}} Moonstones</gold> to continue. {{next}}' };
+
+  const sheets = (
+    <>
+      <Sheet open={open} onClose={onClose} title={title} variant="glow">
+        <div className="space-y-5 px-1 pb-6">
+          {/* Header line */}
+          {isSoftCap ? (
+            <div className="flex items-start gap-3 rounded-control bg-mystic-800/50 p-4">
+              <Clock className="mt-0.5 h-5 w-5 flex-none text-gold" aria-hidden />
+              <div className="text-ui leading-relaxed text-mystic-100">
+                <Trans
+                  t={t}
+                  i18nKey="moonstones.earnSheet.softCapBody"
+                  defaults="You’ve done 50 readings in the last 24 hours — the limit that keeps AI quality high for everyone. Your next reading opens in <gold>{{when}}</gold>, and slots free up one at a time as older readings age out. Premium stays on throughout."
+                  values={{
+                    when: resetAt
+                      ? formatTimeUntil(resetAt, tr)
+                      : tr('moonstones.earnSheet.softCapSoon', { defaultValue: 'a few hours' }),
+                  }}
+                  components={{ gold }}
+                />
+              </div>
             </div>
-          </div>
-        ) : isBrowse ? (
-          <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
-            <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" />
-            <div className="text-sm leading-relaxed text-mystic-100">
-              <Trans
-                t={t}
-                i18nKey="moonstones.earnSheet.browseBody"
-                defaults="Each AI reading costs <gold>{{cost}} Moonstones</gold>."
-                values={{ cost: ACTION_COST }}
-                components={{ gold }}
-              />
-              {balance !== null && (
-                <>
-                  {' '}
-                  <Trans
-                    t={t}
-                    i18nKey="moonstones.earnSheet.youHave"
-                    defaults="You have <strong>{{n}}</strong>."
-                    values={{ n: balance }}
-                    components={{ strong }}
-                  />
-                </>
-              )}{' '}
-              {tr('moonstones.earnSheet.earnBelow', { defaultValue: 'Earn more below.' })}
+          ) : (
+            <div className="flex items-start gap-3 rounded-control bg-mystic-800/50 p-4">
+              <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" aria-hidden />
+              <div className="text-ui leading-relaxed text-mystic-100">
+                <Trans
+                  t={t}
+                  i18nKey={header.key}
+                  defaults={header.en}
+                  values={{ cost, n: balance ?? 0, next: nextStep }}
+                  components={{ gold, strong }}
+                />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
-            <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" />
-            <div className="text-sm leading-relaxed text-mystic-100">
-              <Trans
-                t={t}
-                i18nKey="moonstones.earnSheet.insufficientBody"
-                defaults="You need <gold>{{cost}} Moonstones</gold> for this reading."
-                values={{ cost: ACTION_COST }}
-                components={{ gold }}
-              />
-              {balance !== null && (
-                <>
-                  {' '}
-                  <Trans
-                    t={t}
-                    i18nKey="moonstones.earnSheet.youHave"
-                    defaults="You have <strong>{{n}}</strong>."
-                    values={{ n: balance }}
-                    components={{ strong }}
-                  />
-                </>
+          )}
+
+          {feedback && (
+            <div className="rounded-control bg-teal/10 border border-teal/25 px-4 py-2 text-ui text-teal" role="status">
+              {feedback}
+            </div>
+          )}
+
+          {!isSoftCap && (
+            <ListRowGroup>
+              {/* Watch ad — native only, and only while an ad can still earn today */}
+              {offersAd && (
+                <ListRow
+                  icon={<Gift />}
+                  tone="gold"
+                  label={tr('moonstones.earnSheet.watchAdTitle', { defaultValue: 'Watch a short video' })}
+                  meta={
+                    adAvailable
+                      ? tr('moonstones.earnSheet.watchAdSub', { defaultValue: 'Earn {{n}} Moonstones', n: MOONSTONES_PER_AD })
+                      : tr('moonstones.earnSheet.watchAdNotReady', { defaultValue: 'No ad is ready right now' })
+                  }
+                  value={<span className="text-gold font-semibold tabular-nums">+{MOONSTONES_PER_AD}</span>}
+                  onClick={handleWatchAd}
+                  disabled={adBusy || adCooling || !adAvailable}
+                />
               )}
-            </div>
-          </div>
-        )}
 
-        {feedback && (
-          <div className="rounded-lg bg-teal/10 border border-teal/25 px-4 py-2 text-sm text-teal" role="status">
-            {feedback}
-          </div>
-        )}
+              {/* Daily check-in */}
+              {checkinDone === false && (
+                <ListRow
+                  icon={<CalendarCheck />}
+                  tone="teal"
+                  label={tr('moonstones.earnSheet.checkinTitle', { defaultValue: 'Daily check-in' })}
+                  meta={tr('moonstones.earnSheet.checkinSub', {
+                    defaultValue: 'First check-in: {{welcome}} welcome Moonstones, then {{min}}–{{max}} a day',
+                    welcome: CHECKIN_WELCOME,
+                    min: CHECKIN_MIN,
+                    max: CHECKIN_MAX,
+                  })}
+                  onClick={handleCheckin}
+                  disabled={checkinBusy}
+                />
+              )}
 
-        {!isSoftCap && (
-          <div className="space-y-3">
-            {/* Watch ad — native only */}
-            {isNative() && (
-              <button
-                onClick={handleWatchAd}
-                disabled={adBusy || !adAvailable}
-                className="flex w-full items-center justify-between rounded-control border border-gold/30 bg-mystic-800/60 p-4 text-left transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <div className="flex items-center gap-3">
-                  <Gift className="h-5 w-5 text-gold" />
-                  <div>
-                    <div className="text-sm font-medium text-mystic-50">
-                      {tr('moonstones.earnSheet.watchAdTitle', { defaultValue: 'Watch a short video' })}
-                    </div>
-                    <div className="text-meta text-mystic-300">
-                      {adAvailable
-                        ? tr('moonstones.earnSheet.watchAdSub', { defaultValue: 'Earn {{n}} Moonstones', n: MOONSTONES_PER_AD })
-                        : tr('moonstones.earnSheet.watchAdNotReady', { defaultValue: 'No ad is ready right now' })}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-sm font-semibold text-gold">+{MOONSTONES_PER_AD}</span>
-              </button>
-            )}
+              {checkinDone && (
+                <ListRow
+                  icon={<CalendarCheck />}
+                  label={tr('moonstones.earnSheet.checkinClaimed', { defaultValue: 'You’ve already checked in today' })}
+                  meta={nextClaimLabel(tr, new Date(), getLocale())}
+                />
+              )}
 
-            {/* Daily check-in */}
-            {checkinDone === false && (
-              <button
-                onClick={handleCheckin}
-                disabled={checkinBusy}
-                className="flex w-full items-center justify-between rounded-control border border-mystic-700/50 bg-mystic-800/60 p-4 text-left transition hover:border-gold/40 disabled:opacity-50"
-              >
-                <div className="flex items-center gap-3">
-                  <CalendarCheck className="h-5 w-5 text-mystic-200" />
-                  <div>
-                    <div className="text-sm font-medium text-mystic-50">
-                      {tr('moonstones.earnSheet.checkinTitle', { defaultValue: 'Daily check-in' })}
-                    </div>
-                    <div className="text-meta text-mystic-300">
-                      {tr('moonstones.earnSheet.checkinSub', {
-                        defaultValue: '{{min}} to {{max}} Moonstones, rising with your streak',
-                        min: CHECKIN_MIN,
-                        max: CHECKIN_MAX,
-                      })}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-sm font-semibold text-gold">
-                  {tr('moonstones.earnSheet.checkinRange', { defaultValue: '+{{min}} to +{{max}}', min: CHECKIN_MIN, max: CHECKIN_MAX })}
-                </span>
-              </button>
-            )}
+              {/* Premium — opens the paywall over this sheet, not another screen */}
+              <ListRow
+                icon={<Crown />}
+                tone="violet"
+                label={tr('moonstones.earnSheet.premiumTitle', { defaultValue: 'Get Premium' })}
+                meta={tr('moonstones.earnSheet.premiumSub', { defaultValue: 'No Moonstones to spend, no ads, every spread and chart' })}
+                onClick={() => setShowPaywall(true)}
+              />
+            </ListRowGroup>
+          )}
 
-            {checkinDone && (
-              <div className="rounded-control border border-mystic-700/30 bg-mystic-900/30 p-4 text-center text-meta text-mystic-400">
-                {tr('moonstones.earnSheet.checkinClaimed', { defaultValue: 'You’ve already checked in today.' })}
-              </div>
-            )}
-          </div>
-        )}
+          {/* The soft cap is mostly met by Premium members, who need no
+              upsell to the plan they already hold. */}
+          {isSoftCap && !profile?.isPremium && (
+            <ListRowGroup>
+              <ListRow
+                icon={<Crown />}
+                tone="violet"
+                label={tr('moonstones.earnSheet.premiumTitle', { defaultValue: 'Get Premium' })}
+                meta={tr('moonstones.earnSheet.premiumSub', { defaultValue: 'No Moonstones to spend, no ads, every spread and chart' })}
+                onClick={() => setShowPaywall(true)}
+              />
+            </ListRowGroup>
+          )}
 
-        {/* Premium upsell — always shown */}
-        <button
-          onClick={handleGetPremium}
-          className="flex w-full items-center justify-between rounded-control border border-gold/40 bg-gradient-to-r from-gold/10 to-mystic-800/60 p-4 text-left transition hover:border-gold/70"
-        >
-          <div className="flex items-center gap-3">
-            <Crown className="h-5 w-5 text-gold" />
-            <div>
-              <div className="text-sm font-medium text-gold">
-                {tr('moonstones.earnSheet.premiumTitle', { defaultValue: 'Get Premium' })}
-              </div>
-              <div className="text-meta text-mystic-200">
-                {tr('moonstones.earnSheet.premiumSub', { defaultValue: 'No Moonstones to spend, no ads, every spread and chart' })}
-              </div>
-            </div>
-          </div>
-          <span className="text-sm font-semibold text-gold">→</span>
-        </button>
-
-        <div className="pt-1">
           <Button onClick={onClose} variant="ghost" className="w-full">
             {tr('moonstones.earnSheet.notNow', { defaultValue: 'Not now' })}
           </Button>
         </div>
-      </div>
-    </Sheet>
+      </Sheet>
+      <PaywallSheet open={showPaywall} onClose={handlePaywallClose} />
+    </>
   );
+
+  // Portalled to <body>, as CrisisBanner is. useMoonstoneSpend hands its
+  // callers this sheet to place wherever the hook lives, and a caller inside
+  // a card with a backdrop blur or an entrance animation (a containing block
+  // for `position: fixed`) drew it inside that card: the soulmate portrait's
+  // earn sheet sat mid-page, clipped to the card's width.
+  return typeof document === 'undefined' ? sheets : createPortal(sheets, document.body);
 }

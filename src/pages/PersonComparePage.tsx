@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Heart } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse, Disclosure, Disclaimer, Skeleton } from '../components/ui';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { PlanetGlyph, ZodiacGlyph } from '../components/icons';
@@ -11,6 +11,9 @@ import { supabase } from '../lib/supabase';
 import { type NatalChart, computeSynastry, synastryScore, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
+import { useInterpretations } from '../hooks/useAstrology';
+import { useBirthTzBackfill, fallbackZone } from '../components/horoscope/birthZone';
+import { ensurePersonZone } from '../components/people/personZone';
 
 type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
 const TABS: { key: CompareTab; label: string; blurb: string }[] = [
@@ -19,8 +22,6 @@ const TABS: { key: CompareTab; label: string; blurb: string }[] = [
   { key: 'davison', label: 'Davison', blurb: 'A real sky, halfway between your births in time and space' },
   { key: 'progressed-composite', label: 'Progressed', blurb: 'Where the relationship chart has evolved to now' },
 ];
-
-type Interp = typeof import('../data/interpretations');
 
 const planetName = (p: string) => (isPlanet(p) ? localizePlanetName(p) : p);
 const aspectName = (a: string) => (isAspectType(a) ? localizeAspectName(a) : a);
@@ -37,15 +38,24 @@ export function PersonComparePage() {
   const navigate = useNavigate();
   const { t } = useT('app');
   const { profile } = useAuth();
+  // Your side of the comparison is cast from birth_utc / birthTz: a profile
+  // without a birth-place zone (cast before F21) gets one here, and the
+  // charts recast when the profile comes back.
+  useBirthTzBackfill();
   const [name, setName] = useState('');
   const [mine, setMine] = useState<NatalChart | null>(null);
   const [theirs, setTheirs] = useState<NatalChart | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // Aspect essays and sign compatibility, in the reader's language (null until loaded).
+  const interp = useInterpretations();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [tab, setTab] = useState<CompareTab>('synastry');
   const [relCharts, setRelCharts] = useState<Partial<Record<CompareTab, NatalChart>>>({});
   const [relLoading, setRelLoading] = useState(false);
+  // Aspect lists start at three closed rows (R5 M-12); the essay per aspect
+  // opens on tap.
+  const [showAllCross, setShowAllCross] = useState(false);
+  const [showAllRel, setShowAllRel] = useState(false);
 
   // Relationship-chart tabs (composite / davison / progressed) — fetched
   // lazily from the pure-compute chart-suite endpoint, cached per tab.
@@ -66,19 +76,27 @@ export function PersonComparePage() {
   const load = useCallback(async () => {
     if (!id || !profile) return;
     setLoading(true); setErr(null);
-    if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
     const pRes = await peopleDal.getById(id);
     if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
+    // A pet reads by temperament on its own page; there is no chart
+    // comparison for it. Q13 took the button off the pet's page, but this
+    // URL still opened a human synastry for the cat (QU2 R2). Checked before
+    // the viewer's own birth date, which a pet's page does not need, and
+    // replaced, so Back does not land here again.
+    if (pRes.data.relationship === 'pet') { navigate(`/people/${id}`, { replace: true }); return; }
+    if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
+    // Saved before F25 without a place: give their birth time a zone before
+    // their chart is cast (the trigger read it as UTC).
+    await ensurePersonZone(pRes.data);
     setName(pRes.data.name);
     const [own, other] = await Promise.all([
-      chartFor({ birthDate: profile.birthDate, birthTime: profile.birthTime ?? null, birthUtc: profile.birthUtc ?? null, lat: profile.birthLat ?? null, lon: profile.birthLon ?? null, timezone: profile.birthTz ?? profile.timezone ?? null }),
+      chartFor({ birthDate: profile.birthDate, birthTime: profile.birthTime ?? null, birthUtc: profile.birthUtc ?? null, lat: profile.birthLat ?? null, lon: profile.birthLon ?? null, timezone: profile.birthTz || fallbackZone(profile) }),
       chartFor({ personId: id }),
     ]);
     if (!own || !other) { setErr(t('people.compare.castFailed', { defaultValue: "Couldn't cast both charts — check your connection and try again." })); setLoading(false); return; }
     setMine(own); setTheirs(other);
     setLoading(false);
-    import('../data/interpretations').then(setInterp);
-  }, [id, profile, t]);
+  }, [id, profile, t, navigate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -143,15 +161,36 @@ export function PersonComparePage() {
             {relChart.aspects.length > 0 && (
               <Section title={t('people.compare.aspectsInChart', { defaultValue: 'Aspects in this chart' })} headingLevel="h3" contentClassName="space-y-3">
                 <AspectGrid aspects={relChart.aspects} />
-                <div className="space-y-3 pt-1">
-                  {relChart.aspects.slice(0, 5).map((a, i) => (
-                    <div key={i} className="text-ui">
-                      <span className="text-mystic-200">{planetName(a.planet1)} {aspectName(a.type)} {planetName(a.planet2)}</span>
-                      <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
-                      {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
-                    </div>
+                <Card className="px-4 py-1">
+                  {(showAllRel ? relChart.aspects : relChart.aspects.slice(0, 3)).map((a, i) => (
+                    <Disclosure
+                      key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+                      variant="row"
+                      lazy
+                      label={
+                        <span className="block break-words text-mystic-100">
+                          {t('horoscope.birthChartView.aspectRow', {
+                            defaultValue: '{{p1}} {{type}} {{p2}}',
+                            p1: planetName(a.planet1),
+                            type: aspectName(a.type),
+                            p2: planetName(a.planet2),
+                          })}
+                        </span>
+                      }
+                      meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
+                      contentClassName="reading-copy"
+                    >
+                      {interp ? <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} /> : <Skeleton height={14} width="80%" />}
+                    </Disclosure>
                   ))}
-                </div>
+                </Card>
+                {relChart.aspects.length > 3 && (
+                  <Button variant="ghost" size="sm" fullWidth onClick={() => setShowAllRel((v) => !v)} aria-expanded={showAllRel}>
+                    {showAllRel
+                      ? t('people.detail.showFewerAspects', { defaultValue: 'Show fewer aspects' })
+                      : t('people.detail.showAllAspects', { defaultValue: 'Show all {{n}} aspects', n: relChart.aspects.length })}
+                  </Button>
+                )}
               </Section>
             )}
           </>
@@ -160,9 +199,11 @@ export function PersonComparePage() {
         )
       ) : (
       <>
-      {/* Harmony score ring */}
+      {/* Harmony score — a number, so Inter, never the display serif. */}
       <Card className="p-6 text-center space-y-2">
-        <div className="text-5xl font-display text-gold">{score}<span className="text-2xl text-mystic-500">/100</span></div>
+        <div className="font-sans text-hero font-semibold tabular-nums text-gold leading-none">
+          {score}<span className="text-title font-medium text-mystic-500">/100</span>
+        </div>
         <p className="text-meta text-mystic-400">
           {t('people.compare.resonance', { defaultValue: 'Overall resonance from {{n}} cross-chart connections', n: aspects.length })}
         </p>
@@ -170,7 +211,14 @@ export function PersonComparePage() {
 
       {/* Sun-sign compatibility */}
       {compat && (
-        <Section title={<>{mySun && isZodiacSign(mySun) ? localizeSignName(mySun) : mySun} &amp; {theirSun && isZodiacSign(theirSun) ? localizeSignName(theirSun) : theirSun}</>} headingLevel="h3">
+        <Section
+          title={t('people.compare.signPair', {
+            defaultValue: '{{a}} & {{b}}',
+            a: mySun && isZodiacSign(mySun) ? localizeSignName(mySun) : mySun,
+            b: theirSun && isZodiacSign(theirSun) ? localizeSignName(theirSun) : theirSun,
+          })}
+          headingLevel="h3"
+        >
           <div className="reading-copy">
             <p><span className="text-coral font-medium">{t('people.compare.love', { defaultValue: 'Love' })} · </span>{compat.love}</p>
             <p><span className="text-cosmic-blue-ink font-medium">{t('people.compare.friendship', { defaultValue: 'Friendship' })} · </span>{compat.friendship}</p>
@@ -184,12 +232,19 @@ export function PersonComparePage() {
         headingLevel="h3"
         title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> {t('people.compare.strongest', { defaultValue: 'Your strongest connections' })}</span>}
       >
-        <div className="space-y-4">
-          {aspects.slice(0, 8).map((a, i) => (
-            <div key={i} className="text-ui">
-              <div className="text-mystic-200 flex items-center gap-1.5 flex-wrap">
-                {isPlanet(a.planet1) && <PlanetGlyph planet={a.planet1} size={16} className="text-gold" />}
-                <span>
+        <Card className="px-4 py-1">
+          {(showAllCross ? aspects : aspects.slice(0, 3)).map((a, i) => (
+            <Disclosure
+              key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+              variant="row"
+              lazy
+              icon={isPlanet(a.planet1) ? <PlanetGlyph planet={a.planet1} size={18} className="text-gold" /> : undefined}
+              label={
+                // Wraps rather than truncates: this label is the only place
+                // the row names the partner's planet and the aspect, and in
+                // ja/ko the aspect comes last — an ellipsis cut both off
+                // (review #30).
+                <span className="block break-words text-mystic-100">
                   {t('people.compare.crossRow', {
                     defaultValue: 'Your {{mine}} {{type}} {{name}}’s {{theirs}}',
                     mine: planetName(a.planet1),
@@ -198,18 +253,26 @@ export function PersonComparePage() {
                     theirs: planetName(a.planet2),
                   })}
                 </span>
-                {isPlanet(a.planet2) && <PlanetGlyph planet={a.planet2} size={16} className="text-gold" />}
-                <span className="text-meta text-mystic-400">· {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
-              </div>
-              {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
-            </div>
+              }
+              meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
+              contentClassName="reading-copy"
+            >
+              {interp ? <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} /> : <Skeleton height={14} width="80%" />}
+            </Disclosure>
           ))}
-        </div>
+        </Card>
+        {aspects.length > 3 && (
+          <Button variant="ghost" size="sm" fullWidth onClick={() => setShowAllCross((v) => !v)} aria-expanded={showAllCross} className="mt-3">
+            {showAllCross
+              ? t('people.detail.showFewerAspects', { defaultValue: 'Show fewer aspects' })
+              : t('people.detail.showAllAspects', { defaultValue: 'Show all {{n}} aspects', n: aspects.length })}
+          </Button>
+        )}
       </Section>
       </>
       )}
 
-      <p className="text-caption text-mystic-500 italic">{t('people.compare.disclaimer', { defaultValue: 'For reflection and entertainment. These charts describe dynamics, not destiny.' })}</p>
+      <Disclaimer kind="astrology" />
     </Page>
   );
 }

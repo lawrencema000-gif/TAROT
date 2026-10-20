@@ -1,6 +1,7 @@
 // Extra localized content for astrology-weekly and astrology-monthly.
 // Kept in a separate file so astrology-daily's bundle stays small.
 import type { Locale, Element, AspectType } from "./astrology-content.ts";
+import { fillKoTemplate, withKoParticle } from "./ko-josa.ts";
 
 // Short day-of-week labels (Sun, Mon, ...) for weekly forecasts.
 export const DAY_SHORT: Record<Locale, string[]> = {
@@ -18,7 +19,12 @@ export const MONTH_SHORT: Record<Locale, string[]> = {
   zh: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
 };
 
-// Weekly: aspect-event phrases that go between planet names
+// Weekly: aspect-event phrases that go between planet names (en, ja, zh),
+// and in Korean the whole sentence: {transit}, {natalWord} and {natal} are
+// slots, and fillKoTemplate makes the particle on each agree with its name
+// (weeklyAspectEvent). The Korean phrases were fragments glued between the
+// names ("목성이(가) 과(와) 강력히 융합합니다. 대상은 당신의 네이탈 달"):
+// a particle can only agree with a word it is written on (p9 QT2).
 export const ASPECT_EVENTS: Record<Locale, Record<AspectType, string[]>> = {
   en: {
     conjunction: ["intensifies themes around", "merges powerfully with", "brings a concentrated focus on"],
@@ -35,11 +41,31 @@ export const ASPECT_EVENTS: Record<Locale, Record<AspectType, string[]>> = {
     sextile: ["に関するチャンスを提供します、対象は", "を優しく活性化します、対象は", "への有益な後押しをもたらします、対象は"],
   },
   ko: {
-    conjunction: ["의 주제를 강화합니다. 대상은", "과(와) 강력히 융합합니다. 대상은", "에 집중된 초점을 가져옵니다. 대상은"],
-    opposition: ["과(와) 드러나는 긴장을 만듭니다. 대상은", "의 균형점을 부각합니다. 대상은", "의 통합을 도전합니다. 대상은"],
-    trine: ["과(와) 수월하게 흐릅니다. 대상은", "의 자연스런 성장을 지원합니다. 대상은", "를 위한 문을 쉽게 엽니다. 대상은"],
-    square: ["에 대한 행동을 밀어붙입니다. 대상은", "과(와) 생산적 마찰을 만듭니다. 대상은", "에 관한 변화를 자극합니다. 대상은"],
-    sextile: ["에 관한 기회를 제공합니다. 대상은", "를 부드럽게 활성화합니다. 대상은", "를 향한 도움의 자극을 줍니다. 대상은"],
+    conjunction: [
+      "{transit}이 당신의 {natalWord} {natal}을 둘러싼 주제를 강화합니다.",
+      "{transit}이 당신의 {natalWord} {natal}과 강력하게 융합합니다.",
+      "{transit}이 당신의 {natalWord} {natal}에 초점을 모아 줍니다.",
+    ],
+    opposition: [
+      "{transit}이 당신의 {natalWord} {natal}과 무언가를 드러내는 긴장을 만듭니다.",
+      "{transit}이 당신의 {natalWord} {natal}의 균형점을 비춥니다.",
+      "{transit}이 당신의 {natalWord} {natal}을 삶에 통합해 보라고 권합니다.",
+    ],
+    trine: [
+      "{transit}이 당신의 {natalWord} {natal}과 수월하게 흐릅니다.",
+      "{transit}이 당신의 {natalWord} {natal}의 자연스러운 성장을 돕습니다.",
+      "{transit}이 당신의 {natalWord} {natal}을 위한 문을 가볍게 엽니다.",
+    ],
+    square: [
+      "{transit}이 당신의 {natalWord} {natal}에 관해 행동하도록 밀어붙입니다.",
+      "{transit}이 당신의 {natalWord} {natal}과 생산적인 마찰을 만듭니다.",
+      "{transit}이 당신의 {natalWord} {natal}을 둘러싼 변화를 자극합니다.",
+    ],
+    sextile: [
+      "{transit}이 당신의 {natalWord} {natal}에 관한 기회를 제공합니다.",
+      "{transit}이 당신의 {natalWord} {natal}을 부드럽게 깨웁니다.",
+      "{transit}이 당신의 {natalWord} {natal} 쪽으로 도움이 되는 자극을 줍니다.",
+    ],
   },
   zh: {
     conjunction: ["强化围绕以下主题:", "与之强力融合:", "带来集中的焦点于:"],
@@ -538,12 +564,43 @@ export const KEY_DATES: Record<Locale, { newMoonLabel: string; fullMoonLabel: st
 };
 
 // Fallback for outer planet: "{Planet} transits through {Sign}, shaping collective themes."
+// Filled by outerPlanetFallback (the Korean particles agree with the names).
 export const OUTER_PLANET_FALLBACK: Record<Locale, string> = {
   en: "{planet} transits through {sign}, shaping collective themes.",
   ja: "{planet}が{sign}を通過し、集合的なテーマを形作ります。",
   ko: "{planet}이(가) {sign}을(를) 통과하며 집단적 주제를 빚어냅니다.",
   zh: "{planet}经过{sign},塑造集体主题。",
 };
+
+// ── The lines built from names ────────────────────────────────────────────
+// Every line that puts a planet or sign name into a sentence is built here,
+// so the Korean particle on each name agrees with it (ko-josa.ts): "목성이",
+// "달과", "물병자리를" — never 이(가), 과(와), 을(를) (p9 QT2).
+// src/test/golden/weeklyMonthlyKo.test.ts renders every combination.
+
+/** A weekly key moment: the transit planet, the aspect phrase, the natal planet (all localized). */
+export function weeklyAspectEvent(locale: Locale, phrase: string, transit: string, natal: string): string {
+  const natalWord = NATAL_WORD[locale];
+  if (locale === "en") return `${transit} ${phrase} your ${natalWord} ${natal}`;
+  if (locale === "ja") return `${transit}${phrase}あなたの${natalWord}${natal}`;
+  if (locale === "ko") return fillKoTemplate(phrase, { transit, natalWord, natal });
+  return `${transit}${phrase}你的${natalWord}${natal}`;
+}
+
+/** A monthly key date: a planet entering a sign (both localized). */
+export function monthlyIngress(locale: Locale, planet: string, sign: string): string {
+  if (locale === "en") return `${planet} enters ${sign}`;
+  if (locale === "ja") return `${planet}が${sign}に入る`;
+  if (locale === "ko") return `${withKoParticle(planet, "이")} ${sign}에 진입`;
+  return `${planet}进入${sign}`;
+}
+
+/** The monthly outer-planet line when no theme is written for the planet and element. */
+export function outerPlanetFallback(locale: Locale, planet: string, sign: string): string {
+  const template = OUTER_PLANET_FALLBACK[locale];
+  if (locale === "ko") return fillKoTemplate(template, { planet, sign });
+  return template.replace("{planet}", planet).replace("{sign}", sign);
+}
 
 // Formatted date like "Jan 15" (weekly start/end, full moon / new moon dates)
 export function formatShortLocalized(d: Date, locale: Locale): string {

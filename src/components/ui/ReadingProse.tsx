@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 interface ReadingProseProps {
   /** The reading — generated or authored — with paragraphs separated by blank lines. */
   text: string;
-  /** Set the first paragraph as a lede with a drop cap. Default true. */
+  /** Set the first paragraph as a lede (19px, brighter ink). Default true. */
   lede?: boolean;
   className?: string;
   /** Trailing content rendered inside the measure, e.g. a closing line. */
@@ -18,8 +18,9 @@ interface ReadingProseProps {
  * produces, and the least designed.
  *
  * This splits on blank lines and renders real paragraphs on the body tier,
- * the first as a lede with the drop cap the design system defined and
- * nothing ever applied. Single newlines are honoured as paragraph breaks
+ * the first as a lede. (The drop cap it used to carry is gone: a gold
+ * initial with a glow under it was the tell the Phase 7 study named, and
+ * the reference app has neither.) Single newlines are honoured as paragraph breaks
  * only when the text has no blank lines at all, so a model that separates
  * paragraphs either way reads the same — and INSIDE a paragraph they stay
  * line breaks (`whitespace-pre-line`): the generators emit numbered lists
@@ -33,7 +34,7 @@ export function ReadingProse({ text, lede = true, className = '', children }: Re
   return (
     <div className={`reading-copy ${className}`.trim()}>
       {paragraphs.map((p, i) => (
-        <p key={i} className={`whitespace-pre-line${i === 0 && lede ? ' reading-lede drop-cap' : ''}`}>
+        <p key={i} className={`whitespace-pre-line${i === 0 && lede ? ' reading-lede' : ''}`}>
           {p}
         </p>
       ))}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, Clock, Star, X, Play, Square as StopIcon, Users } from 'lucide-react';
-import { Card, Button, PageHeader, Page, Badge, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, Badge, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisorSessions } from '../dal';
@@ -150,14 +150,27 @@ export function AdvisorSessionPage() {
     }
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
+  if (loading) return <div className="py-12 text-center text-mystic-500 text-ui">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
   if (!session) {
     return (
-      <Card padding="lg">
-        <p className="text-sm text-mystic-400">
-          {t('advisorSession.notFound', { defaultValue: 'Session not found.' })}
-        </p>
-      </Card>
+      <Page spacing="md">
+        <PageHeader
+          onBack={() => navigate('/advisors')}
+          backLabel={t('advisorSession.back', { defaultValue: 'Back to advisors' }) as string}
+          title={t('advisorSession.title', { defaultValue: 'Session' })}
+        />
+        <EmptyState
+          as="h2"
+          icon={<Users />}
+          title={t('advisorSession.notFound', { defaultValue: 'This session isn’t here' })}
+          description={t('advisorSession.notFoundBody', { defaultValue: 'It may belong to another account, or the link is old.' })}
+          action={
+            <Button variant="outline" onClick={() => navigate('/advisors')}>
+              {t('advisorSession.back', { defaultValue: 'Back to advisors' })}
+            </Button>
+          }
+        />
+      </Page>
     );
   }
 
@@ -200,7 +213,7 @@ export function AdvisorSessionPage() {
 
       {session.state === 'scheduled' && (
         <Card padding="lg" className="text-center">
-          <p className="text-sm text-mystic-400 mb-3">
+          <p className="text-ui text-mystic-400 mb-3">
             {minutesUntil(session.scheduledAt) > 0
               ? t('advisorSession.startsIn', {
                   defaultValue: 'Starts in {{n}} minutes. Start any time within 5 minutes of the scheduled time.',
@@ -223,7 +236,7 @@ export function AdvisorSessionPage() {
 
       {session.state === 'cancelled' && (
         <Card padding="lg">
-          <p className="text-sm text-mystic-400">
+          <p className="text-ui text-mystic-400">
             {t('advisorSession.cancelled', { defaultValue: 'This session was cancelled.' })}
           </p>
         </Card>
@@ -248,7 +261,7 @@ export function AdvisorSessionPage() {
               const mine = m.senderId === user?.id;
               return (
                 <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] px-3 py-2 rounded-card text-sm ${
+                  <div className={`max-w-[75%] px-3 py-2 rounded-card text-ui ${
                     mine
                       ? 'bg-gold/15 text-mystic-100 border border-gold/30'
                       : 'bg-mystic-800/50 text-mystic-200 border border-mystic-700/40'
@@ -276,7 +289,7 @@ export function AdvisorSessionPage() {
                   }}
                   placeholder={t('advisorSession.composerPlaceholder', { defaultValue: 'Write a message…' })}
                   maxLength={3000}
-                  className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+                  className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 text-mystic-100 text-ui placeholder-mystic-600 focus:outline-none focus:border-gold/40"
                 />
                 <Button size="sm" variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className=" px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' }) as string}>
                   <Send className="w-4 h-4" />
@@ -296,7 +309,7 @@ export function AdvisorSessionPage() {
 
       {session.state === 'completed' && isClient && !ratingSubmitted && session.rating === null && (
         <Card padding="lg">
-          <h3 className="text-sm font-medium text-gold tracking-wide mb-3">
+          <h3 className="text-ui font-medium text-mystic-200 mb-3">
             {t('advisorSession.rateTitle', { defaultValue: 'How was it?' })}
           </h3>
           <div className="flex gap-1 mb-3">
@@ -317,7 +330,7 @@ export function AdvisorSessionPage() {
             rows={3}
             maxLength={2000}
             placeholder={t('advisorSession.reviewPlaceholder', { defaultValue: 'Anything to share? (optional)' })}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
           />
           <Button variant="primary" fullWidth onClick={handleSubmitRating} disabled={rating === 0}>
             {t('advisorSession.submitRating', { defaultValue: 'Send my rating' })}

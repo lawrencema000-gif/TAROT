@@ -3,6 +3,7 @@ import { Orbit, Home, Triangle, ChevronDown, ChevronUp, Filter } from 'lucide-re
 import { useT } from '../../i18n/useT';
 import { Card, Chip, Skeleton, Tabs } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
+import { useBirthTzBackfill } from './birthZone';
 import { PLANETS, HOUSE_THEMES } from '../../types/astrology';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 import type { Planet, AspectType, PlanetPlacement, Aspect } from '../../types/astrology';
@@ -184,7 +185,9 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
 
 function HouseExplorer({ data }: { data: LazyExploreData }) {
   const { t } = useT('app');
-  const { chart, loading, error } = useNatalChart();
+  const { chart, loading, error, fetchChart } = useNatalChart();
+  // A chart cast before F21 is recast in the birth place's zone; reload.
+  useBirthTzBackfill(fetchChart);
 
   // Memoize planet-by-house grouping and interpretation lookups
   const { planetsByHouse, houseInterps } = useMemo(() => {
@@ -269,7 +272,8 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
 
 function AspectExplorer({ data }: { data: LazyExploreData }) {
   const { t } = useT('app');
-  const { chart, loading, error } = useNatalChart();
+  const { chart, loading, error, fetchChart } = useNatalChart();
+  useBirthTzBackfill(fetchChart);
   const [aspectFilter, setAspectFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState<number | null>(null);
 

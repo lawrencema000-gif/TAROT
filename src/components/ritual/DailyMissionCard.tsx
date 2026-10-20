@@ -7,6 +7,7 @@ import { useT } from '../../i18n/useT';
 import { pickDailyMission } from '../../data/dailyMissions';
 import { appStorage } from '../../lib/appStorage';
 import { localDateStr } from '../../utils/localDate';
+import { useContentOverlay, ct } from '../../i18n/contentOverlay';
 
 /**
  * Daily Energy Mission home widget.
@@ -20,7 +21,14 @@ import { localDateStr } from '../../utils/localDate';
  * card just records today.
  */
 
-const DONE_PREFIX = 'arcana_mission_';
+/**
+ * "Done today" is per account: one key per user holding `<date>|<missionId>`.
+ * The old `arcana_mission_<date>` keys were device-global (the next account
+ * on the phone inherited the tick) and one was added every day, forever;
+ * they are swept on the first render.
+ */
+const doneKey = (userId: string | null) => `arcana_daily_mission_v2:${userId ?? 'anon'}`;
+const LEGACY_DONE_RE = /^arcana_mission_\d{4}-\d{2}-\d{2}$/;
 
 interface DailyMissionCardProps {
   /** Optional hook fires when the user marks today's mission done. */
@@ -33,25 +41,37 @@ export function DailyMissionCard({ onDone }: DailyMissionCardProps) {
   // Local-calendar date: the mission is client-side, so the user's local
   // "today" is what counts.
   const today = localDateStr();
-  const mission = pickDailyMission(user?.id ?? null);
+  const userId = user?.id ?? null;
+  const mission = pickDailyMission(userId);
+  const stamp = `${today}|${mission.id}`;
+  // Mission copy from the `missions` content module, keyed by mission id;
+  // the English shows until (and wherever) a translation is missing.
+  const { overlay } = useContentOverlay('missions');
+  const prompt = ct(overlay, `missions.${mission.id}.prompt`, mission.prompt);
+  const why = ct(overlay, `missions.${mission.id}.why`, mission.why);
 
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let alive = true;
     (async () => {
-      const doneRaw = await appStorage.get(DONE_PREFIX + today);
-      setDone(doneRaw === mission.id);
+      const doneRaw = await appStorage.get(doneKey(userId));
+      if (!alive) return;
+      setDone(doneRaw === stamp);
       setLoading(false);
+      const keys = await appStorage.keys();
+      for (const k of keys) if (LEGACY_DONE_RE.test(k)) await appStorage.remove(k);
     })();
-  }, [today, mission.id]);
+    return () => { alive = false; };
+  }, [userId, stamp]);
 
   const handleDone = useCallback(async () => {
     if (done) return;
     setDone(true);
-    await appStorage.set(DONE_PREFIX + today, mission.id);
+    await appStorage.set(doneKey(userId), stamp);
     onDone?.();
-  }, [done, today, mission.id, onDone]);
+  }, [done, userId, stamp, onDone]);
 
   if (loading) {
     // Height-matched skeleton so the page doesn't jank.
@@ -73,10 +93,10 @@ export function DailyMissionCard({ onDone }: DailyMissionCardProps) {
             className="mt-3"
           >
             <p className="text-ui text-mystic-100 leading-relaxed font-medium">
-              {t(`dailyMission.missions.${mission.id}.prompt`, { defaultValue: mission.prompt })}
+              {prompt}
             </p>
             <p className="text-meta text-mystic-400 leading-relaxed mt-1 mb-4">
-              {t(`dailyMission.missions.${mission.id}.why`, { defaultValue: mission.why })}
+              {why}
             </p>
             <Button variant="outline" fullWidth onClick={handleDone}>
               <Circle className="w-4 h-4" aria-hidden />

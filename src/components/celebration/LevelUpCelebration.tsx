@@ -1,4 +1,4 @@
-import { Trophy, Compass, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button, Sheet, SparkleFourPoint } from '../ui';
 import { useT } from '../../i18n/useT';
 import { localizeSeekerRank } from '../../i18n/localizeRank';
@@ -11,73 +11,70 @@ interface LevelUpCelebrationProps {
   xpEarned: number;
 }
 
-export function LevelUpCelebration({
-  open,
-  onClose,
-  newLevel,
-  seekerRank,
-  xpEarned,
-}: LevelUpCelebrationProps) {
+/** How often to look again while another sheet or dialog is up. */
+const RETRY_MS = 1_000;
+
+/**
+ * Something modal is already up: any Sheet (it marks the body), a dialog.
+ * The same test as the trial reminder (TrialReminderModal.tsx).
+ */
+function somethingIsOpen(): boolean {
+  if (typeof document === 'undefined') return false;
+  if (document.body.classList.contains('sheet-open')) return true;
+  return document.querySelector('[role="dialog"], [aria-modal="true"]') !== null;
+}
+
+/**
+ * The level-up moment.
+ *
+ * It was a gradient trophy medallion, "Congratulations!", a gradient stat
+ * box, a second card promising "new abilities" nothing delivers, and an
+ * English-only button — and it opened over whatever sheet the action that
+ * earned the XP had left up (saving a reading opens the rate prompt), so its
+ * own button could cover that sheet's. Now: one flat surface, the gold
+ * sparkle, the new level as the title in Inter numerals, the rank under it,
+ * one button. It waits its turn: while another sheet or dialog is open it
+ * stays queued and opens once that one has closed.
+ */
+export function LevelUpCelebration({ open, onClose, newLevel, seekerRank, xpEarned }: LevelUpCelebrationProps) {
   const { t } = useT('app');
+  const [clear, setClear] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setClear(false);
+      return;
+    }
+    if (!somethingIsOpen()) {
+      setClear(true);
+      return;
+    }
+    const id = window.setInterval(() => {
+      if (!somethingIsOpen()) {
+        setClear(true);
+        window.clearInterval(id);
+      }
+    }, RETRY_MS);
+    return () => window.clearInterval(id);
+  }, [open]);
+
+  const levelTitle = t('celebration.levelUp.levelN', { defaultValue: 'Level {{level}}', level: newLevel });
 
   return (
-    <Sheet open={open} onClose={onClose} label={t('celebration.levelUp.title')}>
-      <div className="relative">
-        <button
-          onClick={onClose}
-          aria-label={t('common:actions.close', { defaultValue: 'Close' })}
-          className="absolute top-0 right-0 min-h-[44px] min-w-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-100 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="text-center py-6">
-          <div className="relative inline-block mb-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gold via-gold-light to-gold-dark flex items-center justify-center animate-scale-in">
-              <Trophy className="w-12 h-12 text-mystic-950" />
-            </div>
-          </div>
-
-          <h2 className="font-display text-3xl text-gold mb-2">{t('celebration.levelUp.title')}</h2>
-          <p className="text-mystic-300 mb-6">
-            Congratulations! You've reached a new level on your spiritual journey.
+    <Sheet open={open && clear} onClose={onClose} label={levelTitle}>
+      <div className="text-center pt-2 pb-1">
+        <SparkleFourPoint size={28} className="block text-gold mx-auto" />
+        <p className="font-display-eyebrow mt-4">{t('celebration.levelUp.eyebrow', { defaultValue: 'Level up' })}</p>
+        <h2 className="mt-2 font-body text-hero font-semibold text-mystic-100 tabular-nums">{levelTitle}</h2>
+        <p className="mt-2 text-ui text-mystic-300">{localizeSeekerRank(seekerRank)}</p>
+        {xpEarned > 0 && (
+          <p className="mt-1 text-meta text-mystic-400 tabular-nums">
+            {t('celebration.levelUp.xpEarned', { defaultValue: '+{{xp}} XP', xp: xpEarned })}
           </p>
-
-          <div className="bg-gradient-to-br from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-card p-6 mb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-5xl font-semibold text-gold mb-1">{newLevel}</div>
-                <div className="text-sm text-mystic-400">{t('celebration.levelUp.level')}</div>
-              </div>
-              <div className="h-12 w-px bg-mystic-700" />
-              <div className="text-center">
-                <div className="text-lg font-semibold text-mystic-100 mb-1">
-                  {localizeSeekerRank(seekerRank)}
-                </div>
-                <div className="text-sm text-mystic-400">{t('celebration.levelUp.rank', { defaultValue: 'Rank' })}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-sm text-gold">
-              <SparkleFourPoint size={14} className="text-gold" />
-              <span>+{xpEarned} XP earned</span>
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            <div className="bg-mystic-800/50 rounded-control p-4">
-              <h3 className="font-medium text-mystic-100 mb-2">{t('celebration.levelUp.newAbilities')}</h3>
-              <p className="text-sm text-mystic-400">
-                Continue your journey to unlock deeper insights and features
-              </p>
-            </div>
-          </div>
-
-          <Button variant="gold" onClick={onClose} className="w-full">
-            Continue Journey
-            <Compass className="w-4 h-4" />
-          </Button>
-        </div>
+        )}
+        <Button variant="gold" onClick={onClose} className="w-full mt-8">
+          {t('celebration.levelUp.continue', { defaultValue: 'Continue' })}
+        </Button>
       </div>
     </Sheet>
   );

@@ -2,6 +2,7 @@ import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { readFileSync } from 'node:fs';
+import { CJK_FONTS, CJK_FONT_CSS_BASE, CJK_FONT_CSS_SUFFIX } from './src/i18n/cjkFonts';
 
 // Emits dist/version.json at build time. Served with no-store via netlify.toml.
 function versionJsonPlugin(): Plugin {
@@ -47,7 +48,77 @@ function sentrySourceMaps(): Plugin | null {
 // three non-English locales are dynamic imports in src/i18n/config.ts, so
 // each file is its own chunk; this names them legibly (assets/i18n-ja-app-
 // <hash>.js) and lets the preload plugin below find them in the bundle.
-const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z]+)\.json$/;
+// The learn-library overlays (learn-astrology.json …, src/i18n/learnOverlay.ts)
+// match too and are named the same way, but see ON_DEMAND_BUNDLE_RE: they are
+// fetched by the learn pages, not at boot. A `?boot` / `?route=<name>` suffix
+// is one half of a split `app` bundle (routeNamespacePlugin below): m[3] is
+// the query, m[4] the route name of a route half.
+const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z-]+)\.json(?:\?(boot|route=([a-z]+)))?$/;
+
+// The quiz route's strings, split out of every locale's `app` bundle at
+// build time (R7 #139). `app` is the namespace every locale boots with, and
+// a third of it (extraQuizzes, ayurveda, quizzes.*) is read only on
+// /quizzes: about 90 KB gz every ja/ko/zh visitor downloaded before first
+// paint, and the English copy sat in the entry chunk. One source file per
+// locale stays the single truth (the i18n gate, the key-merge tooling and
+// the translators keep reading app.json); two virtual halves are served
+// from it:
+//   app.json?boot            everything else: what config.ts boots with
+//   app.json?route=quizzes   the quiz subtrees: QuizzesPage loads them
+//                            (ensureRouteStrings) and they deep-merge into `app`
+// quizzes.share and quizzes.title stay in boot: nine report pages toast
+// quizzes.share.*, and the quiz page's header renders before its strings
+// land. A new reader of a moved key outside the quiz route must either move
+// that key back (QUIZZES_KEEP) or wait for ensureRouteStrings('quizzes').
+// Vitest does not load this plugin, so tests see the whole file.
+const APP_JSON_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\][a-z]+[/\\]app\.json$/;
+const ROUTE_WHOLE = ['extraQuizzes', 'ayurveda'];
+const QUIZZES_KEEP = new Set(['share', 'title']);
+
+function splitAppBundle(json: Record<string, unknown>): {
+  boot: Record<string, unknown>;
+  route: Record<string, unknown>;
+} {
+  const boot: Record<string, unknown> = {};
+  const route: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(json)) {
+    if (ROUTE_WHOLE.includes(k)) route[k] = v;
+    else if (k === 'quizzes' && v && typeof v === 'object' && !Array.isArray(v)) {
+      const keep: Record<string, unknown> = {};
+      const move: Record<string, unknown> = {};
+      for (const [qk, qv] of Object.entries(v as Record<string, unknown>)) (QUIZZES_KEEP.has(qk) ? keep : move)[qk] = qv;
+      boot.quizzes = keep;
+      route.quizzes = move;
+    } else boot[k] = v;
+  }
+  return { boot, route };
+}
+
+function routeNamespacePlugin(): Plugin {
+  return {
+    name: 'arcana-route-namespaces',
+    enforce: 'pre',
+    load(id) {
+      const [file, query = ''] = id.split('?');
+      if (!APP_JSON_RE.test(file)) return null;
+      const q = new URLSearchParams(query);
+      const wantBoot = q.has('boot');
+      if (!wantBoot && q.get('route') !== 'quizzes') return null;
+      this.addWatchFile(file);
+      const { boot, route } = splitAppBundle(JSON.parse(readFileSync(file, 'utf8')));
+      return JSON.stringify(wantBoot ? boot : route);
+    },
+  };
+}
+
+// Namespaces a route loads on demand. They must NOT be modulepreloaded with
+// the UI bundles: the four learn overlays are 25–60 KB gz each per locale,
+// and only a visitor who opens /astrology, /numerology, /glossary or
+// /crystals in that language should download the one that page reads. The
+// playing-card corpus (cartomancy.json, 40–60 KB gz) is the same: the
+// cartomancy screens fetch it (ensureCartomancyCorpus), the boot does not.
+// So are the content overlays (content-*.json, src/i18n/contentOverlay.ts).
+const ON_DEMAND_BUNDLE_RE = /^(?:learn-|content-|cartomancy$)/;
 
 // Starts the locale chunks downloading before the main bundle has parsed.
 //
@@ -71,13 +142,14 @@ function localePreloadPlugin(): Plugin {
     },
     transformIndexHtml: {
       order: 'post',
-      handler(_html, ctx) {
+      handler(html, ctx) {
         if (!ctx.bundle) return;
         const byLocale: Record<string, string[]> = {};
         for (const [fileName, output] of Object.entries(ctx.bundle)) {
           if (output.type !== 'chunk' || !output.facadeModuleId) continue;
           const m = LOCALE_BUNDLE_RE.exec(output.facadeModuleId);
-          if (!m || m[1] === 'en') continue;
+          // m[4]: a route half of a split bundle is fetched by its route, never at boot.
+          if (!m || m[1] === 'en' || m[4] || ON_DEMAND_BUNDLE_RE.test(m[2])) continue;
           (byLocale[m[1]] ??= []).push(`${base}${fileName}`);
         }
         if (Object.keys(byLocale).length === 0) return;
@@ -86,10 +158,25 @@ function localePreloadPlugin(): Plugin {
           `(function(){try{var m=${JSON.stringify(byLocale)};` +
           `var q=new URLSearchParams(location.search).get('lang');var s=null;` +
           `try{s=localStorage.getItem('arcana_locale')}catch(e){}` +
-          `var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;` +
+          `var l=String(q||s||'').toLowerCase().split('-')[0];` +
+          // The locale's CJK sans stylesheet, the URL loadCjkFonts asks for later.
+          `var c=${JSON.stringify(CJK_FONTS)}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';` +
+          `k.href=${JSON.stringify(CJK_FONT_CSS_BASE)}+c+${JSON.stringify(CJK_FONT_CSS_SUFFIX)};document.head.appendChild(k)}` +
+          `var f=m[l];if(!f)return;` +
           `for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';` +
           `e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();`;
-        return [{ tag: 'script', children: script, injectTo: 'head-prepend' }];
+        // `<meta charset>` has to sit in the first 1024 bytes of the document
+        // (the encoding prescan; Lighthouse fails `charset` otherwise), and
+        // this map grows with every namespace — so the meta is lifted out of
+        // the template and prepended ahead of the script.
+        const CHARSET_RE = /<meta charset="UTF-8"\s*\/?>\s*/i;
+        return {
+          html: html.replace(CHARSET_RE, ''),
+          tags: [
+            { tag: 'meta', attrs: { charset: 'UTF-8' }, injectTo: 'head-prepend' },
+            { tag: 'script', children: script, injectTo: 'head-prepend' },
+          ],
+        };
       },
     },
   };
@@ -99,7 +186,7 @@ function localePreloadPlugin(): Plugin {
 export default defineConfig((): UserConfig => {
   const sentryPlugin = sentrySourceMaps();
   const config: UserConfig = {
-    plugins: [react(), versionJsonPlugin(), localePreloadPlugin(), ...(sentryPlugin ? [sentryPlugin] : [])],
+    plugins: [routeNamespacePlugin(), react(), versionJsonPlugin(), localePreloadPlugin(), ...(sentryPlugin ? [sentryPlugin] : [])],
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
@@ -124,7 +211,7 @@ export default defineConfig((): UserConfig => {
         output: {
           chunkFileNames(chunk) {
             const m = chunk.facadeModuleId ? LOCALE_BUNDLE_RE.exec(chunk.facadeModuleId) : null;
-            return m ? `assets/i18n-${m[1]}-${m[2]}-[hash].js` : 'assets/[name]-[hash].js';
+            return m ? `assets/i18n-${m[1]}-${m[2]}${m[4] ? `-${m[4]}` : ''}-[hash].js` : 'assets/[name]-[hash].js';
           },
           // Only node_modules are grouped by hand. Rollup pulls every static
           // dependency of a manual chunk's modules into that chunk unless the

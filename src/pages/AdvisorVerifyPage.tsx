@@ -1,16 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Upload, Check, AlertCircle, Clock, XCircle } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, EyebrowLabel, toast } from '../components/ui';
+import { Shield, Upload, Check, AlertCircle, Clock, XCircle, FileImage, Video } from 'lucide-react';
+import { Card, Button, Input, PageHeader, Page, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
 /**
- * Self-serve advisor verification flow. Three-step UX:
- *   1. Name + country
- *   2. Upload government ID (image)
- *   3. Upload a short selfie video
+ * Self-serve advisor verification flow, on one card:
+ *   1. Legal name + country (an ISO 3166-1 select, named in the user's locale)
+ *   2. Government ID (image)
+ *   3. A short selfie video
  *   → submit for admin review.
  *
  * Files land in the advisor-verification Supabase Storage bucket under
@@ -30,6 +31,32 @@ interface Verification {
   reviewed_at: string | null;
 }
 
+/** ISO 3166-1 alpha-2, the 249 officially assigned codes. Names come from Intl. */
+const ISO_COUNTRIES = (
+  'AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ ' +
+  'CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR ' +
+  'GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP ' +
+  'KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ ' +
+  'NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW ' +
+  'SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ ' +
+  'UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW'
+).split(' ');
+
+function countryOptions(locale: string): Array<{ code: string; name: string }> {
+  let names: { of(code: string): string | undefined } | null = null;
+  try {
+    names = new Intl.DisplayNames([locale, 'en'], { type: 'region' });
+  } catch {
+    names = null;
+  }
+  return ISO_COUNTRIES.map((code) => ({ code, name: names?.of(code) ?? code }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+}
+
+const FIELD_LABEL = 'block text-ui font-medium text-mystic-300 mb-2';
+const SELECT_CLASS =
+  'w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-3 min-h-[48px] text-ui text-mystic-100 focus:outline-none focus:border-gold/40 focus:ring-2 focus:ring-gold/20';
+
 export function AdvisorVerifyPage() {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -43,6 +70,7 @@ export function AdvisorVerifyPage() {
   const [loading, setLoading] = useState(true);
   const idInputRef = useRef<HTMLInputElement>(null);
   const selfieInputRef = useRef<HTMLInputElement>(null);
+  const countries = useMemo(() => countryOptions(getLocale()), []);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -58,9 +86,11 @@ export function AdvisorVerifyPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const complete = legalName.trim().length >= 2 && country.length === 2 && !!idFile && !!selfieFile;
+
   const submit = async () => {
     if (!user) return;
-    if (legalName.trim().length < 2 || country.length !== 2 || !idFile || !selfieFile) {
+    if (!complete || !idFile || !selfieFile) {
       toast(t('advisorVerify.incomplete', { defaultValue: 'Fill in every field and upload both files.' }), 'error');
       return;
     }
@@ -75,7 +105,7 @@ export function AdvisorVerifyPage() {
     });
     if (up1.error) {
       setSubmitting(false);
-      toast(t('advisorVerify.uploadIdFailed', { defaultValue: "Couldn't upload your ID — check your connection and try again." }), 'error');
+      toast(t('advisorVerify.uploadIdFailed', { defaultValue: 'Couldn’t upload your ID — check your connection and try again.' }), 'error');
       return;
     }
     const up2 = await supabase.storage.from('advisor-verification').upload(selfiePath, selfieFile, {
@@ -83,7 +113,7 @@ export function AdvisorVerifyPage() {
     });
     if (up2.error) {
       setSubmitting(false);
-      toast(t('advisorVerify.uploadVideoFailed', { defaultValue: "Couldn't upload your video — check your connection and try again." }), 'error');
+      toast(t('advisorVerify.uploadVideoFailed', { defaultValue: 'Couldn’t upload your video — check your connection and try again.' }), 'error');
       return;
     }
 
@@ -97,14 +127,15 @@ export function AdvisorVerifyPage() {
     });
     setSubmitting(false);
     if (insErr) {
-      toast(insErr.message, 'error');
+      toast(t('advisorVerify.submitFailed', { defaultValue: 'Couldn’t submit your verification — try again in a moment.' }), 'error');
+      console.error('[AdvisorVerify] insert failed:', insErr.message);
       return;
     }
-    toast(t('advisorVerify.submitted', { defaultValue: 'Submitted. We\'ll review within 72 hours.' }), 'success');
+    toast(t('advisorVerify.submitted', { defaultValue: 'Submitted. We’ll review within 72 hours.' }), 'success');
     load();
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
+  if (loading) return <div className="py-12 text-center text-mystic-500 text-ui">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
 
   const status: VerifyStatus = existing?.status || 'none';
 
@@ -113,17 +144,19 @@ export function AdvisorVerifyPage() {
       <PageHeader
         icon={<Shield />}
         title={t('advisorVerify.title', { defaultValue: 'Advisor verification' })}
+        onBack={() => navigate(-1)}
+        backLabel={t('common:actions.back', { defaultValue: 'Back' }) as string}
       />
 
       {status === 'pending' && existing && (
         <Card padding="lg" variant="glow" className="bg-cosmic-blue/5 border-cosmic-blue/30">
           <div className="flex items-start gap-3">
-            <Clock className="w-5 h-5 text-cosmic-blue flex-shrink-0 mt-0.5" />
+            <Clock className="w-5 h-5 text-cosmic-blue-ink flex-shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h3 className="font-display text-lg text-mystic-100 mb-1">
+              <h2 className="heading-display-md text-mystic-100 mb-1">
                 {t('advisorVerify.pendingTitle', { defaultValue: 'Under review' })}
-              </h3>
-              <p className="text-sm text-mystic-400 leading-relaxed">
+              </h2>
+              <p className="text-ui text-mystic-400 leading-relaxed">
                 {t('advisorVerify.pendingBody', {
                   defaultValue: 'Submitted {{date}}. We review within 72 hours.',
                   date: new Date(existing.created_at).toLocaleDateString(),
@@ -137,12 +170,12 @@ export function AdvisorVerifyPage() {
       {status === 'approved' && existing && (
         <Card padding="lg" className="border-teal/25 bg-teal/10">
           <div className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+            <Check className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h3 className="font-display text-lg text-teal mb-1">
+              <h2 className="heading-display-md text-teal mb-1">
                 {t('advisorVerify.approvedTitle', { defaultValue: 'Verified' })}
-              </h3>
-              <p className="text-sm text-mystic-300">
+              </h2>
+              <p className="text-ui text-mystic-300">
                 {t('advisorVerify.approvedBody', { defaultValue: 'Your advisor profile is live in the directory.' })}
               </p>
               <Button variant="ghost" size="sm" onClick={() => navigate('/advisors/dashboard')} className="mt-2">
@@ -156,13 +189,13 @@ export function AdvisorVerifyPage() {
       {status === 'rejected' && existing && (
         <Card padding="lg" className="border-coral/25 bg-coral/10">
           <div className="flex items-start gap-3">
-            <XCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
+            <XCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h3 className="font-display text-lg text-coral mb-1">
+              <h2 className="heading-display-md text-coral mb-1">
                 {t('advisorVerify.rejectedTitle', { defaultValue: 'Not approved' })}
-              </h3>
+              </h2>
               {existing.admin_notes && (
-                <p className="text-sm text-mystic-300 mb-2">
+                <p className="text-ui text-mystic-300 mb-2">
                   <span className="text-mystic-500">{t('advisorVerify.reasonLabel', { defaultValue: 'Reason:' })} </span>
                   {existing.admin_notes}
                 </p>
@@ -181,100 +214,108 @@ export function AdvisorVerifyPage() {
         <>
           <Card padding="lg" variant="glow">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" aria-hidden />
               <div>
-                <h3 className="font-display text-lg text-mystic-100 mb-1">
+                <h2 className="heading-display-md text-mystic-100 mb-1">
                   {t('advisorVerify.startTitle', { defaultValue: 'Verify to go live' })}
-                </h3>
-                <p className="text-sm text-mystic-400 leading-relaxed">
+                </h2>
+                <p className="text-ui text-mystic-400 leading-relaxed">
                   {t('advisorVerify.startBody', {
-                    defaultValue: 'Before clients can book you, we confirm identity. Upload a government ID plus a short selfie video saying your full name and today\'s date. Reviewed within 72 hours.',
+                    defaultValue: 'Before clients can book you, we confirm identity. Upload a government ID plus a short selfie video saying your full name and today’s date. Reviewed within 72 hours.',
                   })}
                 </p>
               </div>
             </div>
           </Card>
 
-          <Card padding="lg">
-            <label className="block mb-1">
-              <EyebrowLabel align="left">
-                {t('advisorVerify.legalNameLabel', { defaultValue: 'Legal name' })}
-            </EyebrowLabel>
-            </label>
-            <Input value={legalName} onChange={(e) => setLegalName(e.target.value)} maxLength={120} />
-            <label className="block mb-1 mt-3">
-              <EyebrowLabel align="left">
-                {t('advisorVerify.countryLabel', { defaultValue: 'Country (2-letter code, e.g. US)' })}
-            </EyebrowLabel>
-            </label>
+          {/* One form, one card: name, country, the two uploads. */}
+          <Card padding="lg" className="space-y-5">
             <Input
-              value={country}
-              onChange={(e) => setCountry(e.target.value.toUpperCase().slice(0, 2))}
-              maxLength={2}
-              className="uppercase tracking-widest"
+              label={t('advisorVerify.legalNameLabel', { defaultValue: 'Legal name' })}
+              value={legalName}
+              onChange={(e) => setLegalName(e.target.value)}
+              maxLength={120}
+              autoComplete="name"
             />
-          </Card>
 
-          <Card padding="lg">
-            <label className="block mb-2">
-              <EyebrowLabel align="left">
+            <div>
+              <label htmlFor="advisor-verify-country" className={FIELD_LABEL}>
+                {t('advisorVerify.countryLabel', { defaultValue: 'Country' })}
+              </label>
+              <select
+                id="advisor-verify-country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className={SELECT_CLASS}
+                autoComplete="country"
+              >
+                <option value="">{t('advisorVerify.countryPlaceholder', { defaultValue: 'Choose a country' })}</option>
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <p className={FIELD_LABEL} id="advisor-verify-id-label">
                 {t('advisorVerify.idLabel', { defaultValue: 'Government ID (image)' })}
-            </EyebrowLabel>
-            </label>
-            <input
-              ref={idInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => setIdFile(e.target.files?.[0] ?? null)}
-              className="hidden"
-            />
-            <Button
-              variant={idFile ? 'outline' : 'primary'}
-              onClick={() => idInputRef.current?.click()}
-              className="w-full"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {idFile ? idFile.name : t('advisorVerify.uploadId', { defaultValue: 'Upload ID' })}
-            </Button>
+              </p>
+              <input
+                ref={idInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => setIdFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+                aria-labelledby="advisor-verify-id-label"
+              />
+              <Button
+                variant={idFile ? 'outline' : 'secondary'}
+                onClick={() => idInputRef.current?.click()}
+                fullWidth
+              >
+                {idFile ? <FileImage className="w-4 h-4" aria-hidden /> : <Upload className="w-4 h-4" aria-hidden />}
+                <span className="truncate">{idFile ? idFile.name : t('advisorVerify.uploadId', { defaultValue: 'Upload ID' })}</span>
+              </Button>
+            </div>
+
+            <div>
+              <p className={FIELD_LABEL} id="advisor-verify-selfie-label">
+                {t('advisorVerify.selfieLabel', { defaultValue: 'Selfie video (say your name and today’s date)' })}
+              </p>
+              <input
+                ref={selfieInputRef}
+                type="file"
+                accept="video/*"
+                capture="user"
+                onChange={(e) => setSelfieFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+                aria-labelledby="advisor-verify-selfie-label"
+              />
+              <Button
+                variant={selfieFile ? 'outline' : 'secondary'}
+                onClick={() => selfieInputRef.current?.click()}
+                fullWidth
+              >
+                {selfieFile ? <Video className="w-4 h-4" aria-hidden /> : <Upload className="w-4 h-4" aria-hidden />}
+                <span className="truncate">{selfieFile ? selfieFile.name : t('advisorVerify.uploadSelfie', { defaultValue: 'Upload my verification video' })}</span>
+              </Button>
+            </div>
           </Card>
 
-          <Card padding="lg">
-            <label className="block mb-2">
-              <EyebrowLabel align="left">
-                {t('advisorVerify.selfieLabel', { defaultValue: 'Selfie video (say your name + today\'s date)' })}
-            </EyebrowLabel>
-            </label>
-            <input
-              ref={selfieInputRef}
-              type="file"
-              accept="video/*"
-              capture="user"
-              onChange={(e) => setSelfieFile(e.target.files?.[0] ?? null)}
-              className="hidden"
-            />
-            <Button
-              variant={selfieFile ? 'outline' : 'primary'}
-              onClick={() => selfieInputRef.current?.click()}
-              className="w-full"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {selfieFile ? selfieFile.name : t('advisorVerify.uploadSelfie', { defaultValue: 'Upload my verification video' })}
-            </Button>
-          </Card>
-
-          <Button size="lg"
+          <Button
+            size="lg"
             variant="gold"
             fullWidth
             onClick={submit}
-            disabled={submitting || !legalName || country.length !== 2 || !idFile || !selfieFile}
-            
+            disabled={submitting || !complete}
+            loading={submitting}
           >
             {submitting
               ? t('advisorVerify.submitting', { defaultValue: 'Submitting…' })
               : t('advisorVerify.submitCta', { defaultValue: 'Submit for review' })}
           </Button>
 
-          <p className="text-caption text-center text-mystic-600 italic">
+          <p className="text-caption text-center text-mystic-500">
             {t('advisorVerify.privacyNote', {
               defaultValue: 'Documents are encrypted and only visible to admin reviewers.',
             })}

@@ -16,5 +16,8 @@
 /version.json         /version.json         200
 /manifest.json        /manifest.json        200
 
-# SPA fallback — every other path renders the React app.
-/*                    /index.html           200
+# SPA fallback — every other path renders the React app, from the bare
+# shell. dist/index.html is the prerendered landing (`/` only); serving it
+# here painted the sign-up hero over shared readings, reset links and every
+# member page until React mounted. scripts/prerender-meta.mjs writes app.html.
+/*                    /app.html             200

@@ -5,6 +5,8 @@ import { EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { haversineKm, ccToFlag, type City } from '../../utils/celestialGeo';
+import { localizePlanetName } from '../../i18n/localizeNames';
+import { localizeCountry } from './placeNames';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
 
 /**
@@ -119,12 +121,16 @@ export function CelestialPowerPlaces({ allLines, isPremium, onPick, onUpgrade }:
                   {isPremium ? hit.city.name : '••••••'}
                 </span>
                 <EyebrowLabel align="left">
-                  {hit.lineCount} {hit.lineCount === 1 ? 'line' : 'lines'}
+                  {t('celestial.power.lineCount', {
+                    count: hit.lineCount,
+                    defaultValue: hit.lineCount === 1 ? '{{count}} line' : '{{count}} lines',
+                  })}
                 </EyebrowLabel>
               </div>
               <p className="text-meta text-mystic-400 truncate">
+                {/* The country and planets in the reader's language (p8 F27). */}
                 {isPremium
-                  ? `${hit.city.country} · ${hit.topPlanets.join(' · ')}`
+                  ? [localizeCountry(hit.city.cc, hit.city.country), ...hit.topPlanets.map((p) => localizePlanetName(p))].join(' · ')
                   : t('celestial.power.lockedHint', {
                       defaultValue: 'Unlock to see your places',
                     })}

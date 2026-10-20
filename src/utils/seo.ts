@@ -79,7 +79,14 @@ export function setPageMeta(title: string, description?: string, image?: string)
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Know yourself. One ritual a day.`;
   const desc = description || DEFAULT_DESC;
   const img = image || DEFAULT_IMAGE;
-  const url = window.location.href.split('?')[0].split('#')[0];
+  // One canonical form: no query (`?lang=` is a preference, not a page) and
+  // no trailing slash. The app links `/astrology/aries`, the prerender
+  // writes both `aries.html` and `aries/index.html` so neither form
+  // redirects, and the sitemap and JSON-LD use the slashless form — so a
+  // visitor who arrived on `/astrology/aries/` must not be told that is the
+  // canonical. The root keeps its slash.
+  const loc = new URL(window.location.href);
+  const url = `${loc.origin}${loc.pathname.length > 1 ? loc.pathname.replace(/\/+$/, '') : '/'}`;
 
   document.title = fullTitle;
 

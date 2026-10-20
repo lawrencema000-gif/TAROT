@@ -13,15 +13,29 @@ export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
+  /**
+   * The name other members see on this member's named community posts and
+   * comments (profiles.community_name, 20261003000014). Unset until they
+   * choose one, and those rows then read "A member"; never filled in from
+   * the email or displayName. `null` in an update clears it, as with the
+   * birth fields below; a profile read from the database holds a name or
+   * undefined, so it can never write the column back by accident.
+   */
+  communityName?: string | null;
   birthDate: string;
-  birthTime?: string;
-  birthPlace?: string;
-  birthLat?: number;
-  birthLon?: number;
+  // The five birth fields below take `null` in an update: null clears the
+  // column (EditProfileForm, when the person empties it), while undefined
+  // is dropped by mapProfileToDb and changes nothing. A profile read from
+  // the database never holds null here: mapDbToProfile turns NULL into
+  // undefined.
+  birthTime?: string | null;
+  birthPlace?: string | null;
+  birthLat?: number | null;
+  birthLon?: number | null;
   /** IANA timezone of the BIRTH PLACE (e.g. Asia/Tokyo). Derived from
    *  geocoded coordinates when available; the DB falls back to the
    *  device timezone for the birth_utc computation. */
-  birthTz?: string;
+  birthTz?: string | null;
   /** Canonical UTC instant of birth (ISO string). Computed by a DB
    *  trigger from birth_date + birth_time interpreted in birthTz —
    *  read this for all chart math; never recompute locally. */
@@ -155,11 +169,17 @@ export interface QuizQuestion {
   text: string;
   options: { value: number; label: string }[];
   dimension?: string;
+  /**
+   * Set by localizeQuiz on a five-point agreement item. Detection reads the
+   * English labels, so the renderer cannot re-detect once they are
+   * translated; it reads this flag instead.
+   */
+  likert?: boolean;
 }
 
 export interface QuizDefinition {
   id: string;
-  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity' | 'ayurveda-dosha' | 'extra-dimensional';
+  type: 'mbti' | 'love-language' | 'big-five' | 'mood-check' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity' | 'ayurveda-dosha' | 'extra-dimensional';
   title: string;
   description: string;
   questions: QuizQuestion[];

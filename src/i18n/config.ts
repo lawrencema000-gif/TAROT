@@ -2,14 +2,21 @@
  * i18next configuration — English bundled, every other locale lazy.
  *
  * Resolution order for the active language:
- *   1. ?lang=XX URL param (debug / deep-link override)
- *   2. profiles.locale (authenticated user — set via setLocale())
- *   3. localStorage 'arcana_locale' (anonymous user preference)
- *   4. 'en' fallback
+ *   1. ?lang=XX URL param (deep link; ja, ko or zh is also a choice, below)
+ *   2. localStorage 'arcana_locale' (the language this device opens in)
+ *   3. 'en' fallback
+ * and, once a member's profile loads, AuthContext settles the device and the
+ * account: a language chosen on this device (chosenLocale) is saved to
+ * profiles.locale; with none, the device follows profiles.locale.
+ *
+ * A stored language is not a choice. The detector stores every language it
+ * settles on or changes to, the default English of a first visit included,
+ * so the choice is kept apart ('arcana_locale_choice', LOCALE_CHOICE_KEY).
  *
  * Namespaces (all five load for the active locale before the app renders):
  *   - common     — navigation, buttons, toasts, errors, validation
- *   - app        — every screen
+ *   - app        — every screen (the quiz route's strings arrive later,
+ *                  via ensureRouteStrings)
  *   - onboarding
  *   - landing
  *   - tarot      — the translated tarot corpus (card names and meanings)
@@ -38,7 +45,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from './locales/en/common.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enLanding from './locales/en/landing.json';
-import enApp from './locales/en/app.json';
+// `?boot`: app.json minus the quiz route's strings (vite.config.ts
+// routeNamespacePlugin); ensureRouteStrings below adds them on /quizzes.
+import enApp from './locales/en/app.json?boot';
+import { CJK_FONTS, cjkFontHref } from './cjkFonts';
+import { resolveKoParticles } from './koJosa';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -47,9 +58,34 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const UI_NAMESPACES = ['common', 'app', 'onboarding', 'landing'] as const;
 /** The translated tarot corpus. Not a `t()` namespace: `localizeCard.ts` reads the bundle whole. */
 export const TAROT_CORPUS_NS = 'tarot';
+/** The translated playing-card corpus (54 cards, 9 spreads, 12 lessons); `localizePlayingCard.ts` reads it whole. */
+export const CARTO_CORPUS_NS = 'cartomancy';
+// The cartomancy corpus is deliberately absent: it loads on demand
+// (ensureCartomancyCorpus in localizePlayingCard.ts), not with every boot.
 const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS];
 
+/**
+ * The language this device opens in. i18next's detector stores here every
+ * language it settles on or changes to; the boot preload script
+ * (vite.config.ts) and the prerendered hero's guard (scripts/seo-body.mjs)
+ * read it before the app has loaded.
+ */
 export const LOCALE_STORAGE_KEY = 'arcana_locale';
+
+/**
+ * The language the person chose on this device: the language picker, the
+ * shared page's "Get your own reading" (keepVisitLanguage), or a `?lang=`
+ * link that names ja, ko or zh. Empty: nothing chosen. Read it through
+ * chosenLocale().
+ *
+ * It is not LOCALE_STORAGE_KEY, because the detector stores the language a
+ * device merely opens in there too: the English of every first visit, and
+ * the language the app follows from a member's account. AuthContext took
+ * any stored language for the member's choice and wrote it into the
+ * account, so a member whose account read Japanese signed in on a new
+ * phone and the account turned English, on every device (p9 RQB-1).
+ */
+export const LOCALE_CHOICE_KEY = 'arcana_locale_choice';
 
 function isSupported(code: string): code is SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(code);
@@ -82,24 +118,27 @@ type BundleLoader = () => Promise<{ default: ResourceKey }>;
 const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
   ja: {
     common: () => import('./locales/ja/common.json'),
-    app: () => import('./locales/ja/app.json'),
+    app: () => import('./locales/ja/app.json?boot'),
     onboarding: () => import('./locales/ja/onboarding.json'),
     landing: () => import('./locales/ja/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ja/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/ja/cartomancy.json'),
   },
   ko: {
     common: () => import('./locales/ko/common.json'),
-    app: () => import('./locales/ko/app.json'),
+    app: () => import('./locales/ko/app.json?boot'),
     onboarding: () => import('./locales/ko/onboarding.json'),
     landing: () => import('./locales/ko/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ko/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/ko/cartomancy.json'),
   },
   zh: {
     common: () => import('./locales/zh/common.json'),
-    app: () => import('./locales/zh/app.json'),
+    app: () => import('./locales/zh/app.json?boot'),
     onboarding: () => import('./locales/zh/onboarding.json'),
     landing: () => import('./locales/zh/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/zh/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/zh/cartomancy.json'),
   },
 };
 
@@ -144,15 +183,100 @@ const lazyBundleBackend: BackendModule = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// The choice (LOCALE_CHOICE_KEY). Storage can be missing or blocked (a
+// private window); then nothing is stored and nothing is chosen.
+// ---------------------------------------------------------------------------
+
+function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Unavailable: the language still changes for this visit.
+  }
+}
+
+/** The language a `?lang=` link names, found where the detector looks: the query, else a query inside the hash. */
+function linkedLocale(): SupportedLocale | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const { search, hash } = window.location;
+    const query = search || (hash.includes('?') ? hash.slice(hash.indexOf('?')) : '');
+    const named = new URLSearchParams(query).getAll('lang');
+    return normalizeLocale(named[named.length - 1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Before the detector reads storage. Builds before this one kept a single
+ * value, and the detector wrote the English of every first visit into it:
+ * that English is carried over as no choice. Any other language there came
+ * from the picker, a "Get your own reading" or a `?lang=` link, and stays a
+ * choice. Done once; the empty value marks it done, so the language the app
+ * later follows from an account never turns into a choice on a later boot.
+ *
+ * A link that names ja, ko or zh chooses it. `?lang=en` chooses nothing: it
+ * is how the app's own redirects (an OAuth return, a password-reset link)
+ * carried the default English of a visitor who had chosen nothing, and a
+ * member arriving on one keeps the language of their account.
+ */
+function settleChoiceAtBoot(): void {
+  if (readStored(LOCALE_CHOICE_KEY) === null) {
+    const earlier = normalizeLocale(readStored(LOCALE_STORAGE_KEY));
+    writeStored(LOCALE_CHOICE_KEY, earlier && earlier !== 'en' ? earlier : '');
+  }
+  const linked = linkedLocale();
+  if (linked && linked !== 'en') writeStored(LOCALE_CHOICE_KEY, linked);
+}
+settleChoiceAtBoot();
+
+/**
+ * Korean particles that agree with the word put into a string (p9 QT2).
+ *
+ * A Korean value that interpolates a word it cannot know (a card, a person,
+ * a theme, an element) writes the particle after it in both forms:
+ * "{{name}}을(를) 삭제했어요", and the member read both. This runs on every
+ * t() result once it is interpolated. In Korean, each two-form marker
+ * (이(가), 을(를), 은(는), 과(와), (으)로, (이)에요, …) becomes the one form the
+ * syllable before it takes, by the rules the edge functions use too
+ * (koJosa.ts). A word whose last sound is unknown (a Latin name) keeps both
+ * forms rather than a wrong one. Any other language, and any value without
+ * a marker, comes back exactly as it went in.
+ *
+ * The language is the call's (`lng`, which a getFixedT also sets), else the
+ * one on screen. An English fallback inside the Korean UI has no marker.
+ */
+export const koParticlesPostProcessor = {
+  type: 'postProcessor' as const,
+  name: 'koParticles',
+  process(value: string, _key: string | string[], options?: { lng?: string }, translator?: { language?: string }): string {
+    // Every marker holds a "(": nothing else is even looked at.
+    if (typeof value !== 'string' || value.indexOf('(') === -1) return value;
+    if (normalizeLocale(options?.lng ?? translator?.language) !== 'ko') return value;
+    return resolveKoParticles(value);
+  },
+};
+
 const initPromise = i18n
   .use(lazyBundleBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
+  .use(koParticlesPostProcessor)
   .init({
     resources: {
-      // The empty tarot corpus marks the namespace as present for English,
-      // so i18next never asks the backend for it.
-      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp, [TAROT_CORPUS_NS]: {} },
+      // The empty tarot and cartomancy corpora mark the namespaces as present
+      // for English, so i18next never asks the backend for them.
+      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp, [TAROT_CORPUS_NS]: {}, [CARTO_CORPUS_NS]: {} },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LOCALES as unknown as string[],
@@ -186,6 +310,9 @@ const initPromise = i18n
       escapeValue: false, // React already escapes
     },
 
+    // Korean particles that follow the interpolated word (above).
+    postProcess: [koParticlesPostProcessor.name],
+
     react: {
       useSuspense: false, // safer default — components decide per-hook
     },
@@ -195,7 +322,15 @@ const initPromise = i18n
     saveMissing: import.meta.env.DEV,
     saveMissingTo: 'current',
     updateMissing: false,
-    missingKeyHandler: undefined,
+    // A handler, so the default connector path never runs. Without one,
+    // saveMissing also wrote each `defaultValue` into the resource store —
+    // and an array defaultValue came back on the next read as an object
+    // keyed "0", "1", …, so every `returnObjects` list `.map`ped on the
+    // second render threw inside the I Ching, Feng Shui and quiz results.
+    // The store stays as the locale files shipped it; the event still fires.
+    missingKeyHandler: () => {
+      /* log only: see the 'missingKey' listener below */
+    },
   });
 
 /**
@@ -210,20 +345,108 @@ export const i18nReady: Promise<void> = initPromise.then(
   () => undefined,
 );
 
-/** Change language at runtime + persist to localStorage. */
+/**
+ * The person chose `locale` (the language picker, "Get your own reading"):
+ * change to it, open in it from now on, and keep it as this device's choice.
+ * Both are stored before the bundles load, so of two quick picks the last
+ * one is what stays.
+ */
 export async function setLocale(locale: SupportedLocale): Promise<void> {
+  writeStored(LOCALE_CHOICE_KEY, locale);
+  writeStored(LOCALE_STORAGE_KEY, locale);
   await i18n.changeLanguage(locale);
-  try {
-    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  } catch {
-    // localStorage may be unavailable (private mode); i18next state still changes
-  }
+}
+
+/**
+ * Show the app in the language a member's account names, without making it
+ * this device's choice. The device opens in it next time, and when the
+ * account's language changes on another device, this one follows again.
+ */
+export async function followAccountLocale(locale: SupportedLocale): Promise<void> {
+  // The detector stores it as well; stored here too, so a choice made
+  // earlier can no longer read as the language the device opens in.
+  writeStored(LOCALE_STORAGE_KEY, locale);
+  await i18n.changeLanguage(locale);
+}
+
+/**
+ * The language the person chose on this device, while it is still the one
+ * the device opens in. Null when nothing was chosen, and when the language
+ * has changed since without a choice (a `?lang=en` link, a member's account
+ * followed): a default or a followed language is not a member's choice, and
+ * only a choice is saved to the account (AuthContext).
+ */
+export function chosenLocale(): SupportedLocale | null {
+  const chosen = normalizeLocale(readStored(LOCALE_CHOICE_KEY));
+  return chosen !== null && chosen === normalizeLocale(readStored(LOCALE_STORAGE_KEY)) ? chosen : null;
+}
+
+/**
+ * The `?lang=` a redirect back into the app carries (an OAuth return, an
+ * email link): the language chosen on this device, or nothing. The language
+ * on screen is not enough: arriving with it would make it a choice, and an
+ * account's own language would be written over by a default or a language
+ * this device only followed.
+ */
+export function chosenLocaleQuery(): string {
+  const chosen = chosenLocale();
+  return chosen ? `?lang=${chosen}` : '';
 }
 
 /** Current locale, normalised. */
 export function getLocale(): SupportedLocale {
   const current = normalizeLocale(i18n.language);
   return current ?? 'en';
+}
+
+// ---------------------------------------------------------------------------
+// Route strings. The quiz route's part of `app` (extraQuizzes, ayurveda,
+// quizzes.* except share and title) is split out of every locale's boot
+// bundle at build time (vite.config.ts routeNamespacePlugin, R7 #139) and
+// added to the store here, the first time the route needs it. English is
+// loaded too, because it is the fallback for every key a translation lacks.
+// ---------------------------------------------------------------------------
+
+export type RouteStrings = 'quizzes';
+
+const ROUTE_BUNDLES: Record<SupportedLocale, Record<RouteStrings, BundleLoader>> = {
+  en: { quizzes: () => import('./locales/en/app.json?route=quizzes') },
+  ja: { quizzes: () => import('./locales/ja/app.json?route=quizzes') },
+  ko: { quizzes: () => import('./locales/ko/app.json?route=quizzes') },
+  zh: { quizzes: () => import('./locales/zh/app.json?route=quizzes') },
+};
+
+const routeLoaded = new Set<string>();
+
+/** True once the route's strings for `lng` and for English are in the store. */
+export function routeStringsReady(route: RouteStrings, lng: SupportedLocale = getLocale()): boolean {
+  return routeLoaded.has(`en:${route}`) && routeLoaded.has(`${lng}:${route}`);
+}
+
+/**
+ * Adds the route's strings for `lng` and English to the `app` namespace.
+ * Deep-merged without overwriting, so the boot keys stay as they are.
+ * Never rejects: a bundle that fails to load leaves its keys missing, the
+ * screen falls back to the English in its data modules (every t() there
+ * carries a defaultValue), and the next visit to the route tries again.
+ */
+export async function ensureRouteStrings(route: RouteStrings, lng: SupportedLocale = getLocale()): Promise<void> {
+  const want: SupportedLocale[] = lng === 'en' ? ['en'] : [lng, 'en'];
+  await Promise.all(
+    want.map(async (l) => {
+      const key = `${l}:${route}`;
+      if (routeLoaded.has(key)) return;
+      try {
+        const mod = await ROUTE_BUNDLES[l][route]();
+        i18n.addResourceBundle(l, 'app', mod.default, true, false);
+        routeLoaded.add(key);
+      } catch (err) {
+        // The same stale-chunk path as the lazy backend: an obsolete tab
+        // surfaces it so main.tsx's guard can do its one-shot reload.
+        if (err instanceof Error && STALE_CHUNK_RE.test(err.message)) void Promise.reject(err);
+      }
+    }),
+  );
 }
 
 // Expose a minimal i18n reference on globalThis so non-React modules
@@ -244,15 +467,16 @@ syncDocumentLang(i18n.language);
 i18n.on('languageChanged', syncDocumentLang);
 
 // CJK faces load per locale, not for everyone. The Latin faces are
-// self-hosted (see index.css); Noto Sans / Serif JP, KR and SC are large,
-// so each is fetched from Google Fonts only once the user is actually
-// reading in that language. Offline Android falls back to the system's
-// own Noto CJK, which is what the stacks name anyway.
-const CJK_FONTS: Record<string, string> = {
-  ja: 'family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@500;600',
-  ko: 'family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600',
-  zh: 'family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600',
-};
+// self-hosted (see index.css); Noto Sans JP, KR and SC are large, so each
+// is fetched from Google Fonts only once the user is actually reading in
+// that language. Offline Android falls back to the system's own Noto CJK,
+// which is what the stacks name anyway.
+//
+// Sans at 400 and 600 only (R8 §a7). The 500 weight and the three Noto
+// Serif families were five more font files per CJK visitor: the display
+// serif falls back to the system CJK face for the few heading glyphs the
+// Latin Cormorant lacks, and the body tier renders in 400/600, which is
+// all the type roles ask for.
 function loadCjkFonts(lng: string) {
   if (typeof document === 'undefined') return;
   const locale = normalizeLocale(lng) ?? 'en';
@@ -263,7 +487,8 @@ function loadCjkFonts(lng: string) {
   const link = document.createElement('link');
   link.id = id;
   link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
+  // The same URL index.html preloads (vite.config.ts localePreloadPlugin).
+  link.href = cjkFontHref(query);
   document.head.appendChild(link);
 }
 loadCjkFonts(i18n.language);

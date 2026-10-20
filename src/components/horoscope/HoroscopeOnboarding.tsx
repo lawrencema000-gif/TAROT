@@ -5,6 +5,7 @@ import { Button, Card, Input, HoroscopeWheelIcon, Progress } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { ZodiacGlyph } from '../icons';
+import { birthZoneOf, fallbackZone } from './birthZone';
 import type { ZodiacSign, ChartMode } from '../../types/astrology';
 
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
 export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
   const { t } = useT('app');
   const { profile, updateProfile } = useAuth();
-  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch, usedFallback: geoApprox } = useGeocode();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const hasBirthDate = !!profile?.birthDate;
@@ -48,45 +49,31 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     }
   }, [canAutoCompute, autoComputeAttempted]);
 
+  // A birth place typed but never picked from a list (the OAuth onboarding
+  // saves it without coordinates) is searched here and its places LISTED,
+  // for the reader to pick one (p9 R27). It used to cast the first row
+  // without asking — 京都 was cast in Guangdong, 福岡 in Saitama — and
+  // rewrote the profile to that place.
   useEffect(() => {
     if (autoResolveAttempted.current) return;
     if (profile?.birthPlace && !profile?.birthLat && !profile?.birthLon) {
       autoResolveAttempted.current = true;
-      handleAutoResolveLocation(profile.birthPlace);
+      void geoSearch(profile.birthPlace);
     }
-  }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon]);
-
-  const handleAutoResolveLocation = async (place: string) => {
-    setComputing(true);
-    setComputeError('');
-    try {
-      await geoSearch(place);
-    } catch {
-      setComputing(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!autoResolveAttempted.current || !computing) return;
-    if (geoLoading) return;
-
-    if (geoResults.length > 0 && !selectedLocation && profile?.birthDate) {
-      const best = geoResults[0];
-      setSelectedLocation(best);
-      setLocationQuery(best.displayName);
-      doCompute(best);
-    } else if (!geoLoading && geoResults.length === 0 && computing) {
-      setComputing(false);
-      setComputeError(t('horoscope.onboarding.errors.couldNotFindLocation'));
-    }
-  }, [geoResults, geoLoading]);
+  }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon, geoSearch]);
 
   const handleAutoCompute = async () => {
     if (!profile?.birthDate || !profile?.birthLat || !profile?.birthLon) return;
     setComputing(true);
     setComputeError('');
     try {
-      const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // The birth place's zone, as doCompute uses (F21). This is the cast
+      // every onboarded user takes, and it used to read the profile's
+      // timezone instead: the signup default, 'UTC', for an OAuth account.
+      // A zone derived here is persisted first, so birth_utc (the trigger)
+      // and every chart read from it agree with this one.
+      const { tz, derived } = await birthZoneOf(profile);
+      if (derived) await updateProfile({ birthTz: derived });
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
       await computeChart({
         birthDate: profile.birthDate,
@@ -113,7 +100,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
       // only a fallback (wrong for anyone who moved since birth).
       const { deriveBirthTz } = await import('../../utils/birthTz');
       const birthTz = await deriveBirthTz(loc.lat, loc.lon);
-      const tz = birthTz || profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const tz = birthTz || fallbackZone(profile);
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
 
       await updateProfile({
@@ -161,8 +148,8 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     return (
       <div className="space-y-6 py-4">
         <div className="text-center space-y-2">
-          <h2 className="font-display text-2xl font-semibold text-mystic-100">{t('horoscope.onboarding.oneMoreDetail')}</h2>
-          <p className="text-mystic-400 text-sm">
+          <h2 className="heading-display-lg text-mystic-100">{t('horoscope.onboarding.oneMoreDetail')}</h2>
+          <p className="text-ui text-mystic-400">
             {t('horoscope.onboarding.needBirthLocation')}
             {hasBirthDate && (
               <span className="block mt-1 text-mystic-500">
@@ -174,14 +161,14 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
 
         {profile?.birthDate && (
           <div className="flex gap-3 justify-center text-meta">
-            <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
+            <div className="px-3 py-1.5 bg-mystic-850 rounded-control border border-mystic-700/60">
               <span className="text-mystic-500">{t('horoscope.onboarding.dateLabel')}</span>{' '}
-              <span className="text-mystic-200">{profile.birthDate}</span>
+              <span className="text-mystic-200 tabular-nums">{profile.birthDate}</span>
             </div>
             {profile.birthTime && (
-              <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
+              <div className="px-3 py-1.5 bg-mystic-850 rounded-control border border-mystic-700/60">
                 <span className="text-mystic-500">{t('horoscope.onboarding.timeLabel')}</span>{' '}
-                <span className="text-mystic-200">{profile.birthTime}</span>
+                <span className="text-mystic-200 tabular-nums">{profile.birthTime.slice(0, 5)}</span>
               </div>
             )}
           </div>
@@ -189,8 +176,8 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
 
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center gap-3 text-gold">
-            <MapPin className="w-5 h-5" />
-            <span className="font-display text-lg font-semibold text-mystic-100">{t('horoscope.onboarding.birthLocation')}</span>
+            <MapPin className="w-5 h-5" aria-hidden />
+            <span className="heading-display-md heading-strong text-mystic-100">{t('horoscope.onboarding.birthLocation')}</span>
           </div>
 
           <div className="relative">
@@ -205,8 +192,18 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           {selectedLocation && (
             <div className="flex items-center gap-2 p-3 bg-gold/10 border border-gold/20 rounded-control">
               <Check className="w-4 h-4 text-gold flex-shrink-0" />
-              <span className="text-sm text-mystic-200 truncate">{selectedLocation.displayName}</span>
+              <span className="text-ui text-mystic-200 truncate">{selectedLocation.displayName}</span>
             </div>
+          )}
+
+          {/* The place search fell back to the offline city list (R5 M-6):
+              say so, without blocking — the chart still computes. */}
+          {geoApprox && (selectedLocation || geoResults.length > 0) && (
+            <p className="text-meta text-mystic-400">
+              {t('horoscope.onboarding.approxLocation', {
+                defaultValue: 'Using an approximate location — the nearest city we could match.',
+              })}
+            </p>
           )}
 
           {!selectedLocation && geoResults.length > 0 && (
@@ -218,7 +215,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
                     setSelectedLocation(r);
                     setLocationQuery(r.displayName);
                   }}
-                  className="w-full text-left px-3 py-3 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 cursor-pointer flex items-start gap-2 border-b border-mystic-800/40 last:border-b-0"
+                  className="w-full text-left px-3 py-3 hover:bg-mystic-800/60 transition-colors text-ui text-mystic-300 cursor-pointer flex items-start gap-2 border-b border-mystic-800/40 last:border-b-0"
                 >
                   <MapPin className="w-3.5 h-3.5 text-mystic-500 mt-0.5 flex-shrink-0" />
                   <span className="line-clamp-2">{r.displayName}</span>
@@ -232,7 +229,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           )}
 
           {computeError && (
-            <div className="p-3 bg-coral/10 border border-coral/25 rounded-control text-coral text-sm">
+            <div className="p-3 bg-coral/10 border border-coral/25 rounded-control text-coral text-ui">
               {computeError}
             </div>
           )}
@@ -262,8 +259,8 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         <div className="w-14 h-14 mx-auto rounded-full bg-coral/10 border border-coral/25 flex items-center justify-center">
           <AlertCircle className="w-7 h-7 text-coral" />
         </div>
-        <h2 className="font-display text-xl font-semibold text-mystic-100">{t('horoscope.onboarding.chartComputationFailed')}</h2>
-        <p className="text-mystic-400 text-sm max-w-sm mx-auto">
+        <h2 className="heading-display-lg text-mystic-100">{t('horoscope.onboarding.chartComputationFailed')}</h2>
+        <p className="text-ui text-mystic-400 max-w-sm mx-auto">
           {computeError || t('horoscope.onboarding.chartComputeFailDefault')}
         </p>
       </div>
@@ -319,7 +316,7 @@ function ChartComputeProgress() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-8">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-scale-in">
+      <div className="w-16 h-16 rounded-full bg-mystic-850 border border-gold/25 flex items-center justify-center animate-scale-in">
         <HoroscopeWheelIcon className="w-8 h-8 text-gold" />
       </div>
 
@@ -355,7 +352,7 @@ function ChartComputeProgress() {
                   <StepIcon className="w-3.5 h-3.5 text-mystic-500" />
                 )}
               </div>
-              <span className={`text-sm transition-all duration-deliberate ${
+              <span className={`text-ui transition-colors duration-deliberate ${
                 isActive
                   ? 'text-gold font-medium'
                   : isDone
@@ -396,7 +393,7 @@ export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacS
         <div key={item.label} className="flex flex-col items-center px-4 py-3 bg-mystic-800/40 rounded-control border border-mystic-700/30">
           <ZodiacGlyph sign={item.sign} size={30} className="text-gold mb-1.5" framed />
           <div className="text-meta text-mystic-400">{item.label}</div>
-          <div className="text-sm font-medium text-mystic-200">{item.sign}</div>
+          <div className="text-ui font-medium text-mystic-200">{item.sign}</div>
         </div>
       ))}
     </div>

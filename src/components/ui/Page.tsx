@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 
 /**
  * Page: the column a screen's content stacks in.
@@ -23,10 +23,11 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
 
 const SPACING = { sm: 'space-y-4', md: 'space-y-6', lg: 'space-y-8' };
 
-export function Page({ spacing = 'md', className = '', children, ...props }: PageProps) {
+/** The ref is the column itself: a screen that changes stage scrolls its top into view with it (FengShuiPage). */
+export const Page = forwardRef<HTMLDivElement, PageProps>(function Page({ spacing = 'md', className = '', children, ...props }, ref) {
   return (
-    <div className={`${SPACING[spacing]} ${className}`.trim()} {...props}>
+    <div ref={ref} className={`${SPACING[spacing]} ${className}`.trim()} {...props}>
       {children}
     </div>
   );
-}
+});

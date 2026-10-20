@@ -9,7 +9,7 @@ import {
   Check,
   ArrowLeft,
 } from 'lucide-react';
-import { Button, DeckFan, Input, Progress, toast } from '../components/ui';
+import { Button, DeckFan, Input, Progress, toast, dismissToasts } from '../components/ui';
 import { displayNameFromEmail } from '../utils/displayName';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +39,33 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * A consent box: a real checkbox, named by its sentence. Both used to be
+ * <button>s around a drawn box, so a screen reader heard "button" and never
+ * whether the age/Terms confirmation or the marketing opt-in was on (p9
+ * Q12). The native input carries the role, the checked state and Space to
+ * toggle; the drawn box only shows them, focus ring included.
+ */
+function ConsentCheckbox({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
+  return (
+    <label className="w-full min-h-[44px] flex items-start gap-3 text-left py-2 cursor-pointer">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+      />
+      <span
+        aria-hidden
+        className="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 border-mystic-600 [@media(hover:hover)]:hover:border-mystic-500 peer-checked:bg-gold peer-checked:border-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-mystic-950"
+      >
+        {checked && <Check className="w-3 h-3 text-mystic-900" />}
+      </span>
+      <span className="text-meta text-mystic-400 leading-snug">{label}</span>
+    </label>
+  );
+}
+
 interface OnboardingPageProps {
   onComplete: () => void;
   onSwitchToSignIn: () => void;
@@ -53,7 +80,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
+  // Marketing opt-in is off until the person turns it on (R6 A26).
+  const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   // Step 0 = language picker, 1 = welcome, 2 = create account
@@ -71,6 +99,10 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   useEffect(() => {
     trackOnboardingStepViewed({ step, stepName: stepNames[step] });
     stepStartTime.current = Date.now();
+    // A toast belongs to the step that raised it; it does not follow the
+    // person onto the next screen (R6 A34).
+    dismissToasts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const handleGoogleSignIn = async () => {
@@ -342,53 +374,42 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder={t('createAccount.passwordPlaceholder')}
+                      // The rule lives in the helper line below, not the
+                      // placeholder: at 390 the ja placeholder was clipped
+                      // mid-rule (P7 #154), and a placeholder vanishes as
+                      // soon as typing starts anyway.
+                      placeholder={t('createAccount.passwordPlaceholderShort', { defaultValue: 'Password' })}
                       icon={<Lock className="w-5 h-5" />}
+                      autoComplete="new-password"
+                      aria-describedby="onboarding-password-rule"
+                      // Room for the eye: the placeholder used to run under it (R6 A26).
+                      className="pr-14"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? t('createAccount.hidePassword') : t('createAccount.showPassword')}
                       aria-pressed={showPassword}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-2"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-200"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <p id="onboarding-password-rule" className="-mt-2 text-caption text-mystic-500">
+                    {t('createAccount.passwordRule', { defaultValue: 'At least 8 characters, with letters and numbers.' })}
+                  </p>
 
-                  <button
-                    type="button"
-                    onClick={() => setSubscribedToNewsletter(!subscribedToNewsletter)}
-                    className="w-full flex items-start gap-3 text-left py-2"
-                  >
-                    <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      subscribedToNewsletter
-                        ? 'bg-gold border-gold'
-                        : 'border-mystic-600 hover:border-mystic-500'
-                    }`}>
-                      {subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
-                    </div>
-                    <span className="text-sm text-mystic-400 leading-snug">
-                      {t('createAccount.newsletter')}
-                    </span>
-                  </button>
+                  <ConsentCheckbox
+                    checked={subscribedToNewsletter}
+                    onChange={setSubscribedToNewsletter}
+                    label={t('createAccount.newsletter')}
+                  />
 
-                  <button
-                    type="button"
-                    onClick={() => setAgeConfirmed(!ageConfirmed)}
-                    className="w-full flex items-start gap-3 text-left py-2"
-                  >
-                    <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      ageConfirmed
-                        ? 'bg-gold border-gold'
-                        : 'border-mystic-600 hover:border-mystic-500'
-                    }`}>
-                      {ageConfirmed && <Check className="w-3 h-3 text-mystic-900" />}
-                    </div>
-                    <span className="text-sm text-mystic-400 leading-snug">
-                      {t('createAccount.ageConfirm')}
-                    </span>
-                  </button>
+                  <ConsentCheckbox
+                    checked={ageConfirmed}
+                    onChange={setAgeConfirmed}
+                    label={t('createAccount.ageConfirm')}
+                  />
 
                   <Button
                     variant="gold"

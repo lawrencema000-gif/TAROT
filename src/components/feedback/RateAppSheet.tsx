@@ -1,5 +1,6 @@
-import { Heart, Star, MessageCircle, X } from 'lucide-react';
-import { Button } from '../ui';
+import { useEffect, useState } from 'react';
+import { MessageCircle, Star } from 'lucide-react';
+import { Button, Sheet } from '../ui';
 import { useT } from '../../i18n/useT';
 import { ratePromptService } from '../../services/ratePrompt';
 
@@ -9,9 +10,50 @@ interface RateAppSheetProps {
   userId: string;
 }
 
+/** Anything already on top of the page: a Sheet, a modal, a celebration. */
+const OVERLAY_SELECTOR = '[role="dialog"], [aria-modal="true"], .fixed.inset-0.z-50, .fixed.inset-0.z-\\[60\\]';
+
+/**
+ * Hold the request until nothing else is open (R6 A6: the ask used to
+ * stack under the achievement modal). Polls the document every half
+ * second while `open` is true and no other overlay is present; once it
+ * shows, the check stops so its own dialog does not block it.
+ */
+function useDeferredOpen(open: boolean): boolean {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      setReady(false);
+      return;
+    }
+    let cancelled = false;
+    let timer = 0;
+    const check = () => {
+      if (cancelled) return;
+      if (document.querySelector(OVERLAY_SELECTOR)) {
+        timer = window.setTimeout(check, 500);
+      } else {
+        setReady(true);
+      }
+    };
+    check();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [open]);
+  return ready;
+}
+
+/**
+ * The store-rating ask, worded as a product and built on the Sheet
+ * primitive (so Escape and the backdrop close it, focus is trapped, and
+ * it stacks correctly over the page). The service decides WHEN: native
+ * Android only, after a seven-day streak or ten positive actions.
+ */
 export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
   const { t } = useT('app');
-  if (!open) return null;
+  const ready = useDeferredOpen(open);
 
   const handleRate = async () => {
     await ratePromptService.recordResponse(userId, 'rated');
@@ -31,69 +73,27 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div
-        className="absolute inset-0 bg-mystic-950/90 animate-fade-in"
-        onClick={handleLater}
-      />
-
-      <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="bg-gradient-to-b from-mystic-850 to-mystic-900 rounded-sheet border border-gold/20 w-full max-w-sm p-8 text-center animate-scale-in relative">
-          <button
-            onClick={handleLater}
-            aria-label={t('common:actions.close', { defaultValue: 'Close' })}
-            className="absolute top-3 right-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-mystic-800 transition-colors"
-          >
-            <X className="w-5 h-5 text-mystic-400" />
-          </button>
-
-          <div className="relative mb-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cosmic-rose/20 to-mystic-800 flex items-center justify-center">
-              <Heart className="w-10 h-10 text-cosmic-rose fill-cosmic-rose/30" />
-            </div>
-          </div>
-
-          <div className="space-y-4 mb-8">
-            <h2 className="font-display text-2xl text-mystic-100">
-              {t('rateApp.title', { defaultValue: 'Thank you for trying my first app' })}
-            </h2>
-            <p className="text-mystic-300 text-sm leading-relaxed">
-              {t('rateApp.body1', { defaultValue: "I built this while studying, so I'm working with limited time and resources. I know it isn't perfect yet, but I'm actively improving it." })}
-            </p>
-            <p className="text-mystic-300 text-sm leading-relaxed">
-              {t('rateApp.body2', { defaultValue: "If anything feels off or you spot a bug, please let me know. And if you're enjoying it, a 5-star review helps a lot." })}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <Button
-              variant="gold"
-              size="lg"
-              fullWidth
-              onClick={handleRate}
-            >
-              <Star className="w-5 h-5" />
-              {t('rateApp.rate', { defaultValue: 'Rate Arcana on Google Play' })}
-            </Button>
-
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={handleFeedback}
-            >
-              <MessageCircle className="w-5 h-5" />
-              {t('rateApp.feedback', { defaultValue: 'Report a problem by email' })}
-            </Button>
-
-            <button
-              onClick={handleLater}
-              className="w-full py-3 text-mystic-400 hover:text-mystic-300 transition-colors text-sm"
-            >
-              {t('rateApp.later', { defaultValue: 'Ask me another time' })}
-            </button>
-          </div>
+    <Sheet open={ready} onClose={handleLater} title={t('rateApp.prompt.title', { defaultValue: 'Enjoying Arcana?' })}>
+      <div className="space-y-6 pb-2">
+        <p className="reading-copy">
+          {t('rateApp.prompt.body', {
+            defaultValue: 'A rating helps other seekers find it. If something feels off, tell us instead — every report is read.',
+          })}
+        </p>
+        <div className="space-y-3">
+          <Button variant="primary" fullWidth onClick={handleRate}>
+            <Star className="h-4 w-4" aria-hidden />
+            {t('rateApp.prompt.rate', { defaultValue: 'Rate Arcana on Google Play' })}
+          </Button>
+          <Button variant="outline" fullWidth onClick={handleFeedback}>
+            <MessageCircle className="h-4 w-4" aria-hidden />
+            {t('rateApp.prompt.feedback', { defaultValue: 'Report a problem' })}
+          </Button>
+          <Button variant="ghost" fullWidth onClick={handleLater}>
+            {t('rateApp.prompt.later', { defaultValue: 'Not now' })}
+          </Button>
         </div>
       </div>
-    </div>
+    </Sheet>
   );
 }

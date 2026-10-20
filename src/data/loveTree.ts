@@ -11,9 +11,39 @@
  *
  * This is a self-knowledge tool, not a clinical diagnosis. Copy makes
  * that distinction explicit at the result stage.
+ *
+ * The English here is the source of truth. Japanese, Korean and Chinese come
+ * from the 'loveTree' content overlay (src/i18n/locales/<lng>/
+ * content-loveTree.json, shaped like `loveTreeCorpus()` below): screens read
+ * the statements through `localizeLoveTreeItem` and a style's reading
+ * through `localizeAttachment`, and a string the overlay lacks stays English.
  */
+import { ct, ctEntry, type ContentOverlay } from '../i18n/contentOverlay';
 
 export type Attachment = 'secure' | 'anxious' | 'avoidant' | 'fearful';
+
+/**
+ * What the profile stores. The attachment quiz (src/data/attachmentQuiz.ts
+ * `AttachmentStyle`) writes `fearful-avoidant` for the fourth quadrant, and
+ * profiles.attachment_style is shared between the two tools — so the Love
+ * Tree persists the quiz's label and reads it back, while its own scorer
+ * keeps the short key its golden tests pin.
+ */
+export type AttachmentStyle = 'secure' | 'anxious' | 'avoidant' | 'fearful-avoidant';
+
+export const ATTACHMENT_STYLE_OF: Record<Attachment, AttachmentStyle> = {
+  secure: 'secure',
+  anxious: 'anxious',
+  avoidant: 'avoidant',
+  fearful: 'fearful-avoidant',
+};
+
+/** The quadrant a stored profile value names, or null for anything else. */
+export function attachmentFromStyle(value: unknown): Attachment | null {
+  if (typeof value !== 'string') return null;
+  const hit = (Object.keys(ATTACHMENT_STYLE_OF) as Attachment[]).find((k) => ATTACHMENT_STYLE_OF[k] === value);
+  return hit ?? null;
+}
 
 export type Dimension = 'anxiety' | 'avoidance';
 
@@ -144,6 +174,45 @@ export const ATTACHMENT_INFO: Record<Attachment, AttachmentInfo> = {
   },
 };
 
+/** The fields of a style's reading a member reads (the tree's shape is not text). */
+export const ATTACHMENT_TEXT_FIELDS = ['title', 'archetype', 'summary', 'strengths', 'growth', 'inLove', 'affirmation'] as const;
+
+/**
+ * The English corpus of the 'loveTree' overlay: the twelve statements by item
+ * id, and each style's reading by its key. Keys are ids, never English text.
+ */
+export function loveTreeCorpus(): {
+  items: Record<string, string>;
+  attachment: Record<Attachment, Pick<AttachmentInfo, (typeof ATTACHMENT_TEXT_FIELDS)[number]>>;
+} {
+  const items: Record<string, string> = {};
+  for (const item of LOVE_TREE_QUIZ) items[item.id] = item.prompt;
+  const attachment = {} as Record<Attachment, Pick<AttachmentInfo, (typeof ATTACHMENT_TEXT_FIELDS)[number]>>;
+  for (const key of Object.keys(ATTACHMENT_INFO) as Attachment[]) {
+    const info = ATTACHMENT_INFO[key];
+    attachment[key] = {
+      title: info.title,
+      archetype: info.archetype,
+      summary: info.summary,
+      strengths: [...info.strengths],
+      growth: [...info.growth],
+      inLove: info.inLove,
+      affirmation: info.affirmation,
+    };
+  }
+  return { items, attachment };
+}
+
+/** A statement in the reader's language (English where the overlay has none). */
+export function localizeLoveTreeItem(item: LoveTreeItem, overlay: ContentOverlay | null | undefined): string {
+  return ct(overlay, `items.${item.id}`, item.prompt);
+}
+
+/** A style's reading in the reader's language; the tree's shape is unchanged. */
+export function localizeAttachment(attachment: Attachment, overlay: ContentOverlay | null | undefined): AttachmentInfo {
+  return ctEntry(ATTACHMENT_INFO[attachment], overlay, `attachment.${attachment}`, ATTACHMENT_TEXT_FIELDS);
+}
+
 /**
  * Score answers → attachment type.
  *
@@ -154,7 +223,7 @@ export const ATTACHMENT_INFO: Record<Attachment, AttachmentInfo> = {
  *   anxiety  ≤ 3  AND  avoidance ≤ 3  → secure
  *   anxiety  >  3  AND  avoidance ≤ 3  → anxious
  *   anxiety  ≤ 3  AND  avoidance  > 3  → avoidant
- *   anxiety  >  3  AND  avoidance  > 3  → fearful
+ *   anxiety  >  3  AND  avoidance  > 3  → fearful (stored as 'fearful-avoidant')
  */
 export function scoreLoveTree(answers: Record<string, number>): {
   attachment: Attachment;

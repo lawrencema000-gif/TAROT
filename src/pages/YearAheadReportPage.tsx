@@ -1,13 +1,17 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse, ResultSheet, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { isNative } from '../utils/platform';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
+import { useNatalChart } from '../hooks/useAstrology';
+import { useBirthTzBackfill, birthZoneOf, castParamsFor } from '../components/horoscope/birthZone';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
+import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 
@@ -17,6 +21,15 @@ import { MOONSTONES_PER_AD } from '../services/rewardedAds';
  * Monetization refactor 2026-04-25: one-off Stripe per-report purchases
  * removed. Premium unlocks every feature; Moonstones are the per-report
  * unlock currency; every rewarded ad credits +50 Moonstones.
+ *
+ * No chart, no sale (p9 QS R-3, as the natal report since Q01). The
+ * forecast is drawn from the stored natal chart, which neither onboarding
+ * casts. The page offered "Unlock for 300" on birth data alone, took the
+ * Moonstones, and astrology-year-ahead then answered NATAL_CHART_MISSING:
+ * a card with no header that said to re-enter birth data that was complete.
+ * A missing chart is now cast here the way the Horoscope setup casts it
+ * (the birth place's zone, castParamsFor), the unlock is offered only once
+ * a chart exists, and the forecast is asked for only beside one.
  */
 
 const YEAR_AHEAD_COST = 300;
@@ -56,6 +69,11 @@ const INTENSITY_COLORS: Record<'soft' | 'neutral' | 'hard', string> = {
 export function YearAheadReportPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
+  const { chart, loading: chartLoading, error: chartError, fetchChart, computeChart } = useNatalChart();
+  // A chart cast in the signup zone (before F21) is recast before the
+  // forecast reads it; reload when the recast lands.
+  useBirthTzBackfill(fetchChart);
+  const natal = chart?.natalChart ?? null;
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
@@ -67,8 +85,41 @@ export function YearAheadReportPage() {
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasNatalChart = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
+  // The birth data the forecast asks for. Having it is not having a chart:
+  // the chart is read (useNatalChart) and, when there is none, cast below.
+  const hasBirthData = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
+  const birthLat = profile?.birthLat;
+  const birthLon = profile?.birthLon;
+  const hasBirthPlace = typeof birthLat === 'number' && Number.isFinite(birthLat)
+    && typeof birthLon === 'number' && Number.isFinite(birthLon);
+  // 'done' and 'failed' both end the attempt; a retry goes back to 'idle'.
+  const [castState, setCastState] = useState<'idle' | 'casting' | 'done' | 'failed'>('idle');
+  // Guards the cast effect against a second cast (StrictMode runs it twice).
+  const castTried = useRef(false);
+  const castChart = useCallback(async () => {
+    if (!profile?.birthDate || typeof profile.birthLat !== 'number' || typeof profile.birthLon !== 'number') return;
+    castTried.current = true;
+    setCastState('casting');
+    try {
+      const { tz } = await birthZoneOf(profile);
+      const cast = await computeChart(castParamsFor({ ...profile, birthLat: profile.birthLat, birthLon: profile.birthLon }, tz));
+      setCastState(cast?.natalChart ? 'done' : 'failed');
+    } catch {
+      setCastState('failed');
+    }
+  }, [profile, computeChart]);
+  /** Read the chart again, and cast it when there is still none. */
+  const retryChart = () => {
+    castTried.current = false;
+    setCastState('idle');
+    void fetchChart();
+  };
   const currentYear = new Date().getFullYear();
+  // Rewarded ads only exist inside the native shell (R5 M-9).
+  const adNative = isNative();
+  // ...and an ad is offered only while one can still earn today: after the
+  // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
+  const adAvailable = useCanOfferAd();
 
   // The twelve months the forecast covers (the unlock reference is the
   // calendar year), named in the user's locale for the paywall's preview.
@@ -96,11 +147,21 @@ export function YearAheadReportPage() {
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
+  // Once astrology-get-chart has answered "none", cast it (once; a retry
+  // reloads and comes back here).
+  useEffect(() => {
+    if (!user || !hasBirthData || !hasBirthPlace || natal || chartLoading || chartError || castTried.current) return;
+    void castChart();
+  }, [user, hasBirthData, hasBirthPlace, natal, chartLoading, chartError, castChart]);
+
   const loadData = useCallback(async () => {
     setLoadingData(true);
     setError(null);
+    // The year this page unlocked (the unlock's reference): the function
+    // checks that year's row, so a reader who bought it in an earlier year
+    // as well is served, not refused (p9 R06).
     const { data: resp, error: err } = await supabase.functions.invoke('astrology-year-ahead', {
-      body: {},
+      body: { year: currentYear },
     });
     setLoadingData(false);
     if (err) {
@@ -120,13 +181,26 @@ export function YearAheadReportPage() {
       return;
     }
     setData(payload);
-  }, []);
+  }, [currentYear]);
 
+  // The forecast is asked for once, beside a chart the server can read: not
+  // while the chart is being read or cast, and not again by itself after a
+  // failure — every failure used to start the next request, without end.
+  // Each error state has its own retry.
+  const castingChart = castState === 'casting';
   useEffect(() => {
-    if (unlocked && !data && !loadingData) loadData();
-  }, [unlocked, data, loadingData, loadData]);
+    if (unlocked && natal && !chartLoading && !castingChart && !data && !loadingData && !error) void loadData();
+  }, [unlocked, natal, chartLoading, castingChart, data, loadingData, error, loadData]);
+
+  /** The server had no chart for the forecast: read (or cast) it again, then the forecast loads. */
+  const retryMissingChart = () => {
+    setError(null);
+    retryChart();
+  };
 
   const handleUnlock = async () => {
+    // The unlock is offered only beside a chart; never charge without one.
+    if (!natal || unlocking) return;
     setUnlocking(true);
     const res = await reportUnlocks.unlockWithMoonstones(
       'year-ahead',
@@ -146,6 +220,10 @@ export function YearAheadReportPage() {
         }),
         'error',
       );
+    } else if (res.error === 'chart-missing') {
+      // The server holds no chart for this account and refused before the
+      // debit: read it again (and cast it), then the unlock is offered again.
+      retryChart();
     } else {
       toast(
         t('yearAhead.unlockFailed', {
@@ -156,13 +234,31 @@ export function YearAheadReportPage() {
     }
   };
 
-  if (!hasNatalChart) {
+  const yearHeader = (
+    <PageHeader
+      icon={<Calendar />}
+      title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
+    />
+  );
+
+  /** The chart could not be read or drawn: say so, and try again (a retry reads it and casts it when missing). */
+  const chartRetryCard = (onRetry: () => void) => (
+    <Card padding="lg" className="text-center">
+      <p className="text-ui text-mystic-300 mb-4" role="alert">
+        {t('natalReport.errorChartMissing', {
+          defaultValue: 'We couldn’t draw your chart just now. Check your connection and try again.',
+        })}
+      </p>
+      <Button variant="outline" onClick={onRetry}>
+        {t('common:actions.retry', { defaultValue: 'Try again' })}
+      </Button>
+    </Card>
+  );
+
+  if (!hasBirthData) {
     return (
       <Page spacing="sm">
-        <PageHeader
-          icon={<Calendar />}
-          title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
-        />
+        {yearHeader}
         <EmptyState
           icon={<AlertCircle />}
           title={t('yearAhead.needsBirthData', { defaultValue: 'Add your full birth data first' })}
@@ -175,11 +271,47 @@ export function YearAheadReportPage() {
     );
   }
 
-  if (checking) {
+  // The chart is being cast here (or is about to be): the page, not a bare
+  // loading line.
+  if (castingChart
+    || (castState === 'idle' && !natal && hasBirthPlace && !chartLoading && !checking && !chartError)) {
+    return (
+      <Page spacing="sm">
+        {yearHeader}
+        <Card padding="lg" className="text-center">
+          <p className="text-ui text-mystic-300" role="status" aria-live="polite">
+            {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
+          </p>
+        </Card>
+      </Page>
+    );
+  }
+
+  if (checking || chartLoading) {
     return (
       <div className="py-12 text-center text-mystic-500">
         {t('common:actions.loading', { defaultValue: 'Loading…' })}
       </div>
+    );
+  }
+
+  // No chart: nothing is sold and no forecast is asked for. Either it could
+  // not be read or cast — try again — or there is no birth place to cast it
+  // for (a typed place with no coordinates).
+  if (!natal) {
+    return (
+      <Page spacing="sm">
+        {yearHeader}
+        {chartError || hasBirthPlace ? chartRetryCard(retryChart) : (
+          <EmptyState
+            icon={<AlertCircle />}
+            title={t('natalReport.needsBirthPlace', { defaultValue: 'Add your birth place' })}
+            description={t('natalReport.needsBirthPlaceBody', {
+              defaultValue: 'Your chart is drawn for the place you were born. Pick it in Profile → Edit profile, then open this page again.',
+            })}
+          />
+        )}
+      </Page>
     );
   }
 
@@ -199,7 +331,8 @@ export function YearAheadReportPage() {
             {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
           </h2>
           <SectionDivider width="w-32" className="mx-auto mb-3" />
-          <p className="text-ui text-mystic-200 italic mb-4">
+          {/* Centred under the title: breaks between phrases (keep-phrases), not 「トランジ/ット」. */}
+          <p className="keep-phrases text-ui text-mystic-200 italic mb-4">
             {t('yearAhead.cardSub', {
               defaultValue: 'A month-by-month map of the biggest transits to your natal chart.',
             })}
@@ -237,8 +370,10 @@ export function YearAheadReportPage() {
             size="lg"
           >
             <Crown className="w-4 h-4 mr-2" />
+            {/* The natal report's label: one line beside the crown at 390 px
+                in every locale (p8 F60); "See what Premium includes" took two. */}
             {t('yearAhead.upgradeToPremium', {
-              defaultValue: 'See what Premium includes',
+              defaultValue: 'See Premium plans',
             })}
           </Button>
 
@@ -258,32 +393,41 @@ export function YearAheadReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-ui text-mystic-200 mb-2">
-                {t('yearAhead.orEarnMoonstones', {
-                  defaultValue: 'Or unlock with {{n}} Moonstones',
+            <div className="mt-3 space-y-2 text-left">
+              <Button variant="outline" fullWidth disabled>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('yearAhead.unlockCta', {
+                  defaultValue: 'Unlock with {{n}} Moonstones',
                   n: YEAR_AHEAD_COST,
                 })}
-              </p>
-              <p className="text-meta text-mystic-400 mb-3">
-                {t('yearAhead.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
-                {' · '}
-                {t('yearAhead.earnHint', {
-                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
-                })}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowWatchAd(true)}
-              >
-                <Gift className="w-3.5 h-3.5 mr-1.5" />
-                {t('yearAhead.earnNow', {
-                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
-                  n: MOONSTONES_PER_AD,
-                })}
               </Button>
+              <p className="text-meta text-mystic-400 text-center tabular-nums">
+                {t('reportUnlock.shortfall', {
+                  defaultValue: 'You have {{have}} Moonstones — {{need}} more needed.',
+                  have: balance ?? 0,
+                  need: Math.max(0, YEAR_AHEAD_COST - (balance ?? 0)),
+                })}
+              </p>
+              {adAvailable ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowWatchAd(true)}
+                >
+                  <Gift className="w-3.5 h-3.5 mr-1.5" />
+                  {t('yearAhead.earnNow', {
+                    defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                    n: MOONSTONES_PER_AD,
+                  })}
+                </Button>
+              ) : (
+                <p className="text-meta text-mystic-400 text-center">
+                  {t('reportUnlock.earnHintWeb', {
+                    defaultValue: 'Earn Moonstones with the daily check-in or an invite, or open everything with Premium.',
+                  })}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -324,7 +468,7 @@ export function YearAheadReportPage() {
             </div>
           }
         />
-        {moonstonesEnabled && (
+        {moonstonesEnabled && adNative && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}
@@ -350,30 +494,40 @@ export function YearAheadReportPage() {
     );
   }
 
+  // The server found no chart for the forecast (it was paid for, or Premium
+  // covers it): the page, and a retry that reads or casts the chart again.
+  // The birth data is not the problem, and is not asked for again.
   if (error === 'natal-missing') {
     return (
-      <Card padding="lg" variant="glow">
-        <p className="text-ui text-mystic-300">
-          {t('yearAhead.errorNatalMissing', {
-            defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
-          })}
-        </p>
-      </Card>
+      <Page spacing="sm">
+        {yearHeader}
+        {chartRetryCard(retryMissingChart)}
+      </Page>
     );
   }
   if (error) {
     return (
-      <Card padding="lg">
-        <p className="text-ui text-mystic-300">
-          {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
-        </p>
-        <Button variant="primary" onClick={loadData} className="mt-3">
-          {t('yearAhead.retry', { defaultValue: 'Reload the forecast' })}
-        </Button>
-      </Card>
+      <Page spacing="sm">
+        {yearHeader}
+        <Card padding="lg">
+          <p className="text-ui text-mystic-300" role="alert">
+            {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
+          </p>
+          <Button variant="primary" onClick={loadData} className="mt-3">
+            {t('yearAhead.retry', { defaultValue: 'Reload the forecast' })}
+          </Button>
+        </Card>
+      </Page>
     );
   }
   if (!data) return null;
+
+  // The year's narrative opens the report on paper: first paragraph as the
+  // summary, the rest as the body. The year itself is the eyebrow — a
+  // number, so it stays in Inter rather than the display serif.
+  const paragraphs = data.summary.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const arcSummary = paragraphs[0] ?? data.summary;
+  const arcRest = paragraphs.slice(1).join('\n\n');
 
   return (
     <Page spacing="md">
@@ -382,16 +536,16 @@ export function YearAheadReportPage() {
         title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
       />
 
-      <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
-        <div className="flex items-center gap-2 mb-3">
-          <Star className="w-4 h-4 text-gold" />
-          <p className="font-display-eyebrow">
-            {t('yearAhead.overall', { defaultValue: 'Overall arc' })}
-          </p>
-        </div>
-        {/* The year's narrative is the opening of the report: lede + drop cap. */}
-        <ReadingProse text={data.summary} />
-      </Card>
+      <ResultSheet
+        headingLevel="h2"
+        glyph={<Calendar strokeWidth={1.5} />}
+        eyebrow={String(currentYear)}
+        title={t('yearAhead.arcTitle', { defaultValue: 'The shape of your year' })}
+        summary={arcSummary}
+        summaryHeading={t('yearAhead.overall', { defaultValue: 'Overall arc' })}
+      >
+        {arcRest ? <ReadingProse text={arcRest} lede={false} /> : undefined}
+      </ResultSheet>
 
       {/* Twelve months used to be twelve identical cards, which is roughly
           six screens of scroll before the second half of the year. Each
@@ -433,8 +587,8 @@ export function YearAheadReportPage() {
                     <p className="text-ui font-medium tracking-wide">
                       {event.transitPlanet} {event.aspectType} {event.natalPlanet}
                     </p>
-                    <div className="flex items-center gap-1 text-meta text-mystic-400 shrink-0">
-                      <Clock className="w-3 h-3" />
+                    <div className="flex items-center gap-1 text-meta text-mystic-400 shrink-0 tabular-nums">
+                      <Clock className="w-3 h-3" aria-hidden />
                       {event.startDate === event.endDate
                         ? event.startDate
                         : `${event.startDate} → ${event.endDate}`}
@@ -448,12 +602,7 @@ export function YearAheadReportPage() {
         ))}
       </div>
 
-      <p className="text-caption text-mystic-500 italic">
-        {t('yearAhead.disclaimer', {
-          defaultValue:
-            'Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.',
-        })}
-      </p>
+      <Disclaimer kind="astrology" />
     </Page>
   );
 }

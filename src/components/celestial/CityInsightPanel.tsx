@@ -1,29 +1,36 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MapPin, Crown, Sparkles, Coins, Loader2, AlertCircle } from 'lucide-react';
 import { Sheet, Button, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
-import type { PlanetName, Angle } from '../../utils/astrocartography';
+import { PLANETS, type PlanetName, type Angle } from '../../utils/astrocartography';
+import { localizeCountry } from './placeNames';
 import {
   linesNearPoint,
   nearestCity,
   ccToFlag,
+  type City,
   type CityLineHit,
 } from '../../utils/celestialGeo';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { getInterpretation } from '../../data/celestialInterpretations';
+import { ct, useContentOverlay } from '../../i18n/contentOverlay';
+import { localizePlanetName } from '../../i18n/localizeNames';
 import {
   generateCelestialReading,
+  type CelestialReadingRequest,
   type CelestialReadingResponse,
   type LifeIntent,
 } from '../../dal/celestialReading';
 
 /**
  * City Insight Panel — slide-up bottom sheet shown when a user taps a
- * point on the celestial map.
+ * point on the celestial map, or picks a place (search, a listed city, the
+ * destined place).
  *
- * Surfaces the nearest known city + all planetary lines that pass within
- * `radiusKm` of the tapped point. Each line is a chip the user can
+ * Surfaces the picked place, or for a tap the nearest known city (the spot
+ * itself when none is within 300 km), + all planetary lines that pass within
+ * `radiusKm` of the point. Each line is a chip the user can
  * expand to read the interpretation. A CTA at the bottom triggers the
  * AI Travel Reading (premium-included or 250 Moonstones, gated upstream
  * by the `tryConsume` prop).
@@ -45,6 +52,16 @@ interface Props {
   onClose: () => void;
   /** Tapped lon/lat from the map. */
   point: { lon: number; lat: number } | null;
+  /**
+   * The place the reader picked — from the city search (any place the
+   * geocoder knows, not only the listed cities), a listed city, or the
+   * destined place — when the panel opened at it (p9 R31). It names the
+   * panel and is the place the reading is about. Without it (a tap on the
+   * map) the panel names the nearest listed city within 300 km, or calls
+   * the spot remote and reads the spot itself. Used only while `point` is
+   * its position.
+   */
+  place?: City | null;
   /** Lines currently rendered to the user (free tier + filter applied). */
   visibleLines: GeoJSON.FeatureCollection<
     GeoJSON.LineString,
@@ -74,6 +91,9 @@ interface Props {
   onUpgrade: () => void;
 }
 
+/** A planet the model named, in the reader's language when it is one of the ten (p8 F27). */
+const planetLabel = (p: string) => ((PLANETS as readonly string[]).includes(p) ? localizePlanetName(p as PlanetName) : p);
+
 const PLANET_DOT_COLOR: Record<PlanetName, string> = {
   Sun: '#f4d668',
   Moon: '#e6e0ff',
@@ -91,6 +111,7 @@ export function CityInsightPanel({
   open,
   onClose,
   point,
+  place,
   visibleLines,
   allLines,
   isPremium,
@@ -103,18 +124,37 @@ export function CityInsightPanel({
   onUpgrade,
 }: Props) {
   const { t } = useT('app');
+  // The line readings in ja/ko/zh: the `celestial` content overlay,
+  // `lines.<Planet>.<Angle>.{headline,body}`, over the English.
+  const { overlay: celestialOverlay, ready: overlayReady } = useContentOverlay('celestial');
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [loadingReading, setLoadingReading] = useState(false);
-  const [reading, setReading] = useState<CelestialReadingResponse | null>(null);
-  const [readingError, setReadingError] = useState<string | null>(null);
 
-  // Identify the nearest city — this drives the panel title. If the user
-  // tapped the open ocean we still show coordinates, just without a city
-  // name (the nearest match would be misleading 1000km away).
+  // What the panel names, and the place the reading is about (p9 R31):
+  //  - a place the reader picked (the search answers any town the geocoder
+  //    knows, and for ja/ko/zh readers every search goes there): that place,
+  //    by its own name and region — never the nearest listed city;
+  //  - a tap on the map: the nearest listed city when it is within 300 km,
+  //    named with its distance from the tap; farther than that the spot is
+  //    remote, and the reading is about the spot itself, not a city
+  //    1,000 km away.
+  const picked = place && point && Math.abs(place.lat - point.lat) < 1e-6 && Math.abs(place.lon - point.lon) < 1e-6
+    ? place
+    : null;
   const cityInfo = useMemo(() => {
     if (!point) return null;
     return nearestCity(GLOBAL_CITIES, point.lat, point.lon);
   }, [point]);
+  const nearCity = !picked && cityInfo && cityInfo.distanceKm <= 300 ? cityInfo : null;
+  const remoteLabel = t('celestial.city.unknown', { defaultValue: 'Open ocean / remote' });
+  const coordsLabel = point ? `${point.lat.toFixed(2)}°, ${point.lon.toFixed(2)}°` : '';
+  const title = picked ? picked.name : nearCity ? nearCity.city.name : remoteLabel;
+  const flagCc = picked ? picked.cc : nearCity ? nearCity.city.cc : '';
+  const subtitle = picked
+    ? (picked.cc ? localizeCountry(picked.cc, picked.country) : picked.country) || coordsLabel
+    : nearCity
+      ? localizeCountry(nearCity.city.cc, nearCity.city.country)
+      : coordsLabel;
 
   // The lines passing within radius of the tap. Computed against both
   // visible and "all" sets so we can show free-user upgrade hints.
@@ -129,49 +169,110 @@ export function CityInsightPanel({
   }, [point, allLines]);
 
   const hiddenCount = isPremium ? 0 : Math.max(0, allHits.length - visibleHits.length);
-  const isFarFromCity = cityInfo && cityInfo.distanceKm > 300;
 
-  // Reset reading/error when the sheet re-opens at a new point — readings
-  // are place-specific and getting stale text in a new sheet would be
-  // confusing.
+  // The paid request for the place on screen, and its body as a string: the
+  // key of everything below.
+  const req: CelestialReadingRequest | null = point
+    ? {
+        city: picked
+          // The function requires a country; a search row can lack one.
+          ? { name: picked.name, country: picked.country || picked.name, lat: picked.lat, lon: picked.lon }
+          : nearCity
+            ? { name: nearCity.city.name, country: nearCity.city.country, lat: nearCity.city.lat, lon: nearCity.city.lon }
+            // Remote: the spot itself, named by its coordinates (kept in the function's range).
+            : {
+                name: coordsLabel,
+                country: remoteLabel,
+                lat: Math.max(-90, Math.min(90, point.lat)),
+                lon: ((((point.lon + 180) % 360) + 360) % 360) - 180,
+              },
+        intent,
+        // We use the full (premium) line set when fetching the AI reading
+        // because the AI's job is to synthesise the *true* astrocartography
+        // for this point, not the gated subset. The free user paid for
+        // this read (or is premium); the cap is on the line-graph, not the
+        // text interpretation.
+        lines: allHits.map((h) => ({ planet: h.planet, angle: h.angle, distanceKm: h.distanceKm })),
+        birth: { utc: birthUtc },
+        userContext: { zodiacSign, mbtiType, locale },
+      }
+    : null;
+  const signature = req ? JSON.stringify(req) : null;
+
+  /**
+   * Readings this panel sold, by the request they answered (p9 R08).
+   * celestial-travel-reading takes the 250 before its 7-day cache, so the
+   * same request bought again is the same text for another 250: reopening a
+   * city shows the reading already paid for instead of selling it again.
+   */
+  const [kept, setKept] = useState<Record<string, CelestialReadingResponse>>({});
+  const reading = signature ? kept[signature] ?? null : null;
+  /** The last failure, for the request it was about. */
+  const [failure, setFailure] = useState<{ signature: string; error: string } | null>(null);
+  const readingError = failure && failure.signature === signature ? failure.error : null;
+  /**
+   * The requestId of each request sent without a reading back, by its body,
+   * kept through closing and reopening the panel and through other cities
+   * read meanwhile: retrying one is the server's free replay of a reply that
+   * may already be paid for, never a new charge (it used to be cleared on
+   * every open, so a lost reply became a second 250).
+   */
+  const pending = useRef(new Map<string, string>());
+  /** A request is between its first line and its last. */
+  const busy = useRef(false);
+
+  // A fresh look each time the sheet opens: lines folded, no stale error.
+  // The readings and the unanswered requests stay.
   useEffect(() => {
     if (!open) return;
-    setReading(null);
-    setReadingError(null);
+    setFailure(null);
     setExpandedKey(null);
   }, [open, point?.lat, point?.lon]);
 
+  /**
+   * One tap, one charge (p8 F20). `busy` is set before the spend gate is
+   * awaited, so a second tap during the gate's round trip returns at once
+   * (it used to send a second, separately charged 250-Moonstone request),
+   * and the button is disabled from the gate check on. The request carries
+   * a `requestId`, kept until a reading lands: the server debits once per
+   * (requestId, body), so a retry after a dropped connection gets the first
+   * run's reading back instead of a second charge, and skips the gate (the
+   * first attempt may have left the balance under the cost).
+   */
   async function handleRequestReading() {
-    if (!point || !cityInfo) return;
-    // Premium passes through; non-premium hits the spend gate first.
-    if (!isPremium) {
-      const spent = await trySpend();
-      if (!spent) return;
-    }
+    if (!req || !signature || busy.current) return;
+    busy.current = true;
     setLoadingReading(true);
-    setReadingError(null);
-    const res = await generateCelestialReading({
-      city: {
-        name: cityInfo.city.name,
-        country: cityInfo.city.country,
-        lat: cityInfo.city.lat,
-        lon: cityInfo.city.lon,
-      },
-      intent,
-      // We use the full (premium) line set when fetching the AI reading
-      // because the AI's job is to synthesise the *true* astrocartography
-      // for this point, not the gated subset. The free user paid for
-      // this read (or is premium); the cap is on the line-graph, not the
-      // text interpretation.
-      lines: allHits.map((h) => ({ planet: h.planet, angle: h.angle, distanceKm: h.distanceKm })),
-      birth: { utc: birthUtc },
-      userContext: { zodiacSign, mbtiType, locale },
-    });
-    setLoadingReading(false);
-    if (res.ok) {
-      setReading(res.data);
-    } else {
-      setReadingError(res.error);
+    setFailure(null);
+    const sent = signature;
+    try {
+      let requestId = pending.current.get(sent);
+      if (!requestId) {
+        requestId = crypto.randomUUID();
+        pending.current.set(sent, requestId);
+        // Premium passes through; non-premium hits the spend gate first.
+        if (!isPremium && !(await trySpend())) {
+          pending.current.delete(sent);
+          return;
+        }
+      }
+      const res = await generateCelestialReading({ ...req, requestId });
+      if (res.ok) {
+        pending.current.delete(sent);
+        // Kept under the request it answers: if the panel moved to another
+        // place meanwhile, it shows there only when the reader comes back.
+        setKept((k) => ({ ...k, [sent]: res.data }));
+      } else {
+        // Answered once and no longer replayable (REQUEST_ALREADY_USED), or
+        // refused before the debit (INSUFFICIENT_BALANCE): the next press is
+        // a new request behind the gate — the Earn sheet when the balance is
+        // short — never this id again (p9 RQA-2).
+        if (res.error === 'REQUEST_ALREADY_USED' || res.error === 'INSUFFICIENT_BALANCE') pending.current.delete(sent);
+        setFailure({ signature: sent, error: res.error });
+      }
+    } finally {
+      busy.current = false;
+      setLoadingReading(false);
     }
   }
 
@@ -180,27 +281,23 @@ export function CityInsightPanel({
       open={open}
       onClose={onClose}
       variant="glow"
-      label={cityInfo && !isFarFromCity ? cityInfo.city.name : t('celestial.city.unknown', { defaultValue: 'Open ocean / remote' })}
+      label={title}
     >
       <div className="space-y-5">
-        {/* ── Header: city name + distance from tap ─────────────── */}
+        {/* ── Header: the place, and for a tap its distance from it ─ */}
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-12 h-12 rounded-card bg-mystic-800/60 hairline-gold-soft flex items-center justify-center text-2xl">
-            {cityInfo ? ccToFlag(cityInfo.city.cc) : <MapPin className="w-5 h-5 text-gold" />}
+            {flagCc ? ccToFlag(flagCc) : <MapPin className="w-5 h-5 text-gold" />}
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="heading-display-md text-mystic-100 truncate">
-              {cityInfo && !isFarFromCity ? cityInfo.city.name : t('celestial.city.unknown', { defaultValue: 'Open ocean / remote' })}
+              {title}
             </h2>
             <p className="text-meta text-mystic-400 mt-0.5">
-              {cityInfo && !isFarFromCity
-                ? cityInfo.city.country
-                : point
-                  ? `${point.lat.toFixed(2)}°, ${point.lon.toFixed(2)}°`
-                  : ''}
-              {cityInfo && !isFarFromCity && (
+              {subtitle}
+              {nearCity && (
                 <span className="ml-2">
-                  · {Math.round(cityInfo.distanceKm)} km from tap
+                  · {t('celestial.city.kmFromTap', { defaultValue: '{{km}} km from tap', km: Math.round(nearCity.distanceKm) })}
                 </span>
               )}
             </p>
@@ -227,7 +324,12 @@ export function CityInsightPanel({
             <div className="space-y-2">
               {visibleHits.map((hit, i) => {
                 const key = `${hit.planet}-${hit.angle}`;
-                const interp = getInterpretation(hit.planet, hit.angle);
+                const en = getInterpretation(hit.planet, hit.angle);
+                const linePath = `lines.${hit.planet}.${hit.angle}`;
+                const interp = {
+                  headline: ct(celestialOverlay, `${linePath}.headline`, en.headline),
+                  body: ct(celestialOverlay, `${linePath}.body`, en.body),
+                };
                 const isExpanded = expandedKey === key;
                 return (
                   <motion.div
@@ -253,13 +355,15 @@ export function CityInsightPanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-ui font-medium text-mystic-100">
-                            {hit.planet} {hit.angle}
+                            {localizePlanetName(hit.planet)} {hit.angle}
                           </span>
-                          <span className="text-meta text-mystic-400">
-                            · {Math.round(hit.distanceKm)} km
+                          <span className="text-meta text-mystic-400 tabular-nums">
+                            · {t('celestial.city.km', { defaultValue: '{{km}} km', km: Math.round(hit.distanceKm) })}
                           </span>
                         </div>
-                        <p className="text-ui text-mystic-200 mt-0.5">{interp.headline}</p>
+                        {/* The overlay is a small lazy chunk: hold the line
+                            for it rather than flash the English first. */}
+                        <p className="text-ui text-mystic-200 mt-0.5">{overlayReady ? interp.headline : '\u00a0'}</p>
                       </div>
                       <ChevronDown
                         className={`w-4 h-4 text-mystic-400 flex-shrink-0 transition-transform mt-1.5 ${isExpanded ? 'rotate-180' : ''}`}
@@ -336,9 +440,16 @@ export function CityInsightPanel({
               <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-3">
                 <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
                 <p className="text-ui text-coral-light">
-                  {t('celestial.city.aiReading.error', {
-                    defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
-                  })}
+                  {readingError === 'REQUEST_ALREADY_USED'
+                    // Paid for and gone: pressing again is a new reading at
+                    // the price on the button, not the free retry the
+                    // general message promises.
+                    ? t('celestial.city.aiReading.errorSpent', {
+                        defaultValue: 'This reading was already given once and can’t be shown again. The button below starts a new one, charged as usual.',
+                      })
+                    : t('celestial.city.aiReading.error', {
+                        defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
+                      })}
                 </p>
               </div>
             )}
@@ -397,7 +508,7 @@ export function CityInsightPanel({
                       aria-hidden
                     />
                     <p className="reading-copy flex-1">
-                      <span className="text-mystic-100 font-medium">{note.planet} {note.angle}</span>
+                      <span className="text-mystic-100 font-medium">{planetLabel(note.planet)} {note.angle}</span>
                       {' — '}{note.note}
                     </p>
                   </div>

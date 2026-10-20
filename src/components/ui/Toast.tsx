@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -35,10 +36,91 @@ const colors = {
 /** How many toasts can be on screen before the oldest is retired. */
 const MAX_VISIBLE = 3;
 
+/** Space between the stack and whatever is pinned to the bottom of the screen. */
+const GAP_PX = 12;
+/** Where the stack sits before the first measurement: above the bottom nav. */
+const DEFAULT_BOTTOM_PX = 96;
+/** A pinned band taller than this share of the screen is a sheet: the stack moves to the top. */
+const SHEET_SHARE = 0.45;
+
+type Placement = { edge: 'bottom'; px: number } | { edge: 'top' };
+
+/**
+ * The top edge of the pinned band `el` belongs to, or null when it belongs
+ * to none. The band is the nearest fixed or sticky ancestor: the bottom
+ * nav, a fixed call-to-action bar. A fixed layer that covers the whole
+ * screen is a band only by what is in it:
+ *  - under one, the band is the outermost box on the way down that starts
+ *    below the top of the screen (the sheet an overlay lifts up);
+ *  - a probe that lands on the layer's backdrop finds the layer's panel
+ *    instead, when the layer sits above the page (z-index above 0);
+ *  - the app's own background (fixed, full screen, z-index 0 or below)
+ *    pins nothing. Read as a band, it sent every toast on a short screen
+ *    to the top.
+ */
+function pinnedBandTop(el: Element, stack: Element | null): number | null {
+  const path: Element[] = [];
+  for (let n: Element | null = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+    if (stack && stack.contains(n)) return null;
+    const style = getComputedStyle(n);
+    if (style.position === 'fixed' || style.position === 'sticky') {
+      const top = n.getBoundingClientRect().top;
+      if (top > 1) return top;
+      for (let i = path.length - 1; i >= 0; i--) {
+        const inner = path[i].getBoundingClientRect().top;
+        if (inner > 1) return inner;
+      }
+      if (!(parseInt(style.zIndex, 10) > 0)) return null;
+      let panel = Infinity;
+      for (const child of Array.from(n.children)) {
+        const r = child.getBoundingClientRect();
+        if (r.height > 0 && r.top > 1) panel = Math.min(panel, r.top);
+      }
+      // An overlay with nothing but full-screen boxes covers the screen.
+      return panel === Infinity ? 0 : panel;
+    }
+    path.push(n);
+  }
+  return null;
+}
+
+/**
+ * How much of the bottom of the screen is covered by things pinned there:
+ * the bottom nav, a fixed call-to-action bar, the update banner, an open
+ * sheet. Probed with elementsFromPoint up from the bottom edge, so nothing
+ * has to register itself; it stops at the first row with nothing pinned.
+ * The toast stack used to sit at a fixed 96px and covered a primary button
+ * that sat above the nav (R7 #143); it now sits above whatever is there.
+ */
+function measurePlacement(stack: Element | null): Placement {
+  if (typeof document === 'undefined' || typeof document.elementsFromPoint !== 'function') {
+    return { edge: 'bottom', px: DEFAULT_BOTTOM_PX };
+  }
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  let top = vh;
+  for (let y = vh - 2; y > 0; y -= 8) {
+    let pinnedTop: number | null = null;
+    for (const fx of [0.5, 0.2, 0.8]) {
+      const hit = document.elementsFromPoint(vw * fx, y).find((el) => !(stack && stack.contains(el)));
+      pinnedTop = hit ? pinnedBandTop(hit, stack) : null;
+      if (pinnedTop !== null) break;
+    }
+    // Nothing pinned here, or the band already measured (an overlay's
+    // backdrop above its panel): the band ends here.
+    if (pinnedTop === null || pinnedTop >= top) break;
+    top = pinnedTop;
+    y = Math.min(y, top);
+    if (vh - top > vh * SHEET_SHARE) return { edge: 'top' };
+  }
+  return { edge: 'bottom', px: Math.max(vh - top, 0) + GAP_PX };
+}
+
 const EASE_OUT: [number, number, number, number] = [0.22, 0.8, 0.25, 1];
 const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1];
 
 function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
+  const { t } = useT('common');
   const Icon = icons[type];
 
   useEffect(() => {
@@ -54,9 +136,9 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
 
   return (
     <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3">
-      <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} />
+      <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} aria-hidden />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-mystic-100">{message}</p>
+        <p className="text-ui text-mystic-100">{message}</p>
         {action && (
           <button
             onClick={handleAction}
@@ -76,7 +158,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
       </div>
       <button
         onClick={() => onDismiss(id)}
-        aria-label="Dismiss"
+        aria-label={t('actions.dismiss', { defaultValue: 'Dismiss' })}
         className="
           text-mystic-400 flex-shrink-0 rounded-lg min-h-[44px] min-w-[44px] -my-2 -mr-3 flex items-center justify-center
           transition-[transform,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
@@ -86,7 +168,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
         "
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4" aria-hidden />
       </button>
     </div>
   );
@@ -94,7 +176,21 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
 
 let toastId = 0;
 const listeners = new Set<(toast: Toast) => void>();
+const dismissListeners = new Set<(filter: DismissFilter) => void>();
 
+type DismissFilter = { type?: ToastType } | undefined;
+
+/**
+ * Show a toast. `action` is optional and gives the toast a trailing
+ * button ("Retry", "Undo") and a longer life (6 s instead of 4).
+ *
+ * Identical messages are collapsed: while a toast with the same text and
+ * type is on screen, another call with the same pair does nothing. Three
+ * callers used to produce three identical error toasts from one failure
+ * (an effect that re-ran, doubled by StrictMode — R7 "Three identical
+ * error toasts"); the fix belongs in the caller too, but the stack should
+ * never show the same sentence twice.
+ */
 export function toast(message: string, type: ToastType = 'info', action?: ToastAction) {
   const newToast: Toast = {
     id: String(++toastId),
@@ -103,6 +199,16 @@ export function toast(message: string, type: ToastType = 'info', action?: ToastA
     action,
   };
   listeners.forEach(listener => listener(newToast));
+}
+
+/**
+ * Dismiss every visible toast, or every toast of one type
+ * (`dismissToasts({ type: 'error' })`). For the moment a screen succeeds
+ * at the thing an earlier toast said had failed (R6 A23: a stale coach
+ * error still showing under "Entry saved").
+ */
+export function dismissToasts(filter?: DismissFilter) {
+  dismissListeners.forEach(listener => listener(filter));
 }
 
 /**
@@ -128,41 +234,110 @@ export function toast(message: string, type: ToastType = 'info', action?: ToastA
  */
 export function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [placement, setPlacement] = useState<Placement>({ edge: 'bottom', px: DEFAULT_BOTTOM_PX });
+  const stackRef = useRef<HTMLDivElement>(null);
   const reduce = !!useReducedMotion();
+  const stackKey = toasts.map((t) => t.id).join(',');
+
+  // Measure whenever a toast arrives or leaves (the screen under the stack
+  // may have changed since the last one), and while the stack is up
+  // whenever the screen changes size (the keyboard, a rotation) or the
+  // body's state classes change (keyboard-open / sheet-open hide the nav).
+  // A layout effect, so a toast paints where it belongs, not at the default.
+  useLayoutEffect(() => {
+    if (!stackKey) return;
+    const remeasure = () =>
+      setPlacement((prev) => {
+        const next = measurePlacement(stackRef.current);
+        const same = prev.edge === next.edge && (prev.edge === 'top' || (next.edge === 'bottom' && prev.px === next.px));
+        return same ? prev : next;
+      });
+    remeasure();
+    const vv = window.visualViewport;
+    window.addEventListener('resize', remeasure);
+    vv?.addEventListener('resize', remeasure);
+    const observer = typeof MutationObserver === 'function' ? new MutationObserver(remeasure) : null;
+    observer?.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => {
+      window.removeEventListener('resize', remeasure);
+      vv?.removeEventListener('resize', remeasure);
+      observer?.disconnect();
+    };
+  }, [stackKey]);
 
   useEffect(() => {
     const listener = (toast: Toast) => {
-      setToasts(prev => [...prev, toast].slice(-MAX_VISIBLE));
+      setToasts(prev => {
+        // Dedupe: the same sentence, in the same tone, is already up.
+        if (prev.some(t => t.message === toast.message && t.type === toast.type)) return prev;
+        return [...prev, toast].slice(-MAX_VISIBLE);
+      });
+    };
+    const dismisser = (filter: DismissFilter) => {
+      setToasts(prev => (filter?.type ? prev.filter(t => t.type !== filter.type) : []));
     };
     listeners.add(listener);
-    return () => { listeners.delete(listener); };
+    dismissListeners.add(dismisser);
+    return () => {
+      listeners.delete(listener);
+      dismissListeners.delete(dismisser);
+    };
   }, []);
 
   const dismiss = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
+  const renderToast = (t: Toast) => (
+    <motion.div
+      key={t.id}
+      layout={!reduce}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={
+        reduce
+          ? { opacity: 0, transition: { duration: 0.12 } }
+          : { opacity: 0, scale: 0.96, transition: { duration: 0.16, ease: EASE_IN } }
+      }
+      transition={reduce ? { duration: 0.12 } : { duration: 0.2, ease: EASE_OUT }}
+      className="pointer-events-auto"
+    >
+      <ToastItem {...t} onDismiss={dismiss} />
+    </motion.div>
+  );
+
+  // Two sibling live regions, both mounted empty from the start so a screen
+  // reader hears each toast as it arrives: a polite status for success and
+  // info, an assertive alert for errors. An error used to be a role="alert"
+  // inside the polite region, and nested live regions are announced twice
+  // (the alert, then the region's addition) by NVDA, JAWS and VoiceOver.
+  // The stack itself is one column; errors sit nearest the bottom edge.
+  // (Neither region is ever display:none: a live region has to be in the
+  // accessibility tree before its content changes, or nothing is announced.)
+  const polite = toasts.filter(t => t.type !== 'error');
+  const errors = toasts.filter(t => t.type === 'error');
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none md:left-auto md:right-6 md:max-w-sm">
-      <AnimatePresence initial={false}>
-        {toasts.map(t => (
-          <motion.div
-            key={t.id}
-            layout={!reduce}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={
-              reduce
-                ? { opacity: 0, transition: { duration: 0.12 } }
-                : { opacity: 0, scale: 0.96, transition: { duration: 0.16, ease: EASE_IN } }
-            }
-            transition={reduce ? { duration: 0.12 } : { duration: 0.2, ease: EASE_OUT }}
-            className="pointer-events-auto"
-          >
-            <ToastItem {...t} onDismiss={dismiss} />
-          </motion.div>
-        ))}
-      </AnimatePresence>
+    <div
+      ref={stackRef}
+      className="fixed left-4 right-4 z-50 flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm"
+      style={
+        placement.edge === 'top'
+          ? { top: `calc(env(safe-area-inset-top, 0px) + ${GAP_PX}px)` }
+          : { bottom: `${placement.px}px` }
+      }
+    >
+      <LayoutGroup>
+        <div role="status" aria-live="polite" className="flex flex-col gap-2">
+          <AnimatePresence initial={false}>
+            {polite.map(renderToast)}
+          </AnimatePresence>
+        </div>
+        <div role="alert" aria-live="assertive" className={`flex flex-col gap-2 ${polite.length && errors.length ? 'mt-2' : ''}`}>
+          <AnimatePresence initial={false}>
+            {errors.map(renderToast)}
+          </AnimatePresence>
+        </div>
+      </LayoutGroup>
     </div>
   );
 }

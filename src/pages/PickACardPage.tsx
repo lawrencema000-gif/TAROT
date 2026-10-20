@@ -1,18 +1,21 @@
 import { useState, useEffect, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
-import { Button, Page, ResultLayout, Tag, toast } from '../components/ui';
+import { Button, KeywordRow, Page, ResultLayout, TarotFace, toast } from '../components/ui';
+import { firstSentences } from '../components/readings/tarot/readingText';
+import { cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
-import { getBundledCardPath, getBundledFullPath } from '../config/bundledImages';
+import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../services/shareableReadings';
 import { localDateStr, localYesterdayStr } from '../utils/localDate';
 import { flipHaptics } from '../utils/haptics';
+import { cardBackSrc } from '../utils/imageUrl';
 import type { TarotCard } from '../types';
 
 /**
@@ -40,17 +43,15 @@ const STREAK_STORAGE_KEY = 'arcana_pick_streak';
 const LAST_PICK_DATE_KEY = 'arcana_pick_last_date';
 
 /*
- * The flip. Same numbers as the reading flow's reveal: 520ms, a long
- * ease-out tail, and a reversed card turning INTO its reversal (a
- * half-turn on Z rides along with the flip). framer writes transforms in
- * a fixed order — rotateY before rotateZ — which is the order the face,
- * pre-turned 180° on Y, needs to land upright-or-inverted and facing out.
+ * The flip. Same numbers as the reading flow's reveal: 520ms and a long
+ * ease-out tail. The plane only turns on Y: a reversed card's art is drawn
+ * inverted on its face (TarotFace `reversed`) and the plate stays upright
+ * and legible (§6.6).
  */
 const FLIP_MS = 520;
 const FLIP_EASE: [number, number, number, number] = [0.22, 0.68, 0.24, 1];
 /** The two cards not taken show themselves after the chosen one has landed. */
 const OTHERS_DELAY_MS = 650;
-const DEFAULT_BACK = '/card-backs/default.svg';
 const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
@@ -215,12 +216,14 @@ export function PickACardPage() {
         keyword,
         cardImageUrl: getBundledCardPath(pickedCard.id) || undefined,
       },
-      `arcana-${pickedCard.name.toLowerCase().replace(/\s+/g, '-')}.png`,
+      `arcana-${cardMeaningSlug(pickedCard.id)}.png`,
       shareText,
     );
 
-    if (result === 'downloaded') {
-      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+    if (result === 'shared') {
+      toast(t('readings.toasts.shared', { defaultValue: 'Shared' }), 'success');
+    } else if (result === 'downloaded') {
+      toast(t('readings.toasts.imageSaved', { defaultValue: 'Image saved to your downloads' }), 'success');
     } else if (result === 'failed') {
       // Final fallback to clipboard.
       try {
@@ -230,12 +233,13 @@ export function PickACardPage() {
         toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
       }
     }
-    // 'shared' = native share sheet handled it silently.
+    // 'cancelled' = the reader closed the sheet; nothing to report.
   };
 
   // Always fall back to the Arcana back so every card-selection surface
   // shows a real card, never a placeholder icon.
-  const cardBackUrl = profile?.card_back_url || DEFAULT_BACK;
+  // The cards are 128 px wide at most (w-32): the display rendition, not the stored PNG.
+  const cardBackUrl = cardBackSrc(profile?.card_back_url, 128);
 
   if (!deck || !options) {
     return (
@@ -296,7 +300,6 @@ export function PickACardPage() {
           const isChosen = chosen === i;
           const up = isChosen || allUp;
           const dimmed = allUp && chosen !== null && !isChosen;
-          const face = getBundledFullPath(opt.card.id) ?? getBundledCardPath(opt.card.id) ?? opt.card.imageUrl;
           const fanRotate = i === 0 ? -6 : i === 2 ? 6 : 0;
           /* Two phases: the fan deals in with a stagger; once the pick is
              resolved the dim, the lift and the others' turn land together
@@ -337,7 +340,7 @@ export function PickACardPage() {
                 className="relative w-full h-full"
                 style={{ transformStyle: 'preserve-3d' }}
                 initial={false}
-                animate={{ rotateY: up ? 180 : 0, rotateZ: up && opt.reversed ? 180 : 0 }}
+                animate={{ rotateY: up ? 180 : 0 }}
                 transition={{ duration: reduceMotion ? 0 : FLIP_MS / 1000, ease: FLIP_EASE }}
               >
                 {/* Back — the Arcana back. */}
@@ -351,25 +354,14 @@ export function PickACardPage() {
                   />
                 </div>
                 {/* Face — pre-turned and mounted from the start so the art is
-                    decoded before the hinge moves. It frames itself. */}
+                    decoded before the hinge moves. A reversed card's art is
+                    inverted; the plate stays upright. */}
                 <div
-                  className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850"
+                  className="absolute inset-0"
                   style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                   aria-hidden={!up}
                 >
-                  {face ? (
-                    <img
-                      src={face}
-                      alt={opt.card.name}
-                      decoding="async"
-                      className="w-full h-full object-cover pointer-events-none select-none"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center p-2 text-center">
-                      <p className="text-caption text-mystic-200 font-medium">{opt.card.name}</p>
-                    </div>
-                  )}
+                  <TarotFace card={opt.card} size="fill" detail="quiet" reversed={opt.reversed} reversedTag={false} loading="eager" alt="" />
                 </div>
               </motion.div>
             </motion.button>
@@ -393,35 +385,32 @@ export function PickACardPage() {
                 : t('pickACard.upright', { defaultValue: 'Upright' })
             }
             verdict={pickedCard.name}
-            summary={picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright}
+            summary={firstSentences(picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright, 2)}
             subtitle={
-              pickedCard.keywords?.length > 0 ? (
-                <span className="inline-flex flex-wrap justify-center gap-1.5">
-                  {pickedCard.keywords.slice(0, 3).map((kw) => (
-                    <Tag key={kw} tone="neutral">{kw}</Tag>
-                  ))}
-                </span>
-              ) : undefined
+              pickedCard.keywords?.length > 0 ? <KeywordRow keywords={pickedCard.keywords.slice(0, 3)} /> : undefined
             }
             actions={
-              <>
-                <Button variant="outline" onClick={handleShare} className="flex-1">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  {t('pickACard.share', { defaultValue: 'Share my card' })}
-                </Button>
+              // Stacked, the primary first: side by side at 390 both labels broke onto three lines.
+              <div className="w-full flex flex-col gap-3">
                 <Button
                   variant="gold"
-                  onClick={() => navigate(`/tarot-meanings/${pickedCard ? pickedCard.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''}`)}
-                  className="flex-1"
+                  fullWidth
+                  // By id, through the one canonical slug ("the-wheel-of-fortune", as the
+                  // card page, the sitemap and the prerender spell it).
+                  onClick={() => navigate(cardMeaningPath(pickedCard.id))}
                 >
-                  <BookOpen className="w-4 h-4 mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2" aria-hidden />
                   {t('pickACard.learnMore', { defaultValue: "Read this card's meaning" })}
                 </Button>
-              </>
+                <Button variant="outline" fullWidth onClick={handleShare}>
+                  <Share2 className="w-4 h-4 mr-2" aria-hidden />
+                  {t('pickACard.share', { defaultValue: 'Share my card' })}
+                </Button>
+              </div>
             }
             footer={
               <p className="text-ui text-mystic-400 flex items-center justify-center gap-1.5">
-                <RotateCcw className="w-3 h-3" />
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden />
                 {t('pickACard.comeBack', { defaultValue: 'New cards arrive at midnight.' })}
               </p>
             }

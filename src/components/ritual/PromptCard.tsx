@@ -14,13 +14,18 @@ interface PromptCardProps {
  * and nothing competes with it: no icon tile, no second heading, no
  * invented "2 min" beside the button. One card surface, like every other
  * card on Home.
+ *
+ * The quotation marks are the language's own (「」 in Japanese): they were
+ * hard-coded English curly quotes around every locale's question (p8 F87).
  */
 export function PromptCard({ prompt, onWrite }: PromptCardProps) {
   const { t } = useT('app');
   return (
     <Card padding="md">
       <EyebrowLabel>{t('home.ritualCards.yourPrompt')}</EyebrowLabel>
-      <p className="font-display text-lede text-mystic-100 leading-relaxed mt-3 mb-5">“{prompt}”</p>
+      <p className="font-display text-lede lining-nums text-mystic-100 leading-relaxed mt-3 mb-5">
+        {t('home.ritualCards.promptQuoted', { defaultValue: '“{{prompt}}”', prompt })}
+      </p>
       <Button variant="gold" onClick={onWrite}>
         <PenLine className="w-4 h-4" aria-hidden />
         {t('home.ritualCards.write')}

@@ -73,7 +73,47 @@ export interface CheckinResult {
   alreadyCheckedIn: boolean;
 }
 
+/**
+ * The day a check-in belongs to: the UTC date, which is what the server's
+ * CURRENT_DATE names (moonstone_daily_checkin keys its row by it). It is
+ * not the reader's calendar day — the ritual beside the widget is keyed by
+ * that — so the next check-in opens at UTC midnight, which is 09:00 in
+ * Tokyo and 17:00 in Los Angeles. Say when (nextCheckinOpensAt), never
+ * "tomorrow" (p8 F56).
+ */
+export function checkinDay(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+/** The instant the next check-in opens after `now`: the next UTC midnight. */
+export function nextCheckinOpensAt(now: Date = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+}
+
 export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
+  // Already checked in today (another tab, another device, a widget left
+  // open since before the claim)? Say so without calling the RPC: before
+  // 20261003000012 its repeat branch returned the amount credited earlier,
+  // which read as a fresh "+100" (p7 #115). The date is UTC, as the
+  // server's CURRENT_DATE is.
+  const { data: authData } = await supabase.auth.getUser();
+  const uid = authData.user?.id;
+  if (uid) {
+    const today = checkinDay();
+    const { data: existing } = await supabase
+      .from('moonstone_daily_checkins')
+      .select('streak_day')
+      .eq('user_id', uid)
+      .eq('date', today)
+      .maybeSingle();
+    if (existing) {
+      const streakDay = Number((existing as { streak_day?: number }).streak_day ?? 1);
+      return {
+        ok: true,
+        data: { amountAwarded: 0, streakDay, isStreakContinuation: streakDay > 1, alreadyCheckedIn: true },
+      };
+    }
+  }
   const { data, error } = await supabase.rpc('moonstone_daily_checkin');
   if (error) {
     captureException('dal.moonstones.doDailyCheckin', error);
@@ -95,39 +135,17 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
     alreadyCheckedIn: amountAwarded === 0,
   };
   // Refetch + broadcast balance so the home widget updates without a re-mount.
-  if (outcome.amountAwarded > 0) {
-    const { data: balData } = await supabase.auth.getUser();
-    if (balData.user?.id) {
-      const balRes = await getBalance(balData.user.id);
-      if (balRes.ok) broadcast(balRes.data);
-    }
+  if (outcome.amountAwarded > 0 && uid) {
+    const balRes = await getBalance(uid);
+    if (balRes.ok) broadcast(balRes.data);
   }
   return { ok: true, data: outcome };
-}
-
-/**
- * Credit Moonstones for quiz completion via server-side RPC.
- * The RPC dedupes on (user_id, quiz_id) so repeating the same quiz is
- * a no-op credit — not a repeat 2-Moonstone payout.
- * userId is ignored here since the RPC reads auth.uid() server-side;
- * kept in the signature for backward compatibility with call sites.
- */
-export async function awardQuizCompletion(_userId: string, reference: string): Promise<Result<void>> {
-  const { error } = await supabase.rpc('moonstone_award_quiz_completion', {
-    p_quiz_id: reference,
-    p_amount: 2,
-  });
-  if (error) {
-    captureException('dal.moonstones.awardQuizCompletion', error, { reference });
-    return { ok: false, error: error.message };
-  }
-  return { ok: true, data: undefined };
 }
 
 /** Check if user has already checked in today — used before showing the
  * "Claim" button. Idempotent: querying this is side-effect-free. */
 export async function hasCheckedInToday(userId: string): Promise<Result<boolean>> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = checkinDay();
   const { data, error } = await supabase
     .from('moonstone_daily_checkins')
     .select('date')

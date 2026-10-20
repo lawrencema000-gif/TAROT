@@ -2,9 +2,11 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Info } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { TarotFace } from '../ui/TarotFace';
 import type { TarotCard } from '../../types';
-import { getBundledCardPath, getBundledThumbPath } from '../../config/bundledImages';
 import { flipHaptics } from '../../utils/haptics';
+import { getBundledThumbPath } from '../../config/bundledImages';
+import { cardBackSrc } from '../../utils/imageUrl';
 
 /*
  * The Celtic Cross, laid out as the reader would lay it: a cross of six —
@@ -21,34 +23,36 @@ import { flipHaptics } from '../../utils/haptics';
 const FLIP_MS = 520;
 const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
 const FLIP_STAGGER_MS = 120;
-const DEFAULT_BACK = '/card-backs/default.svg';
 const BACKFACE: CSSProperties = {
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
 };
-/* A reversed card turns into its reversal: a half-turn on Z rides along
-   with the flip. Both functions are always present so the two states
-   interpolate function by function rather than through a matrix. */
+/* The plane only turns on Y: a reversed card's art is drawn inverted on
+   its face (TarotFace `reversed`) and its plate stays upright. Both
+   functions are always present so the two states interpolate function by
+   function rather than through a matrix. */
 const AT_REST = 'rotateY(0deg) rotateZ(0deg)';
-const turned = (reversed: boolean) => `rotateY(180deg) rotateZ(${reversed ? 180 : 0}deg)`;
+const TURNED = 'rotateY(180deg) rotateZ(0deg)';
 
 interface DrawnCard { card: TarotCard; reversed: boolean; revealed: boolean }
 
 interface CelticCrossLayoutProps {
   drawnCards: DrawnCard[];
-  onRevealCard: (index: number) => void;
-  onCardClick: (card: TarotCard, reversed: boolean) => void;
+  /** Omitted with `onCardClick` for a read-only table (a saved reading): every card face up, nothing to tap. */
+  onRevealCard?: (index: number) => void;
+  onCardClick?: (card: TarotCard, reversed: boolean) => void;
   getPositionLabel: (index: number) => string;
   cardBackUrl?: string;
 }
 
 /*
- * Ten slots of 56×84 on a phone: the 150×225 `thumb` variant covers that
- * at 2.7× for 135 KB decoded each, against 1.5 MB for the 512×768 face.
- * Tapping a revealed card opens the full-size art in the sheet.
+ * Ten slots of 56×84 on a phone: each face is the 150×225 `thumb` bitmap
+ * (135 KB decoded, against 960 KB for the 400×600 `full` one that
+ * TarotFace picks at size `fill`; ten of them were 9.6 MB on the low-end
+ * phones this layout is for) with the quiet plate — rank and suit glyph,
+ * or the numeral — since a name cannot be set at that width. Tapping a
+ * revealed card opens the full-size art in the sheet.
  */
-const faceFor = (card: TarotCard): string | undefined =>
-  getBundledThumbPath(card.id) ?? getBundledCardPath(card.id) ?? card.imageUrl;
 
 export function CelticCrossLayout({
   drawnCards,
@@ -59,7 +63,8 @@ export function CelticCrossLayout({
 }: CelticCrossLayoutProps) {
   const { t } = useT('app');
   const reduceMotion = !!useReducedMotion();
-  const backSrc = cardBackUrl || DEFAULT_BACK;
+  // Every slot is 56 px wide (w-14).
+  const backSrc = cardBackSrc(cardBackUrl, 56);
 
   // Held so an unmount mid-flip cannot buzz a phone whose card is gone.
   const cancelHaptic = useRef<() => void>(() => {});
@@ -67,8 +72,9 @@ export function CelticCrossLayout({
   const reveal = (index: number) => {
     cancelHaptic.current();
     cancelHaptic.current = flipHaptics(FLIP_MS, reduceMotion);
-    onRevealCard(index);
+    onRevealCard?.(index);
   };
+  const readOnly = !onRevealCard && !onCardClick;
 
   /*
    * Stagger per reveal event, ranked in reveal order — the same rule the
@@ -90,16 +96,22 @@ export function CelticCrossLayout({
     prevRevealed.current = drawnCards.map((d) => d.revealed);
   }
 
+  const thumb = (card: TarotCard) => getBundledThumbPath(card.id) ?? undefined;
+
   const renderCard = (index: number) => {
     const drawn = drawnCards[index];
     if (!drawn) return null;
+    if (readOnly) {
+      return (
+        <TarotFace card={drawn.card} size="fill" detail="quiet" src={thumb(drawn.card)} reversed={drawn.reversed} reversedTag={false} loading="lazy" />
+      );
+    }
     const delay = flipDelays.current[index] ?? 0;
-    const face = faceFor(drawn.card);
     const position = getPositionLabel(index);
     return (
       <button
         type="button"
-        onClick={() => drawn.revealed ? onCardClick(drawn.card, drawn.reversed) : reveal(index)}
+        onClick={() => drawn.revealed ? onCardClick?.(drawn.card, drawn.reversed) : reveal(index)}
         aria-label={
           drawn.revealed
             ? t('readings.revealView.openCard', { name: drawn.card.name, defaultValue: 'Open {{name}}' })
@@ -116,13 +128,13 @@ export function CelticCrossLayout({
           className="relative w-full h-full"
           style={{
             transformStyle: 'preserve-3d',
-            transform: drawn.revealed ? turned(drawn.reversed) : AT_REST,
+            transform: drawn.revealed ? TURNED : AT_REST,
             transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
             transitionDelay: `${delay}ms`,
           }}
         >
           {/* Back — the Arcana back, the same object the reader drew. */}
-          <div className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850" style={BACKFACE}>
+          <div className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850 border border-gold/30" style={BACKFACE}>
             <img
               src={backSrc}
               alt=""
@@ -133,25 +145,14 @@ export function CelticCrossLayout({
           </div>
 
           {/* Face — mounted from the start and pre-turned, so the image is
-              already decoded when the turn begins. The art frames itself. */}
+              already decoded when the turn begins. A reversed card's art is
+              inverted; the plate stays upright. */}
           <div
-            className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850"
+            className="absolute inset-0"
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!drawn.revealed}
           >
-            {face ? (
-              <img
-                src={face}
-                alt={drawn.card.name}
-                decoding="async"
-                className="w-full h-full object-cover pointer-events-none select-none"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center p-1 text-center">
-                <p className="text-caption text-mystic-300 line-clamp-3 leading-tight">{drawn.card.name}</p>
-              </div>
-            )}
+            <TarotFace card={drawn.card} size="fill" detail="quiet" src={thumb(drawn.card)} reversed={drawn.reversed} reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
         {/* The affordance arrives as the card settles, not with it. */}

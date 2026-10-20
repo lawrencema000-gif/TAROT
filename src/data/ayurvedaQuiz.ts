@@ -93,12 +93,12 @@ export const ayurvedaQuiz: QuizDefinition = {
       { value: 2, label: 'Decide quickly and stick to it.' },
       { value: 3, label: 'Take my time; hard to shift once decided.' },
     ]},
-    { id: 'ay15', text: 'My preferred tastes are…', dimension: 'DOSHA', options: [
-      { value: 1, label: 'Sweet, sour, salty — warm moist foods.' },
-      { value: 2, label: 'Sweet, bitter, astringent — cooling foods.' },
-      { value: 3, label: 'Pungent, bitter, astringent — light warm foods.' },
+    { id: 'ay15', text: 'My joints…', dimension: 'DOSHA', options: [
+      { value: 1, label: 'Crack easily and feel dry or stiff.' },
+      { value: 2, label: 'Are flexible but can feel hot or inflamed.' },
+      { value: 3, label: 'Are sturdy and well-padded, stiff mainly in the cold.' },
     ]},
-    { id: 'ay16', text: 'How I spend money:', dimension: 'DOSHA', options: [
+    { id: 'ay16', text: 'I tend to spend money…', dimension: 'DOSHA', options: [
       { value: 1, label: 'Impulsive, on small things, then regret.' },
       { value: 2, label: 'Planned but on quality and status items.' },
       { value: 3, label: 'Careful, I save and accumulate.' },
@@ -140,7 +140,7 @@ export const ayurvedaQuiz: QuizDefinition = {
     ]},
     { id: 'ay24', text: 'My skin in winter…', dimension: 'DOSHA', options: [
       { value: 1, label: 'Gets very dry and cracked.' },
-      { value: 2, label: 'Stays mostly okay.' },
+      { value: 2, label: 'Stays about the same, maybe a little redder.' },
       { value: 3, label: 'Feels a bit puffy or oily.' },
     ]},
     { id: 'ay25', text: 'I tend to want to…', dimension: 'DOSHA', options: [
@@ -154,7 +154,7 @@ export const ayurvedaQuiz: QuizDefinition = {
       { value: 3, label: 'Slow but permanent.' },
     ]},
     { id: 'ay27', text: 'My relationship to routine is…', dimension: 'DOSHA', options: [
-      { value: 1, label: 'I resist it but I thrive with it.' },
+      { value: 1, label: 'I resist routine, even though I know it is good for me.' },
       { value: 2, label: 'I structure my own.' },
       { value: 3, label: 'I love it — routine feels like home.' },
     ]},
@@ -180,6 +180,18 @@ export interface DoshaResult {
   primary: Dosha;
   secondary?: Dosha;
   scores: Record<Dosha, number>;
+  /** All three doshas within three points of each other: a balanced (tridoshic) constitution. */
+  tridoshic: boolean;
+  /** The top two doshas scored exactly the same: `primary` is only declaration order. */
+  isTie?: boolean;
+  /** The dosha level with `primary` in an exact tie. */
+  coPrimary?: Dosha;
+  /**
+   * When `isTie`: every dosha level at the top, primary first. All three in
+   * 10/10/10, the one exact three-way tie thirty answers allow. A row saved
+   * before this field existed has only `coPrimary`.
+   */
+  tied?: Dosha[];
 }
 
 export function calculateDosha(answers: Record<string, number>): DoshaResult {
@@ -190,9 +202,26 @@ export function calculateDosha(answers: Record<string, number>): DoshaResult {
   }
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]) as [Dosha, number][];
   const primary = sorted[0][0];
-  const secondary = sorted[0][1] - sorted[1][1] <= 3 ? sorted[1][0] : undefined;
-  return { primary, secondary, scores };
+  // An exact tie at the top is reported, not presented as "Vata with
+  // secondary Pitta": the stable sort only reflects declaration order.
+  const isTie = sorted[0][1] === sorted[1][1];
+  const secondary = !isTie && sorted[0][1] - sorted[1][1] <= 3 ? sorted[1][0] : undefined;
+  const tridoshic = sorted[0][1] - sorted[2][1] <= 3;
+  const tied = isTie ? sorted.filter(([, n]) => n === sorted[0][1]).map(([d]) => d) : undefined;
+  return { primary, secondary, scores, tridoshic, isTie, coPrimary: isTie ? sorted[1][0] : undefined, tied };
 }
+
+/**
+ * Copy for the balanced constitution; the per-dosha cards still render for
+ * the dosha read first. The summary does not call that dosha "the one
+ * leading": in a tie at the top (10/10/10 included) none leads, and the
+ * section heading below says which case it is.
+ */
+export const TRIDOSHIC_INFO = {
+  name: 'Tridoshic',
+  tagline: 'All three in near-equal measure.',
+  summary: 'Your answers spread almost evenly across Vata, Pitta and Kapha. In Ayurveda this is called a tridoshic constitution: no single dosha runs the show, so the question is less "which one am I" and more "which one is out of balance this season". Read the dosha below as a place to start, not as a fixed type.',
+};
 
 export interface DoshaInfo {
   name: string;
@@ -264,7 +293,7 @@ export const DOSHA_INFO: Record<Dosha, DoshaInfo> = {
       'Pungent, bitter, astringent tastes — reduce sweet, salty, sour',
       'Eat your biggest meal at midday when digestion is strongest',
       'Limit dairy, wheat, sugar, cold drinks, heavy oily foods',
-      'Intermittent fasting or skipping breakfast once a week can help',
+      'Some Kapha routines include a lighter breakfast; check with a practitioner before changing how you eat',
     ],
     lifestyleTips: [
       'Move every day — even 20 minutes makes a difference for Kapha',

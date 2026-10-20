@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
-import { Card, Button, PageHeader, Page, Tag, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, Tag, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -42,7 +42,7 @@ export function AdvisorsPage() {
     });
     setSubmitting(false);
     if (res.ok) {
-      toast(t('advisors.interestSubmitted', { defaultValue: 'Interest noted. Check back on this profile — a Book a session button appears here when {{n}} opens bookings.', n: selected.displayName }), 'success');
+      toast(t('advisors.interestSubmitted', { defaultValue: 'Noted. When {{n}} opens bookings, a Book a session button appears on this profile.', n: selected.displayName }), 'success');
       setTopic('');
       setView('directory');
     } else {
@@ -54,53 +54,54 @@ export function AdvisorsPage() {
     return (
       <Page spacing="sm">
         <button
+          type="button"
           onClick={() => setView('directory')}
-          className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200"
+          className="flex items-center gap-2 min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" aria-hidden />
           {t('advisors.back', { defaultValue: 'All advisors' })}
         </button>
 
         <Card variant="glow" padding="lg">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center border border-gold/30">
+            <div className="w-14 h-14 rounded-full bg-gold/15 flex items-center justify-center border border-gold/30" aria-hidden>
               <User className="w-6 h-6 text-gold" />
             </div>
             <div>
               <h2 className="heading-display-lg text-mystic-100">{selected.displayName}</h2>
               {selected.ratingAvg !== null && (
-                <div className="flex items-center gap-1 text-meta text-gold">
-                  <Star className="w-3 h-3 fill-current" />
+                <div className="flex items-center gap-1 text-meta text-gold tabular-nums">
+                  <Star className="w-3 h-3 fill-current" aria-hidden />
                   <span>{selected.ratingAvg.toFixed(1)}</span>
                   <span className="text-mystic-500">({selected.ratingCount})</span>
                 </div>
               )}
             </div>
           </div>
-          <p className="text-gold/80 text-sm italic">"{selected.headline}"</p>
+          <p className="text-mystic-300 text-ui italic">“{selected.headline}”</p>
         </Card>
 
         <Card padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed whitespace-pre-wrap">{selected.bio}</p>
+          <p className="text-mystic-300 text-ui leading-relaxed whitespace-pre-wrap">{selected.bio}</p>
         </Card>
 
         <div className="grid grid-cols-2 gap-3">
           {selected.yearsExperience !== null && (
             <Card padding="md">
               <div className="flex items-center gap-2 text-meta text-mystic-500 mb-1">
-                <Clock className="w-3 h-3" />
+                <Clock className="w-3 h-3" aria-hidden />
                 <span>{t('advisors.yearsLabel', { defaultValue: 'Experience' })}</span>
               </div>
-              <p className="text-mystic-200 text-sm">{selected.yearsExperience} {t('advisors.years', { defaultValue: 'years' })}</p>
+              <p className="text-mystic-200 text-ui tabular-nums">{selected.yearsExperience} {t('advisors.years', { defaultValue: 'years' })}</p>
             </Card>
           )}
           {selected.languages.length > 0 && (
             <Card padding="md">
               <div className="flex items-center gap-2 text-meta text-mystic-500 mb-1">
-                <Globe className="w-3 h-3" />
+                <Globe className="w-3 h-3" aria-hidden />
                 <span>{t('advisors.languagesLabel', { defaultValue: 'Languages' })}</span>
               </div>
-              <p className="text-mystic-200 text-sm">{selected.languages.join(' · ').toUpperCase()}</p>
+              <p className="text-mystic-200 text-ui">{selected.languages.join(' · ').toUpperCase()}</p>
             </Card>
           )}
         </div>
@@ -121,7 +122,9 @@ export function AdvisorsPage() {
         {selected.hourlyRateCents !== null && (
           <Card padding="md" className="bg-mystic-800/20">
             <p className="text-meta text-mystic-500 mb-1">{t('advisors.rateLabel', { defaultValue: 'Indicative rate' })}</p>
-            <p className="text-mystic-200 text-sm">${(selected.hourlyRateCents / 100).toFixed(0)} / hour</p>
+            <p className="text-mystic-200 text-ui tabular-nums">
+              {t('advisors.ratePerHour', { defaultValue: '${{dollars}} per hour', dollars: (selected.hourlyRateCents / 100).toFixed(0) })}
+            </p>
           </Card>
         )}
 
@@ -137,15 +140,16 @@ export function AdvisorsPage() {
           </Button>
         )}
 
-        {/* Interest capture */}
-        {user ? (
-          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="font-medium text-gold mb-3">
-              {t('advisors.expressInterest', { defaultValue: 'Express interest' })}
+        {/* Interest capture — shown only while this advisor has no bookings
+            open; once the Book button exists the note would be redundant. */}
+        {!bookingEnabled && (user ? (
+          <Card padding="lg" className="bg-gold/5 border-gold/20">
+            <h3 className="heading-display-md text-mystic-100 mb-2">
+              {t('advisors.interestHeading', { defaultValue: 'Register your interest' })}
             </h3>
-            <p className="text-meta text-mystic-400 mb-3 italic">
+            <p className="text-meta text-mystic-400 mb-3">
               {t('advisors.bookingsComingSoon', {
-                defaultValue: 'Paid sessions are rolling out gradually. Tell us what you’d like help with — when this advisor opens bookings, a Book a session button appears on this page.',
+                defaultValue: 'This advisor isn’t taking bookings yet. Tell us what you’d like help with — when they open bookings, a Book a session button appears on this page.',
               })}
             </p>
             <textarea
@@ -156,22 +160,23 @@ export function AdvisorsPage() {
               placeholder={t('advisors.topicPlaceholder', {
                 defaultValue: 'What would you like to work on? (optional)',
               }) as string}
-              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
+              aria-label={t('advisors.topicPlaceholder', { defaultValue: 'What would you like to work on? (optional)' }) as string}
+              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
             />
-            <Button variant="primary" fullWidth onClick={submitInterest} disabled={submitting}>
-              <Send className="w-4 h-4 mr-2" />
+            <Button variant="primary" fullWidth onClick={submitInterest} disabled={submitting} loading={submitting}>
+              {!submitting && <Send className="w-4 h-4" aria-hidden />}
               {submitting
-                ? t('advisors.submitting', { defaultValue: 'Submitting...' })
+                ? t('advisors.submitting', { defaultValue: 'Submitting…' })
                 : t('advisors.notifyMe', { defaultValue: 'Register my interest' })}
             </Button>
           </Card>
         ) : (
           <Card padding="md" className="bg-gold/5 border-gold/20 text-center">
-            <p className="text-sm text-mystic-300">
-              {t('advisors.signInToExpress', { defaultValue: 'Sign in to express interest' })}
+            <p className="text-ui text-mystic-300">
+              {t('advisors.signInToExpress', { defaultValue: 'Sign in to register your interest' })}
             </p>
           </Card>
-        )}
+        ))}
       </Page>
     );
   }
@@ -183,46 +188,46 @@ export function AdvisorsPage() {
         title={t('advisors.title', { defaultValue: 'Advisors' })}
         subtitle={t('advisors.intro', {
           defaultValue:
-            'Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest to be notified when each advisor opens bookings.',
+            'Meet the readers joining Arcana. When an advisor opens bookings, a Book a session button appears on their profile.',
         })}
       />
 
       {loading && (
-        <div className="text-center py-12 text-mystic-500 text-sm">
+        <div className="text-center py-12 text-mystic-500 text-ui">
           {t('common.loading', { defaultValue: 'Loading…' })}
         </div>
       )}
 
       {!loading && list.length === 0 && (
-        <Card padding="lg" className="text-center">
-          <p className="text-mystic-400 text-sm italic">
-            {t('advisors.empty', { defaultValue: 'No advisors available yet. Check back soon.' })}
-          </p>
-        </Card>
+        <EmptyState
+          icon={<Users />}
+          title={t('advisors.empty', { defaultValue: 'No advisors are listed yet' })}
+          description={t('advisors.emptyBody', { defaultValue: 'Readers appear here once they pass verification.' })}
+        />
       )}
 
       {list.map((advisor) => (
-        <button
+        <Card
           key={advisor.id}
+          padding="md"
+          interactive
           onClick={() => { setSelected(advisor); setView('profile'); }}
-          className="w-full text-left"
         >
-          <Card padding="md" className="hover:border-gold/30 transition-all">
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center border border-gold/20 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gold/15 flex items-center justify-center border border-gold/20 flex-shrink-0" aria-hidden>
                 <User className="w-5 h-5 text-gold" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h3 className="font-display text-lg text-mystic-100">{advisor.displayName}</h3>
+                  <h3 className="heading-display-md text-mystic-100">{advisor.displayName}</h3>
                   {advisor.ratingAvg !== null && (
-                    <div className="flex items-center gap-0.5 text-meta text-gold">
-                      <Star className="w-3 h-3 fill-current" />
+                    <div className="flex items-center gap-0.5 text-meta text-gold tabular-nums">
+                      <Star className="w-3 h-3 fill-current" aria-hidden />
                       <span>{advisor.ratingAvg.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
-                <p className="text-gold/70 text-meta italic mb-2 line-clamp-1">{advisor.headline}</p>
+                <p className="text-mystic-400 text-meta italic mb-2 line-clamp-1">{advisor.headline}</p>
                 <div className="flex flex-wrap gap-1">
                   {advisor.specialties.slice(0, 3).map((s) => (
                     <Tag key={s} tone="neutral">
@@ -232,8 +237,7 @@ export function AdvisorsPage() {
                 </div>
               </div>
             </div>
-          </Card>
-        </button>
+        </Card>
       ))}
     </Page>
   );

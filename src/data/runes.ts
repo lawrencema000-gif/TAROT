@@ -246,6 +246,52 @@ export const RUNES: Rune[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Translation overlay (src/i18n/contentOverlay.ts, module 'runes'). English
+// above stays the source of truth; content-runes.json in ja/ko/zh carries
+// `runes.<id>.<field>` for the fields below, and a field it lacks shows in
+// English. The glyph and the number are the same in every language.
+// ---------------------------------------------------------------------------
+
+/**
+ * Stable overlay ids, in Elder Futhark order (index = number − 1). Written
+ * out rather than derived from `name`, so a respelt display name never
+ * orphans its translations.
+ */
+export const RUNE_IDS = [
+  'fehu', 'uruz', 'thurisaz', 'ansuz', 'raidho', 'kenaz', 'gebo', 'wunjo',
+  'hagalaz', 'nauthiz', 'isa', 'jera', 'eihwaz', 'perthro', 'algiz', 'sowilo',
+  'tiwaz', 'berkano', 'ehwaz', 'mannaz', 'laguz', 'ingwaz', 'dagaz', 'othala',
+] as const;
+
+export type RuneId = (typeof RUNE_IDS)[number];
+
+/** The overlay id of a rune: `fehu` for Fehu. */
+export function runeId(rune: Pick<Rune, 'number'>): RuneId {
+  return RUNE_IDS[rune.number - 1];
+}
+
+/** The user-facing text fields of a rune, in the order a translator reads them. */
+export const RUNE_TEXT_FIELDS = ['name', 'upright', 'reversed', 'element', 'interpretation', 'whenItLands', 'prompt'] as const;
+
+/**
+ * The English corpus in exactly the overlay's shape:
+ * `{ runes: { fehu: { name, upright, reversed?, element, … } } }`.
+ * A rune that never reverses has no `reversed`.
+ */
+export function runesCorpus(): { runes: Record<string, Record<string, string>> } {
+  const runes: Record<string, Record<string, string>> = {};
+  for (const rune of RUNES) {
+    const entry: Record<string, string> = {};
+    for (const field of RUNE_TEXT_FIELDS) {
+      const value = rune[field];
+      if (typeof value === 'string' && value) entry[field] = value;
+    }
+    runes[runeId(rune)] = entry;
+  }
+  return { runes };
+}
+
 export interface RuneCastResult {
   runes: Array<{ rune: Rune; reversed: boolean; position: 'past' | 'present' | 'future' }>;
 }

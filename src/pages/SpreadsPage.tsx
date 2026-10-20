@@ -1,25 +1,50 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useT } from '../i18n/useT';
-import { Link } from 'react-router-dom';
-import { Layers, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Layers } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
-import { PageHeader, Section } from '../components/ui';
-import { allSpreads as tarotSpreads, type SpreadCategory } from '../data/tarotSpreads';
+import { Badge, Button, Chip, ListRow, ListRowGroup, Page, PageHeader, Section } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
+import { spreadTypeToFeature } from '../services/premium';
+import { SpreadGlyph } from '../components/icons/SpreadGlyph';
+import { allSpreads as tarotSpreads, getSpreadLayout, type SpreadCategory } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 
+/** The sections in order, with their English (the defaults of spreads.sections.<id>.*). */
 const CATEGORY_ORDER: { id: SpreadCategory; label: string; description: string }[] = [
   { id: 'general', label: 'General', description: 'Classic spreads for any question or open inquiry.' },
-  { id: 'love', label: 'Love & Relationships', description: 'Spreads tuned to romance, partnership, and connection.' },
-  { id: 'career', label: 'Career & Money', description: 'Work decisions, financial flow, and professional direction.' },
-  { id: 'daily', label: 'Daily Practice', description: 'Quick spreads for ritual check-ins and weekly forecasts.' },
-  { id: 'spiritual', label: 'Spiritual & Shadow', description: 'Inner work, integration, and higher-self guidance.' },
-  { id: 'lunar', label: 'Lunar Cycles', description: 'New-moon intention setting and full-moon release.' },
+  { id: 'love', label: 'Love & relationships', description: 'Spreads tuned to romance, partnership, and connection.' },
+  { id: 'career', label: 'Career & money', description: 'Work decisions, financial flow, and professional direction.' },
+  { id: 'daily', label: 'Daily practice', description: 'Quick spreads for ritual check-ins and weekly forecasts.' },
+  { id: 'spiritual', label: 'Spiritual & shadow', description: 'Inner work, integration, and higher-self guidance.' },
+  { id: 'lunar', label: 'Lunar cycles', description: 'New-moon intention setting and full-moon release.' },
   { id: 'decision', label: 'Decisions', description: 'Crossroads, yes/no nuance, and choice clarification.' },
 ];
 
+/** The chip row's short labels. */
+const CHIP_LABEL: Record<SpreadCategory, string> = {
+  general: 'General',
+  love: 'Love',
+  career: 'Career',
+  daily: 'Daily',
+  spiritual: 'Spiritual',
+  lunar: 'Lunar',
+  decision: 'Decision',
+};
+
+/**
+ * /spreads — the catalogue as the reference app lays it out: category
+ * chips over compact two-line rows, each with a glyph of the spread's
+ * shape, its name, one line, and the card count. Forty-one identical
+ * cards eighteen thousand pixels tall became this (R5 p-2).
+ */
 export function SpreadsPage() {
   const { t } = useT('app');
+  const navigate = useNavigate();
+  const { profile } = useAuth();
+  const [category, setCategory] = useState<SpreadCategory | 'all'>('all');
+
   useEffect(() => {
     setPageMeta(
       'Tarot Spreads — Complete Library',
@@ -54,50 +79,94 @@ export function SpreadsPage() {
     });
   }, []);
 
+  const sections = useMemo(
+    () =>
+      CATEGORY_ORDER.filter((c) => category === 'all' || c.id === category)
+        .map((c) => ({ ...c, spreads: tarotSpreads.filter((s) => s.category === c.id) }))
+        .filter((c) => c.spreads.length > 0),
+    [category],
+  );
+
+  // The shell (member or public) sets the measure and the 16px gutter; the
+  // page's own `max-w-3xl mx-auto px-4` doubled it to 32px and pushed the
+  // chip strip's bleed in from the screen edge (p8 F61). Same rhythm as
+  // /spreads/:slug.
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <div className="mb-8">
-        <PageHeader
-          icon={<Layers />}
-          title={t('spreads.pageTitle', { defaultValue: 'Tarot spreads' })}
-          subtitle={`${tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.`}
-        />
-        <Link to="/spreads/builder" className="inline-flex items-center gap-1.5 mt-3 px-3 py-2 min-h-[44px] rounded-control border border-gold/30 bg-gold/10 text-gold text-caption no-underline hover:bg-gold/15">
-          <TarotCardIcon className="w-3.5 h-3.5" />
-          Design your own custom spread
-        </Link>
+    <Page className="py-6 sm:py-10">
+      <PageHeader
+        icon={<Layers />}
+        title={t('spreads.pageTitle', { defaultValue: 'Tarot spreads' })}
+        subtitle={t('spreads.pageSubtitle', {
+          defaultValue: '{{n}} spreads — from a single daily card to the ten-card Celtic Cross — each with position-by-position meanings, when to use it, and example questions.',
+          n: tarotSpreads.length,
+        })}
+      />
+      <Button variant="outline" size="sm" onClick={() => navigate('/spreads/builder')}>
+        <TarotCardIcon className="w-4 h-4" />
+        {t('spreads.designYourOwn', { defaultValue: 'Design your own spread' })}
+      </Button>
+
+      <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2 w-max pb-1" role="group" aria-label={t('spreads.categories', { defaultValue: 'Categories' })}>
+          <Chip
+            size="sm"
+            label={t('readings.categories.all', { defaultValue: 'All' })}
+            selected={category === 'all'}
+            onSelect={() => setCategory('all')}
+          />
+          {CATEGORY_ORDER.map((c) => (
+            <Chip
+              key={c.id}
+              size="sm"
+              label={t(`readings.categories.${c.id}`, { defaultValue: CHIP_LABEL[c.id] })}
+              selected={category === c.id}
+              onSelect={() => setCategory(c.id)}
+            />
+          ))}
+        </div>
       </div>
 
-      {CATEGORY_ORDER.map(({ id, label, description }) => {
-        const inCat = tarotSpreads.filter((s) => s.category === id);
-        if (!inCat.length) return null;
-        return (
-          <Section key={id} className="mb-8" title={label} description={description} spacing="sm">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {inCat.map((spread) => (
-                <Link
-                  key={spread.slug}
-                  to={`/spreads/${spread.slug}`}
-                  className="block rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/40 hover:bg-mystic-900/60 transition-colors no-underline"
-                >
-                  <div className="flex items-start justify-between gap-3 mb-1">
-                    <h3 className="heading-display-md text-mystic-100">{spread.name}</h3>
-                    <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
-                  </div>
-                  <p className="reading-copy mb-2">{spread.shortDescription}</p>
-                  <div className="flex items-center gap-2 text-meta uppercase tracking-wider">
-                    <span className="text-gold">{spread.cardCount} cards</span>
-                    <span className="text-mystic-600">·</span>
-                    <span className="text-mystic-400">{spread.difficulty}</span>
-                    <span className="text-mystic-600">·</span>
-                    <span className="text-mystic-400">~{spread.durationMin} min</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Section>
-        );
-      })}
-    </div>
+      {sections.map(({ id, label, description, spreads }) => (
+        <Section
+          key={id}
+          title={t(`spreads.sections.${id}.title`, { defaultValue: label })}
+          description={t(`spreads.sections.${id}.description`, { defaultValue: description })}
+          spacing="sm"
+        >
+          {/* Real anchors for the crawler; a plain click stays in the router. */}
+          <ListRowGroup
+            onClick={(e) => {
+              const a = (e.target as HTMLElement).closest('a[href^="/spreads/"]');
+              if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+              e.preventDefault();
+              navigate(a.getAttribute('href')!);
+            }}
+          >
+            {spreads.map((spread) => (
+              <ListRow
+                key={spread.slug}
+                href={`/spreads/${spread.slug}`}
+                icon={<SpreadGlyph layout={getSpreadLayout(spread)} className="text-gold" />}
+                label={t(`spreads.catalog.${spread.slug}.name`, { defaultValue: spread.name })}
+                // The count leads the line rather than sitting as a value: as a
+                // value it took the width the name needed ("Three Card: Past, …").
+                meta={
+                  <span className="line-clamp-2">
+                    <span className="tabular-nums">{t('readings.cardCount', { count: spread.cardCount, defaultValue: '{{count}} cards' })}</span>
+                    {' · '}
+                    {t(`spreads.catalog.${spread.slug}.description`, { defaultValue: spread.shortDescription })}
+                  </span>
+                }
+                trailing={
+                  !profile?.isPremium && spreadTypeToFeature(spread.slug) ? (
+                    <Badge tone="violet">{t('readings.status.premium', { defaultValue: 'Premium' })}</Badge>
+                  ) : undefined
+                }
+              />
+            ))}
+          </ListRowGroup>
+        </Section>
+      ))}
+    </Page>
   );
 }

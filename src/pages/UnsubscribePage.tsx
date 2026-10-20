@@ -5,9 +5,13 @@ import { PageHeader } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { setPageMeta } from '../utils/seo';
 
+/** The RPC takes a uuid; anything else is a 400 round-trip for a link we already know is wrong. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function UnsubscribePage() {
   const [params] = useSearchParams();
-  const token = params.get('token');
+  const rawToken = params.get('token');
+  const token = rawToken && UUID_RE.test(rawToken.trim()) ? rawToken.trim() : null;
   const [status, setStatus] = useState<'loading' | 'success' | 'already' | 'invalid'>('loading');
   const [email, setEmail] = useState<string | null>(null);
 

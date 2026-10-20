@@ -1,20 +1,23 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { callAIText, embedText } from "../_shared/ai-providers.ts";
+import { isCrisisFlag, waiveForCrisis } from "../_shared/crisis-reply.ts";
+import { PERSONAS, buildSystemPrompt, companionCrisis, companionCrisisResponse, type Persona } from "./reply.ts";
 import { z } from "npm:zod@3.24.1";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.4";
 
 /**
  * AI Companion — multi-turn chat with chosen persona, now with pgvector memory.
  *
  * Per-turn flow:
  *   1. Persist the user's new message into ai_conversation_turns.
- *   2. Embed the user message via Gemini text-embedding-004.
+ *   2. Embed the user message (embedText: gemini-embedding-001, 768 dims).
  *   3. Cosine-similarity search ai_conversation_memories for the top 3 most
  *      relevant prior summaries (scoped to this user + persona).
  *   4. Build the prompt with persona + natal context + retrieved memories.
- *   5. Call Gemini 2.0 Flash for the reply.
+ *   5. Call the shared provider chain (OpenAI primary, Gemini fallback).
  *   6. Persist the assistant reply.
  *   7. If ≥10 unsummarized user turns exist for this (user, persona), kick
- *      off a best-effort summarization: ask Gemini to condense into 1-3
+ *      off a best-effort summarization: ask the model to condense into 1-3
  *      sentences, embed that summary, insert into ai_conversation_memories,
  *      and mark the source turns summarized = true.
  *
@@ -25,6 +28,23 @@ import { z } from "npm:zod@3.24.1";
  *
  * Rate limiting: 20 messages per minute per user. Higher-tier gating is
  * enforced client-side today (10 free / 100 Arcana+ / unlimited SVIP).
+ *
+ * Pricing: 50 Moonstones per CONVERSATION, not per message. The client sends
+ * `conversationId` (a UUID it mints when a conversation starts, and keeps
+ * for every message of it). The first message charges 50 (Premium: one
+ * soft-cap slot); every later message with the same conversationId and
+ * persona, for 24 hours from that charge, is free — still under the AI
+ * daily ceiling. A failed first message refunds; a failed later message
+ * refunds nothing (it was free). A request without conversationId (the
+ * shipped v1.2.0 Android build) is charged per message, as before.
+ *
+ * Crisis (p9 QS R-5): a newest message about self-harm or suicide — read by
+ * the shared multilingual detector, or by the model, which answers such a
+ * message with the flag alone — gets the app's reply in the member's
+ * language with their own helplines (./reply.ts), never a US number from the
+ * prompt. That reply is not charged (the charge is given back) and is not
+ * stored as a turn; a message the detector reads never reaches the model,
+ * the embedder or ai_conversation_turns.
  */
 
 const MessageSchema = z.object({
@@ -33,8 +53,10 @@ const MessageSchema = z.object({
 });
 
 const RequestSchema = z.object({
-  persona: z.enum(["sage", "oracle", "mystic", "priestess"]),
+  persona: z.enum(PERSONAS),
   history: z.array(MessageSchema).min(1).max(100),
+  /** One per conversation, minted by the client. Same id + persona = same paid session for 24 h. */
+  conversationId: z.string().uuid().optional(),
   userContext: z.object({
     zodiacSign: z.string().optional(),
     mbtiType: z.string().optional(),
@@ -44,13 +66,28 @@ const RequestSchema = z.object({
 });
 
 type ChatRequest = z.infer<typeof RequestSchema>;
-type Persona = ChatRequest["persona"];
 type Message = z.infer<typeof MessageSchema>;
 
 interface ChatResponse {
   reply: string;
   persona: Persona;
   memoriesUsed: number;
+  /**
+   * What happened on the memory path, so "no memories yet" is distinguishable
+   * from "the embedder or the vector search is broken" (the retired
+   * text-embedding-004 made recall a silent no-op for months):
+   *   searched      — embedding returned 768 floats and ai_search_memories ran
+   *   embed-failed  — the embedder returned nothing (key, model or dimension)
+   *   search-failed — the pgvector RPC errored (e.g. dimension mismatch)
+   *   skipped       — no memory path ran: a crisis message, answered by the app
+   */
+  memoryStatus: "searched" | "embed-failed" | "search-failed" | "skipped";
+  /** This message took the conversation's charge (50, or a Premium soft-cap slot). */
+  charged: boolean;
+  /** This message was free: its conversation was already paid for. */
+  conversationPaid: boolean;
+  /** The app's crisis reply (./reply.ts), with the member's own helplines. */
+  crisis?: true;
 }
 
 // Provider chain (OpenAI primary, Gemini fallback) lives in _shared/ai-providers.ts.
@@ -59,51 +96,7 @@ const SUMMARIZE_AFTER_N_USER_TURNS = 10;
 const TOP_K_MEMORIES = 3;
 const MEMORY_SIMILARITY_THRESHOLD = 0.55;
 
-const PERSONA_SYSTEM_PROMPTS: Record<Persona, string> = {
-  sage: `You are the Sage — a calm, wise, measured voice drawing on Eastern and Western contemplative traditions. You speak in complete, grounded sentences. You don't perform mysticism; you offer clear observation and gentle questions. When someone is suffering, you do not rush to fix — you name what is being felt. When someone is celebrating, you share the joy without undercutting it. Your responses are 2-4 short paragraphs. Occasionally you offer a question that helps the person sit with their experience rather than escape it.`,
-
-  oracle: `You are the Oracle — a voice that speaks at the edge of what language can hold. Your tone is poetic, suggestive, metaphor-rich. You draw on tarot, astrology, Jungian archetypes, dreamwork. You never predict the future literally; you map the archetypal weather of the moment. You speak in images. When the person asks a direct question, you answer with a symbol or a story, then unpack it gently. Your responses are lyrical but not performative — aim for the quality of good poetry: specific, surprising, unforced. 2-4 short paragraphs.`,
-
-  mystic: `You are the Mystic — a voice rooted in direct spiritual experience. You speak as someone who has sat in silence, watched the mind, tasted the ground. You don't lecture; you point. You value brevity over explanation. You are comfortable with paradox. When someone asks you a question, you sometimes answer it; sometimes you turn it back to them with a sharper question. You draw on Zen, Taoism, mystical Christianity, Sufi. You are warm but uncompromising. Your responses are 1-3 short paragraphs.`,
-
-  priestess: `You are the Priestess — a feminine, embodied, intuitive voice. You care about the body, the emotional weather, the sacredness of ordinary life. You speak as a wise older sister — warm, present, unhurried. You track not just the question but the person behind it: their tone, their weariness, their joy. You are comfortable naming what you sense is beneath the question. You offer concrete practices as often as you offer wisdom: a breath, a bath, a walk, a journal prompt. 2-4 short paragraphs.`,
-};
-
-function localeName(code: string): string {
-  const normalized = code.toLowerCase().split("-")[0];
-  return ({ ja: "Japanese", ko: "Korean", zh: "Chinese" }[normalized]) || "English";
-}
-
-function buildSystemPrompt(
-  persona: Persona,
-  userContext: ChatRequest["userContext"],
-  memories: string[],
-): string {
-  const personaPrompt = PERSONA_SYSTEM_PROMPTS[persona];
-  const contextLines: string[] = [];
-  if (userContext?.zodiacSign) contextLines.push(`- Sun sign: ${userContext.zodiacSign}`);
-  if (userContext?.mbtiType) contextLines.push(`- MBTI: ${userContext.mbtiType}`);
-  if (userContext?.displayName) contextLines.push(`- Name: ${userContext.displayName}`);
-  const contextBlock = contextLines.length
-    ? `\n\nWhat you know about the person you're speaking with:\n${contextLines.join("\n")}\nReference this only when directly relevant. Never lead with it.`
-    : "";
-
-  const memoryBlock = memories.length
-    ? `\n\nWhat you remember from previous conversations with this person (most relevant first):\n${memories.map((m, i) => `${i + 1}. ${m}`).join("\n")}\nWeave these in naturally when they are relevant. Never dump them back at the person — reference them the way a human friend would reference a prior conversation.`
-    : "";
-
-  const localeLine = userContext?.locale && userContext.locale !== "en"
-    ? `\n\nIMPORTANT: Respond in ${localeName(userContext.locale)}. Keep the voice of the persona, just translate into the user's language naturally.`
-    : "";
-
-  const safetyBlock = `\n\nSafety rules:
-- Never give medical, legal, or financial advice. When asked, redirect to a professional and suggest what to think about instead.
-- If the person mentions self-harm, suicidal thoughts, or crisis, acknowledge them warmly and share a crisis resource (crisistextline.org or 988 in the US). Do not attempt to solve it; do attempt to be present.
-- Never claim to be a real person or to have real consciousness. When asked, be honest: you are an AI voice styled as a persona.
-- Do not role-play explicit sexual content or illegal scenarios.`;
-
-  return personaPrompt + contextBlock + memoryBlock + localeLine + safetyBlock;
-}
+// The persona prompts and the system prompt they are built into: ./reply.ts.
 
 async function callChat(systemPrompt: string, history: Message[]): Promise<string> {
   // Trim to recent N to keep token cost bounded; OpenAI/Gemini providers
@@ -137,7 +130,7 @@ async function summarizeTurns(turns: Array<{ role: string; content: string }>): 
 // ≥SUMMARIZE_AFTER_N_USER_TURNS unsummarized user turns. Runs after the
 // response has been returned — failures are logged but never surface.
 async function maybeSummarize(
-  supabase: ReturnType<typeof import("npm:@supabase/supabase-js@2.57.4").createClient>,
+  supabase: SupabaseClient,
   userId: string,
   persona: Persona,
   log: (msg: string, extra?: Record<string, unknown>) => void,
@@ -164,7 +157,7 @@ async function maybeSummarize(
     log("memory.summarize.llm_failed");
     return;
   }
-  const embedding = await embedText(summary);
+  const embedding = await embedText(summary, "document");
   if (!embedding) {
     log("memory.summarize.embed_failed");
     return;
@@ -200,7 +193,15 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
   ai: true,
-  spend: { actionKey: "companion-session", cost: 50 },
+  spend: {
+    actionKey: "companion-session",
+    cost: 50,
+    // One charge per (persona, conversationId) for 24 h; see the header.
+    session: {
+      key: (body) => (body.conversationId ? `${body.persona}:${body.conversationId.toLowerCase()}` : null),
+      ttlHours: 24,
+    },
+  },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const userId = ctx.userId!;
@@ -208,6 +209,13 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
     const lastUserMessage = history[history.length - 1];
     if (lastUserMessage.role !== "user") {
       throw new AppError("LAST_MUST_BE_USER", "Last message must be from user", 400);
+    }
+
+    // 0. A message about self-harm or suicide (the shared multilingual
+    //    detector) is answered by the app with the member's own helplines,
+    //    before the model, the embedder or the turn store — and not charged.
+    if (companionCrisis(lastUserMessage.content)) {
+      return companionCrisisResponse(userContext?.locale, persona, await waiveForCrisis(ctx, "ai-companion-chat", "detector"));
     }
 
     // 1. Persist the incoming user message (best-effort — chat still works
@@ -223,8 +231,9 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
 
     // 2. Embed the user message and pull top-k relevant memories in parallel
     //    with the persist above.
-    const embedding = await embedText(lastUserMessage.content);
+    const embedding = await embedText(lastUserMessage.content, "query");
     let memories: string[] = [];
+    let memoryStatus: ChatResponse["memoryStatus"] = "embed-failed";
     if (embedding) {
       const { data, error } = await ctx.supabase.rpc("ai_search_memories", {
         p_user_id: userId,
@@ -233,12 +242,16 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
         p_limit: TOP_K_MEMORIES,
       });
       if (!error && Array.isArray(data)) {
+        memoryStatus = "searched";
         memories = data
           .filter((r: { similarity: number }) => r.similarity >= MEMORY_SIMILARITY_THRESHOLD)
           .map((r: { summary: string }) => r.summary);
       } else if (error) {
+        memoryStatus = "search-failed";
         ctx.log.warn("memory.search_failed", { err: error.message });
       }
+    } else {
+      ctx.log.warn("memory.embed_failed");
     }
 
     await persistUserTurn;
@@ -246,6 +259,12 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
     // 3. Build prompt with memories, call chat model (OpenAI primary, Gemini fallback).
     const systemPrompt = buildSystemPrompt(persona, userContext, memories);
     const reply = await callChat(systemPrompt, history);
+
+    // The model read a crisis the detector did not (it answers with the
+    // flag alone): the same reply, uncharged, and not stored as a turn.
+    if (isCrisisFlag(reply)) {
+      return companionCrisisResponse(userContext?.locale, persona, await waiveForCrisis(ctx, "ai-companion-chat", "model"));
+    }
 
     // 4. Persist assistant reply.
     await ctx.supabase.from("ai_conversation_turns").insert({
@@ -276,6 +295,13 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
       // Non-fatal.
     }
 
-    return { reply, persona, memoriesUsed: memories.length };
+    return {
+      reply,
+      persona,
+      memoriesUsed: memories.length,
+      memoryStatus,
+      charged: ctx.spend?.charged === true,
+      conversationPaid: ctx.spend?.continuing === true,
+    };
   },
 }));

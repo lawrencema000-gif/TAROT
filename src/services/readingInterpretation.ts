@@ -1,7 +1,18 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard, ZodiacSign, Goal } from '../types';
+import type { PlayingCard } from '../types/cartomancy';
+import type { CombinationHit } from '../data/cartomancy/combinations';
+import { getPlayingCard } from '../data/cartomancy/deck';
+// The folding rule lives with the reader's Combinations list; the AI must
+// receive the same lines, so it is shared rather than copied.
+// eslint-disable-next-line boundaries/element-types
+import { combinationLines } from '../components/cartomancy/cartoFlow';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
+import { tArray } from '../utils/tArray';
+
+/** Which deck a reading's cards come from. The server defaults to 'tarot'. */
+export type ReadingDeck = 'tarot' | 'playing';
 
 export interface ReadingCard {
   id: number;
@@ -12,23 +23,66 @@ export interface ReadingCard {
   meaningReversed?: string;
   loveMeaning?: string;
   careerMeaning?: string;
+  /** Playing cards carry an advice line; the server uses it as the "general" focus meaning. */
+  adviceMeaning?: string;
 }
 
 export interface ReadingRequest {
   cards: ReadingCard[];
+  /** Passed through untouched; the server treats it as untrusted context. */
   question?: string;
   spreadType: string;
   zodiacSign?: ZodiacSign;
   goals?: Goal[];
   focusArea?: 'love' | 'career' | 'general';
-  /** BCP-47 locale code (e.g. 'en', 'ja', 'ko', 'zh'). Server instructs Gemini to respond in this language. */
+  /** BCP-47 locale code (e.g. 'en', 'ja', 'ko', 'zh'). The server instructs the model to respond in this language. */
   locale?: string;
+  /** Defaults to 'tarot'. Playing-card spreads must also send `positions`. */
+  deck?: ReadingDeck;
+  /** Localized position labels in card order — the server only knows the tarot spreads. ≤ 40 chars each. */
+  positions?: string[];
+  /** Rule-based combination hits as short lines (see `combinationHitsToLines`). The server uses at most six. */
+  combinations?: string[];
+  /** Rule-based verdict label for Yes/No and Wish spreads, e.g. "Favored, with a delay". */
+  verdict?: string;
+  /** Playing deck only. */
+  jokers?: boolean;
+  reversals?: boolean;
+  /**
+   * Client UUID. The server adopts it as the correlation id, which makes the
+   * Moonstone debit idempotent: a retry after a dropped connection with the
+   * same requestId is not charged twice and gets the same cached reading.
+   * `generatePremiumReading` fills it in when absent.
+   */
+  requestId?: string;
 }
 
 export interface ReadingResponse {
   interpretation: string;
   usedLlm: boolean;
   cardCount: number;
+  deck?: ReadingDeck;
+  cached?: boolean;
+  /**
+   * True when every AI provider failed and the server answered with the
+   * cards' own meanings instead (p7 #34). That text is not what was asked
+   * for: callers must not present it as the AI reading, nor save it as one.
+   */
+  fallback?: boolean;
+  /**
+   * Sent with `fallback`: whether the Moonstone debit stands. The server
+   * gives the charge back for a fallback, so this is false unless that
+   * refund itself failed.
+   */
+  charged?: boolean;
+}
+
+function newRequestId(): string {
+  const c = globalThis.crypto as Crypto | undefined;
+  if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+  // Very old WebViews: RFC-4122-shaped fallback so the server still accepts it.
+  const hex = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  return `${hex(8)}-${hex(4)}-4${hex(3)}-a${hex(3)}-${hex(12)}`;
 }
 
 export async function generatePremiumReading(
@@ -43,9 +97,14 @@ export async function generatePremiumReading(
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  // Inject the active UI locale into the request so Gemini responds in the
-  // user's language. Callers can override by passing `locale` explicitly.
-  const requestWithLocale = { locale: getLocale(), ...request };
+  // Inject the active UI locale and a request id into the request. Callers
+  // can override either by passing them explicitly; every other field,
+  // including `question`, is passed through as given.
+  const requestWithLocale: ReadingRequest = {
+    locale: getLocale(),
+    requestId: newRequestId(),
+    ...request,
+  };
 
   const response = await fetch(`${supabaseUrl}/functions/v1/generate-reading`, {
     method: 'POST',
@@ -53,6 +112,7 @@ export async function generatePremiumReading(
       'Authorization': `Bearer ${session.access_token}`,
       'apikey': anonKey,
       'Content-Type': 'application/json',
+      'X-Correlation-Id': requestWithLocale.requestId as string,
     },
     body: JSON.stringify(requestWithLocale),
   });
@@ -63,8 +123,12 @@ export async function generatePremiumReading(
 
     try {
       const errorJson = JSON.parse(errorText);
-      throw new Error(errorJson.error || `Failed to generate reading: ${response.status}`);
-    } catch {
+      const message = typeof errorJson?.error === 'string'
+        ? errorJson.error
+        : errorJson?.error?.message;
+      throw new Error(message || `Failed to generate reading: ${response.status}`);
+    } catch (e) {
+      if (e instanceof Error && !e.message.startsWith('Unexpected')) throw e;
       throw new Error(`Failed to generate reading: ${response.status} - ${errorText}`);
     }
   }
@@ -84,6 +148,68 @@ export function tarotCardToReadingCard(card: TarotCard, reversed: boolean): Read
     careerMeaning: card.careerMeaning,
   };
 }
+
+/**
+ * Sibling of `tarotCardToReadingCard` for the playing deck. Ids stay in the
+ * 100..153 range so a saved reading can never be confused with a tarot one;
+ * `adviceMeaning` rides along as the "general" focus pick.
+ */
+export function playingCardToReadingCard(card: PlayingCard, reversed: boolean): ReadingCard {
+  return {
+    id: card.id,
+    name: card.name,
+    reversed,
+    keywords: card.keywords,
+    meaningUpright: card.meaningUpright,
+    meaningReversed: card.meaningReversed ?? card.meaningUpright,
+    loveMeaning: card.loveMeaning,
+    careerMeaning: card.careerMeaning,
+    adviceMeaning: card.adviceMeaning,
+  };
+}
+
+/**
+ * `findCombinations()` hits → the short lines the server reads (≤ 6 are
+ * used), folded exactly as the reader's own Combinations list folds them
+ * (cartoFlow.combinationLines): one line per rule and meaning, its pairings
+ * joined. The raw hits repeat a neighbour rule once per neighbour — the Ace
+ * of Spades in a 3×3 grid can fire eight times — and six of those used to
+ * fill the whole budget, so the model never saw the pairs and the
+ * majorities the reader was looking at. English: the prompt's language is
+ * set separately.
+ */
+export function combinationHitsToLines(hits: CombinationHit[], limit = 6): string[] {
+  return combinationLines(
+    hits,
+    (h) => ({ label: h.label, meaning: h.meaning }),
+    (id) => getPlayingCard(id)?.name ?? '',
+    'en',
+  )
+    .map((line) => fitCombinationLine(line.label.replace(/\s+/g, ' ').trim(), line.meaning.replace(/\s+/g, ' ').trim()))
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+/** generate-reading cuts each combination line at this many characters. */
+const MAX_COMBINATION_LENGTH = 200;
+
+/**
+ * "label — meaning" within the server's limit. A folded line can name eight
+ * neighbours; cut there, the server would have kept the names and dropped
+ * the meaning, which is the part the model needs. So the label gives way:
+ * it is cut at a word and marked with an ellipsis, and the meaning stays.
+ */
+function fitCombinationLine(label: string, meaning: string): string {
+  const whole = meaning ? `${label} — ${meaning}` : label;
+  if (whole.length <= MAX_COMBINATION_LENGTH || !meaning) return whole.slice(0, MAX_COMBINATION_LENGTH);
+  const room = MAX_COMBINATION_LENGTH - meaning.length - ' — '.length - 1;
+  if (room < 24) return whole.slice(0, MAX_COMBINATION_LENGTH);
+  const cut = label.slice(0, room).replace(/[\s,;]+\S*$/, '');
+  return `${cut}… — ${meaning}`;
+}
+
+/** generate-reading's MAX_CARDS_TAROT: a tarot spread with more cards cannot have an AI reading. */
+export const MAX_AI_TAROT_CARDS = 10;
 
 const spreadPositions: Record<string, string[]> = {
   single: ['Your Card'],
@@ -129,9 +255,13 @@ const spreadPositions: Record<string, string[]> = {
 export function generateLocalReading(
   cards: ReadingCard[],
   spreadType: string,
-  focusArea?: 'love' | 'career' | 'general'
+  focusArea?: 'love' | 'career' | 'general',
+  /** Position labels for spreads the built-in table does not know (cartomancy). */
+  positionLabels?: string[]
 ): string {
-  const positions = spreadPositions[spreadType] || spreadPositions.single;
+  const positions = positionLabels && positionLabels.length >= cards.length
+    ? positionLabels
+    : (spreadPositions[spreadType] || spreadPositions.single);
   const paragraphs: string[] = [];
 
   if (focusArea) {
@@ -176,12 +306,8 @@ function spreadPositionsI18nKey(spreadType: string): string {
 export function getSpreadPositions(spreadType: string): string[] {
   const fallback = spreadPositions[spreadType] || spreadPositions.single;
   const key = spreadPositionsI18nKey(spreadType);
-  const v = i18n.t(`readings.spreadPositions.${key}`, {
-    ns: 'app',
-    returnObjects: true,
-    defaultValue: fallback,
-  });
-  return Array.isArray(v) && v.length > 0 ? (v as string[]) : fallback;
+  const v = tArray((k, o) => i18n.t(k, o), `readings.spreadPositions.${key}`, fallback, { ns: 'app' });
+  return v.length > 0 ? v : fallback;
 }
 
 export function getSpreadCardCount(spreadType: string): number {

@@ -1,6 +1,7 @@
 import { AppError, handler } from "../_shared/handler.ts";
-import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
-import { callAIJson } from "../_shared/ai-providers.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -86,12 +87,7 @@ interface Resp {
   closingBlessing?: string;
 }
 
-const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
-
-function localeName(code: string): string {
-  const normalized = code.toLowerCase().split("-")[0];
-  return ({ ja: "Japanese", ko: "Korean", zh: "Chinese" } as Record<string, string>)[normalized] || "English";
-}
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-celestial-v2`;
 
 const SYSTEM = `You are an astrocartography reader. The user has tapped a specific city on their personal celestial map. You will receive:
 - The city + country.
@@ -191,10 +187,9 @@ Schema:
 }`;
 
 async function callAI(input: Req): Promise<Resp> {
-  const locale = input.userContext?.locale ?? "en";
-  const localeLine = locale !== "en"
-    ? `\n\nIMPORTANT: Respond in ${localeName(locale)}. Keep the voice; just translate naturally.`
-    : "";
+  // Shared per-locale instruction (_shared/locale.ts) closes the system
+  // prompt; JSON keys stay English, values follow the user's language.
+  const localeLine = localeInstruction(input.userContext?.locale, { jsonKeys: true, keepVoice: true });
 
   const linesList = input.lines.length === 0
     ? "(no active lines within 700 km of this point)"
@@ -218,13 +213,13 @@ Intent: ${input.intent}
 Active lines within 700 km:
 ${linesList}${ctxBlock}
 
-Reply with ONLY the JSON object matching the schema, nothing else.${localeLine}`;
+Reply with ONLY the JSON object matching the schema, nothing else.`;
 
   // best-place needs more headroom because the body is 5-7 sentences
   // plus the closing blessing.
   const isBestPlace = input.mode === "best-place";
   const parsed = await callAIJson<Resp>({
-    system: isBestPlace ? BEST_PLACE_SYSTEM : SYSTEM,
+    system: `${isBestPlace ? BEST_PLACE_SYSTEM : SYSTEM}\n\n${localeLine}`,
     userPrompt,
     temperature: isBestPlace ? 0.78 : 0.7,
     maxOutputTokens: isBestPlace ? 1400 : 800,
@@ -279,9 +274,11 @@ Deno.serve(handler<Req, Resp>({
       ctxKey,
     );
 
-    const gate = await aiGate<Resp>(ctx, { userId: ctx.userId, cacheKey: key });
-    if (gate.allowed === false) throw new AppError(gate.reason, gate.message, gate.status);
-    if (gate.cached) return gate.response;
+    // The killswitch and the daily ceiling ran once, in the handler (ai: true).
+    // Calling aiGate() here as well counted every travel reading twice
+    // against the member's daily AI ceiling (p9 QZ request b).
+    const cached = await aiCacheGet<Resp>(ctx, key);
+    if (cached) return cached;
 
     const fresh = await callAI(body);
     await aiCacheStore(ctx, { cacheKey: key, model: CACHE_MODEL_TAG, fnName: "celestial-travel-reading", response: fresh });

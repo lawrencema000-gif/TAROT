@@ -19,6 +19,14 @@
  * that can exceed the window, in which case WebKit rejects with
  * NotAllowedError and this falls back to a download rather than a silent
  * no-op. That is the documented limit.
+ *
+ * A share started while an earlier one is still open (a second tap on
+ * Share) rejects with InvalidStateError. Nothing went wrong and the first
+ * sheet is still up, so that is 'cancelled' too, never a download.
+ *
+ * Files that are not images (the data export, a calendar file) go through
+ * `shareFile`, which names its type and never offers them to the browser's
+ * image share.
  */
 
 import { isNative } from './platform';
@@ -41,6 +49,11 @@ export function isShareCancel(err: unknown): boolean {
   if (name === 'AbortError') return true;
   // @capacitor/share rejects with "Share canceled" on both Android and iOS.
   return typeof message === 'string' && /cancel/i.test(message);
+}
+
+/** True when the browser refused a share because an earlier one is still open. */
+function isShareInFlight(err: unknown): boolean {
+  return !!err && typeof err === 'object' && (err as { name?: unknown }).name === 'InvalidStateError';
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -120,7 +133,9 @@ export async function sharePng(blob: Blob, fileName: string, payload: SharePaylo
         await nav.share({ files: [file], title: payload.title, text: payload.text });
         return 'shared';
       } catch (err) {
-        if (isShareCancel(err)) return 'cancelled';
+        // Dismissed, or a second tap while the first sheet is still open:
+        // either way the user is looking at a share sheet, not a download.
+        if (isShareCancel(err) || isShareInFlight(err)) return 'cancelled';
         // Platform refused the file share (NotAllowedError, DataError):
         // fall through and save the image instead.
       }
@@ -129,6 +144,29 @@ export async function sharePng(blob: Blob, fileName: string, payload: SharePaylo
 
   try {
     return downloadBlob(blob, fileName) ? 'downloaded' : 'failed';
+  } catch (err) {
+    console.error('[nativeShare] download failed:', err);
+    return 'failed';
+  }
+}
+
+/**
+ * Hand the user a file of any type — the data export (JSON), a calendar
+ * file (.ics). On Android/iOS it is written to the app cache and offered
+ * through the share sheet (save to Files or Drive, mail it, open it in a
+ * calendar); on the web it downloads. `mime` types the file the browser
+ * saves. Never throws.
+ */
+export async function shareFile(
+  blob: Blob,
+  fileName: string,
+  mime: string,
+  payload: SharePayload = {},
+): Promise<ShareOutcome> {
+  const typed = blob.type === mime ? blob : new Blob([blob], { type: mime });
+  if (isNative()) return shareFileNative(typed, fileName, payload);
+  try {
+    return downloadBlob(typed, fileName) ? 'downloaded' : 'failed';
   } catch (err) {
     console.error('[nativeShare] download failed:', err);
     return 'failed';

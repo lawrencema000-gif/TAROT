@@ -98,8 +98,10 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
         <TitleTag className={`text-mystic-200 ${size === 'md' ? 'heading-display-md' : 'text-sm font-medium'}`}>
           {title}
         </TitleTag>
+        {/* A short centred line: breaks between phrases (keep-phrases), so
+            the not-found page no longer reads 「可能/性」. */}
         {description && (
-          <p className="text-sm text-mystic-400 leading-relaxed max-w-sm">{description}</p>
+          <p className="keep-phrases text-sm text-mystic-400 leading-relaxed max-w-sm">{description}</p>
         )}
         {action && <div className="pt-2">{action}</div>}
       </div>

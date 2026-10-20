@@ -4,9 +4,11 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
+import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
 
-const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4o"];
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+// Same chain as production bazi-interpret (single source of truth in
+// _shared/ai-providers.ts) so the smoke test exercises the real models.
+const OPENAI_MODELS = openAIModels();
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -122,8 +124,11 @@ Deno.serve(handler<unknown>({
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: TEST_INPUT_PROMPT },
               ],
-              temperature: 0.7,
-              max_completion_tokens: 8000,
+              // Reasoning models reject a custom temperature and take
+              // reasoning_effort instead (mirrors bazi-interpret).
+              ...(isReasoningModel(model)
+                ? { reasoning_effort: reasoningEffortFor(model), max_completion_tokens: 10000 }
+                : { temperature: 0.7, max_completion_tokens: 8000 }),
               response_format: { type: "json_object" },
             }),
           });
@@ -148,10 +153,10 @@ Deno.serve(handler<unknown>({
     if (!text && geminiKey) {
       outer2: for (const model of GEMINI_MODELS) {
         for (let attempt = 0; attempt < 3; attempt++) {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
           const res = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
               contents: [{ role: "user", parts: [{ text: TEST_INPUT_PROMPT }] }],

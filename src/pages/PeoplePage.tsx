@@ -11,8 +11,22 @@ import { getZodiacSign } from '../utils/zodiac';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 
 const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other' };
+
+/**
+ * A birth date as the app's language writes it ("2024年3月15日", "Mar 15,
+ * 2024"). It was the device's language (`toLocaleDateString(undefined, …)`):
+ * a Japanese reader on a phone set to English read 「ペット · Mar 15, 2024」 —
+ * the app's language is chosen in the app, never taken from the browser (p9
+ * R17). A date-only value is that calendar day, read at local midnight.
+ */
+function formatBirthDate(birthDate: string): string {
+  const day = new Date(`${birthDate}T00:00:00`);
+  if (Number.isNaN(day.getTime())) return birthDate;
+  return day.toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
 /** The drawn glyph for a birth date's sun sign; the generic people icon when the date cannot be read. */
 function SignGlyph({ birthDate }: { birthDate: string }) {
@@ -75,7 +89,7 @@ export function PeoplePage() {
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-mystic-100 truncate">{p.name}</div>
                 <div className="text-meta text-mystic-500">
-                  {t(`people.relationship.${p.relationship}`, { defaultValue: REL_LABEL[p.relationship] })} · {new Date(p.birthDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  {t(`people.relationship.${p.relationship}`, { defaultValue: REL_LABEL[p.relationship] })} · {formatBirthDate(p.birthDate)}
                   {!p.birthTime && <> · {t('people.timeUnknown', { defaultValue: 'time unknown' })}</>}
                 </div>
               </div>

@@ -19,6 +19,13 @@ import { ChevronDown } from 'lucide-react';
  *
  * Uncontrolled by default. Pass `open` and `onOpenChange` when the page
  * needs the accordion behaviour where opening one row closes the rest.
+ *
+ * `surface="paper"` is the same control on the cream reading surface: the
+ * canvas inks (mystic-200 label, mystic-700 hairline, mystic-800 press) do
+ * not read on paper, so it takes the ink roles instead — ink-2 label (ink on
+ * hover), ink-muted chevron and meta, paper hairline, paper-2 for the panel
+ * and the press. It replaced the two hand-built PaperDisclosure rows (the
+ * tarot result and the cartomancy result) in Phase 7.
  */
 
 export interface DisclosureProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onToggle' | 'title'> {
@@ -40,15 +47,49 @@ export interface DisclosureProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
    * `panel` brings its own surface. Default `panel`.
    */
   variant?: 'row' | 'panel';
+  /** The surface it sits on. `paper` takes the ink roles. Default `canvas`. */
+  surface?: 'canvas' | 'paper';
   /** Hold off rendering children until the first open. Default false. */
   lazy?: boolean;
   disabled?: boolean;
   contentClassName?: string;
 }
 
-const variantStyles: Record<NonNullable<DisclosureProps['variant']>, string> = {
-  panel: 'rounded-card border border-mystic-700 bg-mystic-850',
-  row: 'border-b border-mystic-700 last:border-0',
+type Variant = NonNullable<DisclosureProps['variant']>;
+type Surface = NonNullable<DisclosureProps['surface']>;
+
+const variantStyles: Record<Surface, Record<Variant, string>> = {
+  canvas: {
+    panel: 'rounded-card border border-mystic-700 bg-mystic-850',
+    row: 'border-b border-mystic-700 last:border-0',
+  },
+  // On paper a row reads as a section break under the copy above it, so
+  // the hairline sits on top (the two PaperDisclosures drew it there).
+  paper: {
+    panel: 'rounded-card border border-paper-hairline bg-paper-2',
+    row: 'border-t border-paper-hairline',
+  },
+};
+
+const surfaceStyles: Record<Surface, { trigger: string; press: string; label: string; secondary: string; chevron: string; icon: string }> = {
+  canvas: {
+    trigger:
+      '[@media(hover:hover)]:[&:hover:not(:active)]:text-mystic-100 focus-visible:ring-gold/50 focus-visible:ring-offset-mystic-950',
+    press: 'active:bg-mystic-800/60 active:text-mystic-100',
+    label: 'text-sm font-medium text-mystic-200',
+    secondary: 'text-meta text-mystic-400',
+    chevron: 'text-mystic-500',
+    icon: 'text-gold',
+  },
+  paper: {
+    trigger:
+      '[@media(hover:hover)]:[&:hover:not(:active)_.disclosure-label]:text-ink focus-visible:ring-ink-gold/50 focus-visible:ring-offset-paper',
+    press: 'active:bg-paper-2 [&:active_.disclosure-label]:text-ink',
+    label: 'text-ui font-medium text-ink-2',
+    secondary: 'text-meta text-ink-muted',
+    chevron: 'text-ink-muted',
+    icon: 'text-ink-gold',
+  },
 };
 
 const triggerPadding: Record<NonNullable<DisclosureProps['variant']>, string> = {
@@ -98,6 +139,7 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
       defaultOpen = false,
       onOpenChange,
       variant = 'panel',
+      surface = 'canvas',
       lazy = false,
       disabled = false,
       className = '',
@@ -169,8 +211,10 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
       onOpenChange?.(next);
     }, [isOpen, open, onOpenChange]);
 
+    const ink = surfaceStyles[surface];
+
     return (
-      <div ref={ref} className={`${variantStyles[variant]} ${className}`} {...props}>
+      <div ref={ref} className={`${variantStyles[surface][variant]} ${className}`} {...props}>
         <button
           type="button"
           id={triggerId}
@@ -182,31 +226,30 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
             w-full min-h-[48px] py-3 flex items-center gap-3 text-left rounded-card
             transition-colors duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
             select-none touch-manipulation [-webkit-tap-highlight-color:transparent]
-            [@media(hover:hover)]:[&:hover:not(:active)]:text-mystic-100
-            ${disabled ? '' : 'active:bg-mystic-800/60 active:text-mystic-100'}
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
-            focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950
+            ${ink.trigger}
+            ${disabled ? '' : ink.press}
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
             disabled:opacity-50 disabled:cursor-not-allowed
             ${triggerPadding[variant]}
           `}
         >
           {icon && (
             <span
-              className="shrink-0 text-gold [&>svg]:w-[18px] [&>svg]:h-[18px]"
+              className={`shrink-0 ${ink.icon} [&>svg]:w-[18px] [&>svg]:h-[18px]`}
               aria-hidden
             >
               {icon}
             </span>
           )}
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-medium text-mystic-200">{label}</span>
+            <span className={`disclosure-label block ${ink.label}`}>{label}</span>
             {description && (
-              <span className="block text-meta text-mystic-400 mt-0.5">{description}</span>
+              <span className={`block ${ink.secondary} mt-0.5`}>{description}</span>
             )}
           </span>
-          {meta && <span className="shrink-0 text-meta text-mystic-400">{meta}</span>}
+          {meta && <span className={`shrink-0 ${ink.secondary}`}>{meta}</span>}
           <ChevronDown
-            className={`w-4 h-4 shrink-0 text-mystic-500 transition-transform duration-base ease-[cubic-bezier(0.22,0.8,0.25,1)] ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 shrink-0 ${ink.chevron} transition-transform duration-base ease-[cubic-bezier(0.22,0.8,0.25,1)] ${isOpen ? 'rotate-180' : ''}`}
             aria-hidden
           />
         </button>

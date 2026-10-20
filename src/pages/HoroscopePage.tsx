@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sun, Circle, TrendingUp, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNatalChart } from '../hooks/useAstrology';
-import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
+import { HoroscopeOnboarding, TodayForYou, TodayForYouView, BirthChart, Forecast, Explore } from '../components/horoscope';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { preloadInterpModules } from '../data/preloadInterpModules';
@@ -51,9 +51,20 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
     refreshProfile();
   };
 
-  // Only block for onboarding (no chart at all) — not for loading
-  if (needsOnboarding && !chartLoading) {
-    return <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />;
+  // Onboarding owns the screen until it has cast the chart — including
+  // while it casts. It used to give way as soon as computeChart flipped
+  // `chartLoading`, which mounted the Today tab mid-cast; its
+  // astrology-daily request then asked for a chart that did not exist yet,
+  // got NATAL_CHART_MISSING, and stuck on "check your connection" (review
+  // #97). The page keeps its title (and the document title) while the
+  // chart is set up; the onboarding's own heading sits under it.
+  if (needsOnboarding) {
+    return (
+      <div>
+        <PageHeader title={t('pageTitles.horoscope.title')} className="mb-2" />
+        <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />
+      </div>
+    );
   }
 
   const handleTabChange = (tab: HoroscopeSubTab) => {
@@ -88,10 +99,20 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
         className="mb-2"
       />
 
-      {activeTab === 'today' && <TodayForYou />}
-      {activeTab === 'chart' && <BirthChart />}
-      {activeTab === 'forecast' && <Forecast />}
-      {activeTab === 'explore' && <Explore />}
+      {/* Every tab reads the natal chart (the daily reading is computed from
+          it server-side), so none mounts — and none fetches — until the
+          chart is here. Until then the Today tab's own skeleton holds the
+          place. */}
+      {!chart ? (
+        <TodayForYouView content={null} loading error={null} refresh={() => {}} />
+      ) : (
+        <>
+          {activeTab === 'today' && <TodayForYou />}
+          {activeTab === 'chart' && <BirthChart />}
+          {activeTab === 'forecast' && <Forecast />}
+          {activeTab === 'explore' && <Explore />}
+        </>
+      )}
 
       <PaywallSheet
         open={showPaywall}

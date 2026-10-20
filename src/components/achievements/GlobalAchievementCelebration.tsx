@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AchievementUnlockModal } from './AchievementUnlockModal';
 import {
   getUnnotifiedAchievements,
@@ -8,6 +8,8 @@ import {
 } from '../../services/achievements';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
+import { useT } from '../../i18n/useT';
+import { localizeAchievement } from './localizeAchievement';
 
 /**
  * App-shell achievement celebration drainer.
@@ -29,6 +31,7 @@ import { useUI } from '../../context/UIContext';
 export function GlobalAchievementCelebration() {
   const { user } = useAuth();
   const { activeTab } = useUI();
+  const { t } = useT('app');
   const [current, setCurrent] = useState<AchievementWithProgress | null>(null);
   const queueRef = useRef<AchievementWithProgress[]>([]);
   const drainingRef = useRef(false);
@@ -72,12 +75,13 @@ export function GlobalAchievementCelebration() {
     return () => window.removeEventListener(ACHIEVEMENT_UNLOCKED_EVENT, handler);
   }, [drain]);
 
+  // Read through the locale exactly as the Achievements page does — the raw
+  // DB row is English in every language (P7 #22/#48). Built once per badge
+  // and language: this component re-renders on every AuthContext change, and
+  // a fresh object each time restarted the modal's XP count-up (p8 F41).
+  const localized = useMemo(() => (current ? localizeAchievement(current, t) : null), [current, t]);
+
   if (onAchievementsPage) return null;
 
-  return (
-    <AchievementUnlockModal
-      achievement={current}
-      onClose={showNext}
-    />
-  );
+  return <AchievementUnlockModal achievement={localized} onClose={showNext} />;
 }

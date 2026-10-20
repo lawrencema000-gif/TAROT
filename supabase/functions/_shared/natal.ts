@@ -4,13 +4,19 @@
  * synastry compute identical charts. Every placement is geocentric,
  * true-ecliptic-of-date; the Ascendant uses the corrected textbook formula.
  *
- * CHART_VERSION mirrors astrology-compute-natal — bump both together.
+ * CHART_VERSION versions the charts cached from this module (people.chart,
+ * read back only while it matches). Bump it whenever this math changes.
+ * astrology-compute-natal carries the planet and ascendant math inline with
+ * its own version: bump both when that shared part changes.
  */
 
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { geoEclipticLongitude, isRetrogradeGeo } from "./astro.ts";
 
-export const CHART_VERSION = 2;
+// v3 (p9 Q22): the Midheaven was the IC for half of all births. A person's
+// chart cached at v2 is recomputed on its next read. astrology-compute-natal
+// (still 2) stores no Midheaven, so the member's own charts are unaffected.
+export const CHART_VERSION = 3;
 
 export const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -110,12 +116,20 @@ function computeAscendant(utcDate: Date, lat: number, lon: number): number {
   return normDeg((Math.atan2(y, x) * 180) / Math.PI);
 }
 
+/**
+ * The Midheaven: the point of the ecliptic that culminates, i.e. whose right
+ * ascension is the RAMC. tan MC = tan RAMC / cos ε, taken in RAMC's own
+ * quadrant: atan2(sin RAMC, cos RAMC · cos ε). The atan2(tan RAMC, cos ε) this
+ * replaces always answered in (−90°, 90°), so for every RAMC between 90° and
+ * 270° — about half of all births — it returned the IC, and the wheels drew
+ * MC and IC swapped (p9 Q22).
+ */
 function computeMidheaven(utcDate: Date, lon: number): number {
   const gst = Astronomy.SiderealTime(utcDate);
   const lst = ((gst + lon / 15) % 24 + 24) % 24;
   const ramc = (lst * 15) * (Math.PI / 180);
   const oblRad = (23.4393 * Math.PI) / 180;
-  const mc = Math.atan2(Math.tan(ramc), Math.cos(oblRad));
+  const mc = Math.atan2(Math.sin(ramc), Math.cos(ramc) * Math.cos(oblRad));
   return normDeg((mc * 180) / Math.PI);
 }
 

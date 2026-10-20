@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6V3H9HV31V');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- `maximum-scale=1.0, user-scalable=no` used to sit in here. Both are
+         removed: they disable pinch-zoom for every user on every screen,
+         which fails WCAG 1.4.4 (Resize Text) and is the single most common
+         accessibility defect on Android wrappers. Android WebView and
+         Chrome honour the lock; iOS Safari 10+ ignores it, so it was only
+         ever punishing the platform we actually ship the store build to.
+         The usual reason to add it — stopping the double-tap zoom that
+         iOS does on small tap targets — is already handled by
+         `touch-action: manipulation` on html in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The two faces the first paint needs: the display serif for the
+         greeting and the body sans. Everything else lazy-loads per
+         unicode-range from the @font-face rules in index.css. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-500-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-latin-400-normal.woff2" />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <meta name="theme-color" content="#07070f" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07070f" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Arcana" />
+
+    <meta name="application-name" content="Arcana" />
+    <meta name="msapplication-TileColor" content="#07070f" />
+    <meta name="msapplication-config" content="none" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>The Chariot Tarot Card Meaning — Major Arcana | Arcana</title>
+    <meta name="description" content="The Chariot tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+
+    <link rel="canonical" href="https://tarotlife.app/tarot-meanings/the-chariot" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcana" />
+    <meta property="og:url" content="https://tarotlife.app/tarot-meanings/the-chariot" />
+    <meta property="og:title" content="The Chariot Tarot Card Meaning — Major Arcana | Arcana" />
+    <meta property="og:description" content="The Chariot tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+    <meta property="og:image" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:secure_url" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tarotlife_app" />
+    <meta name="twitter:title" content="The Chariot Tarot Card Meaning — Major Arcana | Arcana" />
+    <meta name="twitter:description" content="The Chariot tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+    <meta name="twitter:image" content="https://tarotlife.app/image.png" />
+
+    <!-- Site verification — fill in once domains are verified. The values
+         below are placeholders; replace with real codes from each console. -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
+    <!-- <meta name="msvalidate.01" content="REPLACE_WITH_BING_CODE" /> -->
+    <!-- <meta name="p:domain_verify" content="REPLACE_WITH_PINTEREST_CODE" /> -->
+    <!-- <meta name="facebook-domain-verification" content="REPLACE_WITH_FB_CODE" /> -->
+
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The Chariot Tarot Card Meaning","description":"Complete The Chariot tarot card meaning with upright + reversed + love + career interpretations.","url":"https://tarotlife.app/tarot-meanings/the-chariot","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+  <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
+  </head>
+  <body>
+    <div id="root"><div class="seo-prerender"><main><article><h1>The Chariot Tarot Card Meaning</h1><p class="seo-kw">Keywords: Control, Willpower, Success, Determination</p><h2>Upright Meaning</h2><p>Willpower, determination, victory, and directed action. The Chariot represents triumph achieved through focused intent, unwavering discipline, and the ability to harness opposing forces toward a single goal. This card speaks to a moment where you have aligned your inner contradictions - emotion and logic, aggression and restraint, ambition and patience - and now move forward with unstoppable momentum. The Chariot is the warrior who has mastered both the external battlefield and the internal landscape, understanding that true control comes not from domination but from integration. This is a time of decisive action, clear direction, and confident movement toward your objectives. Victory is within reach, but it requires maintaining focus, staying the course despite obstacles, and refusing to be deterred by distractions or opposition.</p><h2>Reversed Meaning</h2><p>Lack of control, lack of direction, aggression, or scattered energy. You may be struggling to maintain forward momentum or finding that opposing forces within or around you are pulling in different directions. This reversal can indicate losing your way, allowing obstacles to derail your progress, or becoming too aggressive in pursuit of your goals. It may suggest that your willpower has turned into stubbornness, your confidence into recklessness, or your focus into tunnel vision that ignores important details. There may be internal conflict - parts of yourself working against each other rather than in harmony. You might be charging forward without a clear destination, or conversely, paralyzed by indecision despite having the power to act. Examine whether you are truly in the driver's seat of your life or being carried along by forces you haven't integrated.</p><h2>Love &amp; Relationships</h2><p>Decisive action and clear direction in romantic matters. If single, you know what you want in a relationship and are actively pursuing it with confidence. This is not the time for passive waiting but for taking initiative and making your intentions known. If partnered, this card suggests successfully navigating challenges together by aligning your goals and moving forward as a unified team. The Chariot can indicate traveling with or toward a partner, or achieving a relationship milestone through determination and commitment. However, ensure that your drive doesn't become controlling - relationships require balance between individual will and mutual cooperation. This card reminds you that the strongest partnerships unite two whole individuals moving in the same direction, not one person pulling another along.</p><h2>Career &amp; Money</h2><p>Career momentum and ambitious advancement. This is your time to charge forward professionally with confidence and determination. Projects that have faced obstacles will now break through, and your focused efforts will be recognized and rewarded. The Chariot favors competitive environments, sales, leadership roles, transportation industries, or any career requiring strong will and decisive action. You have the drive to overcome opposition and the discipline to stay focused on long-term goals despite short-term challenges. This card suggests possible travel for work, relocation for career advancement, or successfully navigating corporate politics through strategic action. Your ability to balance competing demands and integrate different aspects of your role will lead to victory. However, pace yourself - sustained success requires endurance, not just speed.</p><h2>Astrological Correspondences</h2><p>Element: Water · Zodiac: Cancer · Hebrew letter: Cheth</p><h2>Yes or No</h2><p>Yes. The Chariot embodies victory through disciplined willpower. When effort and direction are aligned, the answer is yes.</p><h2>Numerology</h2><p>Seven is the number of mastery and inner triumph — the crowned victor, the inward focus that conquers the outward field.</p></article></main></div></div>
+  </body>
+</html>

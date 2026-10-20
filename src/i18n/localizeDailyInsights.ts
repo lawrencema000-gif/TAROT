@@ -7,10 +7,10 @@
  * Called from `services/dailyContent.ts`.
  */
 import i18n from './config';
+import { tArray } from '../utils/tArray';
 
 function arr(key: string, fallback: readonly string[]): string[] {
-  const v = i18n.t(key, { ns: 'app', returnObjects: true, defaultValue: fallback });
-  return Array.isArray(v) ? (v as string[]) : [...fallback];
+  return tArray((k, o) => i18n.t(k, o), key, fallback, { ns: 'app' });
 }
 
 function obj<T>(key: string, fallback: T): T {

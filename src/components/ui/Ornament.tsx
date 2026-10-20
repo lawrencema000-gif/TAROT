@@ -239,38 +239,74 @@ export const SectionDivider = memo(function SectionDivider({
 });
 
 /**
- * Eyebrow label — uppercase serif kicker text in gold, optionally flanked
- * by thin fading gold rules. Used above section headings to set tone:
+ * Three sparkles in a row — the one ornament a result screen gets.
+ *
+ *   ✦     ✦     ✦
+ *
+ * Use once per result screen, between the question title and the summary
+ * heading (ResultSheet does this). Never stack it with SectionDivider:
+ * SectionDivider (line ✦ line) is the section break, StarDivider is the
+ * seal under a title. Gold on the canvas; inside a Paper the `.paper-prose
+ * .text-gold` net turns it ink-gold, so no prop is needed.
+ */
+export const StarDivider = memo(function StarDivider({ className = '' }: { className?: string }) {
+  return (
+    <div className={`flex items-center justify-center gap-7 my-5 text-gold ${className}`.trim()} aria-hidden>
+      <SparkleFourPoint size={14} />
+      <SparkleFourPoint size={14} />
+      <SparkleFourPoint size={14} />
+    </div>
+  );
+});
+
+/**
+ * Eyebrow label — tracked uppercase kicker above a heading, optionally
+ * flanked by thin fading rules:
  *
  *   ── DAILY STREAK ──
  *
- * Pair with HeroGreeting for hero blocks, or precede a SectionDivider for
- * a full antique-broadside masthead.
+ * `tone`: `gold` (default — section kickers on Home, unchanged) or `ink`
+ * for a context label that should not shout: the user's question above a
+ * result title, "The issue", "Disclaimer", "Affirmation". Ink is
+ * mystic-300 on the canvas and ink-2 inside a Paper (`.paper-prose
+ * .font-display-eyebrow`). A `text-*` class in `className` overrides the
+ * tone colour, so a block can set its own ink (the Disclaimer uses
+ * mystic-400 on its dark block).
  */
 export const EyebrowLabel = memo(function EyebrowLabel({
   children,
   rules = false,
   align = 'center',
+  tone = 'gold',
   className = '',
 }: {
   children: React.ReactNode;
-  /** Add flanking thin gold rules on either side. Default false. */
+  /** Add flanking thin rules on either side. Default false. */
   rules?: boolean;
   align?: 'left' | 'center' | 'right';
+  tone?: 'gold' | 'ink';
   className?: string;
 }) {
   const alignment =
     align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
+  // `.font-display-eyebrow` paints gold; the ink tone adds a utility that
+  // wins over it (utilities are emitted after components). A caller's own
+  // text-* class takes precedence over both, so it is not doubled up.
+  const hasOwnColour = /(?:^|\s)text-(?:mystic|ink|gold|teal|coral|cosmic)(?:-|\b)/.test(className);
+  const toneClass = tone === 'ink' && !hasOwnColour ? 'text-mystic-300' : '';
+  // Literal class strings, not composed: Tailwind's scanner has to see them.
+  const ruleLeft = tone === 'ink' ? 'from-transparent to-mystic-500/60' : 'from-transparent to-gold/50';
+  const ruleRight = tone === 'ink' ? 'from-mystic-500/60 to-transparent' : 'from-gold/50 to-transparent';
   if (!rules) {
     return (
-      <span className={`font-display-eyebrow ${className}`}>{children}</span>
+      <span className={`font-display-eyebrow ${toneClass} ${className}`.replace(/\s+/g, ' ').trim()}>{children}</span>
     );
   }
   return (
     <div className={`flex items-center gap-3 ${alignment} ${className}`}>
-      <span className="flex-1 max-w-[3rem] h-px bg-gradient-to-r from-transparent to-gold/50" aria-hidden />
-      <span className="font-display-eyebrow whitespace-nowrap">{children}</span>
-      <span className="flex-1 max-w-[3rem] h-px bg-gradient-to-r from-gold/50 to-transparent" aria-hidden />
+      <span className={`flex-1 max-w-[3rem] h-px bg-gradient-to-r ${ruleLeft}`} aria-hidden />
+      <span className={`font-display-eyebrow whitespace-nowrap ${toneClass}`.trim()}>{children}</span>
+      <span className={`flex-1 max-w-[3rem] h-px bg-gradient-to-r ${ruleRight}`} aria-hidden />
     </div>
   );
 });

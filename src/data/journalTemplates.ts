@@ -1,9 +1,19 @@
+/**
+ * Guided journal templates. The English here is the source of truth;
+ * Japanese, Korean and Chinese come from the 'journal' content overlay
+ * (src/i18n/locales/<lng>/content-journal.json, shaped like
+ * `journalTemplatesCorpus()`), read through `localizeJournalTemplate`. A
+ * string the overlay lacks stays English.
+ */
+import { ctEntry, type ContentOverlay } from '../i18n/contentOverlay';
+
 export interface JournalTemplate {
   id: string;
   title: string;
   description: string;
   category: 'daily' | 'weekly' | 'emotional' | 'growth' | 'relationships' | 'reflection';
-  timeEstimate: string;
+  /** How long it takes, shown through journal.minutes ("5 min", 「5分」, "5분", "5 分钟"). */
+  minutes: number;
   prompts: string[];
   tags: string[];
   mbtiTypes?: string[];
@@ -16,7 +26,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Morning Intention Setting',
     description: 'Start your day with clarity and purpose by setting intentions.',
     category: 'daily',
-    timeEstimate: '5 min',
+    minutes: 5,
     prompts: [
       'What is one thing I want to accomplish today?',
       'How do I want to feel at the end of today?',
@@ -31,7 +41,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Evening Wind Down',
     description: 'Close your day with reflection and preparation for rest.',
     category: 'daily',
-    timeEstimate: '5 min',
+    minutes: 5,
     prompts: [
       'What was the best part of my day?',
       'What did I learn or discover today?',
@@ -46,7 +56,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Gratitude Deep Dive',
     description: 'Go beyond surface-level gratitude to explore what truly enriches your life.',
     category: 'daily',
-    timeEstimate: '10 min',
+    minutes: 10,
     prompts: [
       'Name three things you\'re grateful for today. For each, explain why it matters to you.',
       'Who is someone in your life that you appreciate? What would you tell them if you could?',
@@ -61,7 +71,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Anxiety Release Writing',
     description: 'Process anxious thoughts and find calm through structured writing.',
     category: 'emotional',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What is making me feel anxious right now? Write it all out without filtering.',
       'For each worry, ask: Is this within my control? If yes, what can I do? If no, can I let it go?',
@@ -77,7 +87,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Anger Processing',
     description: 'Safely explore and release anger through guided writing.',
     category: 'emotional',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What happened that made me angry? Describe the situation in detail.',
       'What deeper feeling might be underneath the anger? (hurt, fear, disappointment, betrayal?)',
@@ -93,7 +103,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Self-Compassion Practice',
     description: 'Cultivate kindness toward yourself through gentle reflection.',
     category: 'emotional',
-    timeEstimate: '10 min',
+    minutes: 10,
     prompts: [
       'What am I being hard on myself about right now?',
       'If my best friend was going through this, what would I say to them?',
@@ -108,7 +118,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Weekly Life Review',
     description: 'Reflect on your week and set intentions for the one ahead.',
     category: 'weekly',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What were my three biggest wins this week?',
       'What challenged me, and what did I learn from it?',
@@ -124,7 +134,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Relationship Check-In',
     description: 'Explore and strengthen your important relationships.',
     category: 'relationships',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'Who are the most important people in my life right now? How have I shown them they matter?',
       'Is there a relationship that needs attention or repair? What would help?',
@@ -140,7 +150,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Values Exploration',
     description: 'Reconnect with what matters most to you and align your actions.',
     category: 'growth',
-    timeEstimate: '20 min',
+    minutes: 20,
     prompts: [
       'What are the five values most important to me right now? (e.g., freedom, love, growth, creativity, security)',
       'For each value, am I living in alignment with it? What evidence do I see?',
@@ -155,7 +165,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Letter to Future Self',
     description: 'Connect with your future self to gain perspective and motivation.',
     category: 'growth',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'Imagine yourself one year from now, living your best life. Describe a day in that life.',
       'What has your future self accomplished that you\'re proud of?',
@@ -170,7 +180,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Shadow Work Exploration',
     description: 'Explore the hidden parts of yourself for deeper self-understanding.',
     category: 'growth',
-    timeEstimate: '20 min',
+    minutes: 20,
     prompts: [
       'What quality in others irritates me most? Could this be something I deny in myself?',
       'What emotions do I try to hide from others? Why?',
@@ -186,7 +196,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Challenge Limiting Beliefs',
     description: 'Identify and transform beliefs that hold you back.',
     category: 'growth',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What is a belief about myself that might be holding me back?',
       'Where did this belief come from? When did I first start believing it?',
@@ -202,7 +212,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Forgiveness Practice',
     description: 'Release resentment and find peace through forgiveness.',
     category: 'emotional',
-    timeEstimate: '20 min',
+    minutes: 20,
     prompts: [
       'Who am I holding resentment toward? What happened?',
       'How has holding onto this resentment affected me?',
@@ -218,7 +228,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Grief & Loss Processing',
     description: 'Honor and process grief in a safe, supported way.',
     category: 'emotional',
-    timeEstimate: '20 min',
+    minutes: 20,
     prompts: [
       'What or who am I grieving? Allow yourself to name it fully.',
       'What do I miss most?',
@@ -234,7 +244,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Creative Vision Board',
     description: 'Explore your dreams and desires through imaginative writing.',
     category: 'reflection',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'If money and time were no object, what would I spend my days doing?',
       'What did I love doing as a child that I\'ve stopped doing?',
@@ -249,7 +259,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Body Connection',
     description: 'Reconnect with your physical self through mindful awareness.',
     category: 'daily',
-    timeEstimate: '10 min',
+    minutes: 10,
     prompts: [
       'Do a body scan from head to toe. Where do you notice tension or discomfort?',
       'What is your body trying to tell you right now?',
@@ -264,7 +274,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Boundary Exploration',
     description: 'Understand and strengthen your personal boundaries.',
     category: 'relationships',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'Where in my life do I feel drained or resentful?',
       'What boundary might need to be set or strengthened in this area?',
@@ -280,7 +290,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'New Moon Intentions',
     description: 'Set intentions for the lunar cycle ahead.',
     category: 'reflection',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What do I want to release from the previous cycle?',
       'What seeds of intention do I want to plant for this new cycle?',
@@ -296,7 +306,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Full Moon Release',
     description: 'Let go of what no longer serves you under the full moon.',
     category: 'reflection',
-    timeEstimate: '15 min',
+    minutes: 15,
     prompts: [
       'What has come to completion or fruition in my life recently?',
       'What am I ready to release or let go of?',
@@ -312,7 +322,7 @@ export const journalTemplates: JournalTemplate[] = [
     title: 'Career & Purpose Clarity',
     description: 'Explore your professional path and sense of purpose.',
     category: 'reflection',
-    timeEstimate: '20 min',
+    minutes: 20,
     prompts: [
       'What aspects of my current work/career do I enjoy most?',
       'What drains my energy at work?',
@@ -373,4 +383,25 @@ export function getTemplatesForPersonality(mbtiType?: string, enneagramType?: nu
   }
 
   return [...new Set(recommendations.filter(Boolean))].slice(0, 5);
+}
+
+/** The text a template shows: its name, its one-line description and its prompts. */
+export const TEMPLATE_TEXT_FIELDS = ['title', 'description', 'prompts'] as const;
+
+/** The English corpus of the 'journal' overlay, keyed by template id (never by English text). */
+export function journalTemplatesCorpus(): {
+  templates: Record<string, Pick<JournalTemplate, (typeof TEMPLATE_TEXT_FIELDS)[number]>>;
+} {
+  const templates: Record<string, Pick<JournalTemplate, (typeof TEMPLATE_TEXT_FIELDS)[number]>> = {};
+  for (const t of journalTemplates) templates[t.id] = { title: t.title, description: t.description, prompts: [...t.prompts] };
+  return { templates };
+}
+
+/**
+ * A template in the reader's language: the row, the editor's title and
+ * prompts, and the prompt saved with the entry all read this. A translation
+ * whose prompt list is not as long as the English is ignored for that list.
+ */
+export function localizeJournalTemplate(template: JournalTemplate, overlay: ContentOverlay | null | undefined): JournalTemplate {
+  return ctEntry(template, overlay, `templates.${template.id}`, TEMPLATE_TEXT_FIELDS);
 }

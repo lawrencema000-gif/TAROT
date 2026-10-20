@@ -1,16 +1,33 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, toast } from '../components/ui';
+import { useState, useEffect, useCallback, useMemo, useId, useRef } from 'react';
+import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check, Trash2 } from 'lucide-react';
+import { Card, Button, Chip, Input, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { localizeSignName } from '../i18n/localizeNames';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
 import { SIGN_ZONES, type SignZone } from '../dal/community';
 import { getZodiacSign } from '../utils/zodiac';
 import { awardXP } from '../services/levelSystem';
-import { publishContent, type ModerationSurface } from '../services/moderation';
+import { publishContent, type ModerationSurface, type ModerationResult } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
+import { ConfirmDeleteSheet } from '../components/community/ConfirmDeleteSheet';
+
+type CrisisResources = NonNullable<ModerationResult['crisisResources']>;
+
+/**
+ * Whether a moderation result should raise the helplines. The server's
+ * `crisis` flag leads; a self-harm category is treated the same way, because
+ * on 2026-10-02 community-moderate answered "I do not want to be alive
+ * anymore" with crisis:false and categories ["self-harm/intent","self-harm"]
+ * — and the one screen that must never stay silent is this one.
+ */
+function isCrisis(result: ModerationResult): boolean {
+  if (result.crisis) return true;
+  return (result.categories ?? []).some((c) => /self-harm|suicid/i.test(c));
+}
 import type {
   CommunityPost,
   CommunityComment,
@@ -38,12 +55,10 @@ const TOPICS: { id: CommunityTopic | 'all'; labelKey: string }[] = [
   { id: 'wellness',  labelKey: 'community.topics.wellness' },
 ];
 
-/** Sign-zone chips, rendered as a second row with each sign's glyph. */
-const SIGN_LABEL: Record<string, string> = {
-  aries: 'Aries', taurus: 'Taurus', gemini: 'Gemini', cancer: 'Cancer',
-  leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
-  sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
-};
+/** Sign-zone chip label in the UI's language (zones are lowercase sign ids). */
+function signZoneLabel(sign: SignZone): string {
+  return localizeSignName((sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign);
+}
 /** The zone's sign, drawn: U+2648-2653 render as colour emoji on Android. */
 function SignZoneGlyph({ sign }: { sign: SignZone }) {
   const Glyph = ZODIAC_ICONS[(sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign];
@@ -65,17 +80,26 @@ const REACTION_ICONS: Record<ReactionType, React.ComponentType<{ className?: str
 
 const REACTION_ORDER: ReactionType[] = ['heart', 'sparkle', 'moon', 'eye', 'flame'];
 
-// Time formatter — relative for recent, date for older
+/**
+ * Relative for the last week, a date after that — in the UI's language
+ * (Intl), not hard-coded "3h" / "just now".
+ */
 function formatRelativeTime(iso: string): string {
+  const locale = getLocale();
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString();
+  try {
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
+    if (mins < 1) return rtf.format(0, 'second');
+    if (mins < 60) return rtf.format(-mins, 'minute');
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return rtf.format(-hrs, 'hour');
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return rtf.format(-days, 'day');
+  } catch {
+    /* very old WebView without RelativeTimeFormat: fall through to a date */
+  }
+  return new Date(iso).toLocaleDateString(locale);
 }
 
 export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
@@ -84,10 +108,20 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [view, setView] = useState<View>('feed');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  // True after a feed request failed: the empty state then says so and
+  // offers a retry instead of claiming "No posts here yet".
+  const [feedError, setFeedError] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<CommunityTopic | 'all'>('all');
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
-  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
+  const [crisisResources, setCrisisResources] = useState<CrisisResources | undefined>(undefined);
+  const openCrisisBanner = useCallback((resources?: CrisisResources) => {
+    // Nothing else talks while the helplines are up: a "Posted" toast sat
+    // over the banner's last rows at 390.
+    dismissToasts();
+    setCrisisResources(resources);
+    setCrisisBannerOpen(true);
+  }, []);
 
   const isWhisperingWell = mode === 'whispering-well';
 
@@ -103,7 +137,16 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     [mySign],
   );
 
-  // Load feed
+  // Delete-your-own: the post waiting on its confirmation sheet. The target
+  // outlives `deleteOpen` so the sheet keeps its title while it slides away.
+  const [deleteTarget, setDeleteTarget] = useState<CommunityPost | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Load feed. Blocked authors are left out by the feed view
+  // (20261003000014), or by the DAL itself while the view is not there yet —
+  // the client cannot filter anonymous posts by author, because it is never
+  // told who wrote them.
   const loadFeed = useCallback(async () => {
     setLoading(true);
     const topic = isWhisperingWell ? 'whispering-well' as const : (selectedTopic === 'all' ? undefined : selectedTopic);
@@ -113,27 +156,43 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       currentUserId: user?.id,
     });
     if (res.ok) {
-      const filtered = res.data.filter((p) => !blockedIds.has(p.userId));
-      setPosts(filtered);
+      setPosts(res.data);
+      setFeedError(false);
     } else {
-      toast(t('community.loadFailed', { defaultValue: 'Could not load feed' }), 'error');
+      // The empty state below says so and carries "Try again"; a toast on
+      // top of it said the same thing twice.
+      setFeedError(true);
     }
     setLoading(false);
-  }, [selectedTopic, user?.id, blockedIds, isWhisperingWell, t]);
+  }, [selectedTopic, user?.id, isWhisperingWell]);
 
   useEffect(() => {
     loadFeed();
   }, [loadFeed]);
 
-  // Load user's blocks once
-  useEffect(() => {
-    if (!user?.id) return;
-    let mounted = true;
-    community.fetchBlockedIds(user.id).then((res) => {
-      if (mounted && res.ok) setBlockedIds(new Set(res.data));
-    });
-    return () => { mounted = false; };
-  }, [user?.id]);
+  // A name chosen in the composer or a comment box shows on the member's
+  // named rows as soon as the views are read again (they read it live).
+  const reloadAfterNameChange = useCallback(() => {
+    void loadFeed();
+  }, [loadFeed]);
+
+  const visiblePosts = posts;
+
+  // The open post follows the feed: a reload (a name chosen on its page) and
+  // an optimistic reaction both reach it, which a copy taken on open never did.
+  const openPost = selectedPost ? (posts.find((p) => p.id === selectedPost.id) ?? selectedPost) : null;
+
+  // One banner for the whole page, whichever view is showing. It used to be
+  // mounted inside the composer branch, and `onSuccess` swapped that branch
+  // for the feed in the same tick — so a flagged post showed "Posted" and the
+  // helplines never appeared.
+  const crisisBanner = (
+    <CrisisBanner
+      open={crisisBannerOpen}
+      onClose={() => setCrisisBannerOpen(false)}
+      resources={crisisResources}
+    />
+  );
 
   const handleReact = async (post: CommunityPost, reaction: ReactionType) => {
     if (!user) {
@@ -165,18 +224,77 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
   const handleBlock = async (post: CommunityPost) => {
     if (!user) return;
-    const res = await community.blockUser(user.id, post.userId);
-    if (res.ok) {
-      setBlockedIds((prev) => new Set([...prev, post.userId]));
-      setPosts((ps) => ps.filter((p) => p.userId !== post.userId));
+    // By post: the server resolves the author, so blocking works on an
+    // anonymous post without revealing who wrote it. (Before 20261003000014
+    // only named rows offer it: the fallback needs the author id.)
+    const res = await community.blockAuthor({ postId: post.id }, { blockerId: user.id, blockedId: post.userId });
+    if (res.ok && res.data) {
+      setPosts((ps) => ps.filter((p) => p.id !== post.id && (post.userId === null || p.userId !== post.userId)));
       toast(t('community.blocked', { defaultValue: 'User blocked' }), 'success');
+      // Blocked from the post's own page: that page is gone for them now.
+      if (selectedPost?.id === post.id) {
+        setSelectedPost(null);
+        setView('feed');
+      }
+      // The reload leaves out the rest of that author's posts: the view
+      // does it server-side, the fallback filters by the block list.
+      void loadFeed();
     } else {
       toast(t('community.blockFailed', { defaultValue: 'Could not block' }), 'error');
+      // false = nothing to block any more (hidden or removed meanwhile).
+      if (res.ok) void loadFeed();
     }
   };
 
-  const handleReport = async (post: CommunityPost, reason: ReportReason) => {
-    if (!user) return;
+  const requestDelete = (post: CommunityPost) => {
+    // A toast from the last action sat over the sheet's buttons at 390.
+    dismissToasts();
+    setDeleteTarget(post);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    const post = deleteTarget;
+    if (!post || deleting) return;
+    setDeleting(true);
+    const res = await community.deletePost(post.id);
+    setDeleting(false);
+    if (!res.ok) {
+      // The sheet stays up, so "Delete" is right there to try again.
+      toast(t('community.deleteFailed', { defaultValue: 'Couldn’t delete it — check your connection and try again.' }), 'error');
+      return;
+    }
+    setDeleteOpen(false);
+    setPosts((ps) => ps.filter((p) => p.id !== post.id));
+    if (selectedPost?.id === post.id) {
+      setSelectedPost(null);
+      setView('feed');
+    }
+    toast(t('community.postDeleted', { defaultValue: 'Post deleted' }), 'success');
+  };
+
+  const deleteSheet = (
+    <ConfirmDeleteSheet
+      open={deleteOpen}
+      title={
+        deleteTarget?.topic === 'whispering-well'
+          ? t('community.whisperingWell.deleteTitle', { defaultValue: 'Delete this whisper?' })
+          : t('community.deletePostTitle', { defaultValue: 'Delete this post?' })
+      }
+      body={t('community.deletePostBody', {
+        defaultValue: 'It’s removed for everyone, along with its comments and reactions. This can’t be undone.',
+      })}
+      excerpt={deleteTarget?.content}
+      busy={deleting}
+      onCancel={() => setDeleteOpen(false)}
+      onConfirm={confirmDelete}
+    />
+  );
+
+  // Resolves true when the report landed, so the card can switch its
+  // Report action to a "Reported" state instead of offering it again.
+  const handleReport = async (post: CommunityPost, reason: ReportReason): Promise<boolean> => {
+    if (!user) return false;
     const res = await community.report({
       reporterId: user.id,
       postId: post.id,
@@ -184,9 +302,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     });
     if (res.ok) {
       toast(t('community.reported', { defaultValue: 'Report submitted. Thank you.' }), 'success');
-    } else {
-      toast(t('community.reportFailed', { defaultValue: 'Could not submit report' }), 'error');
+      return true;
     }
+    toast(t('community.reportFailed', { defaultValue: 'Couldn’t send the report — check your connection and try again.' }), 'error');
+    return false;
   };
 
   // Composer
@@ -201,27 +320,30 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
             setView('feed');
             loadFeed();
           }}
-          onCrisisDetected={() => setCrisisBannerOpen(true)}
+          onCrisisDetected={openCrisisBanner}
+          onNameSaved={reloadAfterNameChange}
         />
-        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+        {crisisBanner}
       </>
     );
   }
 
   // Post detail with comments
-  if (view === 'post-detail' && selectedPost) {
+  if (view === 'post-detail' && openPost) {
     return (
       <>
         <PostDetail
-          post={selectedPost}
+          post={openPost}
           onBack={() => { setView('feed'); setSelectedPost(null); loadFeed(); }}
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
-          onCrisisDetected={() => setCrisisBannerOpen(true)}
-          surface={isWhisperingWell ? 'whispering-well' : 'comment'}
+          onDelete={requestDelete}
+          onCrisisDetected={openCrisisBanner}
+          onNameSaved={reloadAfterNameChange}
         />
-        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+        {crisisBanner}
+        {deleteSheet}
       </>
     );
   }
@@ -231,6 +353,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const HeaderIcon = headerIcon;
 
   return (
+    <>
     <Page spacing="sm" className={isWhisperingWell ? 'text-mystic-200' : ''}>
       <PageHeader
         icon={<HeaderIcon />}
@@ -241,16 +364,26 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         }
         action={
           user ? (
+            // Icon-only under `sm`: "Whispering Well" wraps to two lines at
+            // 390 and a labelled button collided with the title's right edge
+            // (R7). The label returns once there is room for both.
             <Button
               variant="primary"
               size="sm"
               onClick={() => setView('composer')}
-              className="text-sm"
+              aria-label={
+                (isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })) as string
+              }
+              className="min-w-[40px] px-3 sm:px-4"
             >
-              <Send className="w-4 h-4 mr-1" />
-              {isWhisperingWell
-                ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
-                : t('community.postButton', { defaultValue: 'Write a post' })}
+              <Send className="w-4 h-4" aria-hidden />
+              <span className="hidden sm:inline">
+                {isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })}
+              </span>
             </Button>
           ) : undefined
         }
@@ -296,7 +429,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
               className="whitespace-nowrap"
             >
               <SignZoneGlyph sign={z} />
-              {SIGN_LABEL[z]}
+              {signZoneLabel(z)}
               {z === mySign && <EyebrowLabel>{t('community.youMarker', { defaultValue: 'You' })}</EyebrowLabel>}
             </Chip>
           ))}
@@ -305,42 +438,73 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
       {!user && (
         <Card padding="md" className="bg-gold/5 border-gold/20">
-          <p className="text-sm text-mystic-300">
+          <p className="text-ui text-mystic-300">
             {t('community.signInToPost', { defaultValue: 'Sign in to post, react, and comment.' })}
           </p>
         </Card>
       )}
 
       {loading && (
-        <div className="text-center py-12 text-mystic-500 text-sm">
+        <div className="text-center py-12 text-mystic-500 text-ui">
           {t('common.loading', { defaultValue: 'Loading…' })}
         </div>
       )}
 
-      {!loading && posts.length === 0 && (
-        <Card padding="lg" className="text-center">
-          <p className="text-mystic-400 text-sm italic">
-            {isWhisperingWell
-              ? t('community.whisperingWell.empty', { defaultValue: 'The well is quiet. Be the first to whisper.' })
-              : t('community.empty', { defaultValue: 'No posts here yet. Be the first.' })}
-          </p>
-        </Card>
+      {/* A failed load is not an empty feed. It says what happened and
+          offers the one action that fixes it (R7: "No posts here yet" over
+          a 400 for every user). */}
+      {!loading && feedError && (
+        <EmptyState
+          icon={<HeaderIcon />}
+          title={t('community.loadFailedTitle', { defaultValue: 'The feed couldn’t load' })}
+          description={t('community.loadFailedBody', { defaultValue: 'Check your connection and try again.' })}
+          action={
+            <Button variant="outline" onClick={() => loadFeed()}>
+              {t('common:actions.retry', { defaultValue: 'Try again' })}
+            </Button>
+          }
+        />
       )}
 
-      {posts.map((post) => (
+      {!loading && !feedError && visiblePosts.length === 0 && (
+        <EmptyState
+          icon={<HeaderIcon />}
+          title={
+            isWhisperingWell
+              ? t('community.whisperingWell.empty', { defaultValue: 'The well is quiet. Be the first to whisper.' })
+              : t('community.empty', { defaultValue: 'No posts here yet. Be the first.' })
+          }
+          action={
+            user ? (
+              <Button variant="outline" onClick={() => setView('composer')}>
+                <Send className="w-4 h-4" aria-hidden />
+                {isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })}
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
+
+      {!feedError && visiblePosts.map((post) => (
         <PostCard
           key={post.id}
           post={post}
           isWhisperingWell={isWhisperingWell}
-          isOwn={post.userId === user?.id}
+          isOwn={post.isMine}
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
+          onDelete={requestDelete}
           onOpenComments={() => { setSelectedPost(post); setView('post-detail'); }}
           t={t}
         />
       ))}
     </Page>
+    {crisisBanner}
+    {deleteSheet}
+    </>
   );
 }
 
@@ -353,19 +517,35 @@ interface PostCardProps {
   isWhisperingWell: boolean;
   isOwn: boolean;
   onReact: (post: CommunityPost, r: ReactionType) => void;
-  onReport: (post: CommunityPost, reason: ReportReason) => void;
+  onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
+  onDelete: (post: CommunityPost) => void;
   onOpenComments: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
-function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, onOpenComments, t }: PostCardProps) {
+/**
+ * Your own post or comment that nobody else can see yet (or ever): it reads
+ * as published to you otherwise, because the feed shows your own rows
+ * whatever their moderation state.
+ */
+function ReviewStateTag({ state, t }: { state: CommunityPost['moderationStatus']; t: PostCardProps['t'] }) {
+  if (state === 'allowed') return null;
+  return state === 'blocked' ? (
+    <Tag tone="neutral">{t('community.onlyYouCanSee', { defaultValue: 'Only you can see this' })}</Tag>
+  ) : (
+    <Tag tone="blue">{t('community.underReview', { defaultValue: 'Under review' })}</Tag>
+  );
+}
+
+function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, onDelete, onOpenComments, t }: PostCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [reported, setReported] = useState(false);
 
   const displayName = post.isAnonymous
     ? t('community.anonymous', { defaultValue: 'Anonymous' })
-    : post.authorDisplayName || 'User';
+    : post.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' });
 
   return (
     <Card padding="md" className={isWhisperingWell ? 'bg-cosmic-violet/5 border-cosmic-violet/15' : ''}>
@@ -377,34 +557,67 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
           </span>
           <span className="text-mystic-600">·</span>
           <span className="text-mystic-500">{formatRelativeTime(post.createdAt)}</span>
+          {reported && (
+            <Tag tone="neutral" icon={<Check className="w-3 h-3" aria-hidden />}>
+              {t('community.reportedTag', { defaultValue: 'Reported' })}
+            </Tag>
+          )}
+          {isOwn && <ReviewStateTag state={post.moderationStatus} t={t} />}
         </div>
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-mystic-300"
             aria-label={t('community.options', { defaultValue: 'Options' })}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full z-10 bg-mystic-800 border border-mystic-700 rounded-lg min-w-[150px]">
+            <div role="menu" className="absolute right-0 top-full z-10 bg-mystic-800 border border-mystic-700 rounded-control min-w-[160px] overflow-hidden">
               {!isOwn && (
                 <>
-                  <button
-                    onClick={() => { setMenuOpen(false); setReportOpen(true); }}
-                    className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
-                  >
-                    <Flag className="w-3 h-3" /> {t('community.report', { defaultValue: 'Report' })}
-                  </button>
-                  {!post.isAnonymous && (
+                  {reported ? (
+                    <div className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-500 flex items-center gap-2">
+                      <Check className="w-3 h-3" aria-hidden /> {t('community.reportedTag', { defaultValue: 'Reported' })}
+                    </div>
+                  ) : (
                     <button
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); setReportOpen(true); }}
+                      className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
+                    >
+                      <Flag className="w-3 h-3" aria-hidden /> {t('community.report', { defaultValue: 'Report' })}
+                    </button>
+                  )}
+                  {/* Blocking goes by post id (community_block_author), so an
+                      anonymous author can be blocked without being named.
+                      Before that RPC exists only named rows can be blocked,
+                      and the row says so (canBlockAuthor). */}
+                  {post.canBlockAuthor && (
+                    <button
+                      role="menuitem"
                       onClick={() => { setMenuOpen(false); onBlock(post); }}
                       className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
                     >
-                      <UserMinus className="w-3 h-3" /> {t('community.blockUser', { defaultValue: 'Block user' })}
+                      <UserMinus className="w-3 h-3" aria-hidden /> {t('community.blockUser', { defaultValue: 'Block user' })}
                     </button>
                   )}
                 </>
+              )}
+              {isOwn && (
+                <button
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onDelete(post); }}
+                  className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-coral-light hover:bg-mystic-700 flex items-center gap-2"
+                >
+                  <Trash2 className="w-3 h-3" aria-hidden />{' '}
+                  {/* By topic, like the sheet's title: "All" lists whispers too. */}
+                  {post.topic === 'whispering-well'
+                    ? t('community.whisperingWell.deleteWhisper', { defaultValue: 'Delete whisper' })
+                    : t('community.deletePost', { defaultValue: 'Delete post' })}
+                </button>
               )}
             </div>
           )}
@@ -412,7 +625,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
       </div>
 
       {/* Content */}
-      <p className="text-mystic-200 text-sm leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
+      <p className="text-mystic-200 text-body leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
 
       {/* Reactions + comments */}
       <div className="flex items-center justify-between pt-2 border-t border-mystic-800/50">
@@ -427,7 +640,8 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                 className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all ${
                   isMine ? 'bg-gold/20 text-gold' : 'text-mystic-500 hover:text-mystic-300'
                 }`}
-                aria-label={r}
+                aria-label={t(`community.reactions.${r}`, { defaultValue: r })}
+                aria-pressed={isMine}
               >
                 <Icon className="w-4 h-4" />
               </button>
@@ -447,14 +661,171 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
       {reportOpen && (
         <ReportDialog
           onClose={() => setReportOpen(false)}
-          onSubmit={(reason) => {
-            onReport(post, reason);
+          onSubmit={async (reason) => {
+            const ok = await onReport(post, reason);
+            if (ok) setReported(true);
             setReportOpen(false);
           }}
           t={t}
         />
       )}
     </Card>
+  );
+}
+
+// ==================================================================
+// The name Community shows
+// ==================================================================
+
+/**
+ * The shape 20261003000014 holds profiles.community_name to (its CHECK), on
+ * a value already trimmed: at most 32 characters, no control characters, no
+ * "@" (an email address is never a community name). Checked here so the
+ * member hears it before the round trip; the server's own refusal reads the
+ * same way (CommunityNameLine).
+ */
+const COMMUNITY_NAME_MAX = 32;
+function isCommunityNameShape(name: string): boolean {
+  return name.length <= COMMUNITY_NAME_MAX && !name.includes('@') && !/\p{Cc}/u.test(name);
+}
+
+/**
+ * Under "Post anonymously" and "Comment anonymously": the name a named post
+ * or comment carries (P9 Q00). 20261003000014 shows other members only the
+ * name a member chose for Community, so until they choose one their named
+ * rows read "A member". The field starts from that chosen name alone: never
+ * the email, never the display name, which sign-up fills from the email
+ * address or an OAuth profile and which the member never chose to publish.
+ *
+ * Saving re-reads the feed (and the comments): the views name the rows by
+ * the profile, so the member's earlier rows carry the new name too. Not
+ * offered once this session has seen a server without 014; if a save fails
+ * anyway (no column yet, no connection), a toast says so and everything
+ * else on the screen, the draft included, stays as it was.
+ */
+function CommunityNameLine({ onSaved }: { onSaved: () => void }) {
+  const { t } = useT('app');
+  const { profile, updateProfile } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState('');
+  const [invalid, setInvalid] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const lineId = useId();
+  const inputId = useId();
+  const hintId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(false);
+
+  // Into the field when it opens; back to the line's button when it closes.
+  useEffect(() => {
+    if (editing) {
+      wasEditing.current = true;
+      inputRef.current?.focus();
+    } else if (wasEditing.current) {
+      wasEditing.current = false;
+      toggleRef.current?.focus();
+    }
+  }, [editing]);
+
+  if (!profile || !community.serverResolvesAuthors()) return null;
+  const name = profile.communityName || null;
+
+  const startEditing = () => {
+    setValue(profile.communityName ?? '');
+    setInvalid(false);
+    setEditing(true);
+  };
+
+  const save = async () => {
+    if (saving) return;
+    const v = value.trim();
+    if (v && !isCommunityNameShape(v)) {
+      setInvalid(true);
+      return;
+    }
+    setSaving(true);
+    let failure: 'shape' | 'other' | null = null;
+    try {
+      // Empty clears the name: the rows read "A member" again.
+      const { error } = await updateProfile({ communityName: v || null });
+      if (error) failure = /community_name_shape/.test(error.message) ? 'shape' : 'other';
+    } catch {
+      failure = 'other';
+    }
+    setSaving(false);
+    if (failure === 'shape') {
+      setInvalid(true);
+      return;
+    }
+    if (failure) {
+      toast(t('community.nameSaveFailed', { defaultValue: 'Couldn’t save your name — check your connection and try again.' }), 'error');
+      return;
+    }
+    setEditing(false);
+    onSaved();
+  };
+
+  if (editing) {
+    const errorId = `${inputId}-error`;
+    return (
+      <div className="mt-4 space-y-2">
+        <Input
+          ref={inputRef}
+          id={inputId}
+          label={t('community.nameLabel', { defaultValue: 'Your name in Community' })}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setInvalid(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              void save();
+            }
+          }}
+          maxLength={COMMUNITY_NAME_MAX}
+          autoComplete="off"
+          spellCheck={false}
+          disabled={saving}
+          aria-describedby={invalid ? `${errorId} ${hintId}` : hintId}
+          error={invalid ? t('community.nameInvalid', { defaultValue: 'Use 1 to 32 characters, without “@”.' }) : undefined}
+        />
+        <p id={hintId} className="text-caption text-mystic-500">
+          {t('community.nameHint', {
+            defaultValue: 'Shown on your posts and comments that aren’t anonymous, earlier ones included. Up to 32 characters, no email address.',
+          })}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary" size="sm" onClick={() => void save()} loading={saving} disabled={saving}>
+            {t('community.nameSave', { defaultValue: 'Save name' })}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+            {t('common:actions.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-x-2 text-meta text-mystic-500">
+      <span id={lineId}>
+        {name
+          ? t('community.postingAs', { name, defaultValue: 'Posting as {{name}}' })
+          : t('community.postingAsUnnamed', { defaultValue: 'Your name shows as “A member” until you choose one' })}
+      </span>
+      <button
+        ref={toggleRef}
+        type="button"
+        onClick={startEditing}
+        aria-describedby={lineId}
+        className="inline-flex items-center min-h-[44px] text-gold underline-offset-2 [@media(hover:hover)]:hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 rounded-control"
+      >
+        {name ? t('community.changeName', { defaultValue: 'Change' }) : t('community.chooseName', { defaultValue: 'Choose a name' })}
+      </button>
+    </div>
   );
 }
 
@@ -468,12 +839,14 @@ function Composer({
   onBack,
   onSuccess,
   onCrisisDetected,
+  onNameSaved,
 }: {
   mode: 'normal' | 'whispering-well';
   topic: CommunityTopic;
   onBack: () => void;
   onSuccess: () => void;
-  onCrisisDetected: () => void;
+  onCrisisDetected: (resources?: CrisisResources) => void;
+  onNameSaved: () => void;
 }) {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -509,16 +882,21 @@ function Composer({
       isAnonymous: mode === 'whispering-well' ? true : isAnon,
     });
 
-    if (moderation.crisis) onCrisisDetected();
+    const crisis = isCrisis(moderation);
+    if (crisis) onCrisisDetected(moderation.crisisResources);
 
     if (moderation.verdict === 'block') {
       setSubmitting(false);
-      toast(
-        t('community.contentBlocked', {
-          defaultValue: 'This post conflicts with our community guidelines.',
-        }),
-        'error',
-      );
+      // With the helplines up they are the only message: a person in crisis
+      // is not told off about guidelines on top of it.
+      if (!crisis) {
+        toast(
+          t('community.contentBlocked', {
+            defaultValue: 'This post conflicts with our community guidelines.',
+          }),
+          'error',
+        );
+      }
       return;
     }
 
@@ -526,7 +904,10 @@ function Composer({
     if (moderation.publishedId) {
       // Reward participation (fire-and-forget; XP must never block posting).
       void awardXP(user.id, 'community_post');
-      if (moderation.publishedStatus === 'flagged') {
+      // With the helplines open, the banner is the only message.
+      if (crisis) {
+        // The banner is already open.
+      } else if (moderation.publishedStatus === 'flagged') {
         toast(
           t('community.postedUnderReview', {
             defaultValue: 'Posted — our team will review shortly.',
@@ -552,7 +933,7 @@ function Composer({
       </button>
 
       <Card variant="glow" padding="lg">
-        <h2 className="font-display text-xl text-mystic-100 mb-3">
+        <h2 className="heading-display-md text-mystic-100 mb-3">
           {isWW
             ? t('community.whisperingWell.newWhisper', { defaultValue: 'Whisper into the well' })
             : t('community.newPost', { defaultValue: 'New post' })}
@@ -583,12 +964,12 @@ function Composer({
           onChange={(e) => setContent(e.target.value)}
           rows={6}
           maxLength={2000}
-          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           placeholder={isWW
             ? t('community.whisperingWell.placeholder', { defaultValue: 'What needs to be said but has no audience?' }) as string
-            : t('community.placeholder', { defaultValue: 'Share a reading, a thought, a question...' }) as string}
+            : t('community.placeholder', { defaultValue: 'Share a reading, a thought, a question…' }) as string}
         />
-        <p className="text-caption text-mystic-600 text-right mt-1">{content.length} / 2000</p>
+        <p className="text-caption text-mystic-600 text-right mt-1 tabular-nums">{content.length} / 2000</p>
 
         {!isWW && (
           <label className="flex items-center gap-2 mt-4 cursor-pointer">
@@ -603,12 +984,17 @@ function Composer({
             </span>
           </label>
         )}
+        {/* A named post carries the member's community name: say which, and
+            let them choose it here. Not in the Well, nor on an anonymous post. */}
+        {!isWW && !isAnon && <CommunityNameLine onSaved={onNameSaved} />}
       </Card>
 
-      <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={submitting}>
-        <Send className="w-5 h-5 mr-2" />
+      {/* Dead until there is something to publish: an enabled button that
+          answers with "Write something first" is a control that lies. */}
+      <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={submitting || !content.trim()} loading={submitting}>
+        {!submitting && <Send className="w-5 h-5" aria-hidden />}
         {submitting
-          ? t('community.posting', { defaultValue: 'Posting...' })
+          ? t('community.posting', { defaultValue: 'Posting…' })
           : isWW
             ? t('community.whisperingWell.send', { defaultValue: 'Send whisper' })
             : t('community.publishPost', { defaultValue: 'Publish my post' })}
@@ -625,27 +1011,49 @@ interface PostDetailProps {
   post: CommunityPost;
   onBack: () => void;
   onReact: (post: CommunityPost, r: ReactionType) => void;
-  onReport: (post: CommunityPost, reason: ReportReason) => void;
+  onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
-  onCrisisDetected: () => void;
-  surface: ModerationSurface;
+  onDelete: (post: CommunityPost) => void;
+  onCrisisDetected: (resources?: CrisisResources) => void;
+  /** The member chose a community name here: the feed reads it again. */
+  onNameSaved: () => void;
 }
 
-function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected, surface }: PostDetailProps) {
+function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCrisisDetected, onNameSaved }: PostDetailProps) {
   const { t } = useT('app');
   const { user } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
-  const [isAnonComment, setIsAnonComment] = useState(post.isAnonymous);
+  // A reply in the Whispering Well is anonymous like everything else there.
+  const inWell = post.topic === 'whispering-well';
+  const [isAnonComment, setIsAnonComment] = useState(post.isAnonymous || inWell);
   const [submitting, setSubmitting] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<CommunityComment | null>(null);
+  const [commentDeleteOpen, setCommentDeleteOpen] = useState(false);
+  const [deletingComment, setDeletingComment] = useState(false);
+
+  const confirmDeleteComment = async () => {
+    const c = commentToDelete;
+    if (!c || deletingComment) return;
+    setDeletingComment(true);
+    const res = await community.deleteComment(c.id);
+    setDeletingComment(false);
+    if (!res.ok) {
+      toast(t('community.deleteFailed', { defaultValue: 'Couldn’t delete it — check your connection and try again.' }), 'error');
+      return;
+    }
+    setCommentDeleteOpen(false);
+    setComments((cs) => cs.filter((x) => x.id !== c.id));
+    toast(t('community.commentDeleted', { defaultValue: 'Comment deleted' }), 'success');
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await community.fetchComments(post.id);
+    const res = await community.fetchComments(post.id, user?.id);
     if (res.ok) setComments(res.data);
     setLoading(false);
-  }, [post.id]);
+  }, [post.id, user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -658,19 +1066,25 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
     }
     setSubmitting(true);
 
-    const moderation = await publishContent(newComment, surface, {
+    // Every reply is a comment on its post. The server decides comment vs.
+    // post by `surface === 'comment'`, so the old 'whispering-well' surface
+    // here published Well replies as new public posts in General (P7 #7).
+    const moderation = await publishContent(newComment, 'comment', {
       postId: post.id,
-      isAnonymous: isAnonComment,
+      isAnonymous: inWell ? true : isAnonComment,
     });
-    if (moderation.crisis) onCrisisDetected();
+    const crisis = isCrisis(moderation);
+    if (crisis) onCrisisDetected(moderation.crisisResources);
     if (moderation.verdict === 'block') {
       setSubmitting(false);
-      toast(
-        t('community.contentBlocked', {
-          defaultValue: 'This comment conflicts with our community guidelines.',
-        }),
-        'error',
-      );
+      if (!crisis) {
+        toast(
+          t('community.contentBlocked', {
+            defaultValue: 'This comment conflicts with our community guidelines.',
+          }),
+          'error',
+        );
+      }
       return;
     }
 
@@ -681,7 +1095,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       // Re-read from the server so we render exactly what RLS exposes
       // (a 'flagged' comment is author-visible only).
       load();
-      if (moderation.publishedStatus === 'flagged') {
+      if (!crisis && moderation.publishedStatus === 'flagged') {
         toast(
           t('community.commentUnderReview', {
             defaultValue: 'Comment posted — our team will review shortly.',
@@ -703,23 +1117,26 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 
       <PostCard
         post={post}
-        isWhisperingWell={post.topic === 'whispering-well'}
-        isOwn={post.userId === user?.id}
+        isWhisperingWell={inWell}
+        isOwn={post.isMine}
         onReact={onReact}
         onReport={onReport}
         onBlock={onBlock}
+        onDelete={onDelete}
         onOpenComments={() => {}}
         t={t}
       />
 
+      {/* One string with the count in it: the brackets and the space around
+          them are the language's own (コメント（3）, 评论（3）). */}
       <h3 className="font-medium text-mystic-200 pt-2">
-        {t('community.commentsHeading', { defaultValue: 'Comments' })} ({comments.length})
+        {t('community.commentsHeadingCount', { n: comments.length, defaultValue: 'Comments ({{n}})' })}
       </h3>
 
-      {loading && <p className="text-mystic-500 text-sm">{t('common.loading', { defaultValue: 'Loading…' })}</p>}
+      {loading && <p className="text-mystic-500 text-ui">{t('common.loading', { defaultValue: 'Loading…' })}</p>}
 
       {!loading && comments.length === 0 && (
-        <p className="text-mystic-500 text-sm italic">
+        <p className="text-mystic-500 text-ui italic">
           {t('community.noComments', { defaultValue: 'No comments yet. Be the first to respond.' })}
         </p>
       )}
@@ -727,19 +1144,42 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       <div className="space-y-3">
         {comments.map((c) => (
           <Card key={c.id} padding="md" className="bg-mystic-800/20">
-            <div className="flex items-center gap-2 text-meta text-mystic-500 mb-2">
-              <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
-                {c.isAnonymous
-                  ? t('community.anonymous', { defaultValue: 'Anonymous' })
-                  : c.authorDisplayName || 'User'}
-              </span>
-              <span>·</span>
-              <span>{formatRelativeTime(c.createdAt)}</span>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center flex-wrap gap-2 text-meta text-mystic-500 min-w-0">
+                <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
+                  {c.isAnonymous
+                    ? t('community.anonymous', { defaultValue: 'Anonymous' })
+                    : c.authorDisplayName || t('community.unnamedMember', { defaultValue: 'A member' })}
+                </span>
+                <span>·</span>
+                <span>{formatRelativeTime(c.createdAt)}</span>
+                {c.isMine && <ReviewStateTag state={c.moderationStatus} t={t} />}
+              </div>
+              {c.isMine && (
+                <button
+                  type="button"
+                  onClick={() => { dismissToasts(); setCommentToDelete(c); setCommentDeleteOpen(true); }}
+                  className="shrink-0 -my-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-coral-light"
+                  aria-label={t('community.deleteComment', { defaultValue: 'Delete comment' })}
+                >
+                  <Trash2 className="w-4 h-4" aria-hidden />
+                </button>
+              )}
             </div>
-            <p className="text-mystic-200 text-sm whitespace-pre-wrap">{c.content}</p>
+            <p className="text-mystic-200 text-ui whitespace-pre-wrap">{c.content}</p>
           </Card>
         ))}
       </div>
+
+      <ConfirmDeleteSheet
+        open={commentDeleteOpen}
+        title={t('community.deleteCommentTitle', { defaultValue: 'Delete this comment?' })}
+        body={t('community.deleteCommentBody', { defaultValue: 'It’s removed for everyone. This can’t be undone.' })}
+        excerpt={commentToDelete?.content}
+        busy={deletingComment}
+        onCancel={() => setCommentDeleteOpen(false)}
+        onConfirm={confirmDeleteComment}
+      />
 
       {user && (
         <Card padding="md">
@@ -748,25 +1188,41 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
             onChange={(e) => setNewComment(e.target.value)}
             rows={3}
             maxLength={1000}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
-            placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response...' }) as string}
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response…' }) as string}
           />
           <div className="flex items-center justify-between mt-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isAnonComment}
-                onChange={(e) => setIsAnonComment(e.target.checked)}
-                className="rounded"
-              />
+            {inWell ? (
               <span className="text-meta text-mystic-400">
-                {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
+                {t('community.whisperingWell.replyAnonymous', { defaultValue: 'Replies here are anonymous' })}
               </span>
-            </label>
-            <Button variant="primary" onClick={submitComment} disabled={submitting || !newComment.trim()} className="text-sm">
+            ) : (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isAnonComment}
+                  onChange={(e) => setIsAnonComment(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-meta text-mystic-400">
+                  {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
+                </span>
+              </label>
+            )}
+            <Button variant="primary" size="sm" onClick={submitComment} disabled={submitting || !newComment.trim()} loading={submitting}>
               {t('community.send', { defaultValue: 'Post my comment' })}
             </Button>
           </div>
+          {/* As in the composer: the name a named comment carries. Replies in
+              the Well are anonymous, and so is a ticked comment. */}
+          {!inWell && !isAnonComment && (
+            <CommunityNameLine
+              onSaved={() => {
+                void load();
+                onNameSaved();
+              }}
+            />
+          )}
         </Card>
       )}
     </Page>
@@ -777,28 +1233,79 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 // Report dialog
 // ==================================================================
 
-function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit: (r: ReportReason) => void; t: (key: string, opts?: Record<string, unknown>) => string }) {
+/**
+ * Two taps, not one: pick the reason, then confirm. A single tap on a
+ * reason used to file the report on the spot, so a slip while scrolling the
+ * list was a report nobody meant to make (R7).
+ */
+function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit: (r: ReportReason) => Promise<void>; t: (key: string, opts?: Record<string, unknown>) => string }) {
   const reasons: ReportReason[] = ['spam', 'harassment', 'self-harm', 'explicit', 'misinformation', 'other'];
+  const [reason, setReason] = useState<ReportReason | null>(null);
+  const [sending, setSending] = useState(false);
+  const titleId = 'community-report-title';
   return (
     <div className="fixed inset-0 bg-mystic-950/80 z-50 flex items-end md:items-center justify-center p-4" onClick={onClose}>
-      <Card padding="lg" className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-medium text-mystic-200 mb-3">
+      <Card
+        padding="lg"
+        className="w-full max-w-sm"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <h3 id={titleId} className="heading-display-md text-mystic-100 mb-1">
           {t('community.reportPostTitle', { defaultValue: 'Report post' })}
         </h3>
-        <div className="space-y-1">
-          {reasons.map((r) => (
-            <button
-              key={r}
-              onClick={() => onSubmit(r)}
-              className="w-full text-left px-3 py-2 min-h-[44px] text-sm text-mystic-300 hover:bg-mystic-800 rounded-lg"
-            >
-              {t(`community.reportReasons.${r}`, { defaultValue: r })}
-            </button>
-          ))}
+        <p className="text-meta text-mystic-400 mb-3">
+          {t('community.reportPrompt', { defaultValue: 'Choose a reason, then confirm.' })}
+        </p>
+        <div role="radiogroup" aria-labelledby={titleId} className="space-y-1">
+          {reasons.map((r) => {
+            const active = reason === r;
+            return (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setReason(r)}
+                className={`w-full text-left px-3 py-2 min-h-[44px] text-ui rounded-control flex items-center gap-3 ${
+                  active ? 'bg-gold/10 text-mystic-100' : 'text-mystic-300 hover:bg-mystic-800'
+                }`}
+              >
+                <span
+                  className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-gold' : 'border-mystic-600'}`}
+                  aria-hidden
+                >
+                  {active && <span className="w-2 h-2 rounded-full bg-gold" />}
+                </span>
+                {t(`community.reportReasons.${r}`, { defaultValue: r })}
+              </button>
+            );
+          })}
         </div>
-        <Button variant="outline" fullWidth onClick={onClose} className="mt-3">
-          {t('common.cancel', { defaultValue: 'Cancel' })}
-        </Button>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Button variant="outline" fullWidth onClick={onClose} disabled={sending}>
+            {t('common.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={!reason || sending}
+            loading={sending}
+            onClick={async () => {
+              if (!reason) return;
+              setSending(true);
+              try {
+                await onSubmit(reason);
+              } finally {
+                setSending(false);
+              }
+            }}
+          >
+            {t('community.reportConfirm', { defaultValue: 'Report' })}
+          </Button>
+        </div>
       </Card>
     </div>
   );

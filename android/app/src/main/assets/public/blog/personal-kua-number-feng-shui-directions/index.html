@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>Your Personal Kua Number in Feng Shui: Calculate and Use It | Arcana Blog</title>
     <meta name="description" content="Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions." />
 
-    <link rel="canonical" href="https://tarotlife.app/blog/personal-kua-number-feng-shui-directions/" />
+    <link rel="canonical" href="https://tarotlife.app/blog/personal-kua-number-feng-shui-directions" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/blog/personal-kua-number-feng-shui-directions/" />
+    <meta property="og:url" content="https://tarotlife.app/blog/personal-kua-number-feng-shui-directions" />
     <meta property="og:title" content="Your Personal Kua Number in Feng Shui: Calculate and Use It | Arcana Blog" />
     <meta property="og:description" content="Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions." />
     <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/personal-kua-number-feng-shui-directions-1788253259221.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Your Personal Kua Number in Feng Shui: Calculate and Use It","description":"Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/personal-kua-number-feng-shui-directions-1788253259221.png","url":"https://tarotlife.app/blog/personal-kua-number-feng-shui-directions/","datePublished":"2026-09-01T09:00:59.371+00:00","dateModified":"2026-09-01T09:00:59.371+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Your Personal Kua Number in Feng Shui: Calculate and Use It","description":"Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/personal-kua-number-feng-shui-directions-1788253259221.png","url":"https://tarotlife.app/blog/personal-kua-number-feng-shui-directions","datePublished":"2026-09-01T09:00:59.371+00:00","dateModified":"2026-09-01T09:00:59.371+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>Your Personal Kua Number in Feng Shui: Calculate and Use It</h1><p>Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions.</p><p>Your Personal Kua Number in Feng Shui: Calculate and Use It Your Kua number is a practical compass for everyday alignment. In minutes you can calculate it, find your East/West group, and point your bed, desk, and front door toward the four favorable directions that quietly stack odds in your favor. What Is a Personal Kua Number? A personal Kua number is a single digit (1–9, excluding 5 which maps to 2 or 8) that determines your favorable and unfavorable directions. It’s foundational in Eight Mansions feng shui, used to orient where you sit, sleep, and enter so life flows with less friction and more support. Your Kua number sorts you into the East or West group. Each group receives four auspicious directions for health, relationships, stability, and success—and four to avoid. How to Calculate Your Kua Number (Year + Gender Formula) Use your solar birth year. If you were born in January–early February, confirm whether your birthdate is before the Lunar New Year; if so, use the previous year. Then apply: Step 1: Sum the last two digits of your birth year to a single digit. Step 2 (Male): 10 − that digit (pre-2000); 9 − that digit (2000 and later). If the result is 5, use 2. Step 2 (Female): 5 + that digit (pre-2000); 6 + that digit (2000 and later). Reduce to one digit; if the result is 5, use 8. Examples: 1987 male: 8+7=15 → 1+5=6; 10−6=4 → Kua 4. 1993 female: 9+3=12 → 1+2=3; 5+3=8 → Kua 8. 2002 male: 0+2=2; 9−2=7 → Kua 7. 2005 female: 0+5=5; 6+5=11 → 1+1=2 → Kua 2. If you land on 5: male maps to 2; female maps to 8. Tip: If you want it done instantly alongside your daily energy insights, open Arcana’s Feng Shui tool at /more/feng-shui . East vs. West Group Kua: Know Your Camp Your group determines which four directions help you most. East Group Kua: 1, 3, 4, 9 Favorable directions: North, East, South, Southeast. Unfavorable: Northeast, Northwest, West, Southwest. West Group Kua: 2, 6, 7, 8 Favorable directions: Northeast, Northwest, West, Southwest. Unfavorable: North, East, South, Southeast. Each Kua also ranks its four good directions by function: Sheng Qi (Life Upsurge): career and success. Tian Yi (Heavenly Doctor): health and vitality. Yan Nian (Longevity): relationships and harmony. Fu Wei (Stability): calm focus and self-growth. You’ll get further when you match the task to the right direction: pitch from Sheng Qi, sleep in Tian Yi, connect in Yan Nian, study in Fu Wei. Feng Shui Directions: How to Use Your Four Auspicious Bearings Start simple: face the direction. If you can, also position the object so its “head” points there (bed headboard, chair back). Desk Face your Sheng Qi for bold work: interviews, sales, strategy. Use Fu Wei for deep focus and exams. If glare or layout blocks you, face your second-best (Yan Nian or Tian Yi) and keep your back protected by a wall, not a door. Bed Aim the headboard to Tian Yi for health and recovery. Yan Nian supports couples and emotional ease. Avoid aligning the bed with a door or under heavy beams, even if the direction is favorable—form still matters. Front Door If possible, favor a door orientation matching your group’s good directions. If the door is fixed, stand at the threshold and face outward when setting intentions or choosing dates so you “meet” your favorable direction. Keep the entry clear, bright, and quiet; energetic quality amplifies directional benefit. To confirm bearings, use a reliable compass app. Stand at room center for furniture, or just inside the threshold for doors. For an on-the-fly reading plus personal daily guidance, try Arcana’s quick AI reading at /more/quick . Matching Each Kua to Its Four Best Directions Use this as your alignment matrix. First, identify your Kua (1–9; 5 maps to 2 for men and 8 for women). Then use the set below. Kua 1 (East Group) Sheng Qi: SE; Tian Yi: E; Yan Nian: S; Fu Wei: N. Kua 2 (West Group) Sheng Qi: NE; Tian Yi: W; Yan Nian: NW; Fu Wei: SW. Kua 3 (East Group) Sheng Qi: S; Tian Yi: N; Yan Nian: SE; Fu Wei: E. Kua 4 (Eas</p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Your Personal Kua Number in Feng Shui: Calculate and Use It</h1><p>Learn the Kua number feng shui method: exact formula by birth year and gender, East/West group split, and how to align desk, bed, and front door to four lucky directions.</p><p>Your Personal Kua Number in Feng Shui: Calculate and Use It Your Kua number is a practical compass for everyday alignment. In minutes you can calculate it, find your East/West group, and point your bed, desk, and front door toward the four favorable directions that quietly stack odds in your favor. What Is a Personal Kua Number? A personal Kua number is a single digit (1–9, excluding 5 which maps to 2 or 8) that determines your favorable and unfavorable directions. It’s foundational in Eight Mansions feng shui, used to orient where you sit, sleep, and enter so life flows with less friction and more support. Your Kua number sorts you into the East or West group. Each group receives four auspicious directions for health, relationships, stability, and success—and four to avoid. How to Calculate Your Kua Number (Year + Gender Formula) Use your solar birth year. If you were born in January–early February, confirm whether your birthdate is before the Lunar New Year; if so, use the previous year. Then apply: Step 1: Sum the last two digits of your birth year to a single digit. Step 2 (Male): 10 − that digit (pre-2000); 9 − that digit (2000 and later). If the result is 5, use 2. Step 2 (Female): 5 + that digit (pre-2000); 6 + that digit (2000 and later). Reduce to one digit; if the result is 5, use 8. Examples: 1987 male: 8+7=15 → 1+5=6; 10−6=4 → Kua 4. 1993 female: 9+3=12 → 1+2=3; 5+3=8 → Kua 8. 2002 male: 0+2=2; 9−2=7 → Kua 7. 2005 female: 0+5=5; 6+5=11 → 1+1=2 → Kua 2. If you land on 5: male maps to 2; female maps to 8. Tip: If you want it done instantly alongside your daily energy insights, open Arcana’s Feng Shui tool at /more/feng-shui . East vs. West Group Kua: Know Your Camp Your group determines which four directions help you most. East Group Kua: 1, 3, 4, 9 Favorable directions: North, East, South, Southeast. Unfavorable: Northeast, Northwest, West, Southwest. West Group Kua: 2, 6, 7, 8 Favorable directions: Northeast, Northwest, West, Southwest. Unfavorable: North, East, South, Southeast. Each Kua also ranks its four good directions by function: Sheng Qi (Life Upsurge): career and success. Tian Yi (Heavenly Doctor): health and vitality. Yan Nian (Longevity): relationships and harmony. Fu Wei (Stability): calm focus and self-growth. You’ll get further when you match the task to the right direction: pitch from Sheng Qi, sleep in Tian Yi, connect in Yan Nian, study in Fu Wei. Feng Shui Directions: How to Use Your Four Auspicious Bearings Start simple: face the direction. If you can, also position the object so its “head” points there (bed headboard, chair back). Desk Face your Sheng Qi for bold work: interviews, sales, strategy. Use Fu Wei for deep focus and exams. If glare or layout blocks you, face your second-best (Yan Nian or Tian Yi) and keep your back protected by a wall, not a door. Bed Aim the headboard to Tian Yi for health and recovery. Yan Nian supports couples and emotional ease. Avoid aligning the bed with a door or under heavy beams, even if the direction is favorable—form still matters. Front Door If possible, favor a door orientation matching your group’s good directions. If the door is fixed, stand at the threshold and face outward when setting intentions or choosing dates so you “meet” your favorable direction. Keep the entry clear, bright, and quiet; energetic quality amplifies directional benefit. To confirm bearings, use a reliable compass app. Stand at room center for furniture, or just inside the threshold for doors. For an on-the-fly reading plus personal daily guidance, try Arcana’s quick AI reading at /more/quick . Matching Each Kua to Its Four Best Directions Use this as your alignment matrix. First, identify your Kua (1–9; 5 maps to 2 for men and 8 for women). Then use the set below. Kua 1 (East Group) Sheng Qi: SE; Tian Yi: E; Yan Nian: S; Fu Wei: N. Kua 2 (West Group) Sheng Qi: NE; Tian Yi: W; Yan Nian: NW; Fu Wei: SW. Kua 3 (East Group) Sheng Qi: S; Tian Yi: N; Yan Nian: SE; Fu Wei: E. Kua 4 (Eas</p></article></main></div></div>
   </body>
 </html>

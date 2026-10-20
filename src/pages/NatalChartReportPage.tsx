@@ -1,19 +1,28 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState, Paper, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
+import { aiFailureOf, joinSentences } from '../components/reports/aiReading';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { isNative } from '../utils/platform';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
+import { useBirthTzBackfill, birthZoneOf, castParamsFor } from '../components/horoscope/birthZone';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
+import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
-  HOUSE_THEMES,
+  PLANETS,
+  ZODIAC_SIGNS,
   type AspectType,
   type NatalChart,
   type Planet,
@@ -35,42 +44,98 @@ import {
 
 const NATAL_COST = 200;
 
-const ASPECT_META: Record<AspectType, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  conjunction: { label: 'Conjunction',  color: 'text-gold',         icon: Circle },
-  trine:       { label: 'Trine',        color: 'text-teal',         icon: Triangle },
-  sextile:     { label: 'Sextile',      color: 'text-cosmic-blue',  icon: Triangle },
-  square:      { label: 'Square',       color: 'text-coral',        icon: Square },
-  opposition:  { label: 'Opposition',   color: 'text-cosmic-violetLight',icon: Minus },
+// The aspect list sits on paper, so its hues are the ink tier (gold is 1.82:1 on cream).
+const ASPECT_META: Record<AspectType, { color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  conjunction: { color: 'text-ink-gold',   icon: Circle },
+  trine:       { color: 'text-ink-teal',   icon: Triangle },
+  sextile:     { color: 'text-ink-blue',   icon: Triangle },
+  square:      { color: 'text-ink-coral',  icon: Square },
+  opposition:  { color: 'text-ink-violet', icon: Minus },
 };
 
-const PLANET_ONE_LINERS: Record<Planet, { sign: string; inSign: (s: ZodiacSign) => string }> = {
-  Sun:     { sign: 'Ego, vitality, the thing you came here to become.',
-             inSign: (s) => `You're here to express yourself through the lens of ${s}.` },
-  Moon:    { sign: 'Emotional blueprint — what safety and home feel like.',
-             inSign: (s) => `You regulate by way of ${s}'s instincts.` },
-  Mercury: { sign: 'Mind, speech, the pattern of your thinking.',
-             inSign: (s) => `Your mind runs in ${s}'s style — which shapes how you learn and persuade.` },
-  Venus:   { sign: 'Love, aesthetic, how you attract and what pleases you.',
-             inSign: (s) => `You love the ${s} way — it's the gravity field of your attractions.` },
-  Mars:    { sign: 'Drive, anger, how you take action and pursue what you want.',
-             inSign: (s) => `You fight and initiate in ${s}'s key.` },
-  Jupiter: { sign: 'Expansion, faith, where life overflows if you let it.',
-             inSign: (s) => `Your growth comes easily when it wears ${s}'s clothes.` },
-  Saturn:  { sign: 'Structure, discipline, the long work of your life.',
-             inSign: (s) => `Your discipline matures through ${s} lessons.` },
-  Uranus:  { sign: 'Disruption, originality, where you break free of the given.',
-             inSign: (s) => `Your revolution shows up in the ${s} theme of your generation.` },
-  Neptune: { sign: 'Dissolution, dreams, where ego softens into meaning.',
-             inSign: (s) => `Your imagination and spirituality take a ${s} shape.` },
-  Pluto:   { sign: 'Transformation, power, what you are compelled to alchemize.',
-             inSign: (s) => `You transform through ${s}'s territory.` },
+/**
+ * What each planet governs, and how a sign colours it — the report's line
+ * per placement, as `natalReport.planetLines.<Planet>.{theme,inSign}` with
+ * the English here as the fallback. `inSign` takes the localized sign name.
+ */
+const PLANET_LINES_EN: Record<Planet, { theme: string; inSign: string }> = {
+  Sun:     { theme: 'Ego, vitality, the thing you came here to become.',
+             inSign: 'You’re here to express yourself through the lens of {{sign}}.' },
+  Moon:    { theme: 'Emotional blueprint — what safety and home feel like.',
+             inSign: 'You regulate by way of {{sign}}’s instincts.' },
+  Mercury: { theme: 'Mind, speech, the pattern of your thinking.',
+             inSign: 'Your mind runs in {{sign}}’s style — which shapes how you learn and persuade.' },
+  Venus:   { theme: 'Love, aesthetic, how you attract and what pleases you.',
+             inSign: 'You love the {{sign}} way — it’s the gravity field of your attractions.' },
+  Mars:    { theme: 'Drive, anger, how you take action and pursue what you want.',
+             inSign: 'You fight and initiate in {{sign}}’s key.' },
+  Jupiter: { theme: 'Expansion, faith, where life overflows if you let it.',
+             inSign: 'Your growth comes easily when it wears {{sign}}’s clothes.' },
+  Saturn:  { theme: 'Structure, discipline, the long work of your life.',
+             inSign: 'Your discipline matures through {{sign}} lessons.' },
+  Uranus:  { theme: 'Disruption, originality, where you break free of the given.',
+             inSign: 'Your revolution shows up in the {{sign}} theme of your generation.' },
+  Neptune: { theme: 'Dissolution, dreams, where ego softens into meaning.',
+             inSign: 'Your imagination and spirituality take a {{sign}} shape.' },
+  Pluto:   { theme: 'Transformation, power, what you are compelled to alchemize.',
+             inSign: 'You transform through {{sign}}’s territory.' },
 };
+
+/** The English house themes, keyed by house number (`chartWheel.houseThemes.<n>`). */
+const HOUSE_THEMES_EN: Record<number, string> = {
+  1: 'Self and identity', 2: 'Values and possessions', 3: 'Communication and learning',
+  4: 'Home and family', 5: 'Creativity and romance', 6: 'Health and service',
+  7: 'Partnerships', 8: 'Transformation and shared resources', 9: 'Philosophy and travel',
+  10: 'Career and public image', 11: 'Community and aspirations', 12: 'Spirituality and the subconscious',
+};
+
+const isPlanetName = (p: string): p is Planet => (PLANETS as readonly string[]).includes(p);
+const isSignName = (s: string): s is ZodiacSign => (ZODIAC_SIGNS as readonly string[]).includes(s);
+const planetLabel = (p: string) => (isPlanetName(p) ? localizePlanetName(p) : p);
+const signLabel = (s: string) => (isSignName(s) ? localizeSignName(s) : s);
+const aspectLabel = (a: string) => (a in ASPECT_META ? localizeAspectName(a as AspectType) : a);
 
 export function NatalChartReportPage() {
   const { t } = useT('app');
   const { profile, user } = useAuth();
-  const { chart, loading: chartLoading } = useNatalChart();
+  const { chart, loading: chartLoading, error: chartError, fetchChart, computeChart } = useNatalChart();
+  // A chart cast before F21 (in the signup zone, not the birth place's) is
+  // recast before this paid report prints its houses; reload when it lands.
+  useBirthTzBackfill(fetchChart);
   const natal: NatalChart | null = chart?.natalChart ?? null;
+
+  // No chart, no sale (p9 Q01). Neither onboarding casts a chart — only the
+  // Horoscope tab's setup does — so a member who comes here first has none,
+  // and the page used to take 200 Moonstones and then say "re-enter your
+  // birth data". A missing chart is now cast here, the way the Horoscope
+  // setup casts it (the birth place's zone, castParamsFor), and the report
+  // is offered only once one exists. The backfill above saves a zone it
+  // derives, so the cast does not write the profile itself.
+  const birthLat = profile?.birthLat;
+  const birthLon = profile?.birthLon;
+  const hasBirthPlace = typeof birthLat === 'number' && Number.isFinite(birthLat)
+    && typeof birthLon === 'number' && Number.isFinite(birthLon);
+  // 'done' and 'failed' both end the attempt; a retry goes back to 'idle'.
+  const [castState, setCastState] = useState<'idle' | 'casting' | 'done' | 'failed'>('idle');
+  // Guards the effect below against a second cast (StrictMode runs it twice).
+  const castTried = useRef(false);
+  const castChart = useCallback(async () => {
+    if (!profile?.birthDate || typeof profile.birthLat !== 'number' || typeof profile.birthLon !== 'number') return;
+    castTried.current = true;
+    setCastState('casting');
+    try {
+      const { tz } = await birthZoneOf(profile);
+      const cast = await computeChart(castParamsFor({ ...profile, birthLat: profile.birthLat, birthLon: profile.birthLon }, tz));
+      setCastState(cast?.natalChart ? 'done' : 'failed');
+    } catch {
+      setCastState('failed');
+    }
+  }, [profile, computeChart]);
+  const retryChart = () => {
+    castTried.current = false;
+    setCastState('idle');
+    void fetchChart();
+  };
 
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -98,9 +163,24 @@ export function NatalChartReportPage() {
   const [partnerName, setPartnerName] = useState<string>('');
   const [partnerAspects, setPartnerAspects] = useState<Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>>([]);
   const [loadingVariant, setLoadingVariant] = useState(false);
+  // The partner overlay is astrology-synastry, which the server charges as a
+  // soulmate score (50 Moonstones; premium passes). Gated, and paid at most
+  // once per partner like every other paid call (p8 F20): `synastryBusy` is
+  // set before anything is awaited, so a second tap returns at once, and the
+  // request carries an id kept until the overlay lands, so a retry is the
+  // server's free replay instead of a second charge.
+  const { tryConsume: gateSynastry, EarnSheet: synastryEarnSheet } = useMoonstoneSpend('soulmate-score');
+  const synastryBusy = useRef(false);
+  const synastryAttempt = useRef<{ id: string; body: string } | null>(null);
 
   const reference = profile?.birthDate ?? 'no-birth';
   const hasBirthData = !!profile?.birthDate;
+  // Rewarded ads only exist inside the native shell; on the web the page
+  // must not promise one (R5 M-9).
+  const adNative = isNative();
+  // ...and an ad is offered only while one can still earn today: after the
+  // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
+  const adAvailable = useCanOfferAd();
 
   const checkUnlock = useCallback(async () => {
     if (!user || !hasBirthData) {
@@ -119,6 +199,13 @@ export function NatalChartReportPage() {
   }, [user, hasBirthData, reference, profile?.isPremium]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
+
+  // Once astrology-get-chart has answered "none", cast it (once; a retry
+  // reloads and comes back here).
+  useEffect(() => {
+    if (!user || !hasBirthData || !hasBirthPlace || natal || chartLoading || chartError || castTried.current) return;
+    void castChart();
+  }, [user, hasBirthData, hasBirthPlace, natal, chartLoading, chartError, castChart]);
 
   const loadTransits = useCallback(async () => {
     if (transitPlanets) return;
@@ -186,10 +273,11 @@ export function NatalChartReportPage() {
   }, [solarReturnPlanets, t]);
 
   const loadSynastry = useCallback(async () => {
-    if (!partnerBirthDate) return;
+    if (!partnerBirthDate || synastryBusy.current) return;
+    synastryBusy.current = true;
     setLoadingVariant(true);
-    const { data, error } = await supabase.functions.invoke('astrology-synastry', {
-      body: {
+    try {
+      const body = {
         partnerBirthDate,
         partnerBirthTime: partnerBirthTime || undefined,
         // Proxy partner timezone with the user's own — without this the
@@ -197,22 +285,43 @@ export function NatalChartReportPage() {
         // Moon ~5° (sometimes a sign over).
         partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
         partnerName: partnerName || undefined,
-      },
-    });
-    setLoadingVariant(false);
-    if (error) {
-      toast(t('natalReport.synastryFailed', { defaultValue: 'Could not compute synastry.' }), 'error');
-      return;
+      };
+      const signature = JSON.stringify(body);
+      if (synastryAttempt.current?.body !== signature) {
+        synastryAttempt.current = { id: crypto.randomUUID(), body: signature };
+        if (!(await gateSynastry())) {
+          synastryAttempt.current = null;
+          return;
+        }
+      }
+      const { data, error } = await supabase.functions.invoke('astrology-synastry', {
+        body: { ...body, requestId: synastryAttempt.current!.id },
+      });
+      if (error) {
+        const failure = await aiFailureOf(error);
+        if (failure === 'insufficient' || failure === 'soft-cap') {
+          // Refused before the debit (the balance moved after the gate): a
+          // new press is a new request, and the gate opens the Earn sheet.
+          synastryAttempt.current = null;
+          if (!(await gateSynastry())) return;
+        }
+        toast(t('natalReport.synastryFailed', { defaultValue: 'Could not compute synastry.' }), 'error');
+        return;
+      }
+      const payload = (data?.data ?? data) as {
+        partnerPositions?: OverlayPlanet[];
+        crossAspects?: Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>;
+      } | null;
+      if (payload?.partnerPositions) {
+        synastryAttempt.current = null;
+        setPartnerPlanets(payload.partnerPositions);
+        setPartnerAspects(payload.crossAspects ?? []);
+      }
+    } finally {
+      synastryBusy.current = false;
+      setLoadingVariant(false);
     }
-    const payload = (data?.data ?? data) as {
-      partnerPositions?: OverlayPlanet[];
-      crossAspects?: Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>;
-    } | null;
-    if (payload?.partnerPositions) {
-      setPartnerPlanets(payload.partnerPositions);
-      setPartnerAspects(payload.crossAspects ?? []);
-    }
-  }, [partnerBirthDate, partnerBirthTime, partnerName, t]);
+  }, [partnerBirthDate, partnerBirthTime, partnerName, gateSynastry, t]);
 
   useEffect(() => {
     if (variant === 'transits') loadTransits();
@@ -228,13 +337,17 @@ export function NatalChartReportPage() {
     : null;
 
   const currentOverlayLabel =
-    variant === 'transits'     ? new Date().toLocaleDateString()
+    variant === 'transits'     ? new Date().toLocaleDateString(getLocale())
     : variant === 'progressions' ? progressedLabel
     : variant === 'solar-return' ? solarReturnLabel
-    : variant === 'synastry'   ? (partnerName || 'Partner')
+    : variant === 'synastry'   ? (partnerName || t('natalReport.partner', { defaultValue: 'Partner' }))
     : null;
 
+  const houseLabel = (n: number) => t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n });
+
   const handleUnlock = async () => {
+    // The unlock is offered only beside a chart; never charge without one.
+    if (!natal || unlocking) return;
     setUnlocking(true);
     const res = await reportUnlocks.unlockWithMoonstones('natal-chart-pdf', reference, NATAL_COST);
     setUnlocking(false);
@@ -250,6 +363,10 @@ export function NatalChartReportPage() {
         }),
         'error',
       );
+    } else if (res.error === 'chart-missing') {
+      // The server holds no chart for this account and refused before the
+      // debit: read it again (and cast it), then the unlock is offered again.
+      retryChart();
     } else {
       toast(
         t('natalReport.unlockFailed', {
@@ -281,11 +398,65 @@ export function NatalChartReportPage() {
     );
   }
 
+  const reportHeader = (
+    <PageHeader
+      icon={<ScrollText />}
+      title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
+    />
+  );
+
+  // The chart is being cast here (or is about to be): the page, not a bare
+  // loading line.
+  if (castState === 'casting'
+    || (castState === 'idle' && !natal && hasBirthPlace && !chartLoading && !checking && !chartError)) {
+    return (
+      <Page spacing="sm">
+        {reportHeader}
+        <Card padding="lg" className="text-center">
+          <p className="text-ui text-mystic-300" role="status" aria-live="polite">
+            {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
+          </p>
+        </Card>
+      </Page>
+    );
+  }
+
   if (checking || chartLoading) {
     return (
       <div className="py-12 text-center text-mystic-500">
         {t('common:actions.loading', { defaultValue: 'Loading…' })}
       </div>
+    );
+  }
+
+  // No chart: nothing is sold and nothing paid for is promised (p9 Q01).
+  // Either it could not be read or cast — try again — or there is no birth
+  // place to cast it for.
+  if (!natal) {
+    return (
+      <Page spacing="sm">
+        {reportHeader}
+        {chartError || hasBirthPlace ? (
+          <Card padding="lg" className="text-center">
+            <p className="text-ui text-mystic-300 mb-4" role="alert">
+              {t('natalReport.errorChartMissing', {
+                defaultValue: 'We couldn’t draw your chart just now. Check your connection and try again.',
+              })}
+            </p>
+            <Button variant="outline" onClick={retryChart}>
+              {t('common:actions.retry', { defaultValue: 'Try again' })}
+            </Button>
+          </Card>
+        ) : (
+          <EmptyState
+            icon={<AlertCircle />}
+            title={t('natalReport.needsBirthPlace', { defaultValue: 'Add your birth place' })}
+            description={t('natalReport.needsBirthPlaceBody', {
+              defaultValue: 'Your chart is drawn for the place you were born. Pick it in Profile → Edit profile, then open this page again.',
+            })}
+          />
+        )}
+      </Page>
     );
   }
 
@@ -305,7 +476,8 @@ export function NatalChartReportPage() {
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
           <SectionDivider width="w-32" className="mx-auto mb-3" />
-          <p className="text-ui text-mystic-200 italic mb-4">
+          {/* Centred under the title: breaks between phrases (keep-phrases). */}
+          <p className="keep-phrases text-ui text-mystic-200 italic mb-4">
             {t('natalReport.cardSub', {
               defaultValue: 'Every planet in its sign and house, every aspect, with interpretations.',
             })}
@@ -344,8 +516,9 @@ export function NatalChartReportPage() {
             onClick={() => setShowSubscription(true)}
           >
             <Crown className="w-4 h-4 mr-2" />
+            {/* One line beside the crown at 360 px in every locale (F60). */}
             {t('natalReport.upgradeToPremium', {
-              defaultValue: 'See what Premium includes',
+              defaultValue: 'See Premium plans',
             })}
           </Button>
 
@@ -367,32 +540,43 @@ export function NatalChartReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-ui text-mystic-200 mb-2">
-                {t('natalReport.orEarnMoonstones', {
-                  defaultValue: 'Or unlock with {{n}} Moonstones',
+            <div className="mt-3 space-y-2 text-left">
+              {/* The Moonstone path, disabled with the shortfall spelled out —
+                  never an ad promise the web cannot keep. */}
+              <Button variant="outline" fullWidth disabled>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('natalReport.unlockCta', {
+                  defaultValue: 'Unlock with {{n}} Moonstones',
                   n: NATAL_COST,
                 })}
-              </p>
-              <p className="text-meta text-mystic-400 mb-3">
-                {t('natalReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
-                {' · '}
-                {t('natalReport.earnHint', {
-                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
-                })}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowWatchAd(true)}
-              >
-                <Moon className="w-3.5 h-3.5 mr-1.5" />
-                {t('natalReport.earnNow', {
-                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
-                  n: MOONSTONES_PER_AD,
-                })}
               </Button>
+              <p className="text-meta text-mystic-400 text-center tabular-nums">
+                {t('reportUnlock.shortfall', {
+                  defaultValue: 'You have {{have}} Moonstones — {{need}} more needed.',
+                  have: balance ?? 0,
+                  need: Math.max(0, NATAL_COST - (balance ?? 0)),
+                })}
+              </p>
+              {adAvailable ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowWatchAd(true)}
+                >
+                  <Moon className="w-3.5 h-3.5 mr-1.5" />
+                  {t('natalReport.earnNow', {
+                    defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                    n: MOONSTONES_PER_AD,
+                  })}
+                </Button>
+              ) : (
+                <p className="text-meta text-mystic-400 text-center">
+                  {t('reportUnlock.earnHintWeb', {
+                    defaultValue: 'Earn Moonstones with the daily check-in or an invite, or open everything with Premium.',
+                  })}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -420,7 +604,7 @@ export function NatalChartReportPage() {
             </div>
           ) : undefined}
         />
-        {moonstonesEnabled && (
+        {moonstonesEnabled && adNative && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}
@@ -432,18 +616,6 @@ export function NatalChartReportPage() {
           />
         )}
       </Page>
-    );
-  }
-
-  if (!natal) {
-    return (
-      <Card padding="lg">
-        <p className="text-ui text-mystic-300">
-          {t('natalReport.errorChartMissing', {
-            defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
-          })}
-        </p>
-      </Card>
     );
   }
 
@@ -517,19 +689,26 @@ export function NatalChartReportPage() {
               maxLength={80}
               className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-cosmic-rose/40"
             />
-            <div className="flex gap-2">
+            {/* A native date or time input keeps its own width as a flex item
+                (Chromium: 166 and 134px); side by side they need 308px, and
+                the box is 300px at 390 and 270px at 360, so the time field
+                stuck out and the page scrolled sideways (p9 R33). Each now
+                starts at its own width and the row wraps when the two do not
+                fit — the time takes the next line, both full width — and
+                min-w-0 lets neither hold the box wider than the screen. */}
+            <div className="flex flex-wrap gap-2">
               <input
                 type="date"
                 value={partnerBirthDate}
                 onChange={(e) => setPartnerBirthDate(e.target.value)}
-                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
+                className="min-w-0 flex-[2_1_auto] bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
               <input
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
-                placeholder="optional"
-                className="bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
+                placeholder={t('natalReport.optional', { defaultValue: 'optional' })}
+                className="min-w-0 flex-[1_1_auto] bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
             </div>
             <Button
@@ -542,6 +721,8 @@ export function NatalChartReportPage() {
                 ? t('natalReport.computing', { defaultValue: 'Computing…' })
                 : t('natalReport.synastryCta', { defaultValue: 'Overlay partner chart' })}
             </Button>
+            {/* The overlay is charged (premium passes): say so before the tap. */}
+            <MoonstoneCostLine cost={50} />
           </div>
         )}
 
@@ -572,12 +753,20 @@ export function NatalChartReportPage() {
             </p>
             {partnerAspects.slice(0, 8).map((a, i) => (
               <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
-                <span>
-                  <span className="text-cosmic-rose">{a.partnerPlanet}</span>
-                  {' '}{a.type}{' '}
-                  <span className="text-gold">{a.natalPlanet}</span>
+                {/* A label, broken between phrases: 「…火星がトラ／イン」 broke inside the word in ja (p9 R33). */}
+                <span className="min-w-0 break-words keep-phrases">
+                  {/* Names whose planet is whose (F31): the row was coloured
+                      spans once, then one string that said only "Venus trine Mars". */}
+                  {t('natalReport.crossAspectRow', {
+                    defaultValue: 'Their {{partner}} {{type}} your {{natal}}',
+                    partner: planetLabel(a.partnerPlanet),
+                    type: aspectLabel(a.type),
+                    natal: planetLabel(a.natalPlanet),
+                  })}
                 </span>
-                <span className="text-meta text-mystic-400">orb {a.orb.toFixed(1)}°</span>
+                <span className="text-meta text-mystic-400 shrink-0 tabular-nums">
+                  {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb.toFixed(1) })}
+                </span>
               </div>
             ))}
           </div>
@@ -592,32 +781,32 @@ export function NatalChartReportPage() {
         <div className="grid grid-cols-3 gap-3 relative">
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.sun.sign} size={36} className="text-gold mb-1.5" framed />
-            <p className="text-meta uppercase tracking-wider text-mystic-400">Sun</p>
-            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.sun', { defaultValue: 'Sun' })}</p>
+            <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.sun.sign)}</p>
             {natal.bigThree.sun.house && (
-              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.sun.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">{houseLabel(natal.bigThree.sun.house)}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.moon.sign} size={36} className="text-cosmic-blue mb-1.5" framed />
-            <p className="text-meta uppercase tracking-wider text-mystic-400">Moon</p>
-            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.moon', { defaultValue: 'Moon' })}</p>
+            <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.moon.sign)}</p>
             {natal.bigThree.moon.house && (
-              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.moon.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">{houseLabel(natal.bigThree.moon.house)}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             {natal.bigThree.rising ? (
               <>
                 <ZodiacGlyph sign={natal.bigThree.rising.sign} size={36} className="text-cosmic-rose mb-1.5" framed />
-                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
-                <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.rising.sign}</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.rising', { defaultValue: 'Rising' })}</p>
+                <p className="text-ui text-mystic-100 font-medium">{signLabel(natal.bigThree.rising.sign)}</p>
               </>
             ) : (
               <>
                 <div className="text-3xl mb-1 text-mystic-600">—</div>
-                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
-                <p className="text-meta text-mystic-400">needs birth time</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">{t('horoscope.birthChartView.rising', { defaultValue: 'Rising' })}</p>
+                <p className="text-meta text-mystic-400">{t('natalReport.needsBirthTime', { defaultValue: 'needs birth time' })}</p>
               </>
             )}
           </div>
@@ -628,77 +817,37 @@ export function NatalChartReportPage() {
         className="card-print"
         headingLevel="h3"
         spacing="sm"
-        title={t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
-      >
-        <div className="space-y-4">
-          {natal.planets.map((p) => {
-            const meta = PLANET_ONE_LINERS[p.planet];
-            const houseTheme = p.house ? HOUSE_THEMES[p.house - 1] : undefined;
-            return (
-              <div key={p.planet} className="border-b border-mystic-800/60 pb-4 last:border-b-0 last:pb-0">
-                {/* One line: the planet as a heading, its position as meta.
-                    The reading below used to be three tiers of dimmer grey
-                    (11px italic blurb / 12px in-sign line / 11px house line);
-                    it is one paragraph on the body tier now. */}
-                <div className="flex items-center gap-2 mb-2">
-                  <PlanetGlyph planet={p.planet} size={20} className="text-gold" />
-                  <span className="text-ui font-medium text-mystic-100">
-                    {p.planet} in {p.sign}
-                  </span>
-                  <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
-                  <span className="text-meta text-mystic-400">
-                    {p.degree.toFixed(1)}°
-                    {p.house ? ` · House ${p.house}` : ''}
-                  </span>
-                </div>
-                {(meta || houseTheme) && (
-                  <div className="reading-copy">
-                    <p>
-                      {meta && `${meta.sign} ${meta.inSign(p.sign)}`}
-                      {meta && houseTheme ? ' ' : ''}
-                      {houseTheme && `In your house of ${houseTheme}.`}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Section>
-
-      <Section
-        className="card-print"
-        headingLevel="h3"
-        spacing="sm"
         title={t('natalReport.elementsHeading', { defaultValue: 'Elemental & modal balance' })}
       >
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Elements</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">{t('chartWheel.legendElements', { defaultValue: 'Elements' })}</p>
             {(['Fire', 'Earth', 'Air', 'Water'] as const).map((el) => {
               const total = (Object.values(natal.dominants.elements) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.elements[el] ?? 0) / total) * 100);
+              const label = t(`horoscope.birthChartView.elements.${el}`, { defaultValue: el });
               return (
                 <div key={el} className="mb-1.5">
                   <div className="flex justify-between text-ui text-mystic-200">
-                    <span>{el}</span><span>{pct}%</span>
+                    <span>{label}</span><span className="tabular-nums">{pct}%</span>
                   </div>
-                  <Progress value={pct} size="sm" tone="gold" label={el} />
+                  <Progress value={pct} size="sm" tone="gold" label={label} />
                 </div>
               );
             })}
           </div>
           <div>
-            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Modalities</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">{t('chartWheel.legendModalities', { defaultValue: 'Modalities' })}</p>
             {(['Cardinal', 'Fixed', 'Mutable'] as const).map((m) => {
               const total = (Object.values(natal.dominants.modalities) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.modalities[m] ?? 0) / total) * 100);
+              const label = t(`chartWheel.modalities.${m}`, { defaultValue: m });
               return (
                 <div key={m} className="mb-1.5">
                   <div className="flex justify-between text-ui text-mystic-200">
-                    <span>{m}</span><span>{pct}%</span>
+                    <span>{label}</span><span className="tabular-nums">{pct}%</span>
                   </div>
-                  <Progress value={pct} size="sm" tone="violet" label={m} />
+                  <Progress value={pct} size="sm" tone="violet" label={label} />
                 </div>
               );
             })}
@@ -706,59 +855,121 @@ export function NatalChartReportPage() {
         </div>
         {natal.dominants.dominantPlanets.length > 0 && (
           <p className="text-ui text-mystic-100 mt-4">
-            <span className="text-mystic-400">Dominant planets: </span>
-            {natal.dominants.dominantPlanets.join(', ')}
+            <span className="text-mystic-400">{t('natalReport.dominantPlanetsLabel', { defaultValue: 'Dominant planets:' })} </span>
+            {natal.dominants.dominantPlanets.map(planetLabel).join(t('natalReport.listJoin', { defaultValue: ', ' }))}
           </p>
         )}
         {natal.dominants.chartRuler && (
           <p className="text-ui text-mystic-100 mt-1">
-            <span className="text-mystic-400">Chart ruler: </span>{natal.dominants.chartRuler}
+            <span className="text-mystic-400">{t('natalReport.chartRulerLabel', { defaultValue: 'Chart ruler:' })} </span>{planetLabel(natal.dominants.chartRuler)}
           </p>
         )}
       </Section>
 
-      <Section
-        className="card-print"
-        headingLevel="h3"
-        spacing="sm"
-        title={t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
-      >
-        {natal.aspects.length === 0 ? (
-          <EmptyState variant="inline" size="sm" title="No aspects computed." />
-        ) : (
-          <div className="space-y-1.5">
-            {natal.aspects.map((a, i) => {
-              const meta = ASPECT_META[a.type];
-              const Icon = meta.icon;
+      {/* The report body — what the user reads — sits on paper: the
+          placements and the aspect list, then the Disclaimer as the
+          sheet's tail. The wheel, the Big Three and the balance bars stay
+          on navy above it (they are chart, not prose). */}
+      <Paper as="article" tail className="card-print space-y-8">
+        <section>
+          <h3 className="heading-display-md heading-strong text-ink mb-4">
+            {t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
+          </h3>
+          <div className="space-y-4">
+            {natal.planets.map((p) => {
+              const en = PLANET_LINES_EN[p.planet];
+              const sign = signLabel(p.sign);
+              // Theme, the sign's colouring, the house — each a sentence in
+              // the reader's language (review #110), joined the way the
+              // script joins them (no space after 。, a space after '.').
+              const sentences = [
+                en && t(`natalReport.planetLines.${p.planet}.theme`, { defaultValue: en.theme }),
+                en && t(`natalReport.planetLines.${p.planet}.inSign`, { defaultValue: en.inSign, sign }),
+                p.house && HOUSE_THEMES_EN[p.house]
+                  ? t('natalReport.inHouseOf', {
+                      defaultValue: 'In your house of {{theme}}.',
+                      theme: t(`chartWheel.houseThemes.${p.house}`, { defaultValue: HOUSE_THEMES_EN[p.house] }),
+                    })
+                  : null,
+              ].filter((x): x is string => Boolean(x));
               return (
-                <div
-                  key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1.5 border-b border-mystic-800/50 last:border-b-0"
-                >
-                  <div className="flex items-center gap-2 text-ui text-mystic-200 min-w-0">
-                    <PlanetGlyph planet={a.planet1} size={18} className="text-gold" />
-                    <Icon className={`w-3 h-3 ${meta.color}`} />
-                    <PlanetGlyph planet={a.planet2} size={18} className="text-gold" />
-                    <span className="ml-2">
-                      {a.planet1} {meta.label.toLowerCase()} {a.planet2}
+                <div key={p.planet} className="border-b border-paper-hairline pb-4 last:border-b-0 last:pb-0">
+                  {/* The planet as a heading, its position as meta; the
+                      reading is one paragraph on the body tier. The heading
+                      wraps rather than truncating. */}
+                  <div className="flex items-center gap-2 mb-1.5 min-w-0">
+                    <PlanetGlyph planet={p.planet} size={20} className="text-ink-gold shrink-0" />
+                    <span className="text-ui font-medium text-ink min-w-0 break-words">
+                      {t('horoscope.birthChartView.planetInSign', {
+                        defaultValue: '{{planet}} in {{sign}}',
+                        planet: planetLabel(p.planet),
+                        sign,
+                      })}
+                    </span>
+                    <ZodiacGlyph sign={p.sign} size={18} className="text-ink-muted shrink-0" />
+                    <span className="text-meta text-ink-muted tabular-nums ml-auto shrink-0">
+                      {p.degree.toFixed(1)}°
+                      {p.house ? ` · ${houseLabel(p.house)}` : ''}
                     </span>
                   </div>
-                  <div className="text-meta text-mystic-400 shrink-0">
-                    orb {a.orb.toFixed(1)}°{a.applying ? ' · applying' : ''}
-                  </div>
+                  {sentences.length > 0 && (
+                    <div className="reading-copy">
+                      <p>{joinSentences(sentences)}</p>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
-        )}
-      </Section>
+        </section>
 
-      <p className="text-caption text-mystic-500 italic">
-        {t('natalReport.disclaimer', {
-          defaultValue:
-            'Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.',
-        })}
-      </p>
+        <section>
+          <h3 className="heading-display-md heading-strong text-ink mb-4">
+            {t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
+          </h3>
+          {natal.aspects.length === 0 ? (
+            <p className="reading-meta">{t('natalReport.noAspects', { defaultValue: 'No aspects computed.' })}</p>
+          ) : (
+            <div>
+              {natal.aspects.map((a, i) => {
+                const meta = ASPECT_META[a.type];
+                const Icon = meta.icon;
+                return (
+                  // The name takes the row's full width beside the glyphs
+                  // and wraps; the orb sits on a meta line under it, so a
+                  // long pairing is never cut on a phone (review #111).
+                  <div
+                    key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+                    className="flex items-start gap-3 py-2 border-b border-paper-hairline last:border-b-0"
+                  >
+                    <div className="flex items-center gap-2 shrink-0 pt-0.5" aria-hidden>
+                      <PlanetGlyph planet={a.planet1} size={18} className="text-ink-gold shrink-0" />
+                      <Icon className={`w-3 h-3 shrink-0 ${meta.color}`} />
+                      <PlanetGlyph planet={a.planet2} size={18} className="text-ink-gold shrink-0" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui text-ink break-words">
+                        {t('horoscope.birthChartView.aspectRow', {
+                          defaultValue: '{{p1}} {{type}} {{p2}}',
+                          p1: planetLabel(a.planet1),
+                          type: localizeAspectName(a.type),
+                          p2: planetLabel(a.planet2),
+                        })}
+                      </p>
+                      <p className="text-meta text-ink-muted tabular-nums">
+                        {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb.toFixed(1) })}
+                        {a.applying ? ` · ${t('horoscope.birthChartView.applying', { defaultValue: 'Applying' })}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </Paper>
+      <Disclaimer kind="astrology" tail />
+      {synastryEarnSheet}
     </Page>
   );
 }

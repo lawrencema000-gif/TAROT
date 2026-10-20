@@ -1,3 +1,5 @@
+import { getSpreadBySlug } from '../data/tarotSpreads';
+
 export type PremiumFeature =
   | 'unlimited_saves'
   | 'celtic_cross'
@@ -122,6 +124,20 @@ export function getFeatureBlockedMessage(feature: PremiumFeature): string {
   return `${def.name} is a Premium feature. Upgrade to unlock ${def.description.toLowerCase()}.`;
 }
 
+/** Catalogue spreads of this many cards or fewer are free; the rest are `deep_interpretations`. */
+export const FREE_CATALOGUE_CARD_LIMIT = 3;
+
+/**
+ * The premium feature a spread id sits behind, or null when it is free.
+ *
+ * Three families of id reach here: the six legacy ids (`single`,
+ * `three-card`, …), the tarot catalogue's forty slugs
+ * (src/data/tarotSpreads.ts — castable since Phase 7; free up to three
+ * cards, `deep_interpretations` above, so an ad can unlock one reading),
+ * and the cartomancy spreads (`carto-*`, src/data/cartomancy — the five big
+ * ones are `deep_interpretations`, the one-, three-card and yes/no are
+ * free). Custom spreads (`custom:<uuid>`) are free and never reach here.
+ */
 export function spreadTypeToFeature(spreadType: string): PremiumFeature | null {
   switch (spreadType) {
     case 'celtic-cross':
@@ -131,9 +147,23 @@ export function spreadTypeToFeature(spreadType: string): PremiumFeature | null {
     case 'relationship':
     case 'career':
     case 'shadow':
+    case 'carto-horseshoe':
+    case 'carto-nine-square':
+    case 'carto-romany':
+    case 'carto-wish':
+    case 'carto-relationship':
       return 'deep_interpretations';
-    default:
+    case 'single':
+    case 'carto-single':
+    case 'carto-three-timeline':
+    case 'carto-three-action':
+    case 'carto-yes-no':
       return null;
+    default: {
+      const catalogue = getSpreadBySlug(spreadType);
+      if (catalogue && catalogue.cardCount > FREE_CATALOGUE_CARD_LIMIT) return 'deep_interpretations';
+      return null;
+    }
   }
 }
 

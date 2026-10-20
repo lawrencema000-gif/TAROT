@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader } from '../components/ui';
+import { Dice6, Zap } from 'lucide-react';
+import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader, Paper, EyebrowLabel } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
 import type { ZodiacSign, Planet } from '../types/astrology';
-
-type Interp = typeof import('../data/interpretations');
+import { useInterpretations } from '../hooks/useAstrology';
+import { localizePlanetName, localizeSignName } from '../i18n/localizeNames';
 
 const DICE_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
 const DICE_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -22,12 +22,12 @@ interface AstroRoll {
 // colour emoji on Android.
 function PlanetDieGlyph({ planet }: { planet: string }) {
   const Glyph = PLANET_ICONS[planet as Planet];
-  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={planet} /> : <>?</>;
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={localizePlanetName(planet as Planet)} /> : <>?</>;
 }
 
 function SignDieGlyph({ sign }: { sign: string }) {
   const Glyph = ZODIAC_ICONS[sign as ZodiacSign];
-  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={sign} /> : <>?</>;
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={localizeSignName(sign as ZodiacSign)} /> : <>?</>;
 }
 
 function rollAstro(): AstroRoll {
@@ -56,19 +56,16 @@ export function DicePage() {
   const [mode, setMode] = useState<'classic' | 'astro'>('astro');
   const [reading, setReading] = useState<DiceReading | null>(null);
   const [astro, setAstro] = useState<AstroRoll | null>(null);
-  const [interp, setInterp] = useState<Interp | null>(null);
+  // The planet-in-sign / planet-in-house library in the reader's language.
+  const interp = useInterpretations();
   const [rolling, setRolling] = useState(false);
 
   const roll = async () => {
     setRolling(true);
     setReading(null);
     setAstro(null);
-    const [lib] = await Promise.all([
-      mode === 'astro' && !interp ? import('../data/interpretations') : Promise.resolve(interp),
-      new Promise((r) => setTimeout(r, 700)),
-    ]);
+    await new Promise((r) => setTimeout(r, 700));
     if (mode === 'astro') {
-      if (lib) setInterp(lib as Interp);
       setAstro(rollAstro());
     } else {
       setReading(rollDice());
@@ -76,15 +73,16 @@ export function DicePage() {
     setRolling(false);
   };
 
+  // A pip count is a number: Inter, tabular, never the display serif.
   const renderDie = (value: number, idx: number) => (
-    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl font-display text-gold">
+    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center font-sans text-display font-semibold tabular-nums text-gold">
       {value}
     </div>
   );
 
   const astroDie = (glyph: ReactNode, label: string) => (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl text-gold" style={{ fontFamily: 'serif' }}>
+      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center font-sans text-display font-semibold tabular-nums text-gold">
         {glyph}
       </div>
       <span className="text-meta uppercase tracking-wider text-mystic-400">{label}</span>
@@ -101,10 +99,10 @@ export function DicePage() {
         {/* mode toggle */}
         <div className="flex gap-1.5">
           <Chip size="sm" selected={mode === 'astro'} onSelect={() => { setMode('astro'); setReading(null); }}>
-            Astro dice
+            {t('dice.modeAstro', { defaultValue: 'Astro dice' })}
           </Chip>
           <Chip size="sm" selected={mode === 'classic'} onSelect={() => { setMode('classic'); setAstro(null); }}>
-            Classic
+            {t('dice.modeClassic', { defaultValue: 'Classic' })}
           </Chip>
         </div>
 
@@ -118,37 +116,65 @@ export function DicePage() {
       </Section>
 
       {/* astro result */}
-      {mode === 'astro' && astro && (
+      {mode === 'astro' && astro && (() => {
+        const planet = localizePlanetName(astro.planet as Planet);
+        const sign = localizeSignName(astro.sign as ZodiacSign);
+        const house = interp?.houseMeaning(astro.house) ?? null;
+        return (
         <>
           <Card variant="glow" padding="lg" className="text-center">
             <div className="flex justify-center gap-4 mb-3">
-              {astroDie(<PlanetDieGlyph planet={astro.planet} />, astro.planet)}
-              {astroDie(<SignDieGlyph sign={astro.sign} />, astro.sign)}
-              {astroDie(String(astro.house), `House ${astro.house}`)}
+              {astroDie(<PlanetDieGlyph planet={astro.planet} />, planet)}
+              {astroDie(<SignDieGlyph sign={astro.sign} />, sign)}
+              {astroDie(String(astro.house), t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: astro.house }))}
             </div>
-            <h2 className="heading-display-md text-mystic-100">{astro.planet} in {astro.sign}, House {astro.house}</h2>
+            <h2 className="heading-display-md text-mystic-100">
+              {t('dice.astroTitle', { defaultValue: '{{planet}} in {{sign}}, House {{house}}', planet, sign, house: astro.house })}
+            </h2>
           </Card>
-          <Section contentClassName="space-y-3">
-            {interp && (
-              <>
-                <div className="reading-copy">
-                  <p className="reading-lede drop-cap">{interp.planetInSignText(astro.planet, astro.sign)}</p>
-                  <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
-                </div>
-                {interp.houseMeaning(astro.house) && (
-                  <p className="text-meta text-mystic-400">
-                    House {astro.house} — {interp.houseMeaning(astro.house)!.title}: {interp.houseMeaning(astro.house)!.keywords.join(', ')}.
-                  </p>
-                )}
-              </>
-            )}
-          </Section>
-          <Button variant="outline" fullWidth onClick={() => navigate('/quick-reading')}>
+          {/* The reading is read for meaning, so it sits on paper. */}
+          {interp && (
+            <Paper as="article" className="space-y-4">
+              <div className="reading-copy mx-auto">
+                <p className="reading-lede">{interp.planetInSignText(astro.planet, astro.sign)}</p>
+                <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
+              </div>
+              {house && (
+                <p className="reading-meta">
+                  {t('dice.houseLine', {
+                    defaultValue: 'House {{n}} — {{title}}: {{keywords}}.',
+                    n: astro.house,
+                    title: house.title,
+                    keywords: house.keywords.join(t('dice.keywordJoin', { defaultValue: ', ' })),
+                  })}
+                </p>
+              )}
+            </Paper>
+          )}
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() =>
+              // The quick reading lives at /ai/quick; the roll rides along as
+              // the question so the Oracle opens with it already written.
+              navigate('/ai/quick', {
+                state: {
+                  question: t('dice.oracleQuestion', {
+                    defaultValue: 'The astro dice gave me {{planet}} in {{sign}} in House {{house}}. What is this pointing to for me right now?',
+                    planet,
+                    sign,
+                    house: astro.house,
+                  }),
+                },
+              })
+            }
+          >
             <Zap className="w-4 h-4 mr-2" />
             {t('dice.askOracle', { defaultValue: 'Ask the Oracle about this' })}
           </Button>
         </>
-      )}
+        );
+      })()}
 
       {/* classic result */}
       {mode === 'classic' && reading && (
@@ -157,21 +183,20 @@ export function DicePage() {
             <div className="flex justify-center gap-3 mb-4">
               {reading.rolls.map((v, i) => renderDie(v, i))}
             </div>
-            <p className="text-meta text-mystic-400 tracking-widest uppercase">
+            <p className="text-meta text-mystic-400 tracking-widest uppercase tabular-nums">
               {t('dice.sumLabel', { defaultValue: 'Sum' })} {reading.sum}
             </p>
             <h2 className="heading-display-lg text-mystic-100 mt-2">{reading.title}</h2>
           </Card>
-          <Section>
+          <Paper as="article" className="space-y-6">
             <ReadingProse text={reading.reading} />
-          </Section>
-          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4 text-gold" />
-              {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
-            </h3>
-            <p className="reading-quote my-0">{reading.prompt}</p>
-          </Card>
+            <div>
+              <EyebrowLabel tone="ink" align="left">
+                {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
+              </EyebrowLabel>
+              <blockquote className="reading-quote my-0 mt-2">{reading.prompt}</blockquote>
+            </div>
+          </Paper>
         </>
       )}
 

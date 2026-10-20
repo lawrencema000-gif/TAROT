@@ -13,9 +13,12 @@ import {
   TarotCardIcon,
   ListRow,
   ListRowGroup,
+  Sheet,
 } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
+import { TarotCardDetail } from '../components/readings/TarotCardDetail';
+import { takePendingSpread } from '../components/readings/tarot/pendingSpread';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { DailyCosmicScore } from '../components/ritual/DailyCosmicScore';
 import { DailyMansionCard } from '../components/ritual/DailyMansionCard';
@@ -38,6 +41,7 @@ import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, checkAndAwardStreakMilestone, STREAK_MILESTONES } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
+import { ritualTimeReports } from '../components/ritual/ritualReports';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -58,7 +62,7 @@ const NIGHTS = 14;
 export function HomePage() {
   const { t } = useT(['app', 'common']);
   const { profile, user, refreshProfile } = useAuth();
-  const { setActiveTab, openOverlay } = useUI();
+  const { openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();
   const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
@@ -80,6 +84,7 @@ export function HomePage() {
     completed: false,
   });
   const [drawnTarot, setDrawnTarot] = useState<{ card: TarotCard; reversed: boolean } | null>(null);
+  const [showCardDetail, setShowCardDetail] = useState(false);
   const [tarotSaved, setTarotSaved] = useState(false);
   const [savedToday, setSavedToday] = useState<SavedHighlight[]>([]);
   const [isFirstTime, setIsFirstTime] = useState(false);
@@ -127,9 +132,22 @@ export function HomePage() {
       ]);
 
       if (ritualResult.ok && ritualResult.data) {
-        const state = ritualResult.data;
+        // OR each flag with what this device already saw done. The server
+        // row is the record, but a write that was rejected or has not landed
+        // yet must never un-tick a part the user just finished: the hero used
+        // to snap back to "1 of 3 parts done" on every return to Home.
+        const server = ritualResult.data;
+        const horoscopeViewed = server.horoscopeViewed || !!cached?.horoscopeViewed;
+        const tarotViewed = server.tarotViewed || !!cached?.tarotViewed;
+        const promptViewed = server.promptViewed || !!cached?.promptViewed;
+        const state: RitualState = {
+          horoscopeViewed,
+          tarotViewed,
+          promptViewed,
+          completed: server.completed || !!cached?.completed || (horoscopeViewed && tarotViewed && promptViewed),
+        };
         setRitualState(state);
-        setRitualStarted(state.horoscopeViewed || state.tarotViewed || state.promptViewed);
+        setRitualStarted(horoscopeViewed || tarotViewed || promptViewed);
         cacheDailyRitual(user.id, { ...state, date: today });
       }
 
@@ -166,6 +184,14 @@ export function HomePage() {
     setDailyPrompt(getDailyPrompt(today));
   }, [today]);
 
+  // A spread chosen on its public page before signing up (pendingSpread):
+  // the first signed-in Home opens it, once.
+  useEffect(() => {
+    if (!user) return;
+    const slug = takePendingSpread();
+    if (slug) navigate('/readings', { state: { spreadSlug: slug } });
+  }, [user, navigate]);
+
   useEffect(() => {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
@@ -197,6 +223,10 @@ export function HomePage() {
 
   const updateRitualProgress = async (field: keyof Omit<RitualState, 'completed'>) => {
     if (!user) return;
+    // A part already done stays done: turning the card and then reading its
+    // meaning is one card part, not a second write (or, while the first
+    // write is still in flight, a second completion).
+    if (ritualState[field]) return;
 
     const newState = { ...ritualState, [field]: true };
     const completed = newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed;
@@ -215,6 +245,9 @@ export function HomePage() {
 
     if (completed && !ritualState.completed) {
       setRitualState(prev => ({ ...prev, completed: true }));
+      // The moment the ritual was completed, for the badges that count the
+      // hour and the weekday.
+      const completedAt = new Date();
 
       const xpResult = await awardXP(user.id, 'ritual_complete');
 
@@ -249,16 +282,14 @@ export function HomePage() {
         }
       }
 
-      if (xpResult) {
-        // Time-based achievements
-        const hour = new Date().getHours();
-        if (hour < 7) checkAchievementProgress(user.id, 'morning_ritual');
-        if (hour >= 22) checkAchievementProgress(user.id, 'evening_ritual');
-        const dayOfWeek = new Date().getDay();
-        if (dayOfWeek === 0 || dayOfWeek === 6) checkAchievementProgress(user.id, 'weekend_ritual');
-
-        await refreshProfile();
+      // Early Riser, Night Owl, Weekend Warrior — reported whenever the ritual
+      // completed. The server matches each report to this ritual's own
+      // record, so a capped or failed XP award (awardXP's null) must not drop
+      // them, and the profile is re-read either way (p8 F05).
+      for (const report of ritualTimeReports(completedAt)) {
+        checkAchievementProgress(user.id, report);
       }
+      await refreshProfile();
 
       setCelebrationReason('complete');
       setShowCelebration(true);
@@ -267,16 +298,25 @@ export function HomePage() {
 
   const handleReadHoroscope = () => {
     updateRitualProgress('horoscopeViewed');
-    setActiveTab('readings');
+    // The card says "Read": open the horoscope, not the Readings tab's
+    // default tarot panel. ReadingsPage reads `state.tab` for its first tab.
+    navigate('/readings', { state: { tab: 'horoscope' } });
   };
 
   const handleTarotSave = async () => {
     if (!user || !drawnTarot) return;
 
+    // A failed write says so. Both failure toasts used to repeat the success
+    // line in red ("Saved to highlights" for a save that did not happen).
     if (tarotSaved) {
       const res = await savedHighlights.deleteByTypeAndDate(user.id, 'tarot', today);
       if (!res.ok) {
-        toast(t('home.removedFromSaved'), 'error');
+        toast(
+          t('home.highlightRemoveFailed', {
+            defaultValue: 'Couldn’t remove this card from your highlights — check your connection and try again.',
+          }),
+          'error',
+        );
         return;
       }
       setTarotSaved(false);
@@ -290,12 +330,17 @@ export function HomePage() {
         content: { card: drawnTarot.card, reversed: drawnTarot.reversed },
       });
       if (!res.ok) {
-        toast(t('home.savedToHighlights'), 'error');
+        toast(
+          t('home.highlightSaveFailed', {
+            defaultValue: 'Couldn’t save this card to your highlights — check your connection and try again.',
+          }),
+          'error',
+        );
         return;
       }
       setTarotSaved(true);
       updateRitualProgress('tarotViewed');
-      toast(t('home.savedToHighlights'), 'success');
+      toast(t('home.highlightSaved', { defaultValue: 'Saved to your highlights' }), 'success');
       checkRitualStatus();
     }
   };
@@ -303,8 +348,10 @@ export function HomePage() {
   const handleTarotShare = async () => {
     if (!drawnTarot) return;
 
+    // The locale's reversed-card form, as the Library writes it: ソードの8（逆位置）,
+    // not a Latin " (…)" built here (QU2 R3 b).
     const name = drawnTarot.reversed
-      ? `${drawnTarot.card.name} (${t('home.ritualCards.reversed')})`
+      ? t('library.cardReversed', { name: drawnTarot.card.name, defaultValue: '{{name}} (Reversed)' })
       : drawnTarot.card.name;
     const text = t('home.shareCard', {
       name,
@@ -314,7 +361,9 @@ export function HomePage() {
     if (navigator.share) {
       try {
         await navigator.share({ text });
-      } catch {
+      } catch (err) {
+        // The reader closed the sheet on purpose: nothing to copy, nothing to say.
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         await navigator.clipboard.writeText(text);
         toast(t('home.copiedToClipboard'), 'success');
       }
@@ -326,12 +375,16 @@ export function HomePage() {
 
   const handleTarotMeaning = () => {
     updateRitualProgress('tarotViewed');
-    setActiveTab('readings');
+    // "Meaning" opens this card, here — not the deck on the Readings tab.
+    setShowCardDetail(true);
   };
 
+  // "Write" opens the journal's editor on today's prompt — or today's entry
+  // when there is one — not the Journal's list, which asked for a second tap
+  // on "Write today" (p8 F54/F88). JournalPage reads `compose`.
   const handleWritePrompt = () => {
     updateRitualProgress('promptViewed');
-    setActiveTab('journal');
+    navigate('/journal', { state: { compose: 'today' } });
   };
 
   const greeting = () => {
@@ -404,7 +457,10 @@ export function HomePage() {
 
           <Card padding="md">
             {drawnTarot && (
+              // Keyed by the day: tomorrow's card arrives face down, even on
+              // a Home left open across midnight.
               <TarotFlipCard
+                key={today}
                 card={drawnTarot.card}
                 reversed={drawnTarot.reversed}
                 saved={tarotSaved}
@@ -412,6 +468,8 @@ export function HomePage() {
                 onShare={handleTarotShare}
                 onMeaning={handleTarotMeaning}
                 cardBackUrl={profile?.card_back_url}
+                revealed={ritualState.tarotViewed}
+                onReveal={() => updateRitualProgress('tarotViewed')}
               />
             )}
           </Card>
@@ -552,6 +610,23 @@ export function HomePage() {
         today={today}
         justCompleted={celebrationReason === 'complete'}
       />
+
+      {/* `label`, not `title`: TarotCardDetail draws the sheet's only chrome
+          (share · close) and names the card itself. */}
+      <Sheet
+        open={showCardDetail && !!drawnTarot}
+        onClose={() => setShowCardDetail(false)}
+        label={drawnTarot?.card.name}
+      >
+        {drawnTarot && (
+          <TarotCardDetail
+            card={drawnTarot.card}
+            reversed={drawnTarot.reversed}
+            onClose={() => setShowCardDetail(false)}
+            onShare={handleTarotShare}
+          />
+        )}
+      </Sheet>
     </Page>
   );
 }

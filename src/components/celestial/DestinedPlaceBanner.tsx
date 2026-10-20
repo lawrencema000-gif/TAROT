@@ -3,6 +3,7 @@ import { MapPin, X, ChevronRight } from 'lucide-react';
 import { EyebrowLabel } from '../ui';
 import { ccToFlag } from '../../utils/celestialGeo';
 import { useT } from '../../i18n/useT';
+import { localizeCountry } from './placeNames';
 import type { DestinedPlace } from '../../types';
 
 /**
@@ -49,7 +50,7 @@ export function DestinedPlaceBanner({ place, onRevisit, onDismiss }: Props) {
           </EyebrowLabel>
           <div className="text-base font-medium text-mystic-100 truncate">
             {place.city.name}
-            <span className="text-meta text-mystic-400 font-normal ml-2">{place.city.country}</span>
+            <span className="text-meta text-mystic-400 font-normal ml-2">{localizeCountry(place.city.cc, place.city.country)}</span>
           </div>
         </div>
         <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0" aria-hidden />

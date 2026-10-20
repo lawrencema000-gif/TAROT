@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>The Celtic Cross Tarot Spread, Step by Step | Arcana Blog</title>
     <meta name="description" content="Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence." />
 
-    <link rel="canonical" href="https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step/" />
+    <link rel="canonical" href="https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step/" />
+    <meta property="og:url" content="https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step" />
     <meta property="og:title" content="The Celtic Cross Tarot Spread, Step by Step | Arcana Blog" />
     <meta property="og:description" content="Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence." />
     <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/celtic-cross-tarot-spread-step-by-step-1781859640828.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The Celtic Cross Tarot Spread, Step by Step","description":"Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/celtic-cross-tarot-spread-step-by-step-1781859640828.png","url":"https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step/","datePublished":"2026-06-19T09:00:40.965+00:00","dateModified":"2026-06-19T09:00:40.965+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The Celtic Cross Tarot Spread, Step by Step","description":"Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/celtic-cross-tarot-spread-step-by-step-1781859640828.png","url":"https://tarotlife.app/blog/celtic-cross-tarot-spread-step-by-step","datePublished":"2026-06-19T09:00:40.965+00:00","dateModified":"2026-06-19T09:00:40.965+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>The Celtic Cross Tarot Spread, Step by Step</h1><p>Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence.</p><p>The Celtic Cross Tarot Spread, Step by Step The Celtic Cross tarot spread is the classic 10-card map for reading a situation with depth and direction. Here’s a clean, modern walkthrough of each position, how to parse the crossings, and how to synthesize the story without drowning in details. The Celtic Cross 10 Card Layout at a Glance The Celtic Cross is split into two parts: the Cross (positions 1–6) and the Staff (positions 7–10). The Cross describes the core situation and its timeline. The Staff reveals your inner stance and likely trajectory. Positions 1–2: Present and crossing force Position 3: Foundation/root Position 4: Past/what’s leaving Position 5: Conscious aim/crowning Position 6: Near future/what’s next Positions 7–10: Self, environment, hopes/fears, outcome If you want an AI-guided interpretation as you practice, test a quick Celtic Cross in our tarot readings or get a quick AI reading to cross-check your narrative. Celtic Cross Meaning: What Each Position Says Position 1 — The Heart of the Matter The essential state, the live issue, your current stance. It names the weather you’re standing in. Position 2 — The Crossing What helps or hinders the situation. Read this as a modifying vector: friction, leverage, or both. It “colors” Position 1. Position 3 — The Root/Foundation The underlying cause, deep motive, or unconscious driver. Often older than the current event. Position 4 — The Recent Past What’s fading, the setup you’re exiting. It shows the momentum you carried into the present. Position 5 — The Crowning/Conscious Aim What you’re reaching for or aware of. It can be the best achievable in current conditions or the ideal you hold. Position 6 — The Near Future The next development, not the final outcome. Think “next chapter in the arc,” typically within weeks. Position 7 — Self/You Your attitude, strategy, or self-image in this matter. It can reveal blind spots or strengths you’re leaning on. Position 8 — Environment/Others The field you’re playing on: people, systems, market/weather. It’s how the world responds or constrains. Position 9 — Hopes and Fears The charged edge where desire meets anxiety. Often a mirror: the hope and the fear are the same energy. Position 10 — Outcome/Trajectory The likely result if things continue on this path. Not fate; a forecast you can edit with new choices. How to Read the Crossings and the Cross vs. the Staff The Cross (1–6) is the situation’s anatomy. The Staff (7–10) is your agency and social context. Anchor your reading in the Cross before interpreting the Staff, or you risk projecting. Reading Position 2 across Position 1: Elemental synergy: Wands over Cups ignites feeling into action; Swords over Pentacles can overthink stability. Tempo: Majors crossing Majors = decisive season. Minor crossing Major = personal tactic meeting a big archetypal wave. Vector: Is Position 2 creating friction (reversal, clashing element) or leverage (supportive aspect, harmonious suit)? Time spine: 3–4–5–6 3 (Root) explains why the story exists. 4 (Past) shows what has completed. 5 (Crown) names your declared aim. 6 (Near future) shows the next inflection point. Synthesis bridge: Move from Cross to Staff 7 (Self) tests whether your current stance serves the aim in 5. 8 (Environment) checks reality friction or tailwinds. 9 (Hopes/Fears) reveals the charge driving choices. 10 (Outcome) integrates all vectors; adjust inputs to edit it. For daily calibration on aims, check your horoscope alongside a mini spread to align timing and tone. How to Read a Celtic Cross: A Step-by-Step Method Step 1: Frame the question with a verb. “What supports a healthy move this quarter?” is cleaner than “Should I move?” You’re reading dynamics, not just yes/no. Step 2: Pull and place cards intentionally. Lay 1, then 2 crossing it. Place 3–6 clockwise (base, left, top, right). Then build the Staff vertically (7–10). Step 3: Name each position before meaning. State: “This is the Root,” then describe the card. Position</p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>The Celtic Cross Tarot Spread, Step by Step</h1><p>Learn the Celtic Cross tarot spread: 10-card positions, cross vs. staff, crossings, and synthesis. A clear, modern walkthrough to read with confidence.</p><p>The Celtic Cross Tarot Spread, Step by Step The Celtic Cross tarot spread is the classic 10-card map for reading a situation with depth and direction. Here’s a clean, modern walkthrough of each position, how to parse the crossings, and how to synthesize the story without drowning in details. The Celtic Cross 10 Card Layout at a Glance The Celtic Cross is split into two parts: the Cross (positions 1–6) and the Staff (positions 7–10). The Cross describes the core situation and its timeline. The Staff reveals your inner stance and likely trajectory. Positions 1–2: Present and crossing force Position 3: Foundation/root Position 4: Past/what’s leaving Position 5: Conscious aim/crowning Position 6: Near future/what’s next Positions 7–10: Self, environment, hopes/fears, outcome If you want an AI-guided interpretation as you practice, test a quick Celtic Cross in our tarot readings or get a quick AI reading to cross-check your narrative. Celtic Cross Meaning: What Each Position Says Position 1 — The Heart of the Matter The essential state, the live issue, your current stance. It names the weather you’re standing in. Position 2 — The Crossing What helps or hinders the situation. Read this as a modifying vector: friction, leverage, or both. It “colors” Position 1. Position 3 — The Root/Foundation The underlying cause, deep motive, or unconscious driver. Often older than the current event. Position 4 — The Recent Past What’s fading, the setup you’re exiting. It shows the momentum you carried into the present. Position 5 — The Crowning/Conscious Aim What you’re reaching for or aware of. It can be the best achievable in current conditions or the ideal you hold. Position 6 — The Near Future The next development, not the final outcome. Think “next chapter in the arc,” typically within weeks. Position 7 — Self/You Your attitude, strategy, or self-image in this matter. It can reveal blind spots or strengths you’re leaning on. Position 8 — Environment/Others The field you’re playing on: people, systems, market/weather. It’s how the world responds or constrains. Position 9 — Hopes and Fears The charged edge where desire meets anxiety. Often a mirror: the hope and the fear are the same energy. Position 10 — Outcome/Trajectory The likely result if things continue on this path. Not fate; a forecast you can edit with new choices. How to Read the Crossings and the Cross vs. the Staff The Cross (1–6) is the situation’s anatomy. The Staff (7–10) is your agency and social context. Anchor your reading in the Cross before interpreting the Staff, or you risk projecting. Reading Position 2 across Position 1: Elemental synergy: Wands over Cups ignites feeling into action; Swords over Pentacles can overthink stability. Tempo: Majors crossing Majors = decisive season. Minor crossing Major = personal tactic meeting a big archetypal wave. Vector: Is Position 2 creating friction (reversal, clashing element) or leverage (supportive aspect, harmonious suit)? Time spine: 3–4–5–6 3 (Root) explains why the story exists. 4 (Past) shows what has completed. 5 (Crown) names your declared aim. 6 (Near future) shows the next inflection point. Synthesis bridge: Move from Cross to Staff 7 (Self) tests whether your current stance serves the aim in 5. 8 (Environment) checks reality friction or tailwinds. 9 (Hopes/Fears) reveals the charge driving choices. 10 (Outcome) integrates all vectors; adjust inputs to edit it. For daily calibration on aims, check your horoscope alongside a mini spread to align timing and tone. How to Read a Celtic Cross: A Step-by-Step Method Step 1: Frame the question with a verb. “What supports a healthy move this quarter?” is cleaner than “Should I move?” You’re reading dynamics, not just yes/no. Step 2: Pull and place cards intentionally. Lay 1, then 2 crossing it. Place 3–6 clockwise (base, left, top, right). Then build the Staff vertically (7–10). Step 3: Name each position before meaning. State: “This is the Root,” then describe the card. Position</p></article></main></div></div>
   </body>
 </html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6V3H9HV31V');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- `maximum-scale=1.0, user-scalable=no` used to sit in here. Both are
+         removed: they disable pinch-zoom for every user on every screen,
+         which fails WCAG 1.4.4 (Resize Text) and is the single most common
+         accessibility defect on Android wrappers. Android WebView and
+         Chrome honour the lock; iOS Safari 10+ ignores it, so it was only
+         ever punishing the platform we actually ship the store build to.
+         The usual reason to add it — stopping the double-tap zoom that
+         iOS does on small tap targets — is already handled by
+         `touch-action: manipulation` on html in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The two faces the first paint needs: the display serif for the
+         greeting and the body sans. Everything else lazy-loads per
+         unicode-range from the @font-face rules in index.css. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-500-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-latin-400-normal.woff2" />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <meta name="theme-color" content="#07070f" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07070f" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Arcana" />
+
+    <meta name="application-name" content="Arcana" />
+    <meta name="msapplication-TileColor" content="#07070f" />
+    <meta name="msapplication-config" content="none" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>Citrine Meaning: The Merchant’s Stone for Abundance | Arcana Blog</title>
+    <meta name="description" content="Discover the true citrine meaning, its properties, uses for wealth and confidence, how to spot heated amethyst, and ways to place citrine for abundance and Feng Shui." />
+
+    <link rel="canonical" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcana" />
+    <meta property="og:url" content="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties" />
+    <meta property="og:title" content="Citrine Meaning: The Merchant’s Stone for Abundance | Arcana Blog" />
+    <meta property="og:description" content="Discover the true citrine meaning, its properties, uses for wealth and confidence, how to spot heated amethyst, and ways to place citrine for abundance and Feng Shui." />
+    <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/citrine-meaning-abundance-uses-properties-1779786054155.png" />
+    <meta property="og:image:secure_url" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tarotlife_app" />
+    <meta name="twitter:title" content="Citrine Meaning: The Merchant’s Stone for Abundance | Arcana Blog" />
+    <meta name="twitter:description" content="Discover the true citrine meaning, its properties, uses for wealth and confidence, how to spot heated amethyst, and ways to place citrine for abundance and Feng Shui." />
+    <meta name="twitter:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/citrine-meaning-abundance-uses-properties-1779786054155.png" />
+
+    <!-- Site verification — fill in once domains are verified. The values
+         below are placeholders; replace with real codes from each console. -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
+    <!-- <meta name="msvalidate.01" content="REPLACE_WITH_BING_CODE" /> -->
+    <!-- <meta name="p:domain_verify" content="REPLACE_WITH_PINTEREST_CODE" /> -->
+    <!-- <meta name="facebook-domain-verification" content="REPLACE_WITH_FB_CODE" /> -->
+
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Citrine Meaning: The Merchant’s Stone for Abundance","description":"Discover the true citrine meaning, its properties, uses for wealth and confidence, how to spot heated amethyst, and ways to place citrine for abundance and Feng Shui.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/citrine-meaning-abundance-uses-properties-1779786054155.png","url":"https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties","datePublished":"2026-05-26T09:00:54.299+00:00","dateModified":"2026-05-26T09:00:54.299+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+  <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
+  </head>
+  <body>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Citrine Meaning: The Merchant’s Stone for Abundance</h1><p>Discover the true citrine meaning, its properties, uses for wealth and confidence, how to spot heated amethyst, and ways to place citrine for abundance and Feng Shui.</p><p>Citrine Meaning: The Merchant’s Stone for Abundance Citrine is sunlight you can hold—clear, warm, and unapologetically optimistic. In this guide you’ll learn citrine’s meaning, its core properties, how to use it for abundance and confidence, and how to tell real citrine from heated amethyst. Citrine Meaning: Solar Plexus Power and Clear Magnetism Citrine speaks to the solar plexus: will, self-trust, and decisive action. Where many “money” rituals stall in wishful thinking, citrine pushes energy forward—clarifying goals, warming confidence, and translating intention into motion. Core themes: manifestation, prosperity, self-worth, creativity, and clean boundaries. Emotional tone: buoyant rather than hyped. It dissolves scarcity scripts and replaces them with steady, earned optimism. Pairing citrine with practical steps turns “luck” into leverage: budget meetings, pitch prep, product refinement, and consistent follow‑through. Keep citrine near your workspace and run a focused intention spread with our tarot readings to convert clarity into a plan. Citrine Properties Natural citrine is a yellow to smoky-gold variety of quartz colored by iron and heat within the Earth. Its energy profile mirrors its clarity: bright, direct, and energizing without jitter. Chakra affinity: solar plexus (Manipura) and, for paler stones, a bridge to the sacral for creative flow. Elemental feel: Fire with Air—warm initiative plus mental clarity. Practical effects: supports decision-making, sales conversations, public speaking, and resilient optimism after setbacks. Quality indicators: Color: pale champagne to honey-gold for natural; even saturation, not patchy. Transparency: from translucent to transparent; inclusions are fine if color and feel remain warm and consistent. Luster: vitreous, with a clean sparkle that stays bright in different lights. Citrine Uses for Abundance and Confidence Abundance is a behavior pattern. Citrine trains it. Morning priming: hold the stone at your solar plexus. Name a single financial action for the day—send the invoice, pitch the client, tweak the offer. Then do it before noon. Money mapping: place citrine beside your budgeting tool or ledger. Each review session, touch the stone and state your revenue target aloud with a measurable time frame. Sales and interviews: keep a small tumble in your pocket. Before you speak, breathe into the belly, feel the weight of the stone, and choose one clear ask. Creative monetization: set citrine with a notebook. Brain-dump ten ways your skills solve real problems. Circle the top two and schedule tests this week. For rapid clarity, use a single-card prompt with our Quick AI Reading and anchor the insight by touching your citrine as you decide your next step. Crystals for Abundance: Building a Focused Grid Citrine plays well with a small, purposeful cast. Green aventurine: risk tolerance and new opportunities. Pyrite: disciplined structure and follow-through. Tiger’s eye: strategic courage and timing. Clear quartz: amplification and focus. How to grid your workspace: Center: citrine on your desk, aligned with your monitor or ledger. Corners: pyrite at back-left (wealth anchor), aventurine at front-right (outreach), tiger’s eye at back-right (strategy). Intention: write a concrete revenue metric and deadline; place beneath the citrine. Revisit weekly to track action taken, not just outcomes. For alignment with timing and personal strengths, check your daily horoscope and natal chart to schedule launches or asks when your solar energy peaks. Citrine vs Heated Amethyst: How to Tell the Difference Most “citrine” on the market is heat-treated amethyst. It still carries quartz clarity, but its burn is different—sharper, more sacral, less steady. If you want the calm, solar confidence of natural citrine, learn the tells. Color: Natural citrine ranges pale champagne to smoky honey, often subtle and even. Heated amethyst shows strong orangey-brown to neon yellow with abrupt white bases. Zoning </p></article></main></div></div>
+  </body>
+</html>

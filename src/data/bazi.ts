@@ -51,6 +51,30 @@ export const BRANCH_ELEMENT: Record<EarthlyBranch, FiveElement> = {
   Shen: 'metal', You: 'metal', Xu: 'earth', Hai: 'water',
 };
 
+/**
+ * The stems and branches as characters. They are written the same way in
+ * traditional, simplified and Japanese script, so a chart shows them to every
+ * reader of hanzi or hanja as is; English shows the romanized key.
+ */
+export const STEM_CN: Record<HeavenlyStem, string> = {
+  Jia: '甲', Yi: '乙', Bing: '丙', Ding: '丁', Wu: '戊',
+  Ji: '己', Geng: '庚', Xin: '辛', Ren: '壬', Gui: '癸',
+};
+export const BRANCH_CN: Record<EarthlyBranch, string> = {
+  Zi: '子', Chou: '丑', Yin: '寅', Mao: '卯', Chen: '辰', Si: '巳',
+  Wu: '午', Wei: '未', Shen: '申', You: '酉', Xu: '戌', Hai: '亥',
+};
+
+/**
+ * `{{name}}` placeholders filled from `vars`; an unknown name stays as written.
+ * The English sentences below that take a value (a colour, a branch, an
+ * element) are templates, so the 'bazi' overlay can translate the sentence and
+ * the reader's language can supply the value (src/data/baziReading.ts).
+ */
+export function fillTemplate(text: string, vars: Readonly<Record<string, string>>): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (m, k: string) => (Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : m));
+}
+
 export interface BaziPillar {
   stem: HeavenlyStem;
   branch: EarthlyBranch;
@@ -502,14 +526,16 @@ export const HIDDEN_STEMS: Record<EarthlyBranch, HeavenlyStem[]> = {
 // Nayin (纳音) — 60 stem-branch pair → sound/element designation.
 // ────────────────────────────────────────────────────────────────────
 
+export type StemBranch = `${HeavenlyStem}${EarthlyBranch}`;
+
 export interface NayinInfo {
+  /** The first pillar of the pair (JiaZi for 海中金): the stable key the 'bazi' overlay translates by. */
+  id: StemBranch;
   classical: string;
   western: string;
 }
 
-type StemBranch = `${HeavenlyStem}${EarthlyBranch}`;
-
-const NAYIN_PAIRS: Array<[StemBranch, StemBranch, NayinInfo]> = [
+const NAYIN_PAIRS: Array<[StemBranch, StemBranch, Omit<NayinInfo, 'id'>]> = [
   ['JiaZi',   'YiChou',   { classical: '海中金 Hǎizhōng Jīn',  western: 'Gold in the Sea' }],
   ['BingYin', 'DingMao',  { classical: '炉中火 Lúzhōng Huǒ',   western: 'Fire in the Furnace' }],
   ['WuChen',  'JiSi',     { classical: '大林木 Dàlín Mù',      western: 'Wood of Great Forests' }],
@@ -542,8 +568,11 @@ const NAYIN_PAIRS: Array<[StemBranch, StemBranch, NayinInfo]> = [
   ['RenXu',   'GuiHai',   { classical: '大海水 Dàhǎi Shuǐ',    western: 'Water of the Great Sea' }],
 ];
 
+/** The thirty 納音, one per pair, in cycle order. */
+export const NAYIN_LIST: readonly NayinInfo[] = NAYIN_PAIRS.map(([a, , info]) => ({ id: a, ...info }));
+
 const NAYIN_MAP: Map<StemBranch, NayinInfo> = new Map(
-  NAYIN_PAIRS.flatMap(([a, b, info]) => [[a, info], [b, info]] as const),
+  NAYIN_PAIRS.flatMap(([a, b], i) => [[a, NAYIN_LIST[i]], [b, NAYIN_LIST[i]]] as const),
 );
 
 export function nayinFor(stem: HeavenlyStem, branch: EarthlyBranch): NayinInfo | null {
@@ -594,6 +623,15 @@ const ELEMENT_COLOR: Record<FiveElement, { hex: string; name: string }> = {
   water: { hex: '#60a5fa', name: 'blue / black' },
 };
 
+/** Each element's colour, as English names it (the 'bazi' overlay translates it by element). */
+export const ELEMENT_COLOR_NAME: Record<FiveElement, string> = {
+  wood: ELEMENT_COLOR.wood.name,
+  fire: ELEMENT_COLOR.fire.name,
+  earth: ELEMENT_COLOR.earth.name,
+  metal: ELEMENT_COLOR.metal.name,
+  water: ELEMENT_COLOR.water.name,
+};
+
 const ELEMENT_DIRECTION: Record<FiveElement, FavorableElementGuidance['direction']> = {
   wood: 'east', fire: 'south', earth: 'center', metal: 'west', water: 'north',
 };
@@ -602,7 +640,7 @@ const ELEMENT_LUCKY_NUMBERS: Record<FiveElement, [number, number]> = {
   wood: [1, 2], fire: [3, 4], earth: [5, 6], metal: [7, 8], water: [9, 0],
 };
 
-const ELEMENT_CAREER_HINT: Record<FiveElement, string> = {
+export const ELEMENT_CAREER_HINT: Record<FiveElement, string> = {
   wood:  'Growth-oriented work — teaching, writing, startups, anything that needs vision and patience.',
   fire:  'Performance and visibility — stage, sales, leadership, brand, the roles that need charisma.',
   earth: 'Steady building — operations, real estate, healing, anything that benefits from trust and longevity.',
@@ -652,6 +690,13 @@ export interface LuckyColorToday {
   oneLiner: string;
 }
 
+/** Today's colour line, per alignment; `{{color}}` is the colour's name. */
+export const LUCKY_COLOR_LINES: Record<LuckyColorToday['alignment'], string> = {
+  doubled: 'Wear {{color}} today — your core element and the day\'s energy are in sync. Lean in.',
+  favorable: '{{color}} carries you today — subtle lift, good for visibility and wins.',
+  neutral: 'A touch of {{color}} — grounds you when the day\'s current doesn\'t quite match your chart.',
+};
+
 export function todaysLuckyColor(r: BaziResult): LuckyColorToday {
   const fav = computeFavorableElement(r);
   const dayEl = STEM_ELEMENT[todayDayStem()].element;
@@ -667,18 +712,12 @@ export function todaysLuckyColor(r: BaziResult): LuckyColorToday {
   }
 
   const c = ELEMENT_COLOR[el];
-  const oneLiners: Record<LuckyColorToday['alignment'], string> = {
-    doubled:    `Wear ${c.name} today — your core element and the day's energy are in sync. Lean in.`,
-    favorable:  `${c.name} carries you today — subtle lift, good for visibility and wins.`,
-    neutral:    `A touch of ${c.name} — grounds you when the day's current doesn't quite match your chart.`,
-  };
-
   return {
     color: c.hex,
     colorName: c.name,
     element: el,
     alignment,
-    oneLiner: oneLiners[alignment],
+    oneLiner: fillTemplate(LUCKY_COLOR_LINES[alignment], { color: c.name }),
   };
 }
 

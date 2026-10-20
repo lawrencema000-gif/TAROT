@@ -1,12 +1,10 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "认识自己,每日一份仪式感。",
-    "shortTagline": "你的每日仪式。"
+    "tagline": "认识自己，每日一份仪式感。"
   },
   "nav": {
     "home": "首页",
-    "readings": "牌阵",
+    "readings": "解读",
     "horoscope": "星座运势",
     "journal": "日记",
     "quizzes": "测试",
@@ -14,12 +12,10 @@
     "blog": "博客",
     "cardMeanings": "牌意解读",
     "signIn": "登录",
-    "signOut": "退出登录",
     "settings": "设置",
     "search": "搜索",
     "saved": "已收藏",
     "back": "返回",
-    "backToArcana": "← 返回 Arcana",
     "backToNews": "返回资讯",
     "trophies": "成就",
     "news": "资讯",
@@ -32,53 +28,37 @@
     "advisors": "顾问",
     "people": "人物",
     "charts": "星盘",
-    "ziwei": "紫微斗數",
+    "ziwei": "紫微斗数",
     "mansions": "二十八宿",
     "goodDays": "择日",
-    "wishingSky": "許願星空"
+    "wishingSky": "许愿星空",
+    "cartomancy": "扑克牌",
+    "mainNavigation": "主导航"
   },
   "actions": {
     "continue": "继续",
     "cancel": "取消",
     "delete": "删除",
-    "confirm": "确认",
     "close": "关闭",
-    "skip": "跳过",
     "retry": "重试",
-    "readMore": "阅读更多",
-    "copy": "复制",
     "copied": "已复制。",
     "saved": "已保存",
     "shareFailed": "分享失败，请重试。",
-    "restore": "恢复购买",
-    "manage": "管理订阅",
     "loading": "加载中…",
     "send": "发送",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "back": "返回",
+    "dismiss": "关闭"
   },
   "labels": {
     "email": "邮箱",
     "password": "密码",
-    "displayName": "显示名称",
     "language": "语言",
-    "birthDate": "出生日期",
-    "birthTime": "出生时间",
-    "birthPlace": "出生地",
-    "timezone": "时区",
-    "loading": "加载中…",
-    "processing": "处理中…",
-    "today": "今天",
-    "yesterday": "昨天",
-    "optional": "可选",
-    "required": "必填",
-    "searchPlaceholder": "搜索…",
-    "yes": "是",
-    "no": "否",
-    "maybe": "也许"
+    "loading": "加载中…"
   },
   "errors": {
     "generic": "操作失败，请检查网络连接后重试。",
-    "network": "网络错误,请检查连接。",
+    "network": "网络错误，请检查连接。",
     "unauthorized": "请登录后继续。",
     "forbidden": "你没有权限执行此操作。",
     "notFound": "未找到。",
@@ -97,7 +77,7 @@
     "birthDateInvalid": "日期格式不正确，请检查后重试。",
     "birthDateFuture": "出生日期不能是未来日期，请检查年份。",
     "minAge": "使用 Arcana 需年满 13 岁。",
-    "tooManyRequests": "请求过于频繁,请稍后再试。",
+    "tooManyRequests": "请求过于频繁，请稍后再试。",
     "saveFailed": "保存失败，请检查网络连接后重试。",
     "auth": {
       "unknown": "登录未完成，请重试或换一种登录方式。",
@@ -114,7 +94,7 @@
       "USER_EXISTS": "此邮箱已注册账号。",
       "PASSWORD_TOO_SHORT": "密码至少需要 6 位。",
       "INVALID_EMAIL": "请输入有效的邮箱地址。",
-      "NETWORK_ERROR": "网络错误,请检查连接。",
+      "NETWORK_ERROR": "网络错误，请检查连接。",
       "POPUP_BLOCKED": "弹窗被阻止了。",
       "USER_CANCELLED": "登录已取消。",
       "RATE_LIMITED": "尝试次数过多。",
@@ -136,17 +116,10 @@
     "fieldRequired": "此项为必填。",
     "tooShort": "内容过短。",
     "tooLong": "内容过长。",
-    "invalidValue": "此值无效。"
+    "invalidValue": "此值无效。",
+    "sessionExpired": "登录已过期，请重新登录"
   },
   "toast": {
-    "savedSuccess": "已保存。",
-    "deletedSuccess": "已删除。",
-    "copiedSuccess": "已复制到剪贴板。",
-    "welcomeBack": "欢迎回来。",
-    "signedOut": "已退出登录。",
-    "offline": "你已离线，部分功能不可用。",
-    "reconnected": "已恢复连接。",
-    "updateAvailable": "有新版本可用。",
     "languageChanged": "已切换语言。"
   },
   "languages": {
@@ -155,22 +128,41 @@
     "ko": "한국어",
     "zh": "简体中文"
   },
-  "time": {
-    "morning": "上午",
-    "afternoon": "下午",
-    "evening": "傍晚",
-    "night": "夜晚"
-  },
   "auth": {
     "profileLoadFailed": "无法加载个人资料，请刷新页面重试。",
     "sessionExpired": "登录会话已过期。请重试。",
     "signInFailed": "登录失败。请重试。",
-    "signInFailedWith": "登录失败: {{error}}",
+    "signInFailedWith": "登录失败：{{error}}",
     "signInCancelled": "登录已取消",
     "signInSessionExpired": "登录会话已过期。请重试。",
     "googleNotConfigured": "未配置 Google 登录。请使用邮箱/密码。"
   },
   "sheet": {
     "panel": "面板"
+  },
+  "disclaimer": {
+    "label": "免责声明",
+    "lead": {
+      "tarot": "塔罗无法回答一切。",
+      "astrology": "占星是一种视角，不是预报。",
+      "quiz": "测试是一面镜子，不是定论。",
+      "ai": "这段解读由 AI 模型撰写。",
+      "cartomancy": "牌只是提示，不做决定。",
+      "general": "供你反思，而非建议。",
+      "wellbeing": "这是筛查，不是诊断。"
+    },
+    "body": "Arcana 的解读用于自我反思与娱乐，不构成医疗、法律、财务或心理方面的建议。",
+    "bodies": {
+      "wellbeing": "这些问题反映的是你最近的感受，无法用来诊断任何情况。如果你正在苦苦支撑，或感到不安全，请和你信任的人、医生或心理健康专业人士谈一谈。"
+    }
+  },
+  "affirmation": {
+    "label": "肯定语"
+  },
+  "resultSheet": {
+    "summaryHeading": "解读摘要"
+  },
+  "resultLayout": {
+    "readFullReading": "阅读完整解读"
   }
 }

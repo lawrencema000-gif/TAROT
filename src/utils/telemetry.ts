@@ -252,9 +252,9 @@ export function captureException(step: string, error: unknown, data?: Record<str
 
   // Forward to Sentry if initialized
   try {
-    import('@sentry/react').then(Sentry => {
-      if (Sentry.isInitialized()) {
-        Sentry.captureException(err, {
+    import('@sentry/react').then(({ isInitialized, captureException: sentryCapture }) => {
+      if (isInitialized()) {
+        sentryCapture(err, {
           tags: { step },
           extra: data,
         });

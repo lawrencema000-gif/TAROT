@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, type ReactElement } from 'react';
-import { Heart, Briefcase } from 'lucide-react';
-import { Sheet, Chip, SparkleFourPoint, toast } from '../ui';
+import { useState, useEffect, useMemo, useRef, type ReactElement } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Sheet, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
@@ -8,9 +8,14 @@ import { useGamification } from '../../context/GamificationContext';
 import { tarotReadings } from '../../dal';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { shareOrDownloadCard } from '../../utils/shareCard';
-import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
+import { encodeReading, buildShareUrl, shareLocaleQuery } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
-import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
+import { DeckLibrary } from './DeckLibrary';
+import { generatePremiumReading, tarotCardToReadingCard, MAX_AI_TAROT_CARDS } from '../../services/readingInterpretation';
+import { tarotPositionLabel } from './tarot/spreadLabels';
+import { takePendingSpread } from './tarot/pendingSpread';
+import { loadContentOverlay } from '../../i18n/contentOverlay';
+import { canonicalCardName, cardMeaningPath } from './tarot/cardSlug';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
@@ -21,18 +26,23 @@ import { isFullMoon } from '../../utils/moonPhase';
 import { getBundledCardPath } from '../../config/bundledImages';
 import { WatchAdSheet } from '../premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
-import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../services/premium';
+import { spreadTypeToFeature, FREE_TIER, FREE_CATALOGUE_CARD_LIMIT, type PremiumFeature } from '../../services/premium';
 import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
-import { appStorage } from '../../lib/appStorage';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
+import { allSpreads, getSpreadBySlug, getSpreadLayout, type SpreadLayoutPosition } from '../../data/tarotSpreads';
+import { SPREAD_LAYOUTS } from '../icons/SpreadGlyph';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
 import { TarotSelectView } from './tarot/TarotSelectView';
-import { TarotRevealView } from './tarot/TarotRevealView';
+import { TarotRevealView, LeaveReadingSheet } from './tarot/TarotRevealView';
 import { TarotHomeView } from './tarot/TarotHomeView';
-import { FOCUS_AREA_I18N_KEY, type FocusArea } from './tarot/types';
+import { FOCUS_AREA_I18N_KEY, type FocusArea, type PickerSpread } from './tarot/types';
+import { newReadingId } from './tarot/readingId';
 import { localDateStr } from '../../utils/localDate';
+// The free tier's 3-a-day count belongs to the account (shared with the
+// playing-card section), so signing out and back in does not reset it.
+import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
 
 /*
  * The reading flow: home → focus → shuffle → select → reveal.
@@ -40,13 +50,18 @@ import { localDateStr } from '../../utils/localDate';
  * This component owns every piece of state and every side effect — the
  * deck, the picks, the reversals, the free-tier counters, the ad unlocks,
  * XP and achievements, save, share and the AI interpretation — and hands
- * each stage to one view in ./tarot/. There used to be two renderings of
- * every stage (an in-file copy behind a feature flag that never rolled
- * out, and these views); the copy is gone and the flag with it.
+ * each stage to one view in ./tarot/.
+ *
+ * Spreads come from three places. The six LEGACY ids (`single`,
+ * `three-card`, `celtic-cross`, `relationship`, `career`, `shadow`) carry
+ * localized names and positions in app.json and are what saved readings
+ * and achievements know. The CATALOGUE (src/data/tarotSpreads.ts, forty
+ * spreads) is castable since Phase 7 by its slug; where a catalogue entry
+ * is the same spread as a legacy one it resolves to the legacy id
+ * (CATALOGUE_ALIAS), so the picker shows one "Celtic Cross" and the
+ * Spread Explorer achievement can still be earned from it. CUSTOM spreads
+ * arrive from the builder through router state.
  */
-
-const DAILY_READINGS_KEY = 'arcana_daily_readings';
-const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
 
 /** The spread the home hero always draws. */
 const DAILY_SPREAD = 'single';
@@ -54,40 +69,13 @@ const DAILY_SPREAD = 'single';
 /** How long the deck shuffles on its own before it settles. A cut ends it sooner. */
 const SHUFFLE_MS = 2000;
 
-async function getDailyReadingCount(): Promise<number> {
-  try {
-    // Local date: the free-tier daily counter should reset at the
-    // user's midnight, not at UTC midnight (4pm US-West / 9am Tokyo).
-    const today = localDateStr();
-    const storedDate = await appStorage.get(DAILY_READINGS_DATE_KEY);
-    if (storedDate !== today) {
-      await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-      await appStorage.set(DAILY_READINGS_KEY, '0');
-      return 0;
-    }
-    return parseInt((await appStorage.get(DAILY_READINGS_KEY)) || '0', 10);
-  } catch {
-    return 0;
-  }
-}
-
-async function incrementDailyReadingCount(): Promise<void> {
-  try {
-    const today = localDateStr();
-    await appStorage.set(DAILY_READINGS_DATE_KEY, today);
-    const current = await getDailyReadingCount();
-    await appStorage.set(DAILY_READINGS_KEY, (current + 1).toString());
-  } catch {
-    // silent
-  }
-}
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 
 /**
  * A user-built custom spread launched into the reading flow. `id` is
- * namespaced 'custom:<uuid>' so it never collides with a hardcoded
- * spreadConfigs id and persists cleanly into tarot_readings.spread_type.
+ * namespaced 'custom:<uuid>' so it never collides with a spread id and
+ * persists cleanly into tarot_readings.spread_type.
  */
 export interface CustomSpreadInput {
   id: string;
@@ -113,7 +101,8 @@ interface AdRequest {
   spreadId: string | null;
 }
 
-// Source-of-truth spread configs with i18n keys; .name/.description resolved at render time.
+// The legacy spreads: i18n keys in app.json (readings.spreads.*,
+// readings.spreadPositions.*); .name/.description resolved at render time.
 const spreadConfigs = [
   { id: 'single',        i18n: 'single',       free: true,  count: 1  },
   { id: 'three-card',    i18n: 'threeCard',    free: true,  count: 3  },
@@ -123,33 +112,130 @@ const spreadConfigs = [
   { id: 'shadow',        i18n: 'shadow',       free: false, count: 7  },
 ] as const;
 
+type LegacyId = (typeof spreadConfigs)[number]['id'];
+
+/**
+ * Catalogue slugs that are the same spread as a legacy id — same card count,
+ * same positions in substance — cast as the legacy id so the localized
+ * position labels, the saved-reading names and the Spread Explorer
+ * achievement (`single` · `three-card` · `celtic-cross`) all keep working.
+ * `celtic-cross` is both the slug and the id. Career Path (5) and Shadow
+ * Work (5) differ from the legacy six- and seven-card spreads, so they
+ * stay catalogue spreads of their own.
+ */
+const CATALOGUE_ALIAS: Record<string, LegacyId> = {
+  'one-card-daily': 'single',
+  'three-card-past-present-future': 'three-card',
+  'relationship-cross': 'relationship',
+};
+
+/** The id the flow casts for a catalogue slug (or a legacy id passed straight through). */
+export function resolveSpreadId(slugOrId: string): string {
+  return CATALOGUE_ALIAS[slugOrId] ?? slugOrId;
+}
+
+/** A catalogue spread's position names, localized with the English as the default. */
+export function catalogueSpreadName(
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  slug: string,
+  fallback: string,
+): string {
+  return t(`spreads.catalog.${slug}.name`, { defaultValue: fallback });
+}
+
 export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps) {
   const { t } = useT('app');
-  const spreadName = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.name`);
-  const spreadDesc = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.description`);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const legacyName = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.name`);
+  const legacyDesc = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.description`);
   const focusLabel = (f: FocusArea) => t(FOCUS_AREA_I18N_KEY[f]);
 
-  // Unified spread metadata — resolves either a hardcoded spread or the
-  // active user-built custom spread to { count, free, name }. Custom
-  // spreads are always free (the builder is a premium-independent surface).
-  const getSpreadMeta = (id: string): { count: number; free: boolean; name: string } | undefined => {
+  /*
+   * The picker: the whole catalogue, each entry resolved to the id the
+   * flow casts, with its localized name and one-liner, its free rule and
+   * its glyph layout. Legacy entries take their names from the legacy keys
+   * (already in four locales); catalogue entries take the catalogue's
+   * English with `defaultValue` until the locale files carry
+   * `spreads.catalog.<slug>.*`. Free: the legacy rule for a legacy id, up to
+   * three cards for a catalogue spread.
+   */
+  const pickerSpreads = useMemo<PickerSpread[]>(
+    () =>
+      allSpreads.map((spread) => {
+        const id = resolveSpreadId(spread.slug);
+        const legacy = spreadConfigs.find((sc) => sc.id === id);
+        return {
+          id,
+          slug: spread.slug,
+          name: legacy ? legacyName(legacy) : catalogueSpreadName(t, spread.slug, spread.name),
+          description: legacy
+            ? legacyDesc(legacy)
+            : t(`spreads.catalog.${spread.slug}.description`, { defaultValue: spread.shortDescription }),
+          count: legacy ? legacy.count : spread.cardCount,
+          free: legacy ? legacy.free : spread.cardCount <= FREE_CATALOGUE_CARD_LIMIT,
+          category: spread.category,
+          layout: legacy ? SPREAD_LAYOUTS[legacy.id] : getSpreadLayout(spread),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t],
+  );
+
+  /**
+   * Unified spread metadata — resolves the active custom spread, a legacy
+   * id or a catalogue slug to { count, free, name, layout }. Custom spreads
+   * are always free (the builder is a premium-independent surface).
+   */
+  const getSpreadMeta = (
+    id: string,
+  ): { count: number; free: boolean; name: string; layout?: SpreadLayoutPosition[] } | undefined => {
     if (customSpread && id === customSpread.id) {
       return { count: customSpread.count, free: true, name: customSpread.name };
     }
-    const s = spreadConfigs.find(sc => sc.id === id);
-    return s ? { count: s.count, free: s.free, name: spreadName(s) } : undefined;
+    const legacy = spreadConfigs.find((sc) => sc.id === id);
+    if (legacy) return { count: legacy.count, free: legacy.free, name: legacyName(legacy), layout: SPREAD_LAYOUTS[legacy.id] };
+    const catalogue = getSpreadBySlug(id);
+    if (catalogue) {
+      return {
+        count: catalogue.cardCount,
+        free: catalogue.cardCount <= FREE_CATALOGUE_CARD_LIMIT,
+        name: catalogueSpreadName(t, catalogue.slug, catalogue.name),
+        layout: getSpreadLayout(catalogue),
+      };
+    }
+    return undefined;
   };
   const { user, profile, refreshProfile } = useAuth();
   const { tarotRefreshTrigger } = useRitual();
   const { openRatePrompt } = useGamification();
   const [view, setView] = useState<TarotView>('home');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea | null>(null);
+  const [question, setQuestion] = useState('');
   const [drawnCards, setDrawnCards] = useState<{ card: TarotCard; reversed: boolean; revealed: boolean }[]>([]);
   const [currentSpread, setCurrentSpread] = useState<string>(DAILY_SPREAD);
-  const [selectedCard, setSelectedCard] = useState<{ card: TarotCard; reversed: boolean } | null>(null);
+  /**
+   * The card detail sheet: a card, its orientation, and the list it was
+   * opened from (the drawn cards on the table, or the deck in the browse
+   * grid) with the card's index in it, so the sheet's prev / next walk
+   * that list.
+   */
+  const [selectedCard, setSelectedCard] = useState<{
+    card: TarotCard;
+    reversed: boolean;
+    siblings: { card: TarotCard; reversed: boolean }[];
+    index: number;
+  } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  /** A save is in flight: the bookmark ignores taps until it lands (one reading, one row). */
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  /** The row the reading on screen was saved as, so a later AI interpretation joins it. */
+  const savedIdRef = useRef<string | null>(null);
+  /** A share image is rendering: the share buttons wait (a second tap used to download a PNG). */
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
   const [showBrowse, setShowBrowse] = useState(false);
-  const [browseFilter, setBrowseFilter] = useState<'all' | 'major' | 'swords' | 'cups' | 'wands' | 'pentacles'>('all');
   const [tarotCards, setTarotCards] = useState<TarotCard[]>([]);
   const [, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -157,8 +243,31 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [deckCards, setDeckCards] = useState<number[]>([]);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  /**
+   * The reading on the table, by id: minted when its cards are dealt and
+   * sent as the requestId of every AI request for it, so the server treats
+   * a second request for the same reading as a free replay (readingId.ts).
+   */
+  const readingIdRef = useRef<string | null>(null);
+  /**
+   * The reading whose AI interpretation is on its way. Set before the first
+   * await, so a second tap during the balance check or the request is
+   * ignored: `loadingAI` only lands with the next render, and a double tap
+   * used to get two requests out 3 ms apart, each charged (p8 F09).
+   */
+  const aiInFlightRef = useRef<string | null>(null);
+  /**
+   * The interpretation on the table is filed under the Library's AI
+   * readings. generate-reading files every interpretation it charges for —
+   * since p9 QZ-6 one served from its cache (`cached: true`) as well. A
+   * function deployed before that fix answered a cache hit before filing
+   * it, so for `cached: true` the leave sheet still says the text is only
+   * here (QU1 R-c): harmless once the fixed function is live.
+   */
+  const [aiInLibrary, setAiInLibrary] = useState(false);
+  /** "Start a new reading" or Back on an unsaved reveal with a bought interpretation: asked first. */
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
-  const [interpretationView, setInterpretationView] = useState<'focus' | 'traditional'>('focus');
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
   const [dailyReadingCount, setDailyReadingCount] = useState(0);
@@ -178,11 +287,22 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const rewardedRef = useRef(false);
 
   useEffect(() => {
-    getDailyReadingCount().then(setDailyReadingCount);
     if (isNative()) {
       rewardedAdsService.canWatchAd().then(setCanWatchAd);
     }
   }, []);
+
+  // Re-read on an account switch: the count is per account.
+  const userId = user?.id ?? null;
+  useEffect(() => {
+    let alive = true;
+    getDailyReadingCount(userId).then((n) => {
+      if (alive) setDailyReadingCount(n);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
 
   useEffect(
     () => () => {
@@ -191,7 +311,6 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     [],
   );
 
-  const today = new Date().toISOString().split('T')[0];
   const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
 
   const getCardImage = (card: TarotCard): string | undefined => {
@@ -209,14 +328,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     loadCards();
   }, [tarotRefreshTrigger]);
 
-  const filteredDeck = tarotCards.filter(card => {
-    if (browseFilter === 'all') return true;
-    if (browseFilter === 'major') return card.arcana === 'major';
-    return card.suit === browseFilter;
-  });
-
   useImagePreloader(
-    filteredDeck.slice(0, 6).map(card => card.imageUrl).filter((url): url is string => !!url),
+    tarotCards.slice(0, 6).map(card => card.imageUrl).filter((url): url is string => !!url),
     showBrowse
   );
 
@@ -224,10 +337,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     const checkTemporaryAccess = async () => {
       if (profile?.isPremium) return;
 
-      const premiumSpreads = spreadConfigs.filter(s => !s.free);
       const accessMap: Record<string, boolean> = {};
 
-      for (const spread of premiumSpreads) {
+      for (const spread of pickerSpreads) {
+        if (spread.free) continue;
         const feature = spreadTypeToFeature(spread.id);
         if (feature) {
           accessMap[spread.id] = await rewardedAdsService.hasTemporaryAccess(feature, spread.id);
@@ -250,7 +363,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     };
 
     checkTemporaryAccess();
-  }, [profile?.isPremium, adRequest]);
+  }, [profile?.isPremium, adRequest, pickerSpreads]);
 
   const shuffleArray = <T,>(input: T[]): T[] => {
     const arr = [...input];
@@ -264,11 +377,18 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   /** Everything a new reading starts without. */
   const resetReadingState = () => {
     setSelectedFocus(null);
+    setQuestion('');
     setIsSaved(false);
-    setInterpretationView('focus');
+    savedIdRef.current = null;
     setShowAIInterpretation(false);
     setAiInterpretation(null);
   };
+
+  // The affirmation at the end of the result reads the enrichment overlay;
+  // fetched now so it is in memory by the time the cards turn.
+  useEffect(() => {
+    void loadContentOverlay('enrichment');
+  }, []);
 
   /**
    * Everything between the reader and the shuffle, in one place and in one
@@ -278,7 +398,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * reader has been sent to the ad sheet for the first thing in the way —
    * or to the paywall where ads are not an option — and the caller stops.
    *
-   * Both entries (the home grid and the focus step's Draw) and the return
+   * Both entries (the home picker and the focus step's Draw) and the return
    * from the ad sheet run through here. They used not to: the ad that
    * unlocked a spread sent the reader on to the focus step and the shuffle
    * with the daily limit never asked, so a free reader at the limit could
@@ -337,6 +457,27 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setView('home');
   };
 
+  /**
+   * The reveal's "Start a new reading" and Back. A bought AI interpretation
+   * on a reading that is not saved (nor being saved) went with one tap; the
+   * reader is asked first (LeaveReadingSheet), and told where the text is.
+   */
+  const leaveReveal = () => {
+    const unsaved = !isSaved && !savedIdRef.current && !savingRef.current;
+    if (aiInterpretation && unsaved) {
+      setConfirmLeave(true);
+      return;
+    }
+    goHome();
+  };
+
+  /** The sheet's "Save and leave": home once the row is written; a failed save stays (its toast says so). */
+  const saveAndLeave = async () => {
+    const saved = await handleSaveReading();
+    setConfirmLeave(false);
+    if (saved) goHome();
+  };
+
   // Auto-launch into the reading flow when arriving from the custom-spread
   // builder (ReadingsPage passes the spread via router state). Fires once
   // per distinct custom spread so "New reading" doesn't bounce the user
@@ -348,6 +489,27 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     beginReading(customSpread.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customSpread?.id]);
+
+  /*
+   * A catalogue spread handed off from its detail page ("Read this spread"
+   * → navigate('/readings', { state: { spreadSlug } })). Read once, the
+   * history state is cleared so a reload or a tab switch does not relaunch
+   * it, then the flow begins exactly as from the picker — every gate in
+   * order.
+   */
+  const slugLaunchedRef = useRef<string | null>(null);
+  useEffect(() => {
+    // Or a spread chosen on its public page before the reader signed up,
+    // when they reach the Readings tab before Home took it (pendingSpread).
+    const fromState = (location.state as { spreadSlug?: unknown } | null)?.spreadSlug;
+    const slug = typeof fromState === 'string' ? fromState : slugLaunchedRef.current === null ? takePendingSpread() : null;
+    if (typeof slug !== 'string' || slugLaunchedRef.current === slug) return;
+    slugLaunchedRef.current = slug;
+    navigate('.', { replace: true, state: null });
+    const id = resolveSpreadId(slug);
+    if (getSpreadMeta(id)) beginReading(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   const handleFocusSelect = (focus: FocusArea) => {
     setSelectedFocus(focus);
@@ -367,7 +529,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * grant, and send the reader to the next request or the paywall rather
    * than past it. Only when both are clear does the reading move on:
    * unlocked from the focus step, the focus is chosen, so shuffle; unlocked
-   * from the home grid it is not yet, so ask first.
+   * from the home picker it is not yet, so ask first.
    *
    * The sheet calls `onClose` right after this. That close is scoped to the
    * request it was showing (see the WatchAdSheet below), so a follow-up
@@ -412,6 +574,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
 
     setIsShuffling(false);
     setView('select');
@@ -515,8 +678,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     );
 
     (async () => {
-      await incrementDailyReadingCount();
-      setDailyReadingCount(await getDailyReadingCount());
+      await incrementDailyReadingCount(user?.id);
+      setDailyReadingCount(await getDailyReadingCount(user?.id));
 
       if (!profile?.isPremium) {
         if (!spread.free && hasTemporaryAccess[currentSpread]) {
@@ -534,9 +697,14 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       }
     })();
 
+    // A new reading on the table: its own id, and no AI request of its own
+    // yet (one still running for the last reading answers into nothing).
+    readingIdRef.current = newReadingId();
+    setLoadingAI(false);
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
+    savedIdRef.current = null;
     setView('reveal');
   };
 
@@ -566,12 +734,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     (async () => {
       if (user) {
+        // awardXP reports 'reading_complete' to the badges itself; a second
+        // report here counted every reading twice (Apprentice Reader at 5).
         awardXP(user.id, 'reading_complete').then(() => refreshProfile());
-        checkAchievementProgress(user.id, 'reading_complete');
         if (currentSpread === 'celtic-cross') {
           checkAchievementProgress(user.id, 'celtic_cross_complete');
         }
-        checkAchievementProgress(user.id, 'spread_types_used');
+        // Spread Explorer is a SET of spread types seen: the server keeps the
+        // distinct values and unlocks when every member of the definition's
+        // list has been read (F1). The value is the spread id as cast.
+        checkAchievementProgress(user.id, 'spread_types_used', 1, currentSpread);
 
         // Calendar/time achievements
         const now = new Date();
@@ -580,9 +752,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         const hour = now.getHours();
         if (hour >= 0 && hour < 3) checkAchievementProgress(user.id, 'witching_hour_reading');
 
-        // Specific card achievements
+        // Specific card achievements. The badge names its card in English
+        // ("The Tower"); the deck on screen is localized (塔), so the card is
+        // reported by its canonical name, looked up by id.
         for (const drawn of completed) {
-          checkSpecificCardAchievement(user.id, drawn.card.name);
+          checkSpecificCardAchievement(user.id, canonicalCardName(drawn.card.id));
         }
       }
     })();
@@ -590,43 +764,22 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, allRevealed, drawnCards.length]);
 
-  // Share the WHOLE reading as a deep link (opens in SharedReadingPage) plus
-  // a branded image of the featured card. The deep link is the orphaned
-  // encodeReading producer side — without this, no /reading/:token link was
-  // ever generated. Reached from TarotRevealView via onShare.
-  const handleShareReading = async () => {
-    if (drawnCards.length === 0) return;
-    const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
-    const keyword = featured.card.keywords?.[0] ?? '';
-    const shareUrl = buildShareUrl(
-      encodeReading({
-        spreadSlug: currentSpread,
-        cards: drawnCards.map(d => ({ id: d.card.id, reversed: d.reversed })),
-        date: new Date().toISOString(),
-      }),
-    );
-    const shareText = `${t('readings.shareText', {
-      defaultValue: 'My {{spread}} tarot reading on Arcana',
-      spread: getSpreadMeta(currentSpread)?.name ?? '',
-    })}\n${shareUrl}`;
-
-    const outcome = await shareOrDownloadCard(
-      {
-        variant: 'tarot',
-        cardName: featured.card.name,
-        orientation: featured.reversed ? 'reversed' : 'upright',
-        keyword,
-        cardImageUrl: getCardImage(featured.card),
-      },
-      `arcana-reading-${currentSpread}.png`,
-      shareText,
-    );
-
-    if (outcome === 'downloaded') {
-      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+  /**
+   * Every share ends in a toast (R5 M-15): the OS sheet took it, the file
+   * was saved, the link was copied, or it could not be shared. A cancelled
+   * sheet says nothing — the reader closed it on purpose.
+   */
+  const reportShare = async (outcome: Awaited<ReturnType<typeof shareOrDownloadCard>>, fallbackText: string) => {
+    if (outcome === 'shared') {
+      toast(t('readings.toasts.shared', { defaultValue: 'Shared' }), 'success');
+    } else if (outcome === 'downloaded') {
+      toast(t('readings.toasts.imageSaved', { defaultValue: 'Image saved to your downloads' }), 'success');
     } else if (outcome === 'failed') {
       try {
-        await navigator.clipboard?.writeText(shareText);
+        // No clipboard (an insecure context, an old WebView) is a failure,
+        // not "Copied".
+        if (!navigator.clipboard) throw new Error('no clipboard');
+        await navigator.clipboard.writeText(fallbackText);
         toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
       } catch {
         toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
@@ -634,35 +787,154 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     }
   };
 
-  const handleSaveReading = async () => {
-    if (!user || drawnCards.length === 0) return;
+  /**
+   * Run one share at a time. The image takes a second or more to render
+   * before the OS sheet opens; a second tap used to start a second render,
+   * whose navigator.share was refused ("an earlier share has not yet
+   * completed") and fell back to downloading the PNG.
+   */
+  const shareOnce = async (run: () => Promise<void>) => {
+    if (sharingRef.current) return;
+    sharingRef.current = true;
+    setSharing(true);
+    try {
+      await run();
+    } finally {
+      sharingRef.current = false;
+      setSharing(false);
+    }
+  };
 
-    const res = await tarotReadings.insert({
-      userId: user.id,
-      date: today,
-      spreadType: currentSpread,
-      focusArea: selectedFocus,
-      cards: drawnCards.map((d, i) => ({
-        cardId: d.card.id,
-        cardName: d.card.name,
-        reversed: d.reversed,
-        position: getPositionLabel(i),
-      })),
-      // Persist the AI interpretation so a saved reading keeps it on reload
-      // (it's the expensive, non-reproducible part — local focus/traditional
-      // text is re-derived deterministically). Omitted when none was generated.
-      interpretation: aiInterpretation ?? undefined,
-      saved: true,
+  /** The spread's title as the reveal shows it (the daily draw is not "1-card daily"). */
+  const spreadTitleFor = (id: string): string =>
+    id === DAILY_SPREAD ? t('readings.dailyDraw.title') : getSpreadMeta(id)?.name ?? '';
+
+  // Share the WHOLE reading as a deep link (opens in SharedReadingPage) plus
+  // a branded image of the featured card. Reached from TarotRevealView via
+  // onShare. The link carries the spread's stable id (a legacy id, a
+  // catalogue slug or `custom:<uuid>` — never a display name), the cards,
+  // the reader's question as cartomancy's links do, and the date; the token
+  // shape is shareableReadings' (v1 for tarot, which every app build opens).
+  const handleShareReading = () =>
+    shareOnce(async () => {
+      if (drawnCards.length === 0) return;
+      const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
+      const keyword = featured.card.keywords?.[0] ?? '';
+      const shareUrl = buildShareUrl(
+        encodeReading({
+          spreadSlug: currentSpread,
+          cards: drawnCards.map(d => ({ id: d.card.id, reversed: d.reversed })),
+          question: question.trim() || undefined,
+          date: new Date().toISOString(),
+        }),
+      );
+      const shareText = `${t('readings.shareText', {
+        defaultValue: 'My {{spread}} tarot reading on Arcana',
+        spread: spreadTitleFor(currentSpread),
+      })}\n${shareUrl}`;
+
+      const outcome = await shareOrDownloadCard(
+        {
+          variant: 'tarot',
+          cardName: featured.card.name,
+          orientation: featured.reversed ? 'reversed' : 'upright',
+          keyword,
+          cardImageUrl: getCardImage(featured.card),
+        },
+        `arcana-reading-${currentSpread.replace(/[^a-z0-9-]/gi, '-')}.png`,
+        shareText,
+      );
+      await reportShare(outcome, shareText);
     });
+
+  /**
+   * Share one card from the detail sheet: its image, its first keyword, and
+   * its page — by id, so a localized name (ワンドの5, 太陽) still links to
+   * the card rather than to `/tarot-meanings/5` or the hub. The link names
+   * the sharer's language (`?hl=`), as a reading's does: the text was
+   * Japanese and the page it linked opened in English for a signed-out
+   * friend (p9 R13).
+   */
+  const handleShareCard = (card: TarotCard, reversed: boolean) =>
+    shareOnce(async () => {
+      const shareText = t('readings.shareCardText', {
+        defaultValue: '{{name}} — {{keyword}}. Read the card on Arcana: {{url}}',
+        name: card.name,
+        keyword: card.keywords?.[0] ?? '',
+        url: `https://tarotlife.app${cardMeaningPath(card.id)}${shareLocaleQuery()}`,
+      });
+      const outcome = await shareOrDownloadCard(
+        {
+          variant: 'tarot',
+          cardName: card.name,
+          orientation: reversed ? 'reversed' : 'upright',
+          keyword: card.keywords?.[0] ?? '',
+          cardImageUrl: getCardImage(card),
+        },
+        `arcana-${card.id}.png`,
+        shareText,
+      );
+      await reportShare(outcome, shareText);
+    });
+
+  /**
+   * The row a saved reading is written as. `date` is the reader's own
+   * calendar day (localDateStr), as the ritual, the journal and the mood
+   * diary write theirs: the UTC day filed a reading saved before 09:00 in
+   * Tokyo under the day before, and one saved in the evening in the
+   * Americas under the day after (p8 F14, F47, F73).
+   */
+  const savedRow = (interpretation: string | null) => ({
+    userId: user!.id,
+    date: localDateStr(),
+    spreadType: currentSpread,
+    focusArea: selectedFocus,
+    cards: drawnCards.map((d, i) => ({
+      cardId: d.card.id,
+      // The canonical English name: the Library resolves rows by id, and by
+      // this name for rows that predate ids.
+      cardName: canonicalCardName(d.card.id) || d.card.name,
+      reversed: d.reversed,
+      position: getPositionLabel(i),
+    })),
+    // Persist the AI interpretation so a saved reading keeps it on reload
+    // (it's the expensive, non-reproducible part — local focus/traditional
+    // text is re-derived deterministically). Omitted when none was generated.
+    interpretation: interpretation ?? undefined,
+    question: question.trim() || undefined,
+    saved: true,
+  });
+
+  /**
+   * Save the reading on screen — once. The bookmark used to insert a row
+   * on every tap (and re-run the XP, the ad check and the rate prompt), so
+   * a second tap or a double tap during the insert left two copies in the
+   * Library. A save in flight or already made is a no-op — read from refs
+   * as well as `isSaved`, which renders only after the insert has answered
+   * (savedIdRef is set in the same tick the insert returns). Resolves true
+   * once the reading on screen is saved (now or before), false when it is
+   * not, so "Save and leave" (LeaveReadingSheet) leaves only a saved reading.
+   */
+  const handleSaveReading = async (): Promise<boolean> => {
+    if (!user || drawnCards.length === 0) return false;
+    if (isSaved || savedIdRef.current) return true;
+    if (savingRef.current) return false;
+    savingRef.current = true;
+    setSaving(true);
+    const res = await tarotReadings.insertReturningId(savedRow(aiInterpretation));
+    savingRef.current = false;
+    setSaving(false);
 
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
+      return false;
     } else {
+      savedIdRef.current = res.data.id;
       setIsSaved(true);
       toast(t('readings.toasts.readingSaved'), 'success');
 
+      // awardXP reports 'reading_saved' to the badges itself (one report, not two).
       awardXP(user.id, 'reading_saved').then(() => refreshProfile());
-      checkAchievementProgress(user.id, 'reading_saved');
       await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
 
       await ratePromptService.incrementPositiveActions(user.id);
@@ -671,19 +943,52 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         await ratePromptService.recordPromptShown(user.id);
         openRatePrompt();
       }
+      return true;
     }
   };
 
+  /**
+   * A saved reading that gets its AI interpretation afterwards: the saved
+   * row is updated in place, so the Library keeps its one copy and that copy
+   * carries the text that was paid for. (It used to insert a second row and
+   * delete the first, which also ran the reading counters twice.)
+   */
+  const attachInterpretationToSaved = async (interpretation: string) => {
+    const savedId = savedIdRef.current;
+    if (!savedId) return;
+    const res = await tarotReadings.updateInterpretation(savedId, interpretation);
+    if (!res.ok) console.warn('[TarotSection] could not attach the interpretation to the saved reading:', res.error);
+  };
+
+  const aiTooManyCards = drawnCards.length > MAX_AI_TAROT_CARDS;
+
   const handleGetAIInterpretation = async () => {
-    if (!user || drawnCards.length === 0) return;
+    const readingId = readingIdRef.current;
+    if (!user || drawnCards.length === 0 || !readingId) return;
+    // This reading's interpretation is already on its way: a second tap
+    // does nothing. Checked and set before the first await (see aiInFlightRef).
+    if (aiInFlightRef.current === readingId) return;
 
-    // 50 ms per AI interpretation. Premium = no debit (soft cap server-side).
-    // The hook opens the earn-Moonstones sheet on insufficient balance.
-    const ok = await tryConsumeAi();
-    if (!ok) return;
+    // The interpretation for this reading is already here (the reader had
+    // switched back to the card meanings): show it again. Asking the server
+    // a second time charged another 50 Moonstones for the same text.
+    if (aiInterpretation) {
+      setShowAIInterpretation(true);
+      return;
+    }
+    // generate-reading refuses more than ten tarot cards; never charge for
+    // a request that cannot succeed (the chip says so, see the reveal).
+    if (aiTooManyCards) return;
 
+    aiInFlightRef.current = readingId;
     setLoadingAI(true);
     try {
+      // 50 Moonstones per AI interpretation (the chip shows the price to a
+      // free reader). Premium = no debit (soft cap server-side). The hook
+      // opens the earn-Moonstones sheet on insufficient balance.
+      const ok = await tryConsumeAi();
+      if (!ok) return;
+
       const readingCards = drawnCards.map(d => tarotCardToReadingCard(d.card, d.reversed));
       const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
 
@@ -693,13 +998,47 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       const result = await generatePremiumReading({
         cards: readingCards,
         spreadType: currentSpread,
+        // The positions as the reader sees them. The server only knows the
+        // six legacy spreads; every catalogue and custom spread was read
+        // against "Position 1…n" without these.
+        positions: drawnCards.map((_, i) => getPositionLabel(i).slice(0, 40)),
         focusArea: focusForAI,
+        question: question.trim() || undefined,
         zodiacSign: zodiacSign,
         goals: profile?.goals,
+        // The reading's id, not a fresh one per call: a repeat of this
+        // request is the same request to the server, answered without a
+        // second charge.
+        requestId: readingId,
       });
 
+      // The reader has moved on to another reading while this one was being
+      // read: the text belongs to the reading it was asked for, not to the
+      // one on the table now (nor to that one's saved row).
+      if (readingIdRef.current !== readingId) return;
+
+      if (result.fallback === true) {
+        // Every AI provider failed and the server sent the cards' own
+        // meanings instead, refunding the charge. That is not the reading
+        // that was asked for: it is not shown or saved as the AI reading,
+        // so asking again later makes a real attempt.
+        toast(
+          result.charged === true
+            ? t('readings.toasts.aiFallbackCharged', {
+                defaultValue: 'The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored.',
+              })
+            : t('readings.toasts.aiFallback', {
+                defaultValue: 'The AI reader is unavailable right now. No Moonstones were charged.',
+              }),
+          'error',
+        );
+        return;
+      }
+
+      setAiInLibrary(result.cached !== true);
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
+      void attachInterpretationToSaved(result.interpretation);
       toast(
         result.usedLlm ? t('readings.toasts.aiReady') : t('readings.toasts.interpretationReady'),
         'success',
@@ -707,19 +1046,37 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     } catch (error) {
       await refundAi();
       console.error('Failed to generate AI interpretation:', error);
+      if (readingIdRef.current !== readingId) return;
       // The edge function refunds the Moonstone debit itself when the reading
       // fails, so a failure never costs the user anything. Map the server's
-      // error code (embedded in the thrown message) to a message that says
-      // what happened and what to do; never surface the raw text.
+      // error (generatePremiumReading throws the envelope's message, not its
+      // code) to a message that says what happened and what to do; never
+      // surface the raw text.
       const raw = error instanceof Error ? error.message : '';
-      const errorMessage = raw.includes('INSUFFICIENT_BALANCE')
+      const errorMessage = /INSUFFICIENT_BALANCE|enough Moonstones/i.test(raw)
         ? t('readings.toasts.aiInsufficient', { defaultValue: 'Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.' })
-        : raw.includes('AI_SOFT_CAP') || raw.includes('AI_DAILY_LIMIT')
+        : // generate-reading answers 429 DAILY_LIMIT_REACHED with the message
+          // "Daily reading limit reached" — the same mapping as CartomancySection.
+          /AI_SOFT_CAP|AI_DAILY_LIMIT|DAILY_LIMIT_REACHED|daily reading limit|today's AI limit/i.test(raw)
           ? t('readings.toasts.aiLimit', { defaultValue: 'You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.' })
+          : /TOO_MANY_CARDS|Maximum \d+ cards/i.test(raw)
+          ? t('readings.toasts.aiTooManyCards', {
+              n: MAX_AI_TAROT_CARDS,
+              defaultValue: 'AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.',
+            })
+          : // 409 REQUEST_IN_FLIGHT: an earlier request for this reading (one
+            // the connection dropped) is still being written. It was charged
+            // once; asking again returns it without a second charge.
+            /REQUEST_IN_FLIGHT|still being worked on/i.test(raw)
+          ? t('readings.revealView.aiStillWriting', {
+              defaultValue: 'Your AI interpretation is still being written. Try again in a few seconds — you won’t be charged twice.',
+            })
           : t('readings.toasts.aiFailed', { defaultValue: 'Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.' });
       toast(errorMessage, 'error');
     } finally {
-      setLoadingAI(false);
+      if (aiInFlightRef.current === readingId) aiInFlightRef.current = null;
+      // A newer reading has its own state (reset when it was dealt).
+      if (readingIdRef.current === readingId) setLoadingAI(false);
     }
   };
 
@@ -728,52 +1085,57 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     if (customSpread && currentSpread === customSpread.id) {
       return customSpread.positions[index] || t('readings.positions.generic', { index: index + 1 });
     }
-    if (currentSpread === 'single') return t('readings.positions.yourCard');
-    if (currentSpread === 'three-card') {
-      const keys = ['past', 'present', 'future'] as const;
-      const key = keys[index];
-      return key
-        ? t(`readings.positions.${key}`)
-        : t('readings.positions.generic', { index: index + 1 });
-    }
-
-    const positions = getSpreadPositions(currentSpread);
-    return positions[index] || t('readings.positions.generic', { index: index + 1 });
+    // A legacy id or a catalogue slug: the same names a saved or shared
+    // reading of this spread shows (spreadLabels).
+    return tarotPositionLabel(t, currentSpread, index);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getFocusInterpretation = (card: TarotCard, focus: FocusArea | null, _reversed: boolean): { content: string; icon: typeof Heart; label: string; color: string } | null => {
-    if (focus === 'Love' && card.loveMeaning) {
-      return {
-        content: card.loveMeaning,
-        icon: Heart,
-        label: 'Love & Relationships',
-        color: 'pink',
-      };
-    }
-    if ((focus === 'Career' || focus === 'Money') && card.careerMeaning) {
-      return {
-        content: card.careerMeaning,
-        icon: Briefcase,
-        label: 'Career & Finance',
-        color: 'blue',
-      };
-    }
-    return null;
-  };
-
-  /** The home grid. The same entry as the hero and the custom-spread launch: every gate, in order. */
+  /** The home picker. The same entry as the hero and the custom-spread launch: every gate, in order. */
   const handleSpreadSelect = (spreadId: string) => {
     if (!getSpreadMeta(spreadId)) return;
     beginReading(spreadId);
   };
 
+  /**
+   * A card's detail was opened. "Explore 22 / 78 cards" counts DISTINCT
+   * cards (20261003000004 keeps the seen ids when a value is sent); a bare
+   * call fell to the counter path, and stepping through the deck with
+   * ↑ / ↓ was not counted at all.
+   */
+  const exploredCard = (card: TarotCard) => {
+    if (user) checkAchievementProgress(user.id, 'cards_explored', 1, String(card.id));
+  };
+
+  /** A card on the table was tapped: open it, with the drawn cards as its neighbours. */
+  const openDrawnCard = (card: TarotCard, reversed: boolean) => {
+    const siblings = drawnCards.map((d) => ({ card: d.card, reversed: d.reversed }));
+    const index = Math.max(0, siblings.findIndex((s) => s.card.id === card.id));
+    setSelectedCard({ card, reversed, siblings, index });
+    exploredCard(card);
+  };
+
+  /** A card in the deck library was tapped: open it, with the deck as its neighbours. */
+  const openDeckCard = (card: TarotCard) => {
+    const siblings = tarotCards.map((c) => ({ card: c, reversed: false }));
+    const index = Math.max(0, tarotCards.findIndex((c) => c.id === card.id));
+    setSelectedCard({ card, reversed: false, siblings, index });
+    setShowBrowse(false);
+    exploredCard(card);
+  };
+
+  const navigateDetail = (index: number) => {
+    const next = selectedCard?.siblings[index];
+    if (!selectedCard || !next) return;
+    setSelectedCard({ ...selectedCard, card: next.card, reversed: next.reversed, index });
+    exploredCard(next.card);
+  };
+
   /*
    * One stage on screen at a time. The overlays below the switch — the
-   * browse deck, the card detail, the watch-ad sheet and the Moonstone earn
-   * sheet — are mounted in every stage: the card detail is opened from the
-   * reveal, the ad sheet from the focus step and the home grid, the earn
-   * sheet from the AI button. They used to live only in the home branch.
+   * deck library, the card detail, the watch-ad sheet and the Moonstone
+   * earn sheet — are mounted in every stage: the card detail is opened from
+   * the reveal, the ad sheet from the focus step and the home picker, the
+   * earn sheet from the AI button.
    */
   let stage: ReactElement;
 
@@ -781,8 +1143,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     stage = (
       <TarotFocusView
         selectedFocus={selectedFocus}
+        question={question}
         onBack={goHome}
         onSelect={handleFocusSelect}
+        onQuestionChange={setQuestion}
         onContinue={handleDraw}
       />
     );
@@ -814,46 +1178,55 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       />
     );
   } else if (view === 'reveal') {
+    const meta = getSpreadMeta(currentSpread);
     stage = (
       <TarotRevealView
         drawnCards={drawnCards}
         currentSpread={currentSpread}
-        spreadTitle={getSpreadMeta(currentSpread)?.name ?? ''}
+        // The daily spread's catalogue name carries a numeral ("1-card daily"),
+        // and a title is set in the display serif: name it as the hero does.
+        spreadTitle={spreadTitleFor(currentSpread)}
+        spreadLayout={meta?.layout}
         selectedFocus={selectedFocus}
+        question={question}
         allRevealed={allRevealed}
         isSaved={isSaved}
+        saving={saving}
+        sharing={sharing}
+        aiUnavailable={
+          aiTooManyCards
+            ? t('readings.revealView.aiTooManyCards', {
+                n: MAX_AI_TAROT_CARDS,
+                defaultValue: 'AI readings take spreads of up to {{n}} cards',
+              })
+            : undefined
+        }
         isPremium={!!profile?.isPremium}
         cardBackUrl={profile?.card_back_url}
         showAIInterpretation={showAIInterpretation}
         aiInterpretation={aiInterpretation}
         loadingAI={loadingAI}
-        interpretationView={interpretationView}
         focusReadingLabel={selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}
-        getCardImage={getCardImage}
         getPositionLabel={getPositionLabel}
-        getFocusInterpretation={getFocusInterpretation}
-        onBack={goHome}
-        onSave={handleSaveReading}
+        onBack={leaveReveal}
+        onSave={() => void handleSaveReading()}
         onShare={handleShareReading}
         onRevealCard={handleRevealCard}
         onRevealAll={revealAll}
-        onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
+        onCardClick={openDrawnCard}
         onGetAIInterpretation={handleGetAIInterpretation}
         onHideAIInterpretation={() => setShowAIInterpretation(false)}
-        onSetInterpretationView={setInterpretationView}
-        onNewReading={goHome}
+        onNewReading={leaveReveal}
       />
     );
   } else {
     stage = (
       <TarotHomeView
-        spreads={spreadConfigs}
+        spreads={pickerSpreads}
         isPremium={!!profile?.isPremium}
         canWatchAd={canWatchAd}
         cardBackUrl={profile?.card_back_url}
         hasTemporaryAccess={hasTemporaryAccess}
-        spreadName={spreadName}
-        spreadDesc={spreadDesc}
         onStartDraw={handleStartDraw}
         onSpreadSelect={handleSpreadSelect}
         onOpenBrowse={() => setShowBrowse(true)}
@@ -865,63 +1238,32 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     <>
       {stage}
 
-      <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title={t('readings.browse.title')}>
-        <div className="space-y-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {(['all', 'major', 'swords', 'cups', 'wands', 'pentacles'] as const).map(filter => (
-              <Chip
-                key={filter}
-                label={t(`readings.browse.filters.${filter}`)}
-                selected={browseFilter === filter}
-                onSelect={() => setBrowseFilter(filter)}
-              />
-            ))}
-          </div>
+      <LeaveReadingSheet
+        open={confirmLeave && view === 'reveal'}
+        inLibrary={aiInLibrary}
+        saving={saving}
+        onStay={() => setConfirmLeave(false)}
+        onSaveAndLeave={() => void saveAndLeave()}
+        onLeave={() => {
+          setConfirmLeave(false);
+          goHome();
+        }}
+      />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[70dvh] overflow-y-auto pb-4">
-            {filteredDeck.map(card => (
-              <button
-                key={card.id}
-                onClick={() => {
-                  setSelectedCard({ card, reversed: false });
-                  setShowBrowse(false);
-                  // Track card exploration for achievements
-                  if (user) checkAchievementProgress(user.id, 'cards_explored');
-                }}
-                className="relative aspect-[2/3] rounded-inset border border-mystic-600 hover:border-gold/50 motion-safe:hover:scale-105 motion-safe:active:scale-95 transition-[transform,border-color] duration-fast overflow-hidden group min-h-[140px]"
-              >
-                {getCardImage(card) ? (
-                  <>
-                    <img
-                      src={getCardImage(card)}
-                      alt={card.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/90 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <p className="text-caption text-center text-white font-medium">{card.name}</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full h-full bg-mystic-850 flex flex-col items-center justify-center p-2">
-                    <SparkleFourPoint size={20} className="text-gold/50 mb-2 group-hover:text-gold transition-colors duration-fast" />
-                    <p className="text-caption text-center text-mystic-300 line-clamp-2">{card.name}</p>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+      <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title={t('readings.browse.title')}>
+        <DeckLibrary cards={tarotCards} onSelect={openDeckCard} />
       </Sheet>
 
-      <Sheet open={!!selectedCard} onClose={() => setSelectedCard(null)} title={selectedCard?.card.name}>
+      <Sheet open={!!selectedCard} onClose={() => setSelectedCard(null)} label={selectedCard?.card.name}>
         {selectedCard && (
           <TarotCardDetail
             card={selectedCard.card}
             reversed={selectedCard.reversed}
             onClose={() => setSelectedCard(null)}
+            siblings={selectedCard.siblings}
+            index={selectedCard.index}
+            onNavigate={navigateDetail}
+            onShare={() => handleShareCard(selectedCard.card, selectedCard.reversed)}
           />
         )}
       </Sheet>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
-import { Card, Button, Page, PageHeader, ResultLayout, SparkleFourPoint, toast, ReadingProse } from '../components/ui';
+import { Heart, ArrowRight, UserPlus, Link2Off } from 'lucide-react';
+import { Card, Button, Page, PageHeader, ResultLayout, SparkleFourPoint, toast, ReadingProse, EmptyState } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { compatInvites } from '../dal';
@@ -129,14 +129,19 @@ export function CompatInvitePage() {
 
   if (error === 'not-found' || !invite) {
     return (
-      <Card padding="lg">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
-          <p className="text-ui text-mystic-400">
-            {t('compatInvite.notFound', { defaultValue: 'This invite could not be found or has expired.' })}
-          </p>
-        </div>
-      </Card>
+      <Page spacing="md">
+        <EmptyState
+          as="h1"
+          icon={<Link2Off />}
+          title={t('compatInvite.notFoundTitle', { defaultValue: 'This invite isn’t here' })}
+          description={t('compatInvite.notFound', { defaultValue: 'This invite could not be found or has expired.' })}
+          action={
+            <Button variant="gold" onClick={() => navigate('/')}>
+              {t('compatInvite.backHome', { defaultValue: 'Back to Home' })}
+            </Button>
+          }
+        />
+      </Page>
     );
   }
 

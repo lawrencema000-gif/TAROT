@@ -22,6 +22,13 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@drawable/splash</item>
+        <!-- The system splash on API 31+: the app canvas behind the launcher
+             glyph, so the first frame matches the Capacitor splash drawable
+             and the app shell that follow it. Neither was set before, so the
+             system showed its default (the masked adaptive icon on a
+             platform colour). -->
+        <item name="windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <!-- Transparent bars handled by EdgeToEdge.enable() in MainActivity -->
     </style>

@@ -207,6 +207,22 @@
   --surface-raised: 31, 31, 58;    /* mystic.800 #1f1f3a — input, chip */
   --hairline: 44, 44, 76;          /* mystic.700 #2c2c4c — border */
 
+  /* paper — the reading surface (Phase 7). Hex twins: `paper` / `ink` in
+     tailwind.config.js. Only Paper.tsx paints bg-paper; the .paper-prose
+     scope below reads these to remap the body tier onto the sheet. */
+  --paper: 244, 238, 225;          /* paper.DEFAULT  #f4eee1 — the sheet */
+  --paper-2: 234, 226, 207;        /* paper.2        #eae2cf — inset panel */
+  --paper-hairline: 216, 207, 184; /* paper.hairline #d8cfb8 — border on paper */
+  --ink: 21, 21, 42;               /* ink.DEFAULT    #15152a — 15.5:1 on paper */
+  --ink-2: 59, 59, 86;             /* ink.2          #3b3b56 — body copy, 9.3:1 */
+  --ink-muted: 95, 95, 122;        /* ink.muted      #5f5f7a — meta, 5.3:1 */
+  --ink-gold: 122, 95, 20;         /* ink.gold       #7a5f14 — the only gold allowed as text on paper, 5.2:1 */
+  --ink-teal: 23, 111, 105;        /* ink.teal       #176f69 */
+  --ink-coral: 163, 63, 38;        /* ink.coral      #a33f26 */
+  --ink-violet: 91, 63, 134;       /* ink.violet     #5b3f86 */
+  --ink-blue: 47, 90, 140;         /* ink.blue       #2f5a8c */
+  --ink-rose: 154, 74, 85;         /* ink.rose       #9a4a55 */
+
   /* Keyboard focus ring. gold-light rather than gold: 14.0:1 on the canvas
      and 12.4:1 on a Card, and it stays visible when the ring lands beside
      a gold-filled button, which plain gold does not. */
@@ -654,7 +670,15 @@
 
   /* ── Display typography ────────────────────────────────────────
      Richer treatments for premium-feeling headlines and reading
-     copy. Work with the self-hosted Cormorant Garamond + Inter declared at the top of this file. */
+     copy. Work with the self-hosted Cormorant Garamond + Inter declared at the top of this file.
+
+     Lining figures wherever a display class is set (p8 F80). Cormorant's
+     default figures are old-style: "100" drops to a small-cap "IOO", a 0 is
+     an "o", and beside kana or hangul a card's number sits like a subscript
+     (「ワンドの₃」). Each display class declares the same pair: the property,
+     and Tailwind's --tw-numeric-figure, so a `tabular-nums` on the same
+     element composes to "lining-nums tabular-nums" instead of replacing it.
+     The `font-display` utility gets the pair in @layer utilities below. */
 
   /* Oversized serif opener — used for reading titles and report
      section headings. Wider tracking gives it a printed feel. */
@@ -664,6 +688,8 @@
     letter-spacing: 0.005em;
     line-height: 1.1;
     font-feature-settings: 'dlig' 1, 'liga' 1;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
 
   /* All-caps micro-header above major sections. This was 10.4px
@@ -679,11 +705,119 @@
     letter-spacing: 0.14em;
     font-size: 0.6875rem;
     color: rgb(var(--gold-primary));
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
 
-  /* Drop cap — first letter of a paragraph rendered as an ornate
-     serif initial, in the style of illuminated manuscripts. Apply
-     `.drop-cap` to a wrapping <p>. */
+  /* Japanese, Korean and Chinese have no capitals to carry an 11px label,
+     and wide tracking pulls the glyphs of a word apart. At 13px with
+     light tracking the eyebrow reads as a label, not as scattered marks. */
+  html:lang(ja) .font-display-eyebrow,
+  html:lang(ko) .font-display-eyebrow,
+  html:lang(zh) .font-display-eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Japanese, Korean and Chinese have no italic. The CJK faces carry no
+     italic style, so `italic` (and em, i, cite) made the browser slant the
+     glyphs itself — a fake oblique that reads as a rendering fault: the
+     Companion's persona line, the Whispering Well's intro, the reports'
+     subtitles (pre-release pass). Text in these languages stays upright;
+     a span marked lang="en" inside them keeps its italic, and so does
+     every English screen. :lang() is the element's own language, and the
+     (0,2,0) specificity outranks the `italic` utility wherever it is
+     emitted. */
+  :is(.italic, em, i, cite, dfn, var, address):lang(ja),
+  :is(.italic, em, i, cite, dfn, var, address):lang(ko),
+  :is(.italic, em, i, cite, dfn, var, address):lang(zh) {
+    font-style: normal;
+  }
+
+  /* The bottom-nav labels, for the same reason: 12px kana and hangul
+     close up. 13px only from 360px up: the five ja labels need ~307px at
+     13px and a 320px phone's row has 304, and every CJK character is a
+     break opportunity, so they wrapped to "ホー/ム" (P7 #165). At 12px they
+     fit (~292px). keep-all stops a label ever splitting mid-word. */
+  html:lang(ja) .bottom-nav-label,
+  html:lang(ko) .bottom-nav-label,
+  html:lang(zh) .bottom-nav-label {
+    word-break: keep-all;
+  }
+  @media (min-width: 360px) {
+    html:lang(ja) .bottom-nav-label,
+    html:lang(ko) .bottom-nav-label,
+    html:lang(zh) .bottom-nav-label {
+      font-size: 0.8125rem;
+      letter-spacing: 0.02em;
+    }
+  }
+
+  /* CJK line breaks in headings, controls and short labels (p8 F84).
+     Japanese and Chinese set no spaces, so every character is a break
+     opportunity and a title or a button splits a word wherever the line
+     runs out: 「タロットスプレッ/ド」, 「完全なネイタルチャ/ート」,
+     「最初のリチュアル/をはじめる」. Text a reader takes in at a glance
+     breaks between phrases instead:
+       - ja: word-break: auto-phrase (Chromium 119+, so Android WebView
+         119+ and Chrome; elsewhere the declaration is dropped), with
+         line-break: strict as the fallback that still keeps ー and the
+         small kana off the start of a line ("ネイタル/チャート", not
+         "ネイタルチャ/ート");
+       - zh: auto-phrase where a browser segments Chinese, the default
+         elsewhere;
+       - ko: Korean spaces its words, so keep-all breaks only at the
+         spaces.
+     overflow-wrap: anywhere lets a phrase wider than its box break inside
+     rather than overflow, and keeps the box's min-content as small as it
+     was, so no flex or grid layout widens. Body copy keeps the default
+     breaking. :where() holds all of it at zero specificity: a component's
+     own utility (truncate, whitespace-nowrap, break-words) still wins.
+     `.keep-phrases` opts in any other short label (a span under a card, a
+     tile caption).
+
+     Display-size text keeps its phrases too (pre-release pass): a quote
+     set at 22px (.reading-quote: a reflection prompt, a reading's
+     verdict), and by opting in, an affirmation, a centred lede and an
+     empty state's line. At 19–22px a phone's line holds 13–17 characters,
+     and the default split a word across the break: the Fool's
+     affirmation 「感じ/る」, the Playing cards intro 「仕/事」, the
+     not-found page 「可能/性」. None of these sits in a control or under
+     a line clamp, so the R26 reset below never had them to reach.
+
+     The three properties inherit, so the body copy inside a control — a
+     paragraph, or a line clamped to a count — is set back to the default
+     first (p9 R26): phrase breaking reached the description of every
+     clickable card and the meta line of every ListRow, and needed a third
+     line where line-clamp-2 shows two (「7日連続記録を保ち、/スピリチュアル
+     な鍛錬を…」 at 360px). Text inside a heading or an opted-in label keeps
+     its phrases, and an element that is itself a label (an eyebrow
+     paragraph, a clamped .keep-phrases span) matches the rules below too,
+     which come later at the same zero specificity and win. */
+  :where(html:lang(ja), html:lang(zh), html:lang(ko)) :where(button, [role="button"], [role="tab"], label, summary) :where(p, [class*="line-clamp-"]):not(:where(h1, h2, h3, h4, h5, h6, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) *) {
+    word-break: normal;
+    line-break: auto;
+    overflow-wrap: normal;
+  }
+  :where(html:lang(ja)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
+    word-break: auto-phrase;
+    line-break: strict;
+    overflow-wrap: anywhere;
+  }
+  :where(html:lang(zh)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
+    word-break: auto-phrase;
+    overflow-wrap: anywhere;
+  }
+  :where(html:lang(ko)) :where(h1, h2, h3, h4, h5, h6, button, [role="button"], [role="tab"], label, legend, summary, dt, th, .heading-display-xl, .heading-display-lg, .heading-display-md, .font-display-hero, .font-display-eyebrow, .reading-quote, .keep-phrases) {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  /* Drop cap — first letter of a paragraph rendered as a serif initial.
+     Apply `.drop-cap` to a wrapping <p>. ReadingProse no longer applies
+     it (Phase 7: the gold glow under an initial was the tell); the class
+     stays for the one or two editorial pages that opt in, without the
+     text-shadow. */
   .drop-cap::first-letter {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', Georgia, serif;
     font-weight: 600;
@@ -693,7 +827,6 @@
     margin: 0.12em 0.12em 0 0;
     padding: 0.04em 0.08em 0 0;
     color: rgb(var(--gold-primary));
-    text-shadow: 0 0 12px rgba(var(--gold-primary), 0.25);
   }
 
   /* Gold-foil gradient text — used sparingly for statement labels
@@ -757,6 +890,8 @@
     letter-spacing: -0.005em;
     line-height: 1.08;
     font-feature-settings: 'liga' 1;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
   .heading-display-lg {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -764,6 +899,8 @@
     font-size: clamp(1.5rem, 3.8vw, 1.875rem);
     letter-spacing: 0.001em;
     line-height: 1.15;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
   }
   .heading-display-md {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -771,6 +908,19 @@
     font-size: clamp(1.125rem, 2.4vw, 1.375rem);
     letter-spacing: 0.005em;
     line-height: 1.2;
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
+  }
+  /* Bold display — a modifier, not a size. Cormorant 600 is self-hosted
+     (the @font-face block above) and no heading used it; the serif at a
+     light weight was the one thing the type still had in common with the
+     generated register. Pair with a heading-display-* class on: the result
+     question title, "Reading summary", card names on detail and meaning
+     pages, lesson concepts, library and journal screen titles. Not on the
+     Home greeting or PageHeader defaults. */
+  .heading-strong {
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   /* ── Redesign 2026 — the body tier ─────────────────────────────
@@ -811,6 +961,7 @@
      italic, a rule in the margin rather than quote marks. */
   .reading-quote {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 400;
     font-size: 1.375rem;
     line-height: 1.35;
@@ -840,6 +991,7 @@
   .prose-reading h2,
   .prose-reading h3 {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 500;
     line-height: 1.2;
     margin-top: 2em;
@@ -847,6 +999,7 @@
   }
   .prose-reading h1 {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-weight: 500;
     font-size: 2rem;
     line-height: 1.12;
@@ -872,6 +1025,7 @@
   .prose-reading li + li { margin-top: 0.4em; }
   .prose-reading blockquote {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-variant-numeric: lining-nums;
     font-size: 1.375rem;
     line-height: 1.35;
     padding-left: 1rem;
@@ -888,6 +1042,98 @@
   .prose-reading pre { overflow-x: auto; padding: 1rem; border-radius: 0.75rem; @apply bg-mystic-900; }
   .prose-reading pre code { padding: 0; background: none; }
   .prose-reading hr { margin: 2em 0; @apply border-0 border-t border-mystic-700; }
+
+  /* ── Phase 7 — paper ───────────────────────────────────────────
+     The reading surface. Paper.tsx applies this scope (and AffirmationPanel
+     on its paper surface); nothing else may paint bg-paper — the tokens
+     gate holds it to that file. The scope remaps the body tier, the
+     headings and the eyebrow onto the ink roles, so a ReadingProse or an
+     EyebrowLabel written for the canvas reads correctly when it lands on
+     the sheet. Descendant selectors (0,2,0) beat the single-class
+     utilities the primitives carry (0,1,0).
+
+     gold #d4af37 is 1.82:1 on paper and may never be text here. The
+     `.text-gold*` rules at the end are the safety net: any stray text-gold
+     inside paper becomes ink-gold (5.2:1). Gold FILLS with mystic-950 text
+     (the Button) are untouched. The Disclaimer that closes a sheet is a
+     sibling of Paper, not a child, so its dark block is never remapped;
+     a navy tile placed INSIDE the paper is handled by the island rules
+     after the keyword pill. */
+  .paper-prose { color: rgb(var(--ink)); }
+  .paper-prose h1, .paper-prose h2, .paper-prose h3, .paper-prose h4 { color: rgb(var(--ink)); }
+  .paper-prose strong, .paper-prose b { color: rgb(var(--ink)); }
+  .paper-prose a {
+    color: rgb(var(--ink-gold));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .paper-prose blockquote,
+  .paper-prose .reading-quote {
+    color: rgb(var(--ink));
+    border-left-color: rgb(var(--ink-gold));
+  }
+  .paper-prose .reading-lede { color: rgb(var(--ink)); }
+  .paper-prose .reading-copy { color: rgb(var(--ink-2)); }
+  .paper-prose .reading-meta,
+  .paper-prose .reading-caption { color: rgb(var(--ink-muted)); }
+  .paper-prose .font-display-eyebrow { color: rgb(var(--ink-2)); }
+  /* Rendered markdown (blog, learn entries) on paper. */
+  .paper-prose .prose-reading { color: rgb(var(--ink-2)); }
+  .paper-prose .prose-reading > p:first-of-type,
+  .paper-prose .prose-reading > :where(article, section, div) > p:first-of-type { color: rgb(var(--ink)); }
+  .paper-prose .prose-reading h1, .paper-prose .prose-reading h2, .paper-prose .prose-reading h3,
+  .paper-prose .prose-reading strong, .paper-prose .prose-reading blockquote { color: rgb(var(--ink)); }
+  .paper-prose .prose-reading a { color: rgb(var(--ink-gold)); }
+  .paper-prose .prose-reading blockquote { border-left-color: rgb(var(--ink-gold)); }
+  .paper-prose .prose-reading code { background: rgb(var(--paper-2)); color: rgb(var(--ink)); }
+  .paper-prose .prose-reading pre { background: rgb(var(--paper-2)); }
+  .paper-prose .prose-reading hr { border-color: rgb(var(--paper-hairline)); }
+  /* Safety net — see above. */
+  .paper-prose .text-gold,
+  .paper-prose .text-gold-light,
+  .paper-prose .text-gold-dark { color: rgb(var(--ink-gold)) !important; }
+  /* The keyword pill (Tag variant="keyword") flips from a gold tint to a
+     filled ink-gold pill with paper text (5.2:1). !important so it wins
+     over the text-gold net above at equal specificity; it is declared
+     after it on purpose. */
+  .paper-prose .keyword-pill {
+    background-color: rgb(var(--ink-gold));
+    color: rgb(var(--paper)) !important;
+  }
+  /* Dark islands inside a sheet (P7 #119). A navy tile composed into the
+     paper — a playing card in a lesson's CardGrid, TarotFace's quiet plate
+     — is canvas again, and the remaps above must stop at its edge:
+     ink-gold #7a5f14 on mystic-850 is 2.9:1, ink on navy is invisible. An
+     island is a descendant whose class list holds one of the canvas fills
+     as a whole token (`~=`, so `hover:bg-mystic-800` on a paper row is not
+     one), or that is marked `.on-canvas`. It gets the canvas ink back, its
+     gold stays gold, and a link tile loses the paper underline. The island
+     has to be INSIDE the paper, so a Paper that itself sits in a navy card
+     keeps every remap. */
+  .paper-prose :where([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.mystic.100');
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) :is(h1, h2, h3, h4, strong, b, a):not([class*="text-"]),
+  .paper-prose a:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas):not([class*="text-"]) {
+    color: inherit;
+  }
+  .paper-prose a:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas),
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) a {
+    text-decoration: none;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold,
+  .paper-prose .text-gold:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.DEFAULT') !important;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold-light,
+  .paper-prose .text-gold-light:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.light') !important;
+  }
+  .paper-prose :is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) .text-gold-dark,
+  .paper-prose .text-gold-dark:is([class~="bg-mystic-950"], [class~="bg-mystic-900"], [class~="bg-mystic-850"], [class~="bg-mystic-800"], [class~="bg-mystic-700"], .on-canvas) {
+    color: theme('colors.gold.dark') !important;
+  }
 
   /* ── Redesign 2026 — hairline borders ─────────────────────────
      Softer alternative to the existing border-glow utility. Uses
@@ -913,9 +1159,10 @@
      image background. */
   .card-ritual {
     position: relative;
-    background-image:
-      linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(13, 13, 26, 0.92) 100%),
-      radial-gradient(ellipse at top right, rgba(var(--gold-primary), 0.05), transparent 60%);
+    /* One fill, surface-1, like every other card. The 135deg wash and the
+       gold radial bloom in the top-right corner were the last gradient
+       "glow" on Home (P7 #171; the design directive's "nothing glows"). */
+    background-color: rgb(var(--surface-card));
     border: 1px solid rgba(var(--gold-primary), 0.18);
     border-radius: var(--radius-card);
     /* Elevation by fill, like every other card: the black drop-shadow and
@@ -1025,6 +1272,14 @@
 }
 
 @layer utilities {
+  /* The display serif as a utility (tailwind.config.js fontFamily.display)
+     takes the display classes' lining figures too (p8 F80; see "Display
+     typography"). Tailwind emits its font-family rule beside this one. */
+  .font-display {
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
+  }
+
   .perspective-1000 {
     perspective: 1000px;
   }
@@ -1286,23 +1541,25 @@
 /* ─── Hide bottom nav while the on-screen keyboard is up ───────────
  *
  * On Android, the soft keyboard slides up over the visual viewport.
- * The fixed-position bottom navbar (aria-label="Main navigation")
+ * The fixed-position bottom navbar (`nav[data-main-nav]`; not its
+ * aria-label, which is translated)
  * stays glued to viewport bottom + ends up sandwiched between the
  * form and the keyboard, blocking the input the user is typing into.
  *
- * Two-layer fix:
- *   1. `body.keyboard-open` is toggled by the visualViewport listener
- *      in App.tsx — works on every Capacitor / Android browser.
- *   2. `:has(input:focus, ...)` is a CSS-only fallback that works in
- *      modern Chromium-based webviews even before the JS effect runs.
+ * `body.keyboard-open` is toggled by the visualViewport listener in
+ * App.tsx: the keyboard is up while the visual viewport is 150px+ shorter
+ * than the window. It hides the nav with `display: none` rather than
+ * translate — translate would still steal the input's tap target.
  *
- * Both layers hide the nav with `display: none` rather than translate
- * — translate would still steal the input's tap target. Display:none
- * removes it entirely from the layout flow.
+ * Not on focus. A `:has(input:focus, textarea:focus, …)` fallback used to
+ * hide the nav too, and it broke the first tap on every form with a
+ * button near the bottom of the screen: pressing the button blurs the
+ * field, the nav comes back under the finger before the release, and the
+ * click lands on the nav (R7, FX5 #20). The keyboard closes later than
+ * the blur, so the class does not have that race.
  */
-body.keyboard-open nav[aria-label="Main navigation"],
-body.sheet-open nav[aria-label="Main navigation"],
-body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-label="Main navigation"] {
+body.keyboard-open nav[data-main-nav],
+body.sheet-open nav[data-main-nav] {
   display: none;
 }
 

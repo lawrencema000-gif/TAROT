@@ -36,6 +36,13 @@ export interface CelestialReadingRequest {
     mbtiType?: string;
     locale?: string;
   };
+  /**
+   * One id per paid attempt, kept across retries of the same request: the
+   * shared edge handler debits once per (requestId, body) and replays the
+   * stored reading to a retry (p8 F20). Optional: a client without one is
+   * charged per request, as before.
+   */
+  requestId?: string;
 }
 
 export interface CelestialReadingResponse {
@@ -49,9 +56,32 @@ export interface CelestialReadingResponse {
 }
 
 /**
+ * The `error.code` of the function's JSON envelope (`{ error: { code } }`),
+ * read from a copy of the Response a FunctionsHttpError keeps on `context`;
+ * null when the error carries no envelope (no response at all, or a body
+ * that is not one).
+ */
+async function envelopeCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Invoke the celestial-travel-reading edge function. Returns the parsed
- * AI response on success, or a Result.err with a `code` the UI can map
- * to a user message ('rate-limited' / 'ai-down' / 'malformed' / etc.).
+ * AI response on success, or a Result.err whose `error` is the server's
+ * code when it answered with one — REQUEST_ALREADY_USED (this requestId was
+ * answered once and can no longer be replayed: the next press is a new
+ * request), REQUEST_IN_FLIGHT (its first send is still being read: the same
+ * request again is free), INSUFFICIENT_BALANCE (refused before the debit) —
+ * else the error's message. A FunctionsHttpError's message is the same
+ * sentence for every status, so the callers' check for REQUEST_ALREADY_USED
+ * never matched and the spent id was sent again on every press (p9 RQA-2).
  */
 export async function generateCelestialReading(
   req: CelestialReadingRequest,
@@ -62,7 +92,7 @@ export async function generateCelestialReading(
     });
     if (error) {
       captureException('celestial-travel-reading', error);
-      return { ok: false, error: error.message ?? 'request failed' };
+      return { ok: false, error: (await envelopeCode(error)) ?? error.message ?? 'request failed' };
     }
     // Edge handler returns `{ data, correlationId }` envelope.
     const payload = (data as { data?: CelestialReadingResponse })?.data

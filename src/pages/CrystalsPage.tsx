@@ -1,21 +1,30 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Gem, ChevronRight } from 'lucide-react';
-import { PageHeader, Section } from '../components/ui';
+import { Gem } from 'lucide-react';
+import { useT } from '../i18n/useT';
+import { Page, PageHeader, Section } from '../components/ui';
+import { LearnHubRow, LearnHubSkeleton } from '../components/learn/LearnEntryTemplate';
 import { crystalEntries, getCrystalsByCategory, type CrystalCategory } from '../data/crystalsLearn';
+import { learnEnumLabel, localizeCrystalEntry, useLearnOverlay } from '../i18n/learnOverlay';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 
-const SECTIONS: { id: CrystalCategory; label: string; description: string }[] = [
-  { id: 'love', label: 'Love & Relationships', description: 'Heart-chakra stones for connection and self-love.' },
-  { id: 'protection', label: 'Protection & Grounding', description: 'Stones traditionally used to deflect and root.' },
-  { id: 'abundance', label: 'Abundance & Manifestation', description: 'Stones tied to prosperity and success.' },
-  { id: 'clarity', label: 'Clarity & Communication', description: 'Stones for clear thought, truth, and expression.' },
-  { id: 'healing', label: 'Healing & Calm', description: 'Stones for emotional healing and equilibrium.' },
-  { id: 'spirituality', label: 'Spirituality & Intuition', description: 'Stones for the upper chakras and inner work.' },
-];
+const SECTIONS: CrystalCategory[] = ['love', 'protection', 'abundance', 'clarity', 'healing', 'spirituality', 'grounding'];
+
+/** English defaults; the keys live under learn.crystals.categories. */
+const CATEGORY_TEXT: Record<CrystalCategory, { label: string; description: string }> = {
+  love: { label: 'Love & relationships', description: 'Heart-chakra stones for connection and self-love.' },
+  protection: { label: 'Protection & grounding', description: 'Stones traditionally used to deflect and root.' },
+  abundance: { label: 'Abundance & manifestation', description: 'Stones tied to prosperity and success.' },
+  clarity: { label: 'Clarity & communication', description: 'Stones for clear thought, truth and expression.' },
+  healing: { label: 'Healing & calm', description: 'Stones for emotional healing and equilibrium.' },
+  spirituality: { label: 'Spirituality & intuition', description: 'Stones for the upper chakras and inner work.' },
+  grounding: { label: 'Grounding', description: 'Stones that root and steady.' },
+};
 
 export function CrystalsPage() {
+  const { t } = useT('app');
+  const { overlay, ready } = useLearnOverlay('crystals');
+
   useEffect(() => {
     setPageMeta(
       'Crystal Meanings — 30 Stones Explained',
@@ -50,43 +59,57 @@ export function CrystalsPage() {
     });
   }, []);
 
+  const sep = t('learn.listSeparator', { defaultValue: ', ' });
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <Page spacing="lg">
       <PageHeader
-        className="mb-8"
         icon={<Gem />}
-        title="Crystals"
-        subtitle={`${crystalEntries.length} stones with metaphysical properties, chakra associations, Mohs hardness, cleansing methods, and tarot connections.`}
+        title={t('learn.crystals.title', { defaultValue: 'Crystals' })}
+        subtitle={t('learn.crystals.subtitle', {
+          defaultValue: '{{count}} stones with metaphysical properties, chakra associations, Mohs hardness, cleansing methods and tarot connections.',
+          count: crystalEntries.length,
+        })}
       />
 
-      {SECTIONS.map(({ id, label, description }) => {
+      {SECTIONS.map((id) => {
         const entries = getCrystalsByCategory(id);
         if (!entries.length) return null;
         return (
-          <Section key={id} title={label} description={description} spacing="sm" className="mb-8">
-            <div className="grid sm:grid-cols-2 gap-2">
-              {entries.map((entry) => (
-                <Link
-                  key={entry.slug}
-                  to={`/crystals/${entry.slug}`}
-                  className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ background: colorToHex(entry.color) }} aria-hidden />
-                    <div className="min-w-0">
-                      <div className="text-sm text-mystic-100 font-medium">{entry.name}</div>
-                      <div className="text-meta text-mystic-500 truncate">{entry.chakras.join(', ')} · Mohs {entry.hardness}</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0" />
-                </Link>
-              ))}
-            </div>
+          <Section
+            key={id}
+            title={t(`learn.crystals.categories.${id}.label`, { defaultValue: CATEGORY_TEXT[id].label })}
+            description={t(`learn.crystals.categories.${id}.description`, { defaultValue: CATEGORY_TEXT[id].description })}
+            spacing="sm"
+          >
+            {ready ? (
+              <div className="grid sm:grid-cols-2 gap-2">
+                {entries.map((entry) => {
+                  const shown = localizeCrystalEntry(entry, overlay);
+                  return (
+                    <LearnHubRow
+                      key={entry.slug}
+                      href={`/crystals/${entry.slug}`}
+                      label={shown.name}
+                      meta={`${entry.chakras.map((c) => learnEnumLabel('chakras', c)).join(sep)} · ${t('learn.crystals.mohs', { defaultValue: 'Mohs {{value}}', value: entry.hardness })}`}
+                      glyph={<CrystalSwatch color={entry.color} />}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <LearnHubSkeleton rows={Math.min(entries.length, 6)} />
+            )}
           </Section>
         );
       })}
-    </div>
+    </Page>
   );
+}
+
+/** The stone's colour as a disc — the one place a literal colour says what the data says. */
+function CrystalSwatch({ color }: { color: string }) {
+  return <span className="block w-5 h-5 rounded-full" style={{ background: colorToHex(color) }} />;
 }
 
 function colorToHex(color: string): string {

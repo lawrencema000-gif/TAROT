@@ -578,15 +578,41 @@ class WebBillingService implements BillingService {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        // The body is not guaranteed to be JSON (a gateway 5xx is often a
+        // bare page), and `.json()` throwing here used to skip this branch
+        // for the generic catch below. Read text, parse if possible, and
+        // always return a keyed failure the paywall can show.
+        let detail = '';
+        try {
+          const raw = await response.text();
+          try {
+            // The functions answer `{ error: { code, message } }` (the shared
+            // handler envelope) or a flat `{ error: "..." }`; String() of the
+            // first read "[object Object]" in the log.
+            const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown; code?: unknown };
+            const err = parsed.error;
+            const nested =
+              err && typeof err === 'object'
+                ? [(err as { code?: unknown }).code, (err as { message?: unknown }).message]
+                    .filter((v) => typeof v === 'string' && v)
+                    .join(': ')
+                : '';
+            detail = String(nested || (typeof err === 'string' ? err : '') || parsed.message || parsed.code || '').trim();
+          } catch {
+            detail = raw.slice(0, 200).trim();
+          }
+        } catch {
+          // unreadable body — the status is enough
+        }
+        console.error('[Stripe] create-checkout-session failed:', response.status, detail || '(no body)');
         return {
           success: false,
           errorKey: 'billing.checkoutSessionFailed',
-          error: error.error || 'Failed to create checkout session',
+          error: detail || `Failed to create checkout session (HTTP ${response.status})`,
         };
       }
 
-      const { url } = await response.json();
+      const { url } = (await response.json().catch(() => ({}))) as { url?: string };
 
       if (url) {
         window.location.href = url;

@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>Libra Tarot: Balance, Beauty, and Choice in the Cards | Arcana Blog</title>
     <meta name="description" content="Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace." />
 
-    <link rel="canonical" href="https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice/" />
+    <link rel="canonical" href="https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice/" />
+    <meta property="og:url" content="https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice" />
     <meta property="og:title" content="Libra Tarot: Balance, Beauty, and Choice in the Cards | Arcana Blog" />
     <meta property="og:description" content="Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace." />
     <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/libra-tarot-balance-beauty-and-choice-1785747668429.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Libra Tarot: Balance, Beauty, and Choice in the Cards","description":"Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/libra-tarot-balance-beauty-and-choice-1785747668429.png","url":"https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice/","datePublished":"2026-08-03T09:01:08.558+00:00","dateModified":"2026-08-03T09:01:08.558+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Libra Tarot: Balance, Beauty, and Choice in the Cards","description":"Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/libra-tarot-balance-beauty-and-choice-1785747668429.png","url":"https://tarotlife.app/blog/libra-tarot-balance-beauty-and-choice","datePublished":"2026-08-03T09:01:08.558+00:00","dateModified":"2026-08-03T09:01:08.558+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>Libra Tarot: Balance, Beauty, and Choice in the Cards</h1><p>Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace.</p><p>Libra Tarot: Balance, Beauty, and Choice in the Cards Libra tarot cards speak in harmonies—law and love, reason and romance. In this guide, you’ll learn the core Libra archetypes in the deck, how Venus and air shape their readings, and the way Libra navigates relationship spreads with elegance and edge. Libra Personality Tarot: The Signature Spread of Justice Libra’s anchor in tarot is Justice: the blade and the scales, the clean cut and the fair deal. Justice is not punishment—it’s proportion. When this card appears for Libra, the message is calibration: edit your inputs, clarify your terms, choose with intent. In career or creative pulls, Justice tests contracts and commitments. Ask: what is the principle at stake, and what keeps the system upright? When Justice is upright, truth lands without drama. Decisions are timely, agreements hold, and reciprocity is non‑negotiable. When reversed, indecision fogs the room. Over‑pleasing, loopholes, or “nice” avoidance need correction. Name the standard, then act. The Empress complements Libra’s head with heart. Ruled by Venus, Libra channels beauty as strategy —aesthetic coherence that invites trust and softens conflict. The Empress adds warmth to Justice’s steel: nourishment, receptivity, and tangible pleasure. Together they say: make it beautiful and make it fair. Libra Zodiac Tarot: Air Signs Read for Pattern and Principle As an air sign, Libra reads spreads like a debate that wants resolution. Swords suit their tempo: ideas spar, clarity wins. The Knight of Swords often rides in as Libra’s shadow—brilliant, fast, occasionally reckless. He cuts through confusion but can trample nuance. In practice, Libra must pace the Knight with Justice’s scale and the Empress’s grace. The Knight of Swords upright urges decisive communication: send the email, state the boundary, ask the incisive question. Reversed, he flags overtalking, premature conclusions, or performative logic. Slow the charge; invite context. Libra thrives on symmetry in the grid of a spread. Mirror cards, matching numbers, or balanced suits feel like a cosmic yes. When symmetry breaks, Libra investigates the hinge card—often a Sword or Major—that explains the wobble and prescribes repair. Libra Venus Tarot: Beauty as an Ethical Compass Venus rules Libra through design, diplomacy, and the art of the possible. In tarot, Venusian cards—The Empress, the Six of Pentacles, the Two of Cups—teach that generosity must be measured to remain generous. Beauty isn’t decoration; it’s alignment. A spread that glows—coherent symbols, repeated twos, lush Pentacles—usually signals right‑relationship to resources, people, and self‑worth. The Empress with Justice: cultivate and curate. Upgrade your environment to match your standards. Think: better tools, kinder routines, clearer pricing. Two of Cups with Justice: mutual vows, honest terms. If it’s a yes, draft the container. If it’s a no, release with respect. When Venus meets Swords, words become velvet‑gloved. Libra’s task is to keep softness from becoming evasion. Name the need, then design the meeting place that honors it. How Libra Reads Relationship Spreads Relationships are Libra’s home court. The goal isn’t peace at any price; it’s elegant honesty. Here’s a Libra‑forward method you can adapt in your own pulls or with Arcana’s tarot readings : Position 1 (Principle): What must remain true for this to be healthy? Justice often sits here as a compass. Position 2 (Pleasure): What nourishes connection? The Empress or Cups cards show the love‑language worth prioritizing. Position 3 (Communication): Where clarity frees energy? Watch for the Knight of Swords, Page of Swords, or Ace of Swords. Position 4 (Equity): Is the give/receive balanced? Six of Pentacles and Temperance calibrate throughput. Position 5 (Choice): What decision restores harmony now? Majors here carry weight; trust the verdict. Libra reads both people—two cards, side by side—to check for symmetry. If one draws Court Swords an</p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Libra Tarot: Balance, Beauty, and Choice in the Cards</h1><p>Explore Libra tarot cards—Justice, The Empress, and Knight of Swords—and learn how Libra reads relationship spreads with balance, beauty, and decisive grace.</p><p>Libra Tarot: Balance, Beauty, and Choice in the Cards Libra tarot cards speak in harmonies—law and love, reason and romance. In this guide, you’ll learn the core Libra archetypes in the deck, how Venus and air shape their readings, and the way Libra navigates relationship spreads with elegance and edge. Libra Personality Tarot: The Signature Spread of Justice Libra’s anchor in tarot is Justice: the blade and the scales, the clean cut and the fair deal. Justice is not punishment—it’s proportion. When this card appears for Libra, the message is calibration: edit your inputs, clarify your terms, choose with intent. In career or creative pulls, Justice tests contracts and commitments. Ask: what is the principle at stake, and what keeps the system upright? When Justice is upright, truth lands without drama. Decisions are timely, agreements hold, and reciprocity is non‑negotiable. When reversed, indecision fogs the room. Over‑pleasing, loopholes, or “nice” avoidance need correction. Name the standard, then act. The Empress complements Libra’s head with heart. Ruled by Venus, Libra channels beauty as strategy —aesthetic coherence that invites trust and softens conflict. The Empress adds warmth to Justice’s steel: nourishment, receptivity, and tangible pleasure. Together they say: make it beautiful and make it fair. Libra Zodiac Tarot: Air Signs Read for Pattern and Principle As an air sign, Libra reads spreads like a debate that wants resolution. Swords suit their tempo: ideas spar, clarity wins. The Knight of Swords often rides in as Libra’s shadow—brilliant, fast, occasionally reckless. He cuts through confusion but can trample nuance. In practice, Libra must pace the Knight with Justice’s scale and the Empress’s grace. The Knight of Swords upright urges decisive communication: send the email, state the boundary, ask the incisive question. Reversed, he flags overtalking, premature conclusions, or performative logic. Slow the charge; invite context. Libra thrives on symmetry in the grid of a spread. Mirror cards, matching numbers, or balanced suits feel like a cosmic yes. When symmetry breaks, Libra investigates the hinge card—often a Sword or Major—that explains the wobble and prescribes repair. Libra Venus Tarot: Beauty as an Ethical Compass Venus rules Libra through design, diplomacy, and the art of the possible. In tarot, Venusian cards—The Empress, the Six of Pentacles, the Two of Cups—teach that generosity must be measured to remain generous. Beauty isn’t decoration; it’s alignment. A spread that glows—coherent symbols, repeated twos, lush Pentacles—usually signals right‑relationship to resources, people, and self‑worth. The Empress with Justice: cultivate and curate. Upgrade your environment to match your standards. Think: better tools, kinder routines, clearer pricing. Two of Cups with Justice: mutual vows, honest terms. If it’s a yes, draft the container. If it’s a no, release with respect. When Venus meets Swords, words become velvet‑gloved. Libra’s task is to keep softness from becoming evasion. Name the need, then design the meeting place that honors it. How Libra Reads Relationship Spreads Relationships are Libra’s home court. The goal isn’t peace at any price; it’s elegant honesty. Here’s a Libra‑forward method you can adapt in your own pulls or with Arcana’s tarot readings : Position 1 (Principle): What must remain true for this to be healthy? Justice often sits here as a compass. Position 2 (Pleasure): What nourishes connection? The Empress or Cups cards show the love‑language worth prioritizing. Position 3 (Communication): Where clarity frees energy? Watch for the Knight of Swords, Page of Swords, or Ace of Swords. Position 4 (Equity): Is the give/receive balanced? Six of Pentacles and Temperance calibrate throughput. Position 5 (Choice): What decision restores harmony now? Majors here carry weight; trust the verdict. Libra reads both people—two cards, side by side—to check for symmetry. If one draws Court Swords an</p></article></main></div></div>
   </body>
 </html>

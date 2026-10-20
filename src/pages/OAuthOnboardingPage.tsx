@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -13,7 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { Button, Input, Chip, DeckFan, EyebrowLabel, Progress, toast } from '../components/ui';
+import { Button, Input, Chip, DeckFan, EyebrowLabel, Progress, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import { localizeSignName } from '../i18n/localizeNames';
 import { getZodiacSign } from '../utils/zodiac';
@@ -23,10 +23,12 @@ import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
 import { isNative } from '../utils/platform';
 import { useGeocode } from '../hooks/useAstrology';
+import { deriveBirthTz } from '../utils/birthTz';
+import { fallbackZone } from '../components/horoscope/birthZone';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
 import { useT } from '../i18n/useT';
-import type { Goal, TonePreference } from '../types';
+import type { Goal, TonePreference, UserProfile } from '../types';
 
 // Value-based goal options — labels read from app.profile.goals.* at render time.
 const goalValues: Goal[] = ['love', 'career', 'confidence', 'healing', 'focus', 'purpose', 'stress'];
@@ -43,56 +45,75 @@ interface OAuthOnboardingPageProps {
   onComplete: () => void;
 }
 
-async function assignRandomVisuals(userId: string) {
-  try {
-    const backgrounds: string[] = [];
-    const { data: bgFolders } = await supabase.storage.from('backgrounds').list('', { limit: 100 });
-    if (bgFolders) {
-      for (const folder of bgFolders) {
-        if (folder.id) continue;
-        const { data: files } = await supabase.storage.from('backgrounds').list(folder.name, { limit: 100 });
-        if (files) {
-          for (const file of files) {
-            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
-              const { data: urlData } = supabase.storage.from('backgrounds').getPublicUrl(`${folder.name}/${file.name}`);
-              if (urlData?.publicUrl) backgrounds.push(urlData.publicUrl);
-            }
-          }
-        }
-      }
-    }
+// New accounts used to be handed a random painted background and card back
+// from Storage here. Every screen then sat on art it had not chosen, and the
+// audits counted the contrast it cost on each. A new account now opens on
+// the token canvas and the default back; the painted sets remain a choice
+// in Settings → Appearance, where the pickers write the same two columns.
 
-    const cardBacks: string[] = [];
-    const { data: cbFolders } = await supabase.storage.from('card-backs').list('', { limit: 100 });
-    if (cbFolders) {
-      for (const folder of cbFolders) {
-        if (folder.id) continue;
-        const { data: files } = await supabase.storage.from('card-backs').list(folder.name, { limit: 100 });
-        if (files) {
-          for (const file of files) {
-            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
-              const { data: urlData } = supabase.storage.from('card-backs').getPublicUrl(`${folder.name}/${file.name}`);
-              if (urlData?.publicUrl) cardBacks.push(urlData.publicUrl);
-            }
-          }
-        }
-      }
-    }
+type OnboardingData = {
+  goals: Goal[];
+  birthDate: string;
+  birthTime: string;
+  birthPlace: string;
+  birthLat: number | undefined;
+  birthLon: number | undefined;
+  tonePreference: TonePreference;
+  notificationsEnabled: boolean;
+  notificationTime: string;
+};
 
-    const updates: Record<string, string> = {};
-    if (backgrounds.length > 0) {
-      updates.background_url = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-    }
-    if (cardBacks.length > 0) {
-      updates.card_back_url = cardBacks[Math.floor(Math.random() * cardBacks.length)];
-    }
+/**
+ * The birth date the sign-up trigger writes before anyone has given one
+ * (handle_new_user, 20260112113637: "user will update during onboarding").
+ * Every new account, email or OAuth, reaches this page holding it.
+ */
+export const SIGNUP_PLACEHOLDER_BIRTH_DATE = '2000-01-01';
 
-    if (Object.keys(updates).length > 0) {
-      await supabase.from('profiles').update(updates).eq('id', userId);
-    }
-  } catch (err) {
-    console.error('Failed to assign random visuals:', err);
-  }
+/**
+ * The birth date the member gave, or '' while they have given none. Seeded
+ * as it was, the trigger's placeholder filled the required field with
+ * 01/01/2000 and enabled Continue, and a member who tapped through was saved
+ * as a Capricorn born that day: every horoscope, chart and match then read
+ * it (p9 Q05). Only an open onboarding can hold the placeholder unanswered:
+ * `finish` seals the profile after `handleComplete` has written a real date.
+ * A member truly born on 2000-01-01 who reloads at the reveal enters it once
+ * more; nobody is saved with a date they did not give.
+ */
+function givenBirthDate(profile: Pick<UserProfile, 'birthDate' | 'onboardingComplete'> | null | undefined): string {
+  const date = profile?.birthDate ?? '';
+  return !profile?.onboardingComplete && date === SIGNUP_PLACEHOLDER_BIRTH_DATE ? '' : date;
+}
+
+/**
+ * What the profile already holds. `handleComplete` writes everything before
+ * the reveal step, so a reload before "Begin" used to restart at step 0 with
+ * every field blank; the fields come back from the row instead.
+ */
+function seedFromProfile(profile: UserProfile | null | undefined): OnboardingData {
+  return {
+    goals: Array.isArray(profile?.goals) ? profile.goals : [],
+    birthDate: givenBirthDate(profile),
+    birthTime: profile?.birthTime ?? '',
+    birthPlace: profile?.birthPlace ?? '',
+    birthLat: typeof profile?.birthLat === 'number' ? profile.birthLat : undefined,
+    birthLon: typeof profile?.birthLon === 'number' ? profile.birthLon : undefined,
+    tonePreference: profile?.tonePreference ?? 'gentle',
+    notificationsEnabled: profile?.notificationsEnabled ?? true,
+    notificationTime: profile?.notificationTime || '09:00',
+  };
+}
+
+/**
+ * The first step still missing an answer. Goals and the birth date are the
+ * two required answers; tone and reminders always hold a value, so once both
+ * required ones are on the row the stepper resumes at the last collecting
+ * step, one tap from "Begin".
+ */
+function firstIncompleteStep(data: OnboardingData): number {
+  if (data.goals.length === 0) return 0;
+  if (!data.birthDate) return 1;
+  return 3;
 }
 
 export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
@@ -108,31 +129,27 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     description: t(`oauth.tone.${value}.desc`),
   }));
   const { user, profile, updateProfile } = useAuth();
-  const [step, setStep] = useState(0);
+  const [data, setData] = useState<OnboardingData>(() => seedFromProfile(profile));
+  const [step, setStep] = useState(() => firstIncompleteStep(seedFromProfile(profile)));
   const [loading, setLoading] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
-  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch, usedFallback: geoApprox } = useGeocode();
   const [showGeoResults, setShowGeoResults] = useState(false);
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Visuals + attribution run while the reveal is on screen; Begin awaits them.
+  // Attribution runs while the reveal is on screen; Begin awaits it.
   const pendingRef = useRef<Promise<void> | null>(null);
-  const [data, setData] = useState({
-    goals: [] as Goal[],
-    birthDate: '',
-    birthTime: '',
-    birthPlace: '',
-    birthLat: undefined as number | undefined,
-    birthLon: undefined as number | undefined,
-    tonePreference: 'gentle' as TonePreference,
-    notificationsEnabled: true,
-    notificationTime: '09:00',
-  });
 
   const totalSteps = 4;
 
   // Steps 0-3 collect; step 4 is the reveal, the one moment the data just
   // entered is handed back: "The Sun was in Leo when you were born."
   const REVEAL = 4;
+
+  // A toast belongs to the step that raised it; "Account created" should
+  // not still be on screen two steps later (R6 A34).
+  useEffect(() => {
+    dismissToasts();
+  }, [step]);
 
   const canProceed = () => {
     switch (step) {
@@ -175,20 +192,42 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const handleComplete = async () => {
     setLoading(true);
 
+    const place = data.birthPlace.trim();
+    const located = data.birthLat !== undefined && data.birthLon !== undefined;
     const profileUpdate: Record<string, unknown> = {
       goals: data.goals,
       birthDate: data.birthDate,
       birthTime: data.birthTime || undefined,
-      birthPlace: data.birthPlace || undefined,
+      birthPlace: place || null,
       tonePreference: data.tonePreference,
       notificationsEnabled: data.notificationsEnabled,
       notificationTime: data.notificationTime,
+      // The device's zone, as the email onboarding writes it. An OAuth
+      // account otherwise keeps the signup default, 'UTC', which the
+      // birth_utc trigger falls back to when no birth-place zone is known
+      // (F21).
+      timezone: fallbackZone(profile),
       // onboardingComplete is written by finish(): App.tsx renders this page
       // only while it is false, so flipping it here would unmount the page
       // before the reveal step could paint.
     };
-    if (data.birthLat !== undefined) profileUpdate.birthLat = data.birthLat;
-    if (data.birthLon !== undefined) profileUpdate.birthLon = data.birthLon;
+    if (located) {
+      profileUpdate.birthLat = data.birthLat;
+      profileUpdate.birthLon = data.birthLon;
+      // The birth place's own zone: the one the birth time is read in, by
+      // the chart cast and by the birth_utc trigger (F21). Derived from the
+      // coordinates, which every result carries (the geocoder's zone is not
+      // on every row). A zone that cannot be derived clears one left by an
+      // earlier place.
+      profileUpdate.birthTz = await deriveBirthTz(data.birthLat!, data.birthLon!);
+    } else {
+      // No place picked from the list: no coordinates, so none of an
+      // earlier pick (a resumed onboarding) may stay under the new text.
+      // Horoscope resolves a typed place itself.
+      profileUpdate.birthLat = null;
+      profileUpdate.birthLon = null;
+      profileUpdate.birthTz = null;
+    }
 
     const { error } = await updateProfile(profileUpdate);
 
@@ -201,8 +240,6 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     if (user) {
       const uid = user.id;
       pendingRef.current = (async () => {
-        await assignRandomVisuals(uid);
-
         // Persist ad attribution (UTM from landing) — only on first complete
         const attr = getAttribution();
         if (attr) {
@@ -226,9 +263,8 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const finish = async () => {
     setLoading(true);
     if (pendingRef.current) await pendingRef.current;
-    // Sealing the profile last means the upsert's returned row also carries
-    // the card back and background assignRandomVisuals just wrote, so Home
-    // opens on the assigned back rather than the default.
+    // Sealing the profile last: App.tsx renders this page only while the
+    // flag is false, so the write that flips it is the one that lets go.
     const { error } = await updateProfile({ onboardingComplete: true });
     if (error) {
       toast(t('oauth.toast.saveFailed'), 'error');
@@ -324,11 +360,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-mystic-300 mb-2">
-                    {t('oauth.basics.birthDate')} <span className="text-coral">*</span>
+                  <label htmlFor="onboarding-birth-date" className="block text-meta font-medium text-mystic-300 mb-2">
+                    {t('oauth.basics.birthDate')} <span className="text-coral" aria-hidden>*</span>
                   </label>
+                  {/* Starts empty until the member gives a date: Continue
+                      waits for one (p9 Q05). */}
                   <Input
+                    id="onboarding-birth-date"
                     type="date"
+                    required
                     value={data.birthDate}
                     onChange={e => handleBirthDateChange(e.target.value)}
                     min={(() => {
@@ -339,12 +379,12 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     max={new Date().toISOString().split('T')[0]}
                   />
                   {birthDateError && (
-                    <p className="text-sm text-coral mt-2">{birthDateError}</p>
+                    <p className="text-meta text-coral mt-2" role="status">{birthDateError}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
+                  <label className="flex items-center gap-2 text-meta font-medium text-mystic-300 mb-2">
                     <Clock className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthTime')}
                     <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
@@ -358,7 +398,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
+                  <label className="flex items-center gap-2 text-meta font-medium text-mystic-300 mb-2">
                     <MapPin className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthPlace')}
                     <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
@@ -370,23 +410,32 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   />
                   {data.birthLat && data.birthLon && (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
+                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-inset">
                       <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
                       <span className="text-caption text-mystic-300">{t('oauth.basics.locationVerified')}</span>
                     </div>
                   )}
                   {showGeoResults && !data.birthLat && geoResults.length > 0 && (
-                    <div className="mt-1 space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-lg border border-mystic-700/40">
+                    <div className="mt-1 space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-inset border border-mystic-700/40">
                       {geoResults.map((r, i) => (
                         <button
                           key={i}
                           onClick={() => handleSelectGeoResult(r)}
-                          className="w-full text-left px-3 py-2 hover:bg-mystic-700/40 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                          className="w-full text-left px-3 py-2 min-h-[44px] hover:bg-mystic-700/40 transition-colors text-ui text-mystic-300 truncate cursor-pointer"
                         >
                           {r.displayName}
                         </button>
                       ))}
                     </div>
+                  )}
+                  {/* The search fell back to the offline city list: say so, without blocking. */}
+                  {geoApprox && (data.birthLat !== undefined || (showGeoResults && geoResults.length > 0)) && (
+                    <p className="text-meta text-mystic-400 mt-1.5">{t('app:horoscope.onboarding.approxLocation', { defaultValue: 'Using an approximate location — the nearest city we could match.' })}</p>
+                  )}
+                  {/* What the search could not do: no match, no connection, or
+                      only same-name places outside the region typed (O#35). */}
+                  {showGeoResults && data.birthLat === undefined && !geoLoading && geoError && (
+                    <p className="text-meta text-gold/80 mt-1.5" role="status">{geoError}</p>
                   )}
                   <p className="text-caption text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
                 </div>
@@ -427,7 +476,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                         <p className={`font-medium ${isSelected ? 'text-gold' : 'text-mystic-200'}`}>
                           {option.label}
                         </p>
-                        <p className="text-sm text-mystic-500">{option.description}</p>
+                        <p className="text-meta text-mystic-500">{option.description}</p>
                       </div>
                     </button>
                   );
@@ -468,7 +517,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
                 {data.notificationsEnabled && (
                   <div className="px-4 animate-fade-in">
-                    <label className="block text-sm text-mystic-400 mb-2">{t('oauth.notifications.reminderTime')}</label>
+                    <label className="block text-meta text-mystic-400 mb-2">{t('oauth.notifications.reminderTime')}</label>
                     <Input
                       type="time"
                       value={data.notificationTime}
@@ -512,9 +561,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
       <div className="p-6 flex gap-3 safe-bottom">
         {step > 0 && step !== REVEAL && (
-          <Button size="lg" variant="ghost" onClick={prevStep} >
+          // One line at 360px: the label is short and the button never
+          // shrinks or wraps; the gold button takes the rest of the row.
+          <Button size="lg" variant="ghost" onClick={prevStep} className="shrink-0 whitespace-nowrap">
             <ChevronLeft className="w-4 h-4" aria-hidden />
-            {t('oauth.back', { defaultValue: 'Previous step' })}
+            {t('oauth.back', { defaultValue: 'Back' })}
           </Button>
         )}
         <Button size="lg"
@@ -525,7 +576,10 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           loading={loading}
           
         >
-          {step === REVEAL ? t('oauth.reveal.cta') : step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
+          {/* Labels short enough for one line beside Back at 360 px in every
+              locale (F60): "Begin my first ritual" wrapped, and the screen it
+              led to was the reveal, not a ritual. */}
+          {step === REVEAL ? t('oauth.reveal.cta') : step === totalSteps - 1 ? t('oauth.finish') : t('oauth.next')}
           <ChevronRight className="w-4 h-4" aria-hidden />
         </Button>
       </div>

@@ -85,7 +85,7 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
   2: {
     nature: 'inauspicious',
     meaning: 'Star 2 (Black Earth, sickness star) brings illness, lethargy, and chronic health worries. The single most concerning annual star — it tends to manifest in respiratory and immune issues, especially when activated by motion or sound.',
-    remedy: 'NEVER place water features, music speakers, or red/orange decor in this direction this year. Hang a 6-rod metal wind chime to weaken the earth energy. Place Wu Lou (calabash) gourds. Avoid sleeping with the head pointing to this direction in 2026.',
+    remedy: 'NEVER place water features, music speakers, or red/orange decor in this direction this year. Hang a 6-rod metal wind chime to weaken the earth energy. Place Wu Lou (calabash) gourds. Avoid sleeping with the head pointing to this direction while the star sits here.',
   },
   3: {
     nature: 'inauspicious',
@@ -94,7 +94,7 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
   },
   4: {
     nature: 'auspicious',
-    meaning: 'Star 4 (Green Wood, scholastic / romance star) brings academic success, creative inspiration, writing flow, and budding romance. The current centre star, so 2026 has a literary / artistic flavour overall.',
+    meaning: 'Star 4 (Green Wood, scholastic / romance star) brings academic success, creative inspiration, writing flow, and budding romance. In a year when it sits in the centre, the whole year takes on a literary, artistic flavour.',
     remedy: 'Activate with four lush green plants, books, water features (water nourishes wood). Excellent direction for the study, writer\'s desk, or art studio. If single and looking for a partner, place fresh flowers here.',
   },
   5: {
@@ -151,3 +151,6 @@ export function annualHighlights(year: number) {
   }
   return { auspicious, inauspicious };
 }
+
+/** The per-star text, keyed by star number — read by the content corpus (contentCorpora.ts). */
+export const STAR_BASE_TEXT: Readonly<Record<FlyingStar, { meaning: string; remedy: string }>> = STAR_BASE;

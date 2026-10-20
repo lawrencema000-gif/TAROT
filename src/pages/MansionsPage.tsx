@@ -1,17 +1,22 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
-import { Card, Button, Input, EyebrowLabel, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Input, EyebrowLabel, Page, PageHeader, Section, Disclosure, Disclaimer } from '../components/ui';
 import {
-  MANSIONS, MANSION_ACTIVITIES, QUADRANT_INFO, PLANET7_INFO,
+  MANSIONS, MANSION_ACTIVITIES, QUADRANT_INFO,
   mansionForDate, mansionForBirth, sukuyoMansionForBirth,
   type Mansion, type Quadrant,
 } from '../data/lunarMansions';
 import {
   MANSION_MEANINGS, MANSION_DAILY_ADVICE, QUADRANT_MEANINGS, MANSION_INTRO,
 } from '../data/lunarMansionsContent';
+import { Trans } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
+import { useContentOverlay, ct, ctList } from '../i18n/contentOverlay';
+import { localizeHanzi, hanziLang, hanziUnlessShown, writesHanzi } from '../i18n/localizeHanzi';
+import { mansionAlmanacName } from '../components/ritual/mansionCaption';
 import { setPageMeta } from '../utils/seo';
 
 /**
@@ -20,17 +25,55 @@ import { setPageMeta } from '../utils/seo';
  * Two readings, kept visibly separate rather than blended: the mansion
  * governing today (the Chinese 值日 cycle, which almanacs use for choosing when
  * to act) and the mansion of your birth day, which describes temperament.
+ *
+ * Today's mansion and the birth mansion lead; the essay about the system
+ * sits in a Disclosure, and the birth reading casts itself from the profile
+ * (R7). CJK is never set below 13px — the Chinese name is the lede, not the
+ * eyebrow.
  */
+
+/** A CJK character set large, in a serif. 28px (text-display) for today, 36px for the birth mansion. */
+const CJK_SERIF = { fontFamily: 'serif' } as const;
+
 export function MansionsPage() {
   const navigate = useNavigate();
-  const { t } = useT();
+  // The mansions.* strings live in app.json; the common namespace this page
+  // used to read left every label English in ja/ko/zh.
+  const { t } = useT(['app', 'common']);
   const { profile } = useAuth();
+  // The prose lives in the `mansions` content module, keyed by mansion key
+  // and quadrant; the English shows until a translation has loaded.
+  const { overlay } = useContentOverlay('mansions');
+  const mTitle = (m: Mansion) => ct(overlay, `mansions.${m.key}.title`, MANSION_MEANINGS[m.key]?.title ?? '');
+  const mText = (m: Mansion) => ct(overlay, `mansions.${m.key}.text`, MANSION_MEANINGS[m.key]?.text ?? '');
+  const mAnimal = (m: Mansion) => ct(overlay, `mansions.${m.key}.animal`, m.animal);
+  const mAdvice = (m: Mansion) => ct(overlay, `mansions.${m.key}.advice`, MANSION_DAILY_ADVICE[m.key] ?? '');
+  const qName = (q: Quadrant) => ct(overlay, `quadrants.${q}.name`, QUADRANT_INFO[q].en);
+  const qText = (q: Quadrant) => ct(overlay, `quadrants.${q}.text`, QUADRANT_MEANINGS[q]?.text ?? '');
+  const qSeason = (q: Quadrant) => ct(overlay, `quadrants.${q}.season`, QUADRANT_INFO[q].season);
+  const qElement = (q: Quadrant) => ct(overlay, `quadrants.${q}.element`, QUADRANT_INFO[q].element);
+  // The data's hanzi in the reader's script: 参 and 参水猿 under the title
+  // 参宿 in Chinese and Japanese, never the traditional 參 (P7 F16).
+  const locale = getLocale();
+  const lang = hanziLang(locale);
+  const glyph = (m: Mansion) => localizeHanzi(m.cn, locale);
+  const title = t('mansions.title', { defaultValue: 'The Lunar Mansions' }) as string;
+  const lede = t('mansions.lede', { defaultValue: 'The twenty-eight lodges the Moon passes through: one governs today, one was yours at birth.' }) as string;
+  // 二十八宿 is the title itself in Chinese and Japanese.
+  const ledeHanzi = hanziUnlessShown('二十八宿', locale, [title, lede]);
+  /** "房 The Chamber" in English; the title alone where it already carries the glyph (房宿, 방수(房宿)). */
+  const mNameWithGlyph = (m: Mansion) => {
+    const name = mTitle(m);
+    const g = hanziUnlessShown(m.cn, locale, [name]);
+    return g ? `${g} ${name}` : name;
+  };
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
-  // The 值日 cycle turns at midnight, so only the date matters here. We still
+  // The 値日 cycle turns at midnight, so only the date matters here. We still
   // pass the profile's time through for the sukuyō reading, which is defined on
   // the lunar day and can shift across a day boundary.
   const birthTime = profile?.birthTime ?? '';
   const [submitted, setSubmitted] = useState(!!profile?.birthDate);
+  const [touched, setTouched] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +82,13 @@ export function MansionsPage() {
       'The Chinese division of the sky the Moon passes through: today’s governing mansion, and the mansion of the day you were born.',
     );
   }, []);
+
+  // Auto-cast once the profile has resolved, unless the user has typed a date.
+  useEffect(() => {
+    if (touched || !profile?.birthDate) return;
+    setBirthDate(profile.birthDate);
+    setSubmitted(true);
+  }, [profile?.birthDate, touched]);
 
   const today = useMemo(() => mansionForDate(new Date()), []);
   const birth = useMemo(
@@ -59,32 +109,36 @@ export function MansionsPage() {
   }, []);
 
   const renderActivities = (m: Mansion) => {
-    const acts = MANSION_ACTIVITIES[m.key];
-    if (!acts) return null;
+    const en = MANSION_ACTIVITIES[m.key];
+    if (!en) return null;
+    const acts = {
+      favourable: ctList(overlay, `mansions.${m.key}.favourable`, en.favourable),
+      unfavourable: ctList(overlay, `mansions.${m.key}.unfavourable`, en.unfavourable),
+    };
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
-          <div className="font-display-eyebrow text-teal/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
+          <p className="text-meta font-medium text-teal mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</p>
           {acts.favourable.length === 0 ? (
             <p className="text-ui text-mystic-300 italic">
-              The almanacs record nothing favoured here — a day to keep small rather than start.
+              {t('mansions.nothingFavoured', { defaultValue: 'The almanacs record nothing favoured here — a day to keep small rather than start.' })}
             </p>
           ) : (
             <ul className="space-y-0.5">
-              {acts.favourable.map((a) => (
-                <li key={a} className="text-ui text-mystic-200">{a}</li>
+              {acts.favourable.map((a, i) => (
+                <li key={i} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
         </div>
         <div>
-          <div className="font-display-eyebrow text-coral/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
+          <p className="text-meta font-medium text-coral mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</p>
           {acts.unfavourable.length === 0 ? (
-            <p className="text-ui text-mystic-300 italic">Nothing particular to avoid.</p>
+            <p className="text-ui text-mystic-300 italic">{t('mansions.nothingAvoided', { defaultValue: 'Nothing particular to avoid.' })}</p>
           ) : (
             <ul className="space-y-0.5">
-              {acts.unfavourable.map((a) => (
-                <li key={a} className="text-ui text-mystic-200">{a}</li>
+              {acts.unfavourable.map((a, i) => (
+                <li key={i} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
@@ -94,31 +148,47 @@ export function MansionsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <Page spacing="md">
       <PageHeader
-        eyebrow="二十八宿"
-        title={t('mansions.title', { defaultValue: 'The Lunar Mansions' })}
-        subtitle={MANSION_INTRO}
+        eyebrow={t('mansions.eyebrow', { defaultValue: 'Chinese sky lore' })}
+        title={title}
+        subtitle={
+          <span className="block text-meta text-mystic-400">
+            {ledeHanzi && (
+              <>
+                <span lang={lang}>{ledeHanzi}</span>
+                {' · '}
+              </>
+            )}
+            {lede}
+          </span>
+        }
         onBack={() => navigate(-1)}
-        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
-        divider
+        backLabel={t('common:actions.back', { defaultValue: 'Back' }) as string}
       />
+
+      <Disclosure
+        label={t('mansions.aboutLabel', { defaultValue: 'About this system' })}
+        description={t('mansions.aboutDescription', { defaultValue: 'Where the twenty-eight come from, and how the daily count works' })}
+      >
+        <p className="reading-copy">{ct(overlay, 'intro', MANSION_INTRO)}</p>
+      </Disclosure>
 
       {/* Today's governing mansion */}
       {today && (
         <Card className="p-4 space-y-2">
           <div className="flex items-center gap-2">
-            <Sun className="w-4 h-4 text-gold" />
+            <Sun className="w-4 h-4 text-gold" aria-hidden />
             <EyebrowLabel>{t('mansions.today', { defaultValue: 'Today' })}</EyebrowLabel>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl text-gold" style={{ fontFamily: 'serif' }}>{today.cn}</span>
-            <span className="text-mystic-100">{MANSION_MEANINGS[today.key]?.title}</span>
-            <span className="text-meta text-mystic-400">
-              {today.cn}{PLANET7_INFO[today.planet].cn}{today.animalCn}
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="text-display text-gold" style={CJK_SERIF} lang={lang}>{glyph(today)}</span>
+            <span className="text-mystic-100 text-body">{mTitle(today)}</span>
+            <span className="text-meta text-mystic-400" lang={lang}>
+              {mansionAlmanacName(today, locale)}
             </span>
           </div>
-          <p className="reading-copy">{MANSION_DAILY_ADVICE[today.key]}</p>
+          <p className="reading-copy">{mAdvice(today)}</p>
           {renderActivities(today)}
         </Card>
       )}
@@ -131,14 +201,14 @@ export function MansionsPage() {
             type="date"
             label={t('mansions.birthDate', { defaultValue: 'Birth date' })}
             value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
+            onChange={(e) => { setTouched(true); setBirthDate(e.target.value); }}
             max={new Date().toISOString().slice(0, 10)}
           />
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
-            <Moon className="w-4 h-4 mr-2" /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
+            <Moon className="w-4 h-4" aria-hidden /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
           </Button>
-          <p className="text-ui text-mystic-400">
-            The 值日 mansion turns over at midnight, so the date is all this needs — a birth time changes nothing here.
+          <p className="text-meta text-mystic-400">
+            {t('mansions.dateOnlyNote', { defaultValue: 'The 值日 mansion turns over at midnight, so the date is all this needs — a birth time changes nothing here.' })}
           </p>
         </Card>
       )}
@@ -147,34 +217,42 @@ export function MansionsPage() {
         <>
           <Card className="p-4 space-y-3">
             <EyebrowLabel>{t('mansions.birthHeading', { defaultValue: 'Your birth mansion' })}</EyebrowLabel>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl text-gold" style={{ fontFamily: 'serif' }}>{birth.cn}</span>
+            <div className="flex items-baseline gap-3">
+              <span className="text-hero text-gold" style={CJK_SERIF} lang={lang}>{glyph(birth)}</span>
               <div>
-                <div className="text-mystic-100">{MANSION_MEANINGS[birth.key]?.title}</div>
-                <div className="text-meta text-mystic-400">
-                  {birth.cn}{PLANET7_INFO[birth.planet].cn}{birth.animalCn} · {QUADRANT_INFO[birth.quadrant].cn}
+                <div className="text-mystic-100 text-body">{mTitle(birth)}</div>
+                <div className="text-meta text-mystic-400" lang={lang}>
+                  {mansionAlmanacName(birth, locale)} · {localizeHanzi(QUADRANT_INFO[birth.quadrant].cn, locale)}
                 </div>
               </div>
             </div>
-            <p className="reading-copy">{MANSION_MEANINGS[birth.key]?.text}</p>
+            <p className="reading-copy">{mText(birth)}</p>
             <p className="reading-copy border-t border-mystic-800/40 pt-3">
-              <span className="text-gold/80">{QUADRANT_INFO[birth.quadrant].en}</span> — {QUADRANT_MEANINGS[birth.quadrant]?.text}
+              <span className="text-gold">{qName(birth.quadrant)}</span> — {qText(birth.quadrant)}
             </p>
           </Card>
 
           {sukuyo && sukuyo.key !== birth.key && (
-            <Section eyebrow="宿曜 · the Japanese reading" spacing="sm">
+            <Section eyebrow={t('mansions.sukuyoEyebrow', { defaultValue: 'Sukuyō · the Japanese reading' })} spacing="sm">
               <p className="reading-copy">
-                The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than
-                the running day cycle — and puts you in{' '}
-                <span className="text-gold">{sukuyo.cn} {MANSION_MEANINGS[sukuyo.key]?.title}</span>.
-                Both are genuine; they answer slightly different questions, so we show them separately
-                rather than pick one for you.
+                {/* One sentence per language, so each puts its own copula and
+                    full stop around the name (…あなたの宿は房宿です。), and
+                    the name is the title alone wherever the title already
+                    carries the glyph (房宿, 방수(房宿)) — P7 F29/F81. */}
+                <Trans
+                  t={t}
+                  i18nKey="mansions.sukuyo"
+                  defaults="The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in <gold>{{mansion}}</gold>. Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you."
+                  values={{ mansion: mNameWithGlyph(sukuyo) }}
+                  components={{ gold: <span className="text-gold" /> }}
+                />
               </p>
             </Section>
           )}
 
-          <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('mansions.recast', { defaultValue: 'Use a different date' })}</Button>
+          <Button variant="ghost" fullWidth onClick={() => { setTouched(true); setSubmitted(false); }}>
+            {t('mansions.recast', { defaultValue: 'Use a different date' })}
+          </Button>
         </>
       )}
 
@@ -187,8 +265,16 @@ export function MansionsPage() {
         {(Object.keys(byQuadrant) as Quadrant[]).map((q) => (
           <div key={q} className="space-y-1">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="font-display-eyebrow">{QUADRANT_INFO[q].cn} · {QUADRANT_INFO[q].en}</span>
-              <span className="text-meta text-mystic-400">— {QUADRANT_INFO[q].season}, {QUADRANT_INFO[q].element}</span>
+              {/* Chinese and Japanese name the quarter in hanzi already
+                  (东方青龙, 東方の青龍), so the traditional name beside it
+                  only repeated it (P7 F82); English and Korean keep both. */}
+              {!writesHanzi(locale) && (
+                <span className="text-ui font-medium text-mystic-100" lang={lang}>{QUADRANT_INFO[q].cn}</span>
+              )}
+              <span className={writesHanzi(locale) ? 'text-ui font-medium text-mystic-100' : 'text-ui text-mystic-200'}>{qName(q)}</span>
+              <span className="text-meta text-mystic-400">
+                — {t('mansions.seasonElement', { defaultValue: '{{season}}, {{element}}', season: qSeason(q), element: qElement(q) })}
+              </span>
             </div>
             {byQuadrant[q].map((m) => {
               const open = openKey === m.key;
@@ -199,22 +285,22 @@ export function MansionsPage() {
                   open={open}
                   onOpenChange={(next) => setOpenKey(next ? m.key : null)}
                   icon={
-                    <span className="block w-6 text-center text-gold" style={{ fontFamily: 'serif' }}>{m.cn}</span>
+                    <span className="block w-6 text-center text-gold text-ui" style={CJK_SERIF} lang={lang}>{glyph(m)}</span>
                   }
                   label={
                     <>
-                      <span className="text-mystic-100 text-sm">{MANSION_MEANINGS[m.key]?.title}</span>
-                      <span className="text-meta text-mystic-400"> · {m.animal}</span>
+                      <span className="text-mystic-100 text-ui">{mTitle(m)}</span>
+                      <span className="text-meta text-mystic-400"> · {mAnimal(m)}</span>
                     </>
                   }
                   meta={
-                    <span className={`uppercase tracking-wider ${m.fortune === 'auspicious' ? 'text-teal/70' : 'text-coral/70'}`}>
+                    <span className={`text-ui ${m.fortune === 'auspicious' ? 'text-teal' : 'text-coral'}`} lang={lang}>
                       {m.fortune === 'auspicious' ? '吉' : '凶'}
                     </span>
                   }
                   contentClassName="pl-8 space-y-2"
                 >
-                  <p className="reading-copy">{MANSION_MEANINGS[m.key]?.text}</p>
+                  <p className="reading-copy">{mText(m)}</p>
                   {renderActivities(m)}
                 </Disclosure>
               );
@@ -223,10 +309,12 @@ export function MansionsPage() {
         ))}
       </Section>
 
-      <p className="reading-caption max-w-prose">
-        The 值日 cycle is a calendrical count that has run unbroken for centuries — not a live measurement of
-        where the Moon is tonight. For reflection, not prediction.
+      <p className="text-meta text-mystic-400 max-w-prose">
+        {t('mansions.countNote', {
+          defaultValue: 'The 值日 cycle is a calendrical count that has run unbroken for centuries — not a live measurement of where the Moon is tonight.',
+        })}
       </p>
-    </div>
+      <Disclaimer kind="general" />
+    </Page>
   );
 }

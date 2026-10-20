@@ -1,14 +1,14 @@
 import type { QuizDefinition } from '../types';
 
 // Shorter 12-question MBTI variant for users who want a quick reading
-// without the 70-question commitment. Reuses the same scoring engine
+// without the 48-question commitment. Reuses the same scoring engine
 // (calculateMBTI) since dimension codes + Likert values are identical.
 // Three balanced questions per dimension (EI/SN/TF/JP).
 export const mbtiQuickQuiz: QuizDefinition = {
   id: 'mbti-quick-v1',
   type: 'mbti',
   title: 'Quick Personality Type',
-  description: 'A fast 12-question read on how you recharge, perceive, decide, and structure your life. Great as an intro — upgrade to the full 70-question deep dive any time for a more precise result.',
+  description: 'A fast 12-question read on how you recharge, perceive, decide, and structure your life. Great as an intro — upgrade to the full 48-question deep dive any time for a more precise result.',
   questions: [
     { id: 'qei1', text: 'I recharge best around energetic groups of people.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'qei2', text: 'After a long social event, I need solo time to recover.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },

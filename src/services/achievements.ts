@@ -192,16 +192,45 @@ export async function markAchievementNotified(
   }
 }
 
+/**
+ * Tell the server something happened. The call is only a trigger
+ * (migration 20261003000018): the server re-derives every badge from its own
+ * records — the XP ledger award_xp writes, the ritual rows, quiz_results, the
+ * profile (its xp, level and streak are server-written) — so repeating a call
+ * changes nothing, `increment` is ignored, and an unlock happens (and pays
+ * its XP) once. A Premium badge (is_premium_only) unlocks only while the
+ * member is Premium; its progress counts either way.
+ *
+ * Facts only the device sees are kept as claims and need `value`:
+ *  - reading facts — the spread id (spread_types_used), the card's canonical
+ *    English name (specific_card_drawn), the playing-card spread slug, and the
+ *    bare celtic_cross / cartomancy / new-year / witching-hour reports — count
+ *    once matched to the reading's own reading_complete XP row, so report
+ *    them for the reading awardXP(user, 'reading_complete') was called for,
+ *    once per deal: one XP row is one reading of one deck (tarot or playing
+ *    cards), each fact counts once per reading, and two readings seconds
+ *    apart each count (no time-window dedupe);
+ *  - morning_ritual / evening_ritual count once matched to the ritual's
+ *    ritual_complete XP row;
+ *  - views (cards_explored with the card id, zodiac_signs_viewed with the
+ *    sign id, cartomancy_lesson_complete with the lesson slug) count once per
+ *    distinct value, at a bounded number per UTC day. (A cards_explored with
+ *    no value is the released v1.2.0 build's report: one unnamed card, under
+ *    the same daily bound. Send the id.)
+ * Only badges unlocked by this call come back.
+ */
 export async function checkAchievementProgress(
   userId: string,
   activityType: string,
-  increment: number = 1
+  increment: number = 1,
+  value?: string
 ): Promise<UnlockedAchievement[]> {
   try {
     const { data, error } = await supabase.rpc('check_achievement_progress', {
       p_user_id: userId,
       p_activity_type: activityType,
       p_increment: increment,
+      p_value: value ?? null,
     });
 
     if (error) {
@@ -258,80 +287,84 @@ export async function checkLevelMilestones(
   }
 }
 
-export async function unlockAchievement(
-  userId: string,
-  achievementId: string
-): Promise<{ success: boolean; xp_awarded: number; achievement_name: string; rarity: AchievementRarity } | null> {
-  try {
-    const { data, error } = await supabase.rpc('unlock_achievement', {
-      p_user_id: userId,
-      p_achievement_id: achievementId,
-    });
-
-    if (error) {
-      console.error('Error unlocking achievement:', error);
-      return null;
-    }
-
-    const row = data?.[0] || null;
-    if (row?.success) announceUnlock();
-    return row;
-  } catch (error) {
-    console.error('Failed to unlock achievement:', error);
-    return null;
-  }
+/**
+ * A drawn card is reported as a `specific_card_drawn` event with the card
+ * name; the server counts it only against badges whose unlock_condition
+ * names that card (The Chariot, The Tower, The Fool in the seed), once per
+ * reading the XP ledger recorded (20261003000018). This used to write
+ * user_achievements directly from the client — a write any user could point
+ * at any badge — and that privilege is revoked (20261003000003).
+ */
+export async function checkSpecificCardAchievement(userId: string, cardName: string): Promise<void> {
+  if (!cardName) return;
+  await checkAchievementProgress(userId, 'specific_card_drawn', 1, cardName);
 }
 
-// Card-specific achievement tracking
-const CARD_ACHIEVEMENTS: Record<string, { name: string; target: number }> = {
-  'The Chariot': { name: 'Lucky Seven', target: 7 },
-  'The Tower': { name: 'Tower Moment', target: 1 },
-  'The Fool': { name: 'Fools Journey', target: 3 },
-};
+/*
+ * Value reporters for the badges that count WHICH thing, not how many times.
+ * Each sends the stable value the server compares against the seed
+ * (20260127070447); a bare checkAchievementProgress call with no value cannot
+ * advance a set or a card badge (20261003000018 ignores it), and a bare card
+ * view counts only as one unnamed card (the v1.2.0 build's report).
+ *
+ * Counter activities (reading_complete, reading_saved, horoscope_viewed,
+ * quiz_complete, journal_entry, ritual_complete, community_*) are counted
+ * from the XP ledger: awardXP() in services/levelSystem.ts pays the activity
+ * and then triggers the re-derivation. A second report of the same type no
+ * longer counts twice (p7 #36), but it is a wasted round trip.
+ */
 
-export async function checkSpecificCardAchievement(userId: string, cardName: string): Promise<void> {
-  const mapping = CARD_ACHIEVEMENTS[cardName];
-  if (!mapping) return;
-  try {
-    const { data: achievement } = await supabase
-      .from('achievements')
-      .select('id')
-      .eq('name', mapping.name)
-      .maybeSingle();
+/** The five quiz types the "Quiz Master" set lists — Quiz.type values in src/data. */
+export const QUIZ_MASTER_TYPES = ['mbti', 'love-language', 'big-five', 'enneagram', 'attachment'] as const;
+/** The three spreads the "Spread Explorer" set lists — tarot spread ids. */
+export const SPREAD_EXPLORER_TYPES = ['single', 'three-card', 'celtic-cross'] as const;
 
-    if (!achievement) {
-      // Fallback: try via activity_type
-      await checkAchievementProgress(userId, 'specific_card_drawn');
-      return;
-    }
+/**
+ * A quiz was completed: `quizType` is the quiz's `type` ('mbti',
+ * 'love-language', 'big-five', 'enneagram', 'attachment' count toward Quiz
+ * Master; any other type is ignored). Call once per completion, next to
+ * awardXP(user, 'quiz_complete').
+ */
+export async function reportQuizTypeComplete(userId: string, quizType: string): Promise<UnlockedAchievement[]> {
+  if (!(QUIZ_MASTER_TYPES as readonly string[]).includes(quizType)) return [];
+  return checkAchievementProgress(userId, 'quiz_types_complete', 1, quizType);
+}
 
-    const { data: userAch } = await supabase
-      .from('user_achievements')
-      .select('progress, unlocked_at')
-      .eq('user_id', userId)
-      .eq('achievement_id', achievement.id)
-      .maybeSingle();
+/**
+ * A tarot spread was laid: `spreadType` is the spread id ('single',
+ * 'three-card', 'celtic-cross' count toward Spread Explorer).
+ */
+export async function reportSpreadTypeUsed(userId: string, spreadType: string): Promise<UnlockedAchievement[]> {
+  if (!(SPREAD_EXPLORER_TYPES as readonly string[]).includes(spreadType)) return [];
+  return checkAchievementProgress(userId, 'spread_types_used', 1, spreadType);
+}
 
-    if (userAch?.unlocked_at) return; // Already unlocked
+/** Cards this session has already reported, so swiping back and forth costs one call per card. */
+const exploredThisSession = new Set<string>();
 
-    const newProgress = (userAch?.progress || 0) + 1;
-    const nowUnlocked = newProgress >= mapping.target;
+/**
+ * A tarot card's detail was viewed — opened from the library OR reached by
+ * swiping in the detail view. `cardId` is the tarot card id (0–77); the
+ * server counts DISTINCT ids toward Library Scholar (22) and Card Master (78).
+ */
+export async function reportCardExplored(userId: string, cardId: number): Promise<UnlockedAchievement[]> {
+  if (!Number.isInteger(cardId) || cardId < 0 || cardId > 77) return [];
+  const key = `${userId}:${cardId}`;
+  if (exploredThisSession.has(key)) return [];
+  exploredThisSession.add(key);
+  const unlocked = await checkAchievementProgress(userId, 'cards_explored', 1, String(cardId));
+  return unlocked;
+}
 
-    if (userAch) {
-      await supabase
-        .from('user_achievements')
-        .update({ progress: newProgress, unlocked_at: nowUnlocked ? new Date().toISOString() : null })
-        .eq('user_id', userId)
-        .eq('achievement_id', achievement.id);
-    } else {
-      await supabase
-        .from('user_achievements')
-        .insert({ user_id: userId, achievement_id: achievement.id, progress: newProgress, target: mapping.target, unlocked_at: nowUnlocked ? new Date().toISOString() : null });
-    }
-    if (nowUnlocked) announceUnlock();
-  } catch (e) {
-    console.error('Failed to check specific card achievement:', e);
-  }
+/**
+ * A zodiac sign's page or horoscope was viewed: `sign` is the English sign
+ * id in lower case ('aries' … 'pisces'); the server counts distinct signs
+ * toward the 12-sign badge.
+ */
+export async function reportZodiacSignViewed(userId: string, sign: string): Promise<UnlockedAchievement[]> {
+  const id = sign.trim().toLowerCase();
+  if (!/^(aries|taurus|gemini|cancer|leo|virgo|libra|scorpio|sagittarius|capricorn|aquarius|pisces)$/.test(id)) return [];
+  return checkAchievementProgress(userId, 'zodiac_signs_viewed', 1, id);
 }
 
 export async function getAchievementStats(userId: string): Promise<AchievementStats | null> {
@@ -363,35 +396,6 @@ export async function initializeUserAchievements(userId: string): Promise<void> 
     }
   } catch (error) {
     console.error('Failed to initialize user achievements:', error);
-  }
-}
-
-export async function updateAchievementProgress(
-  userId: string,
-  achievementId: string,
-  progress: number
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('user_achievements')
-      .upsert({
-        user_id: userId,
-        achievement_id: achievementId,
-        progress,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id,achievement_id',
-      });
-
-    if (error) {
-      console.error('Error updating achievement progress:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Failed to update achievement progress:', error);
-    return false;
   }
 }
 

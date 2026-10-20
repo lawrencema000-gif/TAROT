@@ -1,18 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, CalendarPlus, CheckCircle2 } from 'lucide-react';
-import { Card, Button, Badge, Page, PageHeader, toast } from '../components/ui';
+import { Card, Button, Badge, Page, PageHeader, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
 /**
- * Live rooms — scheduled audio events (MVP listing + RSVP).
+ * Live rooms — scheduled gatherings, listed with a seat to save.
  *
- * Actual voice (LiveKit) is gated behind a separate flag + token service
- * not yet wired. This page surfaces the upcoming roster and lets users
- * reserve a seat so we know who to notify when voice goes live. Hosts are
- * hand-scheduled in the admin dashboard in the interim.
+ * What ships today is a list and an RSVP: hosts schedule a room in the
+ * admin dashboard, members save a seat, and the room page opens at its
+ * scheduled time. Voice (LiveKit) sits behind its own flag and is not
+ * promised here — the copy describes the list, not a roadmap.
  */
 
 interface LiveRoom {
@@ -73,7 +73,7 @@ export function LiveRoomsPage() {
       setRsvpSet((prev) => {
         const n = new Set(prev); n.delete(roomId); return n;
       });
-      toast(t('liveRooms.rsvpCancelled', { defaultValue: 'Seat released — you can RSVP again any time.' }), 'info');
+      toast(t('liveRooms.rsvpCancelled', { defaultValue: 'Seat released — you can save it again any time.' }), 'info');
     } else {
       const { error } = await supabase
         .from('live_room_rsvps')
@@ -86,7 +86,7 @@ export function LiveRoomsPage() {
       setRsvpSet((prev) => new Set(prev).add(roomId));
       toast(
         t('liveRooms.rsvpConfirmed', {
-          defaultValue: 'You’re on the list. Check back here — the room opens at {{time}}.',
+          defaultValue: 'Your seat is saved. The room opens here at {{time}}.',
           time: room ? new Date(room.scheduled_at).toLocaleString() : '',
         }),
         'success',
@@ -94,58 +94,64 @@ export function LiveRoomsPage() {
     }
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
-
   return (
     <Page spacing="md">
       <PageHeader
         icon={<Mic />}
         title={t('liveRooms.title', { defaultValue: 'Live rooms' })}
+        subtitle={t('liveRooms.intro', {
+          defaultValue:
+            'Scheduled gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Save a seat and the room opens here at its scheduled time.',
+        })}
       />
 
-      <Card padding="lg" variant="glow">
-        <p className="text-sm text-mystic-300 leading-relaxed">
-          {t('liveRooms.intro', {
-            defaultValue:
-              'Scheduled live gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Audio-first, soon. RSVP to reserve your seat.',
-          })}
-        </p>
-      </Card>
+      {loading && (
+        <div className="py-12 text-center text-mystic-500 text-ui">
+          {t('common:actions.loading', { defaultValue: 'Loading…' })}
+        </div>
+      )}
 
-      {rooms.length === 0 ? (
-        <Card padding="lg" className="text-center">
-          <p className="text-sm text-mystic-400 italic">
-            {t('liveRooms.empty', { defaultValue: 'No live rooms on the calendar yet — check back soon.' })}
-          </p>
-        </Card>
-      ) : (
+      {!loading && rooms.length === 0 && (
+        <EmptyState
+          icon={<Mic />}
+          title={t('liveRooms.empty', { defaultValue: 'Nothing is scheduled right now' })}
+          description={t('liveRooms.emptyBody', { defaultValue: 'New rooms appear here as hosts add them.' })}
+        />
+      )}
+
+      {!loading &&
         rooms.map((room) => {
           const attending = rsvpSet.has(room.id);
           const when = new Date(room.scheduled_at);
           const isLive = room.state === 'live';
           return (
-            <Card key={room.id} padding="lg" className={isLive ? 'border-gold/40 cursor-pointer' : 'cursor-pointer'}>
-              <div onClick={() => navigate(`/live-rooms/${room.id}`)} className="cursor-pointer">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-display text-lg text-mystic-100">{room.title}</h3>
-                  <p className="text-meta text-mystic-400 mt-0.5 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+            <Card
+              key={room.id}
+              padding="lg"
+              className={isLive ? 'border-gold/40' : ''}
+              interactive
+              onClick={() => navigate(`/live-rooms/${room.id}`)}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="min-w-0">
+                  <h3 className="heading-display-md text-mystic-100">{room.title}</h3>
+                  <p className="text-meta text-mystic-400 mt-0.5 flex items-center gap-1 tabular-nums">
+                    <Clock className="w-3 h-3" aria-hidden />
                     {when.toLocaleString()} · {room.duration_minutes}m
                   </p>
                 </div>
                 {isLive && (
                   <Badge tone="gold" pulse>
-                    Live
+                    {t('liveRooms.liveBadge', { defaultValue: 'Live' })}
                   </Badge>
                 )}
               </div>
               {room.description && (
-                <p className="text-sm text-mystic-300 leading-relaxed mb-3">{room.description}</p>
+                <p className="text-ui text-mystic-300 leading-relaxed mb-3">{room.description}</p>
               )}
-              <div className="flex items-center justify-between">
-                <p className="text-meta text-mystic-500 flex items-center gap-1">
-                  <Users className="w-3 h-3" />
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-meta text-mystic-500 flex items-center gap-1 tabular-nums">
+                  <Users className="w-3 h-3" aria-hidden />
                   {t('liveRooms.capacity', { defaultValue: 'up to {{n}} listeners', n: room.capacity })}
                 </p>
                 {user ? (
@@ -156,12 +162,12 @@ export function LiveRoomsPage() {
                   >
                     {attending ? (
                       <>
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        {t('liveRooms.rsvpd', { defaultValue: 'You\'re in' })}
+                        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden />
+                        {t('liveRooms.rsvpd', { defaultValue: 'You’re in' })}
                       </>
                     ) : (
                       <>
-                        <CalendarPlus className="w-3 h-3 mr-1" />
+                        <CalendarPlus className="w-3.5 h-3.5" aria-hidden />
                         {t('liveRooms.rsvp', { defaultValue: 'Save my seat' })}
                       </>
                     )}
@@ -172,17 +178,17 @@ export function LiveRoomsPage() {
                   </p>
                 )}
               </div>
-              </div>
             </Card>
           );
-        })
-      )}
-
-      <p className="text-caption text-center text-mystic-600 italic">
-        {t('liveRooms.voiceComingSoon', {
-          defaultValue: 'Audio is rolling out gradually. Save a seat, then check back here — each room opens at its scheduled time.',
         })}
-      </p>
+
+      {!loading && rooms.length > 0 && (
+        <p className="text-caption text-center text-mystic-500">
+          {t('liveRooms.footer', {
+            defaultValue: 'A saved seat is a reminder, not a ticket — rooms are free to join at their scheduled time.',
+          })}
+        </p>
+      )}
     </Page>
   );
 }

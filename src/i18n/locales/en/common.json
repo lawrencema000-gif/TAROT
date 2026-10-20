@@ -1,8 +1,6 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "Know yourself. One ritual a day.",
-    "shortTagline": "Your daily ritual."
+    "tagline": "Know yourself. One ritual a day."
   },
   "nav": {
     "home": "Home",
@@ -14,12 +12,10 @@
     "blog": "Blog",
     "cardMeanings": "Card meanings",
     "signIn": "Sign in",
-    "signOut": "Sign out",
     "settings": "Settings",
     "search": "Search",
     "saved": "Saved",
     "back": "Back",
-    "backToArcana": "← Back to Arcana",
     "backToNews": "Back to news",
     "trophies": "Trophies",
     "news": "News",
@@ -35,46 +31,30 @@
     "ziwei": "Zi Wei",
     "mansions": "Lunar Mansions",
     "goodDays": "Good days",
-    "wishingSky": "Wishing Sky"
+    "wishingSky": "Wishing Sky",
+    "cartomancy": "Playing cards",
+    "mainNavigation": "Main navigation"
   },
   "actions": {
     "continue": "Continue",
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirm": "Confirm",
     "close": "Close",
-    "skip": "Skip",
     "retry": "Try again",
-    "readMore": "Read more",
-    "copy": "Copy",
     "copied": "Copied.",
     "saved": "Saved",
     "shareFailed": "Couldn’t share. Try again.",
-    "restore": "Restore purchases",
-    "manage": "Manage subscription",
     "loading": "Loading…",
     "send": "Send",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "back": "Back",
+    "dismiss": "Dismiss"
   },
   "labels": {
     "email": "Email",
     "password": "Password",
-    "displayName": "Display name",
     "language": "Language",
-    "birthDate": "Birth date",
-    "birthTime": "Birth time",
-    "birthPlace": "Birth place",
-    "timezone": "Time zone",
-    "loading": "Loading…",
-    "processing": "Processing…",
-    "today": "Today",
-    "yesterday": "Yesterday",
-    "optional": "Optional",
-    "required": "Required",
-    "searchPlaceholder": "Search…",
-    "yes": "Yes",
-    "no": "No",
-    "maybe": "Maybe"
+    "loading": "Loading…"
   },
   "errors": {
     "generic": "That didn’t work — check your connection and try again.",
@@ -136,17 +116,10 @@
     "fieldRequired": "This field is required.",
     "tooShort": "This is too short.",
     "tooLong": "This is too long.",
-    "invalidValue": "This value isn’t valid."
+    "invalidValue": "This value isn’t valid.",
+    "sessionExpired": "Session expired — sign in again"
   },
   "toast": {
-    "savedSuccess": "Saved.",
-    "deletedSuccess": "Deleted.",
-    "copiedSuccess": "Copied to clipboard.",
-    "welcomeBack": "Welcome back.",
-    "signedOut": "Signed out.",
-    "offline": "You’re offline. Some features are unavailable.",
-    "reconnected": "Back online.",
-    "updateAvailable": "A new version is available.",
     "languageChanged": "Language changed."
   },
   "languages": {
@@ -154,12 +127,6 @@
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
-  },
-  "time": {
-    "morning": "Morning",
-    "afternoon": "Afternoon",
-    "evening": "Evening",
-    "night": "Night"
   },
   "auth": {
     "profileLoadFailed": "Couldn’t load your profile — refresh the page to try again.",
@@ -172,5 +139,30 @@
   },
   "sheet": {
     "panel": "Panel"
+  },
+  "disclaimer": {
+    "label": "Disclaimer",
+    "lead": {
+      "tarot": "Tarot can’t answer everything.",
+      "astrology": "Astrology is a lens, not a forecast.",
+      "quiz": "A quiz is a mirror, not a verdict.",
+      "ai": "This reading was written by a model.",
+      "cartomancy": "The cards suggest; they don’t decide.",
+      "general": "For reflection, not advice.",
+      "wellbeing": "A screen, not a diagnosis."
+    },
+    "body": "Arcana’s readings are for reflection and entertainment. They are not medical, legal, financial or psychological advice.",
+    "bodies": {
+      "wellbeing": "These questions reflect how you have been feeling. They cannot diagnose anything. If you are struggling, or do not feel safe, please talk to someone you trust, a doctor or a mental-health professional."
+    }
+  },
+  "affirmation": {
+    "label": "Affirmation"
+  },
+  "resultSheet": {
+    "summaryHeading": "Reading summary"
+  },
+  "resultLayout": {
+    "readFullReading": "Read the full reading"
   }
 }

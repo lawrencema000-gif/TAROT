@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { Card, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
-import { mansionForDate, PLANET7_INFO } from '../../data/lunarMansions';
+import { getLocale } from '../../i18n/config';
+import { useContentOverlay, ct } from '../../i18n/contentOverlay';
+import { mansionCaption, mansionGlyph } from './mansionCaption';
+import { mansionForDate } from '../../data/lunarMansions';
 import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansionsContent';
 
 /**
@@ -16,28 +19,40 @@ import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansions
 export function DailyMansionCard() {
   const { t } = useT('app');
   const navigate = useNavigate();
+  // Title and advice from the `mansions` content module (English until the
+  // overlay lands, never blank).
+  const { overlay } = useContentOverlay('mansions');
   // Recomputed per mount; the mansion turns over at CST midnight and the whole
   // calculation is a subtraction, so there is nothing to memoise across days.
   const mansion = useMemo(() => mansionForDate(new Date()), []);
   if (!mansion) return null;
 
-  const meaning = MANSION_MEANINGS[mansion.key];
-  const advice = MANSION_DAILY_ADVICE[mansion.key];
+  const title = ct(overlay, `mansions.${mansion.key}.title`, MANSION_MEANINGS[mansion.key]?.title ?? '');
+  const advice = ct(overlay, `mansions.${mansion.key}.advice`, MANSION_DAILY_ADVICE[mansion.key] ?? '');
+  const caption = mansionCaption(mansion, getLocale());
+  // The tile's character in the reader's script (参 under the title 参宿 in
+  // zh and ja, not the traditional 參), as the caption beside it.
+  const glyph = mansionGlyph(mansion, getLocale());
 
   return (
     <Card padding="md" interactive role="link" tabIndex={0} onClick={() => navigate('/mansions')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/mansions'); } }}>
       <div className="flex items-center gap-4">
-        <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden>
-          {mansion.cn}
+        {/* The character is the tile (R5 m-14); the caption reads in the UI's language. */}
+        <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden lang={glyph.lang}>
+          {glyph.text}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <EyebrowLabel>{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
-            <span className="text-caption text-mystic-500">
-              {mansion.cn}{PLANET7_INFO[mansion.planet].cn}{mansion.animalCn}
+          {/* The label holds its line; the caption sits beside it where it
+              fits and moves under it where it does not. Truncated beside it,
+              "Dī · Saturn" read "Dī · Sa…" at 360 px and lost the planet
+              (p9 Q14). */}
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 min-w-0">
+            <EyebrowLabel className="shrink-0 whitespace-nowrap">{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
+            <span className="text-caption text-mystic-500 min-w-0 break-words" lang={caption.lang}>
+              {caption.text}
             </span>
           </div>
-          <div className="text-ui text-mystic-100 mt-0.5">{meaning?.title}</div>
+          <div className="text-ui text-mystic-100 mt-0.5">{title}</div>
           <p className="text-meta text-mystic-400 leading-relaxed line-clamp-2 mt-0.5">{advice}</p>
         </div>
         <ChevronRight className="w-5 h-5 text-mystic-500 shrink-0" aria-hidden />

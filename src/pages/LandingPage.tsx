@@ -3,6 +3,7 @@
 // import landing.css globally.
 import '../styles/landing.css';
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, type KeyboardEvent, type ReactNode } from 'react';
+import { releasePrerenderedHero } from '../components/layout/prerenderedHero';
 import { ChevronRight, Flame, ListChecks, Menu, PenLine } from 'lucide-react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
@@ -209,6 +210,11 @@ function SectionHeader({ tag, heading, sub }: { tag: string; heading: string; su
 // The page's one ambient animation. Decorative: the cards are shown again
 // below in the demo and the faces carry no information here, so the whole
 // row is hidden from assistive technology rather than announcing 44 images.
+//
+// Each tile is 95×150 (120×190 from 640px), so the 512×768 card image was
+// 157 KB of pixels per visitor nobody could see. The 150px thumbnail serves
+// 1× and the 400px rendition 2×; the intrinsic size keeps the row from
+// shifting while they arrive.
 function CardMarquee({ cards }: { cards: string[] }) {
   const doubled = [...cards, ...cards];
   return (
@@ -216,7 +222,17 @@ function CardMarquee({ cards }: { cards: string[] }) {
       <div className="lp-marquee-track">
         {doubled.map((card, i) => (
           <div key={`${card}-${i}`} className="lp-marquee-card">
-            <img src={`/bundled-cards/major-arcana/${card}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+            <img
+              src={`/bundled-cards/thumb/major-arcana/${card}.webp`}
+              srcSet={`/bundled-cards/thumb/major-arcana/${card}.webp 150w, /bundled-cards/full/major-arcana/${card}.webp 400w`}
+              sizes="(min-width: 640px) 120px, 95px"
+              width={150}
+              height={225}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
           </div>
         ))}
       </div>
@@ -303,7 +319,7 @@ function ZodiacWheel() {
             </>
           ) : (
             <>
-              <span className="text-gold"><SunIcon size={28} /></span>
+              <span className="text-gold"><SunIcon size={28} aria-hidden /></span>
               <div className="heading-display-md text-mystic-100">{t('zodiac.theZodiac')}</div>
               <div className="text-caption text-mystic-400">{t('zodiac.tapToExplore')}</div>
             </>
@@ -356,7 +372,7 @@ const FEATURES = [
 ] as const;
 const BENTO_ICONS: Record<(typeof FEATURES)[number]['key'], ReactNode> = {
   tarot: <TarotCardIcon className="w-6 h-6" />,
-  horoscope: <SunIcon size={24} />,
+  horoscope: <SunIcon size={24} aria-hidden />,
   journal: <PenLine className="w-6 h-6" strokeWidth={1.6} />,
   quizzes: <ListChecks className="w-6 h-6" strokeWidth={1.6} />,
   streaks: <Flame className="w-6 h-6" strokeWidth={1.6} />,
@@ -386,7 +402,7 @@ const RITUAL_STEPS = [
   { n: '03', key: 'journal' },
 ] as const;
 const RITUAL_ICONS: Record<(typeof RITUAL_STEPS)[number]['key'], ReactNode> = {
-  horoscope: <SunIcon size={28} />,
+  horoscope: <SunIcon size={28} aria-hidden />,
   card: <TarotCardIcon className="w-7 h-7" />,
   journal: <PenLine className="w-7 h-7" strokeWidth={1.6} />,
 };
@@ -423,11 +439,31 @@ function FooterLink({ href, children, external = false }: { href: string; childr
   );
 }
 
+// The build prerenders the hero into #root for `/` (scripts/seo-body.mjs
+// landingHeroBody) and its guard script marks <html data-prerendered=
+// "landing"> when this visitor was shown it. Then the live hero replaces a
+// hero already on screen in the same place, and fading it in from nothing
+// would blink it out and back; the entrance runs only when nothing was
+// there. The mark is cleared after the first mount, so a later visit to `/`
+// in the session animates as usual.
+const PRERENDER_MARK = 'data-prerendered';
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════════════════
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   const { t } = useT(['landing', 'common']);
+  const [heroInPlace] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.getAttribute(PRERENDER_MARK) === 'landing',
+  );
+  useEffect(() => {
+    document.documentElement.removeAttribute(PRERENDER_MARK);
+  }, []);
+  // main.tsx held the prerendered hero over the booting app; swap it for
+  // this one before the browser paints, so there is no frame without a hero.
+  useLayoutEffect(() => {
+    releasePrerenderedHero();
+  }, []);
   const [navSolid, setNavSolid] = useState(false);
   // The nav's links below 900px: a sheet, opened from a Menu button.
   const [menuOpen, setMenuOpen] = useState(false);
@@ -488,11 +524,13 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               <a key={l.href} href={l.href} className={navLink} {...external(l.external)}>{t(l.key)}</a>
             ))}
             <LanguageDropdown />
-            <Button variant="ghost" onClick={onSignIn}>{t('common:nav.signIn')}</Button>
-            <Button variant="gold" onClick={onGetStarted}>{t('nav.cta')}</Button>
+            {/* Below 420px Sign in moves into the menu sheet: the mark, the
+                language picker, the CTA and Menu fill a phone's bar, and two
+                labels squeezed onto it wrapped to two lines each. */}
+            <Button variant="ghost" onClick={onSignIn} className="lp-nav-signin whitespace-nowrap">{t('common:nav.signIn')}</Button>
+            <Button variant="gold" onClick={onGetStarted} className="whitespace-nowrap">{t('nav.cta')}</Button>
             {/* Below 900px the links above are display:none; this is how a
-                phone reaches them. Icon only — at 360px the mark, the
-                language picker, Sign in and the CTA already fill the bar. */}
+                phone reaches them. Icon only — the bar has no room for a label. */}
             <button
               type="button"
               className="lp-nav-menu text-mystic-300 [@media(hover:hover)]:hover:text-mystic-100"
@@ -510,9 +548,11 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <main>
         {/* ── Hero: the deck, the thesis, the draw ── */}
         <section className="lp-hero">
-          <div className="lp-hero-in lp-enter">
-            <DeckFan size="lg" />
-            <EyebrowLabel rules className="mt-4">{t('hero.badge')}</EyebrowLabel>
+          <div className={heroInPlace ? 'lp-hero-in' : 'lp-hero-in lp-enter'}>
+            <DeckFan size="lg" animate={!heroInPlace} />
+            {/* self-stretch: in this centred column the eyebrow shrinks to its
+                text and the flex-1 rules beside it collapse to nothing. */}
+            <EyebrowLabel rules className="mt-4 self-stretch">{t('hero.badge')}</EyebrowLabel>
             <h1 className="lp-hero-h1 heading-display-xl text-mystic-100">
               {t('hero.headlineTop')}
               <br />
@@ -703,6 +743,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
                 </a>
               </li>
             ))}
+            <li className="lp-menu-signin">
+              <button
+                type="button"
+                className="flex items-center w-full min-h-[48px] px-3 rounded-control text-body text-mystic-100 text-left [@media(hover:hover)]:hover:bg-mystic-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+                onClick={() => { setMenuOpen(false); onSignIn(); }}
+              >
+                {t('common:nav.signIn')}
+              </button>
+            </li>
           </ul>
         </nav>
       </Sheet>

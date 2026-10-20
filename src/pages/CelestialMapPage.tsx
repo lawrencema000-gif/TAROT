@@ -10,10 +10,11 @@ import { CelestialMapIntroLoader } from '../components/celestial/CelestialMapInt
 import { CelestialBirthDataForm } from '../components/celestial/CelestialBirthDataForm';
 import { CelestialCitySearch } from '../components/celestial/CelestialCitySearch';
 import { CelestialPowerPlaces } from '../components/celestial/CelestialPowerPlaces';
-import { CelestialEducationSection, CelestialAnglesSection } from '../components/celestial/CelestialEducationSection';
+import { CelestialAboutDisclosure, CelestialAnglesSection, LifeAreaBlurb } from '../components/celestial/CelestialEducationSection';
 import { FindYourPlace } from '../components/celestial/FindYourPlace';
 import { DestinedPlaceBanner } from '../components/celestial/DestinedPlaceBanner';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
+import { useBirthTzBackfill } from '../components/horoscope/birthZone';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
@@ -21,6 +22,7 @@ import { linesNearPoint, nearestCity, type City } from '../utils/celestialGeo';
 import { GLOBAL_CITIES } from '../data/citiesGlobal';
 import type { DestinedPlace } from '../types';
 import { scrollBehavior } from '../utils/motion';
+import { getLocale } from '../i18n/config';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
@@ -82,9 +84,25 @@ export function CelestialMapPage() {
   const [activeFilter, setActiveFilter] = useState<LifeArea>('all');
   const [showPaywall, setShowPaywall] = useState(false);
   const [tappedPoint, setTappedPoint] = useState<{ lon: number; lat: number } | null>(null);
+  /**
+   * The place `tappedPoint` was picked as (p9 R31): a search pick — any town
+   * the place search knows, not only the listed cities, and for a ja/ko/zh
+   * reader every search goes there — a listed city, a power place, the place
+   * Find Your Place revealed, or the destined place. The panel names it and
+   * reads it, and the paywall's preview counts the lines through it. Null
+   * after a tap on the map, which is named by the nearest listed city. Set
+   * wherever `tappedPoint` is, so the two never disagree: a pick used to open
+   * the panel, and sell the reading, for the nearest of the listed cities
+   * (福岡 read as Busan, 213 km away).
+   */
+  const [pickedPlace, setPickedPlace] = useState<City | null>(null);
   const [showInsightPanel, setShowInsightPanel] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
+  // The lines are drawn from birth_utc, which the trigger reads in the birth
+  // place's zone once it is known. A profile without one (cast before F21)
+  // gets it here; the lines move when the profile comes back.
+  useBirthTzBackfill();
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
   const mapEngineRef = useRef<{ flyTo: (lonLat: [number, number]) => void } | null>(null);
 
@@ -104,15 +122,9 @@ export function CelestialMapPage() {
   // centre. The map section is then scrolled into view if needed.
   function handleCityPick(city: City) {
     setTappedPoint({ lon: city.lon, lat: city.lat });
+    setPickedPlace(city);
     setShowInsightPanel(true);
     mapEngineRef.current?.flyTo([city.lon, city.lat]);
-    requestAnimationFrame(() => {
-      mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
-    });
-  }
-
-  function handleLifeAreaCardPick(area: 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth') {
-    setActiveFilter(area);
     requestAnimationFrame(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     });
@@ -240,7 +252,11 @@ export function CelestialMapPage() {
       features: allLines.features.filter((f) => FREE_TIER_PLANETS.has(f.properties!.planet)),
     };
     if (tappedPoint) {
-      const near = nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
+      // Named as the panel names it: the place picked, else the nearest
+      // listed city within 300 km of the tap.
+      const near = pickedPlace
+        ? { city: pickedPlace, distanceKm: 0 }
+        : nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
       if (near && near.distanceKm <= 300) {
         const all = linesNearPoint(tappedPoint.lat, tappedPoint.lon, allLines, 700).length;
         const free = linesNearPoint(tappedPoint.lat, tappedPoint.lon, freeLines, 700).length;
@@ -249,7 +265,7 @@ export function CelestialMapPage() {
     }
     const hidden = allLines.features.length - freeLines.features.length;
     return hidden > 0 ? { count: hidden, city: null } : null;
-  }, [allLines, isPremium, tappedPoint]);
+  }, [allLines, isPremium, tappedPoint, pickedPlace]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
   // Inline birth-data form: most users entered this at signup, but
@@ -345,10 +361,7 @@ export function CelestialMapPage() {
         </motion.div>
       )}
 
-      {/* ── "What this is" + use-case grid (taps set filter) ─── */}
-      <CelestialEducationSection onPickLifeArea={handleLifeAreaCardPick} />
-
-      {/* ── Interactive map section ──────────────────────────── */}
+      {/* ── Interactive map section — the map comes first (R5 p-3) ── */}
       <div ref={mapSectionRef} className="space-y-3 scroll-mt-4">
         {/* Heading for the whole map region. Deliberately NOT a <Section>:
             the content it heads is the map, the filters and the search, which
@@ -370,9 +383,13 @@ export function CelestialMapPage() {
         {/* City search — autocomplete from our curated 280-city dataset */}
         <CelestialCitySearch onPick={handleCityPick} />
 
-        {/* Life-area filter — keep as the compact in-place toggle */}
+        {/* Life-area filter — keep as the compact in-place toggle. The row
+            bleeds to the screen edge (-mx-4) and pads back to the gutter
+            (px-4); scroll-px-4 puts the snap points on that gutter too.
+            Without it the first chip snapped to scrollLeft 16 and sat at
+            x = 0, flush with the edge (p9 Q15). */}
         <div
-          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scroll-smooth"
+          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scroll-px-4 snap-x snap-mandatory scroll-smooth"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {
@@ -393,14 +410,19 @@ export function CelestialMapPage() {
             );
           })}
         </div>
+        {/* One line on the chosen theme — the six tinted cards this replaced. */}
+        {activeFilter !== 'all' && <LifeAreaBlurb area={activeFilter} />}
 
         {/* The map itself */}
+        {/* Square at phone width, 4:3 from `sm`. The old `aspect-ratio: 4/3`
+            + `min-height: 360px` pair let CSS transfer the minimum height
+            into a 480px minimum WIDTH, so the map overflowed a 390px screen
+            and the whole page scrolled sideways. */}
         <motion.div
           initial={{ opacity: 0, scale: 0.985 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-          className="rounded-card overflow-hidden hairline-gold-soft"
-          style={{ aspectRatio: '4 / 3', minHeight: 360 }}
+          className="w-full max-w-full aspect-square sm:aspect-[4/3] rounded-card overflow-hidden hairline-gold-soft"
         >
           {filteredLines && (
             <CelestialMapView
@@ -408,6 +430,9 @@ export function CelestialMapPage() {
               onMapClick={(lonLat) => {
                 const [lon, lat] = lonLat;
                 setTappedPoint({ lon, lat });
+                // A tap is a spot, not a place picked: even at the spot a
+                // pick was at, the panel names the nearest listed city.
+                setPickedPlace(null);
                 setShowInsightPanel(true);
               }}
               onLineClick={(planet, angle) => {
@@ -458,6 +483,7 @@ export function CelestialMapPage() {
             const dp = profile.destinedPlace!;
             mapEngineRef.current?.flyTo([dp.city.lon, dp.city.lat]);
             setTappedPoint({ lon: dp.city.lon, lat: dp.city.lat });
+            setPickedPlace({ ...dp.city, pop: 0 });
             setShowInsightPanel(true);
           }}
           onDismiss={async () => {
@@ -499,7 +525,7 @@ export function CelestialMapPage() {
           birthUtc={birth.utcDate.toISOString()}
           zodiacSign={profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined}
           mbtiType={profile?.mbtiType ?? undefined}
-          locale={typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : undefined}
+          locale={getLocale()}
           isPremium={isPremium}
           onUpgrade={() => setShowPaywall(true)}
           trySpend={tryConsume}
@@ -510,6 +536,7 @@ export function CelestialMapPage() {
             // beacon to replay if a user re-reveals the same place).
             mapEngineRef.current?.flyTo([city.lon, city.lat]);
             setTappedPoint({ lon: city.lon, lat: city.lat });
+            setPickedPlace(city);
             setRevealedPlace({
               city: { name: city.name, country: city.country, cc: city.cc, lat: city.lat, lon: city.lon },
               intent: activeFilter,
@@ -540,6 +567,9 @@ export function CelestialMapPage() {
         />
       )}
 
+      {/* ── The lesson, for the curious, after the map ─────────── */}
+      <CelestialAboutDisclosure />
+
       {/* ── "How to read the lines" — explainer of AC/DC/MC/IC ── */}
       <CelestialAnglesSection />
 
@@ -548,6 +578,7 @@ export function CelestialMapPage() {
           open={showInsightPanel}
           onClose={() => setShowInsightPanel(false)}
           point={tappedPoint}
+          place={pickedPlace}
           visibleLines={filteredLines}
           allLines={allLines}
           isPremium={isPremium}
@@ -555,7 +586,7 @@ export function CelestialMapPage() {
           intent={activeFilter}
           zodiacSign={profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined}
           mbtiType={profile?.mbtiType ?? undefined}
-          locale={typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : undefined}
+          locale={getLocale()}
           trySpend={tryConsume}
           onUpgrade={() => {
             setShowInsightPanel(false);

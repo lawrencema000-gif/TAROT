@@ -28,7 +28,7 @@ import {
 import { migrateGuestData } from '../services/storage';
 import { syncStreak } from '../dal/dailyRituals';
 import { localDateStr } from '../utils/localDate';
-import { getLocale } from '../i18n/config';
+import { getLocale, chosenLocaleQuery } from '../i18n/config';
 import i18n from 'i18next';
 
 interface AuthContextType {
@@ -83,6 +83,8 @@ interface DbProfile {
   id: string;
   email: string;
   display_name: string;
+  /** Absent before 20261003000014 (`select('*')` has no such column then). */
+  community_name?: string | null;
   birth_date: string;
   birth_time?: string;
   birth_place?: string;
@@ -122,6 +124,10 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     id: db.id,
     email: db.email,
     displayName: db.display_name,
+    // undefined, not null, when unset: a profile passed back to
+    // updateProfile then leaves the column alone (and, before 014, does not
+    // name a column the server lacks).
+    communityName: db.community_name ?? undefined,
     birthDate: db.birth_date,
     // Optional fields are declared `string | undefined` on UserProfile, but a
     // NULL column arrives as `null`. Passing it through makes the type a lie
@@ -155,7 +161,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     theme: db.theme || 'dark',
     card_back_url: db.card_back_url,
     background_url: db.background_url,
-    subscribedToNewsletter: db.subscribed_to_newsletter ?? true,
+    // Consent is never assumed: an unset flag is not an opt-in (20261003000020 defaults the column to false).
+    subscribedToNewsletter: db.subscribed_to_newsletter ?? false,
     createdAt: db.created_at,
     destinedPlace: db.destined_place ?? undefined,
   };
@@ -169,6 +176,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
 // ritual_streak() RPC (migration 20260928000000); nothing else writes them.
 const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   displayName: 'display_name',
+  // The member's chosen name in Community; the column's CHECK holds its shape.
+  communityName: 'community_name',
   birthDate: 'birth_date',
   birthTime: 'birth_time',
   birthPlace: 'birth_place',
@@ -314,27 +323,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isPremiumRef.current = profile.isPremium;
       setProfile(profile);
 
-      // Sync locale between profile and client i18n state.
-      // Client wins: the locale the user just picked on this device is always
-      // authoritative over a stale `profile.locale` from a prior session or
-      // another device. We only fall BACK to profile.locale when this device
-      // has no saved choice yet (first install, empty localStorage).
+      // Settle the language between this device and the account. A language
+      // chosen on this device (the picker, "Get your own reading", a ?lang=
+      // link: chosenLocale) wins, and the account takes it so the member's
+      // other devices follow. With nothing chosen here, the device follows
+      // the account. A language the device merely opens in is no choice:
+      // the detector stores the default English of every first visit, and
+      // reading that as one wrote 'en' over the account of every member who
+      // signed in on a new device (p9 RQB-1). The choice, not the language
+      // on screen, is what is saved: a shared reading shows its own (p8 F76).
       try {
-        const { getLocale, setLocale, normalizeLocale, LOCALE_STORAGE_KEY } = await import('../i18n/config');
+        const { getLocale, chosenLocale, followAccountLocale, normalizeLocale } = await import('../i18n/config');
         const profileLocale = normalizeLocale(profile.locale ?? null);
-        const clientLocale = getLocale();
-        const hasExplicitClientChoice = (() => {
-          try { return !!localStorage.getItem(LOCALE_STORAGE_KEY); } catch { return false; }
-        })();
+        const chosen = chosenLocale();
 
-        if (hasExplicitClientChoice) {
-          // Push client → server so other devices pick it up on next sign-in.
-          if (profileLocale !== clientLocale) {
-            await supabase.from('profiles').update({ locale: clientLocale }).eq('id', userId);
+        if (chosen) {
+          if (profileLocale !== chosen) {
+            await supabase.from('profiles').update({ locale: chosen }).eq('id', userId);
           }
-        } else if (profileLocale && profileLocale !== clientLocale) {
-          // No local choice yet — adopt the profile's saved preference.
-          await setLocale(profileLocale);
+        } else if (profileLocale && profileLocale !== getLocale()) {
+          await followAccountLocale(profileLocale);
         }
       } catch (e) {
         console.warn('[Auth] Locale sync failed:', e);
@@ -672,6 +680,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    // Re-arm on every run: the cleanup below sets this false, and React's
+    // StrictMode runs effect → cleanup → effect in development. Without this
+    // the second run inherits `false`, fetchProfile() bails at its stale-write
+    // guard forever and the app sits on "Loading your profile…".
+    mountedRef.current = true;
     let appUrlListener: { remove: () => void } | null = null;
     let mounted = true;
     let launchUrlHandled = false;
@@ -780,6 +793,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (mounted) {
+          // The stale-write guard must know the bootstrap user before the
+          // fetch resolves; onAuthStateChange sets it too, but on a cold load
+          // the profile can come back first.
+          activeUserIdRef.current = session?.user?.id ?? null;
           setSession(session);
           setUser(session?.user ?? null);
           if (session?.user) {
@@ -846,11 +863,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // specific accounts, and find affected sessions for replay. We
       // include only id + email — never names or PII beyond what's
       // already in the profile.
-      import('@sentry/react').then((Sentry) => {
+      // Destructured so Rollup can see which exports are used (see main.tsx).
+      import('@sentry/react').then(({ setUser: setSentryUser }) => {
         if (session?.user) {
-          Sentry.setUser({ id: session.user.id, email: session.user.email });
+          setSentryUser({ id: session.user.id, email: session.user.email });
         } else {
-          Sentry.setUser(null);
+          setSentryUser(null);
         }
       }).catch(() => undefined);
 
@@ -883,8 +901,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     logInfo('auth.signUp.start', 'Starting email sign up');
 
-    // Propagate the user's active locale through email confirmation:
-    //   - emailRedirectTo carries ?lang=xx so the post-confirm landing page boots in the right language
+    // A new account takes the language its visitor was reading in, through email confirmation:
+    //   - emailRedirectTo carries ?lang=xx so the post-confirm landing page boots in it; a ja / ko / zh
+    //     there is a choice, which the first profile load saves to the account (English is the column default)
     //   - options.data.locale lives in auth.users.raw_user_meta_data so Supabase template helpers + downstream services can localize
     const locale = getLocale();
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -930,7 +949,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       endSpan(span, 'failure', { errorCode: normalized.code });
       setCorrelationId(null);
-      return { error: new Error(normalized.message) };
+      // The RAW Supabase message, not the normalised one. AuthPage runs
+      // getAuthErrorMessage on what comes back, and a message that has
+      // already been mapped ("Email or password is incorrect.") matches no
+      // pattern, so the generic fallback won every time (R6 A7). Normalise
+      // once, in the page.
+      return { error: new Error(error.message) };
     }
 
     logInfo('auth.signIn.success', 'Sign in successful');
@@ -1068,8 +1092,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Web: standard OAuth redirect flow
         const webOAuthSpan = startSpan('auth.google.webOAuth');
-        const localeParam = `?lang=${getLocale()}`;
-        const redirectUrl = window.location.origin + window.location.pathname + localeParam;
+        // Back in the language chosen here, if any: the return makes a
+        // ?lang= a choice, and the default it used to carry was written
+        // over the account of the member signing in (p9 RQB-1).
+        const redirectUrl = window.location.origin + window.location.pathname + chosenLocaleQuery();
 
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -1181,10 +1207,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow.
+      // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow, and
+      // come back the way Google does — to this screen, in the language
+      // chosen here, if any.
+      // It used to return to the bare origin, so the person landed on Home:
+      // /signin and /signup are where the signed-in app sends them on to
+      // the `next` they arrived with (App.tsx keeps it in sessionStorage,
+      // because the code exchange strips the query string), and the origin
+      // never asked.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}${chosenLocaleQuery()}` },
       });
       if (error) {
         setOAuthProcessing(false);
@@ -1277,6 +1310,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await clearUserCache();
     } catch (e) {
       logError('auth.signOut.clearCache', 'Cache clear failed', { error: e });
+    }
+
+    // 7. The pre-scoping, device-global private caches (the mood diary's
+    //    `arcana_mood_diary_v1`, the Companion's `arcana_companion_v1_*`)
+    //    are NOT deleted here. They are the only copy of what the live app
+    //    saved before those moved to the account, and nothing records whose
+    //    they are, so they wait on the device until an account that opens
+    //    the diary or the Companion is asked whether they are its own;
+    //    claimed, they move into that account and the device copy goes
+    //    (p8 F33). Only the old build's daily message counters, which hold
+    //    no content, are dropped.
+    try {
+      const { clearLegacyCompanionCounters } = await import('../components/companion/companionHistory');
+      clearLegacyCompanionCounters();
+    } catch (e) {
+      logError('auth.signOut.clearLegacyCaches', 'Legacy counter clear failed', { error: e });
     }
 
     logInfo('auth.signOut.complete', 'Sign out complete');
@@ -1409,14 +1458,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // them" work on Sentry events. Clearing on sign-out prevents leakage across
   // accounts on shared devices.
   useEffect(() => {
-    import('@sentry/react').then((Sentry) => {
+    import('@sentry/react').then(({ setUser: setSentryUser }) => {
       if (user) {
-        Sentry.setUser({
+        setSentryUser({
           id: user.id,
           email: user.email ?? undefined,
         });
       } else {
-        Sentry.setUser(null);
+        setSentryUser(null);
       }
     }).catch(() => { /* Sentry not initialized / offline */ });
   }, [user]);

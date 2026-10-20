@@ -388,10 +388,14 @@ const AUTHORITY_EXPLANATION: Record<HDAuthority, string> = {
 // ─── Handler ──────────────────────────────────────────────────────
 Deno.serve(handler<RequestBody, ResponseBody>({
   fn: "human-design-chart",
-  auth: "optional",
+  // Required: the page always has a session, and an anonymous caller used
+  // to get the full computation free with no ceiling (R2 audit §5).
+  auth: "required",
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
-  ai: true,
+  // Deterministic Human Design math, no model call: not under the AI
+  // killswitch or the AI daily ceiling. The 50-Moonstone price is a product
+  // decision kept as-is (owner item in the Phase 7 report).
   spend: { actionKey: "human-design", cost: 50 },
   run: (_ctx, body) => {
     if (!body?.birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.birthDate)) {

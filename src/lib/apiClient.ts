@@ -26,6 +26,36 @@ import { supabase } from './supabase';
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
 import { captureException } from '../utils/telemetry';
 import { ErrorEnvelope } from '../schema';
+import { toast } from '../components/ui/Toast';
+import i18n from '../i18n/config';
+
+/**
+ * A 401 that survives the one-shot refresh means the session is gone for
+ * good (revoked, or the refresh token expired). Every caller used to render
+ * its own domain error for that ("Chart computation failed…", "Couldn't
+ * load today's reading") — polish R5 m-16. Instead: sign the user out once,
+ * say why once (the Toast stack dedupes identical messages), and let the
+ * auth gate show sign-in. Module-level guard so a burst of parallel calls
+ * that all 401 produces one sign-out and one toast.
+ *
+ * Exported for callers that still talk to edge functions without apiCall
+ * (useAstrology's raw fetch path): call it when a request is still 401 after
+ * the refresh retry.
+ */
+let sessionExpiredHandling = false;
+export async function handleSessionExpired(): Promise<void> {
+  if (sessionExpiredHandling) return;
+  sessionExpiredHandling = true;
+  try {
+    toast(i18n.t('common:errors.sessionExpired', { defaultValue: 'Session expired — sign in again' }), 'error');
+    await supabase.auth.signOut();
+  } catch {
+    // Signing out of an already-dead session can itself fail; nothing to do.
+  } finally {
+    // Allow a later, genuine expiry to be handled again.
+    setTimeout(() => { sessionExpiredHandling = false; }, 5_000);
+  }
+}
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -164,8 +194,34 @@ export async function apiCall<TReq, TRes>(options: ApiCallOptions<TReq, TRes>): 
       }
     }
 
+    // A replay of a paid request (same body.requestId) whose first run is
+    // still in flight: the server answers 409 REQUEST_IN_FLIGHT after
+    // waiting ~20 s for it. Ask again with the SAME body — it is free and
+    // returns the first run's result — while the timeout allows.
+    while (res.status === 409) {
+      const envelope = safeJson(await res.clone().text());
+      const parsed = ErrorEnvelope.safeParse(envelope);
+      if (!parsed.success || parsed.data.error.code !== 'REQUEST_IN_FLIGHT') break;
+      const retryAfter = Number((parsed.data.error.details as { retryAfterMs?: unknown } | undefined)?.retryAfterMs) || 3_000;
+      if (performance.now() - started + retryAfter > timeoutMs) break;
+      await new Promise((r) => setTimeout(r, retryAfter));
+      res = await fetch(`${API_BASE}/${fn}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body ?? {}),
+        signal: controller.signal,
+      });
+    }
+
     const respCorrelationId = res.headers.get(CORRELATION_ID_HEADER) ?? correlationId;
     const text = await res.text();
+
+    // Still 401 after the refresh attempt: the session is dead. Re-auth
+    // path (sign out + one toast) runs in the background; the ApiError
+    // below still reaches the caller so its UI can settle.
+    if (res.status === 401 && requireAuth) {
+      void handleSessionExpired();
+    }
 
     if (!res.ok) {
       // Try to parse the structured error envelope. Fall back to a raw error

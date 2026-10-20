@@ -125,6 +125,12 @@
 }
 .lp-nav-menu:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
 @media (min-width: 900px) { .lp-nav-menu { display: none; } }
+/* Sign in: in the bar from 420px, in the menu sheet below it. */
+.lp-menu-signin { display: none; }
+@media (max-width: 419.98px) {
+  .lp-nav-right .lp-nav-signin { display: none; }
+  .lp-menu-signin { display: list-item; list-style: none; }
+}
 
 /* ── Hero ── */
 .lp-hero {

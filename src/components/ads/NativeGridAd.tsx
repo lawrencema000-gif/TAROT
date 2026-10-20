@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { ADSENSE_CLIENT, AD_SLOTS } from './config';
 import { useShouldShowAds } from './useShouldShowAds';
+import { ensureAdSense, pushAdSlot } from './adsense';
 
 /**
  * Native grid ad — styled to visually match a blog post card so it doesn't
  * break the grid rhythm. Placed as every Nth card in the blog index.
+ * Mounting it is what loads the AdSense tag (see ./adsense.ts).
  */
 export function NativeGridAd() {
   const show = useShouldShowAds();
@@ -12,13 +14,10 @@ export function NativeGridAd() {
   const slot = AD_SLOTS.blogGrid;
 
   useEffect(() => {
-    if (!show || !slot || pushed.current) return;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      pushed.current = true;
-    } catch {
-      // AdSense not loaded or blocked
-    }
+    if (!show) return;
+    ensureAdSense();
+    if (!slot || pushed.current) return;
+    if (pushAdSlot()) pushed.current = true;
   }, [show, slot]);
 
   if (!show || !slot) return null;

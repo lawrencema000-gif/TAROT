@@ -78,10 +78,14 @@ function detectMention(text: string): { mentioned: boolean; position: number | n
 
 async function queryGemini(query: string, apiKey: string): Promise<MentionResult> {
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // The GEO probe asks the CURRENT consumer-facing engine, so this tracks
+    // the current stable Flash (gemini-3.8-flash per the live model list,
+    // 2026-10-02); gemini-2.0-flash was shut down 2026-06-01. Key goes in a
+    // header, never in the URL.
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `What are the best apps for ${query}? Recommend specific apps with brief reasons.` }] }],
         generationConfig: { temperature: 0.2, maxOutputTokens: 800 },

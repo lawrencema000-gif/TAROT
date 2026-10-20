@@ -1,5 +1,3 @@
-import type { TarotCard } from '../types';
-
 function seededRandom(seed: string): () => number {
   let h = 0;
   for (let i = 0; i < seed.length; i++) {
@@ -14,11 +12,19 @@ function seededRandom(seed: string): () => number {
   };
 }
 
-export function drawSeededCards(
+/**
+ * Draw `count` cards from `deck` for `seed`, deterministically.
+ *
+ * Generic over the card type: the shuffle only moves references and reads
+ * nothing but `id`-bearing objects, so the tarot deck and the playing deck
+ * (`src/data/cartomancy`) share one draw. Same output for the same input,
+ * whatever `T` is — see cardDraw.golden.test.ts.
+ */
+export function drawSeededCards<T extends { id: number }>(
   count: number,
   seed: string,
-  deck: TarotCard[],
-): { card: TarotCard; reversed: boolean }[] {
+  deck: T[],
+): { card: T; reversed: boolean }[] {
   const rng = seededRandom(seed);
   // Seeded Fisher-Yates shuffle: uniform over all permutations and fully
   // deterministic per seed, independent of the JS engine's sort algorithm

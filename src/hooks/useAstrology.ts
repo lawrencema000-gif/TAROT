@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
-import { apiCall, ApiError, ApiContractError } from '../lib/apiClient';
+import { apiCall, ApiError, ApiContractError, handleSessionExpired } from '../lib/apiClient';
 import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
+import { useContentOverlay } from '../i18n/contentOverlay';
+import { withOverlay, type Interpretations, type InterpModule } from '../data/interpretations/localize';
 
 const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
 
@@ -34,6 +36,11 @@ function userMessage(e: unknown, key: string, fallback: string): string {
   }
   if (code === 'RATE_LIMITED' || status === 429) {
     return tErr('rateLimited', 'Too many requests — wait a moment and try again.');
+  }
+  if (code === 'NATAL_CHART_MISSING') {
+    // Not a connection problem: the chart is not cast yet (a first visit,
+    // or a reading asked for before the cast landed).
+    return tErr('chartMissing', 'Your birth chart isn’t set up yet. Open Horoscope to cast it, then try again.');
   }
   if (e instanceof ApiContractError) {
     return tErr('contract', 'The server sent something this version couldn’t read — try again in a moment.');
@@ -139,6 +146,9 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
             });
             if (!retry.ok) {
               const text = await retry.text();
+              // Still 401 with a fresh token: the session is gone. Same
+              // handling as apiCall (one toast, sign out), not a silent card.
+              if (retry.status === 401) void handleSessionExpired();
               throw new AstroCallError('HTTP', text, retry.status);
             }
             return retry.json();
@@ -148,6 +158,8 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
         }
       }
       const text = await res.text();
+      // 401 and the refresh produced no session: expired.
+      if (res.status === 401) void handleSessionExpired();
       throw new AstroCallError('HTTP', text, res.status);
     }
     return res.json();
@@ -169,8 +181,15 @@ interface GeoResult {
 
 async function geocodeClientFallback(query: string): Promise<GeoResult[]> {
   const encoded = encodeURIComponent(query);
+  // featureType=settlement only for "City, Region", the rescue it was added
+  // for: without it "Springfield, Atlantis" came back as two streets in
+  // France. On a bare name it drops the city's own rows (its station, its
+  // wards) and ranks same-name places first: 京都 → a town in Guangdong,
+  // 静岡 → five places none of them in Shizuoka (p9 R27). Unfiltered, the
+  // first row of a bare name is in the city typed.
+  const settlement = typedRegion(query) ? '&featureType=settlement' : '';
   const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1`,
+    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1${settlement}`,
     { headers: { 'User-Agent': 'Arcana-Astrology-App/1.0' } }
   );
   if (!res.ok) return [];
@@ -182,40 +201,108 @@ async function geocodeClientFallback(query: string): Promise<GeoResult[]> {
   }));
 }
 
+/** "Springfield, Vermont, USA" → "Vermont, USA": what the user typed after the city. */
+export function typedRegion(birthPlace: string): string {
+  return birthPlace.split(/[,，、]/).slice(1).map((p) => p.trim()).filter(Boolean).join(', ');
+}
+
 export function useGeocode() {
   const [results, setResults] = useState<GeoResult[]>([]);
+  /** The query `results` (and `error`) answer: the rows carry no query of their own. */
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * True when the server geocoder failed and the results came from the
+   * client-side fallback (R5 M-6). The fallback used to hide the failure
+   * entirely; callers show a non-blocking "approximate location" notice.
+   */
+  const [usedFallback, setUsedFallback] = useState(false);
+  /**
+   * True when the user typed a region ("Springfield, Vermont") and none of
+   * the places listed is in it — the server's `qualifierMatched: false` (p8
+   * O#35). The places are still listed (a misspelt region must not hide the
+   * city), but `error` then says they are elsewhere, so nobody picks a
+   * same-name city believing it is theirs. Before that, the device's own
+   * Nominatim search gets the full string: the edge is refused by Nominatim,
+   * a phone is not.
+   */
+  const [regionMissed, setRegionMissed] = useState(false);
+  /**
+   * The latest search (p9 R32). Searches take different paths, so they
+   * finish out of order: 福岡 goes server-empty and then to the device
+   * Nominatim (two round trips), 福岡市 is answered by the server (one). The
+   * earlier answer used to land last and replace the newer rows under the
+   * newer text, for good. Only the latest search may now write results,
+   * query, loading and error.
+   */
+  const latest = useRef(0);
 
   const search = useCallback(async (birthPlace: string) => {
-    if (!birthPlace.trim()) { setResults([]); return; }
+    const ticket = ++latest.current;
+    const isLatest = () => ticket === latest.current;
+    /** This search's answer — dropped when a newer search has started since. */
+    const answer = (rows: GeoResult[], notice: { error?: string | null; fallback?: boolean; regionMissed?: boolean } = {}) => {
+      if (!isLatest()) return;
+      setResults(rows);
+      setQuery(birthPlace);
+      setError(notice.error ?? null);
+      setUsedFallback(!!notice.fallback);
+      setRegionMissed(!!notice.regionMissed);
+      setLoading(false);
+    };
+    if (!birthPlace.trim()) { answer([]); return; }
     setLoading(true);
     setError(null);
+    setUsedFallback(false);
+    setRegionMissed(false);
+    /** Same-name places outside the region typed: listed, with a notice, if nothing better turns up. */
+    let elsewhere: GeoResult[] = [];
     try {
-      const data = await callFn<{ results: GeoResult[] }>('astrology-geocode', { birthPlace });
+      const data = await callFn<{ results: GeoResult[]; qualifierMatched?: boolean }>('astrology-geocode', { birthPlace });
       if (data.results?.length) {
-        setResults(data.results);
-        setLoading(false);
-        return;
+        if (data.qualifierMatched !== false) {
+          answer(data.results);
+          return;
+        }
+        elsewhere = data.results;
       }
     } catch { /* fall through to client-side */ }
+    // A newer search is under way: no device search for this one.
+    if (!isLatest()) return;
+
+    const showElsewhere = () => answer(elsewhere, {
+      regionMissed: true,
+      error: i18n.t('astrologyErrors.geocodeRegionMissed', {
+        ns: 'app',
+        region: typedRegion(birthPlace),
+        defaultValue: 'None of these places is in {{region}}. Check the spelling, or try the place’s English name.',
+      }),
+    });
 
     try {
       const fallbackResults = await geocodeClientFallback(birthPlace);
-      setResults(fallbackResults);
-      if (!fallbackResults.length) {
-        setError(tErr('geocodeNone', 'No places matched — try the nearest city, or add the country.'));
+      if (!fallbackResults.length && elsewhere.length) {
+        showElsewhere();
+        return;
       }
+      answer(fallbackResults, {
+        // An answer to the full "City, Region" string is not approximate; a
+        // rescue after the server failed outright is.
+        fallback: fallbackResults.length > 0 && elsewhere.length === 0,
+        error: fallbackResults.length ? null : tErr('geocodeNone', 'No places matched — try the nearest city, or add the country.'),
+      });
     } catch (e) {
-      console.error('[astrology] geocode fallback failed:', e);
-      setResults([]);
-      setError(tErr('geocodeUnavailable', 'Place search isn’t responding — check your connection and try again.'));
-    } finally {
-      setLoading(false);
+      if (elsewhere.length) {
+        showElsewhere();
+        return;
+      }
+      if (isLatest()) console.error('[astrology] geocode fallback failed:', e);
+      answer([], { error: tErr('geocodeUnavailable', 'Place search isn’t responding — check your connection and try again.') });
     }
   }, []);
 
-  return { results, loading, error, search };
+  return { results, query, loading, error, search, usedFallback, regionMissed };
 }
 
 interface ChartResponse {
@@ -224,6 +311,46 @@ interface ChartResponse {
   dominants: NatalChart['dominants'];
   aspects: NatalChart['aspects'];
   error?: string;
+}
+
+/** What astrology-compute-natal is sent (components/horoscope/birthZone castParamsFor). */
+export interface NatalCastParams {
+  birthDate: string;
+  birthTime: string | null;
+  lat: number;
+  lon: number;
+  timezone: string;
+  chartMode: string;
+}
+
+/**
+ * The stored natal chart, or null when none is cast yet: this session's
+ * copy when a screen already read it (what every chart screen shows), else
+ * astrology-get-chart's. The chart check (birthZone) reads it here.
+ */
+export async function loadNatalChart(): Promise<ChartResponse | null> {
+  const cached = getCached<ChartResponse>('chart');
+  if (cached) return cached;
+  try {
+    const data = await callFn<ChartResponse>('astrology-get-chart');
+    if (data.error === 'No chart found' || !data.natalChart) return null;
+    setCache('chart', data);
+    return data;
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('No chart found')) return null;
+    throw e;
+  }
+}
+
+/**
+ * Recast the stored natal chart, and keep the answer as this session's
+ * copy: a screen that mounts afterwards reads the new chart, not the one
+ * cached before the recast (p9 R30).
+ */
+export async function recastNatalChart(params: NatalCastParams): Promise<ChartResponse> {
+  const data = await callFn<ChartResponse>('astrology-compute-natal', { ...params });
+  setCache('chart', data);
+  return data;
 }
 
 export function useNatalChart() {
@@ -260,20 +387,12 @@ export function useNatalChart() {
     fetchChart();
   }, [fetchChart]);
 
-  const computeChart = useCallback(async (params: {
-    birthDate: string;
-    birthTime: string | null;
-    lat: number;
-    lon: number;
-    timezone: string;
-    chartMode: string;
-  }) => {
+  const computeChart = useCallback(async (params: NatalCastParams) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await callFn<ChartResponse>('astrology-compute-natal', params);
+      const data = await recastNatalChart(params);
       setChart(data);
-      setCache('chart', data);
       return data;
     } catch (e) {
       setError(userMessage(e, 'computeChart', 'Couldn’t compute your chart — check your birth details and try again.'));
@@ -431,4 +550,26 @@ export function useTransitCalendar() {
   }, []);
 
   return { events, loading, error, load };
+}
+
+/**
+ * The interpretation library (planet in sign / house, aspects, houses, sign
+ * compatibility) in the reader's language: the lazily imported English
+ * library read through the `interpretations` content overlay. Null until
+ * both have loaded — render a skeleton until then, never the English for a
+ * frame and then the translation.
+ */
+export function useInterpretations(): Interpretations | null {
+  const [mod, setMod] = useState<InterpModule | null>(null);
+  const { overlay, ready } = useContentOverlay('interpretations');
+  useEffect(() => {
+    let alive = true;
+    import('../data/interpretations').then((m) => {
+      if (alive) setMod(m);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return useMemo(() => (mod && ready ? withOverlay(mod, overlay) : null), [mod, ready, overlay]);
 }

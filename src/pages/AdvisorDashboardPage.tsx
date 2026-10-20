@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, EyebrowLabel, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, EyebrowLabel, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -189,26 +189,30 @@ export function AdvisorDashboardPage() {
     }
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
+  if (loading) return <div className="py-12 text-center text-mystic-500 text-ui">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
 
   if (!advisorId) {
     return (
-      <Card padding="lg" variant="glow">
-        <h2 className="font-display text-lg text-mystic-100 mb-2">
-          {t('advisorDashboard.notAdvisorTitle', { defaultValue: 'Become an advisor' })}
-        </h2>
-        <p className="text-sm text-mystic-400 leading-relaxed mb-3">
-          {t('advisorDashboard.notAdvisorBody', {
-            defaultValue: 'You are not set up as an advisor yet. Advisors are hand-vetted — reach out to apply.',
+      <Page spacing="md">
+        <PageHeader
+          onBack={() => navigate('/advisors')}
+          backLabel={t('advisors.back', { defaultValue: 'All advisors' }) as string}
+          title={t('advisorDashboard.title', { defaultValue: 'Advisor dashboard' })}
+        />
+        <EmptyState
+          as="h2"
+          icon={<Users />}
+          title={t('advisorDashboard.notAdvisorTitle', { defaultValue: 'You’re not set up as an advisor yet' })}
+          description={t('advisorDashboard.notAdvisorBody', {
+            defaultValue: 'Advisors are hand-vetted. Write to us to apply, and verify your identity once we reply.',
           })}
-        </p>
-        <a
-          href="mailto:advisors@tarotlife.app?subject=Advisor%20application"
-          className="inline-block text-gold text-sm underline underline-offset-2"
-        >
-          {t('advisorDashboard.apply', { defaultValue: 'Email advisors@tarotlife.app' })}
-        </a>
-      </Card>
+          action={
+            <Button variant="outline" onClick={() => { window.location.href = 'mailto:advisors@tarotlife.app?subject=Advisor%20application'; }}>
+              {t('advisorDashboard.apply', { defaultValue: 'Email advisors@tarotlife.app' })}
+            </Button>
+          }
+        />
+      </Page>
     );
   }
 
@@ -220,7 +224,7 @@ export function AdvisorDashboardPage() {
       />
 
       <Card padding="lg">
-        <h3 className="text-sm font-medium text-gold tracking-wide mb-3 flex items-center gap-1.5">
+        <h3 className="text-ui font-medium text-mystic-200 mb-3 flex items-center gap-1.5">
           <Users className="w-4 h-4" />
           {t('advisorDashboard.upcomingTitle', { defaultValue: 'Upcoming sessions' })}
         </h3>
@@ -238,7 +242,7 @@ export function AdvisorDashboardPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-mystic-100 font-medium">
+                    <p className="text-ui text-mystic-100 font-medium">
                       {new Date(s.scheduledAt).toLocaleString()}
                     </p>
                     <p className="text-meta text-mystic-400">
@@ -256,7 +260,7 @@ export function AdvisorDashboardPage() {
 
       {payoutsEnabled && (
       <Card padding="lg">
-        <h3 className="text-sm font-medium text-gold tracking-wide mb-3 flex items-center gap-1.5">
+        <h3 className="text-ui font-medium text-mystic-200 mb-3 flex items-center gap-1.5">
           <Wallet className="w-4 h-4" />
           {t('advisorDashboard.payoutsTitle', { defaultValue: 'Payouts' })}
         </h3>
@@ -320,7 +324,7 @@ export function AdvisorDashboardPage() {
 
       <Card padding="lg">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-gold tracking-wide flex items-center gap-1.5">
+          <h3 className="text-ui font-medium text-mystic-200 flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
             {t('advisorDashboard.availabilityTitle', { defaultValue: 'Weekly availability' })}
           </h3>

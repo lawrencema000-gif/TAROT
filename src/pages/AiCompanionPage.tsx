@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BookOpen, Feather, Flower, Loader2, MessageCircle, Moon, Send } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast, Page, Tabs } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast, Page, Tabs, Sheet } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
@@ -8,16 +8,30 @@ import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { ACTION_COST } from '../dal/moonstoneSpend';
 import { localDateStr } from '../utils/localDate';
 import { scrollBehavior } from '../utils/motion';
-
-type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-}
+import { aiFailureOf } from '../components/reports/aiReading';
+import {
+  loadConversation,
+  saveConversation,
+  loadDailyCount,
+  saveDailyCount,
+  newConversationId,
+  conversationCovered,
+  mayBePaid,
+  markPending,
+  withoutPending,
+  afterReply,
+  historyToSend,
+  legacyCompanionOffer,
+  claimLegacyCompanion,
+  declineLegacyCompanion,
+  historyKey,
+  type CompanionConversation,
+  type CompanionMessage as Message,
+  type CompanionPersona as Persona,
+} from '../components/companion/companionHistory';
 
 const PERSONAS: Array<{
   id: Persona;
@@ -30,56 +44,98 @@ const PERSONAS: Array<{
   { id: 'priestess', icon: Flower,        accent: 'text-cosmic-rose' },
 ];
 
-const STORAGE_KEY_PREFIX = 'arcana_companion_v1_';
-
-function loadHistory(persona: Persona): Message[] {
+/** "Sage and Oracle" in the app's language. */
+function listOf(names: string[]): string {
+  type ListFormatCtor = new (locale: string, o: { style: string; type: string }) => { format: (l: string[]) => string };
+  const ListFormat = (Intl as unknown as { ListFormat?: ListFormatCtor }).ListFormat;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_PREFIX + persona);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((m): m is Message => m && typeof m.role === 'string' && typeof m.content === 'string');
+    if (ListFormat) return new ListFormat(getLocale(), { style: 'long', type: 'conjunction' }).format(names);
   } catch {
-    return [];
+    /* an unknown locale tag: plain commas below */
+  }
+  return names.join(', ');
+}
+
+/** The `error.code` of a function's JSON envelope (a FunctionsHttpError keeps the Response on `context`). */
+async function errorCodeOf(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
   }
 }
 
-function saveHistory(persona: Persona, history: Message[]) {
+/** The conversation id this account has saved for `persona`, or null when nothing is saved yet. */
+function savedConversationId(userId: string, persona: Persona): string | null {
   try {
-    // Keep only last 40 messages to bound storage
-    const trimmed = history.slice(-40);
-    localStorage.setItem(STORAGE_KEY_PREFIX + persona, JSON.stringify(trimmed));
+    const raw = window.localStorage.getItem(historyKey(userId, persona));
+    if (!raw) return null;
+    const id = (JSON.parse(raw) as { conversationId?: unknown })?.conversationId;
+    return typeof id === 'string' ? id : null;
   } catch {
-    // silent — localStorage full or unavailable
+    return null;
   }
 }
 
 export function AiCompanionPage() {
   const { t } = useT('app');
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const userId = user?.id ?? null;
   const [persona, setPersona] = useState<Persona>('sage');
-  const [history, setHistory] = useState<Message[]>([]);
+  // History is per account AND per persona (companionHistory.ts); the
+  // conversation id is what the server charges once for.
+  const [convo, setConvo] = useState<CompanionConversation>(() => loadConversation(userId, 'sage'));
+  const history = convo.messages;
   const [input, setInput] = useState('');
+  /** A message is being handled: from the press, through the gate, until its reply settles. */
+  const [busy, setBusy] = useState(false);
+  /** The request is out: the "thinking" line shows. */
   const [sending, setSending] = useState(false);
   const [dailyUsed, setDailyUsed] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  /**
+   * Set synchronously on the press, before the balance gate is awaited, so
+   * a second press (Enter twice, a double tap) while the first is handled
+   * is ignored.
+   */
+  const inFlight = useRef(false);
+  /**
+   * What is on screen, for a reply that lands later: it is shown only if
+   * the screen still holds the conversation it was sent in (p8 F39).
+   */
+  const onScreen = useRef({ userId, persona, conversationId: convo.conversationId });
+  useEffect(() => {
+    onScreen.current = { userId, persona, conversationId: convo.conversationId };
+  }, [userId, persona, convo.conversationId]);
+
+  /**
+   * Personas whose conversation an earlier version kept on this device,
+   * writer unknown, that this account has not answered for: asked about,
+   * never taken (p8 F33).
+   */
+  const [legacyPersonas, setLegacyPersonas] = useState<Persona[]>([]);
+  /** Closed without an answer: asked again on the next visit, not again on this one. */
+  const [legacyLater, setLegacyLater] = useState(false);
+  useEffect(() => {
+    setLegacyPersonas(legacyCompanionOffer(userId));
+    setLegacyLater(false);
+  }, [userId]);
 
   const DAILY_LIMIT = 20; // free tier; premium bumps to 100 in a future sprint
 
-  // Track daily usage via localStorage. Use the LOCAL calendar date so
-  // the message limit resets at the user's midnight, not UTC midnight.
+  // Track daily usage per account. Use the LOCAL calendar date so the
+  // message limit resets at the user's midnight, not UTC midnight.
   useEffect(() => {
-    const key = `arcana_companion_daily_${localDateStr()}`;
-    try {
-      const n = parseInt(localStorage.getItem(key) || '0', 10);
-      setDailyUsed(Number.isFinite(n) ? n : 0);
-    } catch { /* ignore */ }
-  }, []);
+    setDailyUsed(loadDailyCount(userId, localDateStr()));
+  }, [userId]);
 
-  // Load history for selected persona
+  // Load this account's conversation with the selected persona
   useEffect(() => {
-    setHistory(loadHistory(persona));
-  }, [persona]);
+    setConvo(loadConversation(userId, persona));
+  }, [userId, persona]);
 
   // Auto-scroll on new message
   useEffect(() => {
@@ -87,37 +143,91 @@ export function AiCompanionPage() {
   }, [history, sending]);
 
   const incDailyUsed = useCallback(() => {
-    const key = `arcana_companion_daily_${localDateStr()}`;
-    try {
-      const next = dailyUsed + 1;
-      localStorage.setItem(key, String(next));
-      setDailyUsed(next);
-    } catch { /* ignore */ }
-  }, [dailyUsed]);
+    setDailyUsed((n) => {
+      const next = n + 1;
+      if (userId) saveDailyCount(userId, localDateStr(), next);
+      return next;
+    });
+  }, [userId]);
 
-  const { tryConsume, EarnSheet } = useMoonstoneSpend('companion-session');
+  const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('companion-session');
+
+  // The daily cap is a safety rail, not the price. It is only shown once it
+  // is close to being the thing that stops the next message; otherwise the
+  // one rule on screen is the Moonstone cost of starting a conversation.
+  const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
+  const limitIsTheGate = remaining <= 3;
+  /**
+   * The next message is covered by this conversation's charge: one was
+   * seen less than 24 hours ago. When it is not — a new conversation, or
+   * one whose 24 hours ran out — the next message is charged, so the price
+   * is on screen and the balance is checked before it goes (p8 F40).
+   */
+  const covered = conversationCovered(convo);
+  /** Its 24 hours ran out (a charge was seen, more than a day ago). Premium pays nothing, so is told nothing. */
+  const lapsed = history.length > 0 && typeof convo.chargedAt === 'number' && !covered && !profile?.isPremium;
 
   const send = async () => {
     const trimmed = input.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || !userId || inFlight.current) return;
     if (dailyUsed >= DAILY_LIMIT) {
       toast(t('companion.dailyLimitReached', { defaultValue: 'Daily message limit reached — come back tomorrow.' }), 'error');
       return;
     }
-    // Charge 50 moonstones once per fresh conversation (premium = no debit;
-    // soft cap counts one slot for the session start, not per message).
-    if (history.length === 0) {
-      const ok = await tryConsume();
-      if (!ok) return;
-    }
-
-    const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
-    const newHistory = [...history, userMsg];
-    setHistory(newHistory);
-    setInput('');
-    setSending(true);
-
+    inFlight.current = true;
+    setBusy(true);
+    const sentPersona = persona;
+    const prior = convo;
+    const now = Date.now();
+    const wasCovered = conversationCovered(prior, now);
+    /**
+     * A resend after a reply that never came back (p9 R09): the server may
+     * have charged that send already, and then answers this one free. The
+     * gate reads only the balance, so it would stop a reader that charge
+     * left under 50 from the reply they paid for; the server itself still
+     * refuses (402) if nothing was charged and the balance is short.
+     */
+    const resend = !wasCovered && mayBePaid(prior, now);
+    // What the thread is sent from: marked with this send when the
+    // conversation is not covered, so a reply lost after the charge leaves
+    // a record of when it may have been paid (kept through a reload).
+    const base = wasCovered ? prior : markPending(prior, now);
+    const stillOnScreen = () =>
+      onScreen.current.userId === userId &&
+      onScreen.current.persona === sentPersona &&
+      onScreen.current.conversationId === prior.conversationId;
+    const uid = userId;
+    /** Filed under the persona and conversation it was sent in, unless that conversation was replaced meanwhile. */
+    const file = (c: CompanionConversation) => {
+      const saved = savedConversationId(uid, sentPersona);
+      if (saved === null || saved === prior.conversationId) saveConversation(uid, sentPersona, c);
+    };
+    // An unanswered message is taken back out of the thread and returned
+    // to the composer, so sending again is a clean retry, not a double.
+    // `to`: the conversation as it stands after the failure — still marked
+    // when the send may have been charged.
+    const restore = (to: CompanionConversation) => {
+      if (!stillOnScreen()) return;
+      setConvo(to);
+      setInput((cur) => cur || trimmed);
+    };
     try {
+      // The server charges once per conversation for 24 hours (premium =
+      // no debit). Any message it will charge — the first of a
+      // conversation, or the first after its 24 hours — is checked against
+      // the balance first.
+      if (!wasCovered && !resend) {
+        const ok = await tryConsume();
+        if (!ok) return;
+      }
+      if (base !== prior) file(base);
+
+      const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
+      const newHistory = [...base.messages, userMsg];
+      if (stillOnScreen()) setConvo({ ...base, messages: newHistory });
+      setInput('');
+      setSending(true);
+
       const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
       const userContext = {
         zodiacSign: zodiacSign ? zodiacData[zodiacSign].name : undefined,
@@ -128,17 +238,49 @@ export function AiCompanionPage() {
 
       const { data, error } = await supabase.functions.invoke('ai-companion-chat', {
         body: {
-          persona,
-          history: newHistory.map((m) => ({ role: m.role, content: m.content })),
+          persona: sentPersona,
+          conversationId: prior.conversationId,
+          requestId: newConversationId(),
+          // A bounded window, not the whole thread: the function refuses
+          // more than 100 messages and reads the last 20 (p9 R23).
+          history: historyToSend(newHistory),
           userContext,
         },
       });
 
+      if (error) {
+        // Out of Moonstones / over today's AI limit is not a connection
+        // problem: re-read the gate, which opens the earn sheet with the
+        // right reason (insufficient or soft cap). The unsent message goes
+        // back into the box either way.
+        const failure = await aiFailureOf(error);
+        if (failure === 'insufficient' || failure === 'soft-cap') {
+          // Refused before any debit: nothing is paid, and nothing pending.
+          const cleared = withoutPending(prior);
+          file(cleared);
+          restore(cleared);
+          const allowed = await tryConsume();
+          if (allowed) {
+            toast(t('companion.balanceChangedRetry', { defaultValue: 'Your balance changed — send your message again.' }), 'info');
+          }
+          return;
+        }
+        // Refused as sent (400, before any charge): sending it again the
+        // same way fails the same way, and it is not the connection.
+        if ((await errorCodeOf(error)) === 'INVALID_REQUEST') {
+          if (base !== prior) file(prior);
+          restore(prior);
+          toast(t('companion.sendRejected', { defaultValue: 'This message couldn’t be sent. Start a new conversation and send it again.' }), 'error');
+          return;
+        }
+        throw error;
+      }
+
       // New handler envelope wraps the result as `{ data: { reply, ... }, correlationId }`.
       // Fall back to the legacy flat shape for rollback safety.
-      const payload = (data?.data ?? data) as { reply?: string } | null;
-      if (error || !payload?.reply) {
-        throw new Error(error?.message || 'No reply');
+      const payload = (data?.data ?? data) as { reply?: string; charged?: boolean; conversationPaid?: boolean } | null;
+      if (!payload?.reply) {
+        throw new Error('No reply');
       }
 
       const assistantMsg: Message = {
@@ -146,25 +288,63 @@ export function AiCompanionPage() {
         content: payload.reply,
         timestamp: Date.now(),
       };
-      const finalHistory = [...newHistory, assistantMsg];
-      setHistory(finalHistory);
-      saveHistory(persona, finalHistory);
+      const next = afterReply(base, [...newHistory, assistantMsg], payload, wasCovered);
+      // Filed under the persona and conversation it was sent in, whatever
+      // the screen shows now — unless that conversation was replaced
+      // ("New conversation") while the reply was on its way.
+      file(next);
+      if (stillOnScreen()) setConvo(next);
       incDailyUsed();
     } catch {
-      toast(t('companion.sendFailed', { defaultValue: "Couldn't reach your companion — check your connection and try again." }), 'error');
-      setHistory(newHistory); // keep user message so they can retry
+      toast(t('companion.sendFailed', { defaultValue: 'Couldn’t reach your companion — check your connection and send again.' }), 'error');
+      // It may have been charged on the way: the mark stays.
+      restore(base);
     } finally {
+      inFlight.current = false;
       setSending(false);
+      setBusy(false);
     }
   };
 
+  // A new conversation is a new id, so the next message starts (and pays
+  // for) a new conversation, as the cost line says.
   const clearConversation = () => {
-    saveHistory(persona, []);
-    setHistory([]);
+    const fresh: CompanionConversation = { conversationId: newConversationId(), messages: [] };
+    if (userId) saveConversation(userId, persona, fresh);
+    setConvo(fresh);
+  };
+  /**
+   * "New conversation" replaces this persona's conversation for good, so it
+   * asks first; while the conversation's 24 hours are paid for (or a send
+   * may have paid them) it says what the next one costs. One tap used to
+   * overwrite a conversation bought minutes before (p9 Q06).
+   */
+  const [confirmNew, setConfirmNew] = useState(false);
+  const stillPaid = !profile?.isPremium && (covered || mayBePaid(convo));
+
+  /** "They're mine": the old conversations join this account's, and the device copy goes. */
+  const claimLegacy = () => {
+    if (!userId) return;
+    const moved = claimLegacyCompanion(userId);
+    setLegacyPersonas(legacyCompanionOffer(userId));
+    setConvo(loadConversation(userId, persona));
+    if (moved.length > 0) {
+      toast(t('companion.legacyClaimed', { defaultValue: 'Added to your conversations' }), 'success');
+    } else {
+      toast(t('companion.legacyClaimFailed', { defaultValue: 'Couldn’t add them right now. They’re still on this device — try again in a moment.' }), 'error');
+    }
+  };
+
+  /** "Not mine": this account is not asked again; they stay on the device for whoever had them. */
+  const declineLegacy = () => {
+    if (!userId) return;
+    declineLegacyCompanion(userId);
+    setLegacyPersonas([]);
   };
 
   const currentPersonaInfo = PERSONAS.find((p) => p.id === persona)!;
   const Icon = currentPersonaInfo.icon;
+  const personaName = (id: Persona) => t(`companion.personas.${id}.name`, { defaultValue: id });
 
   return (
     <Page spacing="sm" className="flex flex-col h-[calc(100dvh-200px)] max-h-[calc(100dvh-200px)]">
@@ -172,24 +352,27 @@ export function AiCompanionPage() {
         icon={<MessageCircle />}
         title={t('companion.title', { defaultValue: 'Companion' })}
         action={
-          <button
-            onClick={clearConversation}
-            className="text-meta text-mystic-500 hover:text-mystic-300 px-2 py-1 min-h-[44px]"
-          >
-            {t('companion.newConversation', { defaultValue: 'New conversation' })}
-          </button>
+          history.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={() => setConfirmNew(true)} disabled={busy}>
+              {t('companion.newConversation', { defaultValue: 'New conversation' })}
+            </Button>
+          ) : undefined
         }
       />
 
-      {/* Persona tabs */}
+      {/* Persona tabs. Held while a message is on its way: a reply belongs
+          to the persona it was sent to (p8 F39). */}
       <Tabs<Persona>
         items={PERSONAS.map((p) => ({
           id: p.id,
-          label: t(`companion.personas.${p.id}.name`, { defaultValue: p.id }),
+          label: personaName(p.id),
           icon: p.icon,
+          disabled: busy && p.id !== persona,
         }))}
         value={persona}
-        onChange={setPersona}
+        onChange={(id) => {
+          if (!inFlight.current) setPersona(id);
+        }}
         aria-label={t('companion.title', { defaultValue: 'Companion' }) as string}
         size="sm"
         idPrefix="companion-persona"
@@ -201,7 +384,7 @@ export function AiCompanionPage() {
           <Icon className={`w-5 h-5 ${currentPersonaInfo.accent} mt-0.5`} />
           <div className="flex-1">
             <p className={`text-ui font-medium ${currentPersonaInfo.accent} mb-1`}>
-              {t(`companion.personas.${persona}.name`, { defaultValue: persona })}
+              {personaName(persona)}
             </p>
             <p className="text-ui text-mystic-300 italic">
               {t(`companion.personas.${persona}.intro`, { defaultValue: currentPersonaInfo.id })}
@@ -213,7 +396,7 @@ export function AiCompanionPage() {
       {/* Message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-2">
         {history.length === 0 && (
-          <div className="text-center py-12 text-ui text-mystic-400 italic">
+          <div className="text-center py-12 px-4 text-ui text-mystic-400 italic max-w-prose mx-auto">
             {t('companion.emptyState', { defaultValue: 'Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.' })}
           </div>
         )}
@@ -235,7 +418,7 @@ export function AiCompanionPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-mystic-800/60 rounded-control rounded-bl p-3 text-sm text-mystic-400 italic">
+            <div className="bg-mystic-800/60 rounded-control rounded-bl p-3 text-meta text-mystic-400 italic">
               <span className="inline-flex items-center gap-1.5">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
                 {t('companion.thinking', { defaultValue: 'thinking…' })}
@@ -245,7 +428,7 @@ export function AiCompanionPage() {
         )}
       </div>
 
-      {/* Composer + limit */}
+      {/* Composer + the one gating rule */}
       <div className="space-y-2">
         <div className="flex gap-2">
           <textarea
@@ -259,30 +442,115 @@ export function AiCompanionPage() {
             }}
             rows={2}
             maxLength={3000}
-            placeholder={t('companion.placeholder', { defaultValue: 'Ask the companion...' }) as string}
-            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            placeholder={t('companion.placeholder', { defaultValue: 'Ask the companion…' }) as string}
+            aria-label={t('companion.placeholder', { defaultValue: 'Ask the companion…' }) as string}
+            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           />
           <Button
             variant="primary"
             onClick={send}
-            disabled={sending || !input.trim() || dailyUsed >= DAILY_LIMIT}
+            disabled={busy || !input.trim() || dailyUsed >= DAILY_LIMIT}
             className="px-4"
             aria-label={t('common:actions.send', { defaultValue: 'Send' }) as string}
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden />
           </Button>
         </div>
-        <p className="text-meta text-mystic-400 text-right">
-          {t('companion.dailyRemaining', {
-            defaultValue: '{{remaining}} messages left today',
-            remaining: Math.max(0, DAILY_LIMIT - dailyUsed),
-            n: dailyUsed,
-            limit: DAILY_LIMIT,
-          })}
-        </p>
-        {history.length === 0 && <MoonstoneCostLine className="mt-1" />}
+        {/* The price, whenever the next message is the one charged: a new
+            conversation, or one whose 24 hours ran out (p8 F40). */}
+        {lapsed && (
+          <p className="text-meta text-mystic-300" role="status">
+            {t('companion.renewNotice', {
+              defaultValue: 'The 24 hours this conversation covered have passed. Your next message starts a new 24 hours.',
+            })}
+          </p>
+        )}
+        {!covered && <MoonstoneCostLine wording="conversation" className="mt-1" />}
+        {limitIsTheGate && (
+          <p className="text-meta text-mystic-400 text-right tabular-nums" role="status">
+            {remaining === 0
+              ? t('companion.dailyLimitReached', { defaultValue: 'Daily message limit reached — come back tomorrow.' })
+              : t('companion.dailyRemaining', {
+                  defaultValue: '{{remaining}} messages left today',
+                  remaining,
+                  n: dailyUsed,
+                  limit: DAILY_LIMIT,
+                })}
+          </p>
+        )}
+        {gateError && (
+          <p className="text-meta text-coral" role="alert">
+            {gateError}
+          </p>
+        )}
       </div>
       {EarnSheet}
+
+      {/* Replacing the conversation is for good, so it asks; keeping it is
+          the safe default. */}
+      <Sheet
+        open={confirmNew}
+        onClose={() => setConfirmNew(false)}
+        title={t('companion.newConversationConfirmTitle', { defaultValue: 'Start a new conversation?' })}
+      >
+        <div className="space-y-5">
+          <p className="text-ui text-mystic-300 leading-relaxed">
+            {stillPaid
+              ? t('companion.newConversationConfirmBodyPaid', {
+                  n: ACTION_COST,
+                  defaultValue: 'This conversation will close, and you can’t come back to it. Your next message starts a new conversation, which uses {{n}} Moonstones.',
+                })
+              : t('companion.newConversationConfirmBody', {
+                  defaultValue: 'This conversation will close, and you can’t come back to it.',
+                })}
+          </p>
+          <div className="space-y-3">
+            <Button
+              variant="destructive"
+              fullWidth
+              disabled={busy}
+              onClick={() => {
+                setConfirmNew(false);
+                clearConversation();
+              }}
+            >
+              {t('companion.newConversationConfirmAction', { defaultValue: 'Start a new conversation' })}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => setConfirmNew(false)}>
+              {t('companion.newConversationConfirmKeep', { defaultValue: 'Keep this conversation' })}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
+
+      {/* Conversations an earlier version kept on this device: asked
+          about, never taken (p8 F33). Only who they were with is shown
+          until the account says they are its own. A sheet, not a card: the
+          chat column has a fixed height, and a card would push the composer
+          under the nav. */}
+      <Sheet
+        open={legacyPersonas.length > 0 && !legacyLater}
+        onClose={() => setLegacyLater(true)}
+        title={t('companion.legacyTitle', { defaultValue: 'Conversations saved on this device' })}
+      >
+        <div className="space-y-5">
+          <p className="text-ui text-mystic-300 leading-relaxed">
+            {t('companion.legacyBody', {
+              count: legacyPersonas.length,
+              personas: listOf(legacyPersonas.map(personaName)),
+              defaultValue: 'An earlier version of Arcana saved conversations with {{personas}} on this device. If they’re yours, add them to your conversations. If not, they stay here for whoever had them.',
+            })}
+          </p>
+          <div className="space-y-2">
+            <Button variant="gold" fullWidth onClick={claimLegacy} disabled={busy}>
+              {t('companion.legacyClaim', { count: legacyPersonas.length, defaultValue: 'Add them to my conversations' })}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={declineLegacy} disabled={busy}>
+              {t('companion.legacyDecline', { defaultValue: 'Not mine' })}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </Page>
   );
 }

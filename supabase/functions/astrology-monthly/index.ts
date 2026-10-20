@@ -14,8 +14,9 @@ import {
   ONE_THING as LONE_THING,
   OUTER_PLANET_THEMES as LOUTER_PLANET_THEMES,
   KEY_DATES as LKEY_DATES,
-  OUTER_PLANET_FALLBACK,
   formatShortLocalized,
+  monthlyIngress,
+  outerPlanetFallback,
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
@@ -41,6 +42,9 @@ const MONTH_NAMES = [
 interface MonthlyRequest {
   locale?: string;
 }
+
+/** The cache revision of a locale's generated text (see the cache lookup in run). */
+const CACHE_REVISION: Partial<Record<Locale, number>> = { ko: 2 };
 
 function normDeg(d: number): number {
   return ((d % 360) + 360) % 360;
@@ -128,7 +132,11 @@ Deno.serve(
       const month = now.getUTCMonth();
       const monthKey = `${year}-${String(month + 1).padStart(2, "0")}-01`;
 
-      const cacheType = locale === "en" ? "monthly" : `monthly:${locale}`;
+      // A locale's revision is bumped when its generated text changes, so a
+      // month cached before the change is not served until the 1st (ko r2:
+      // the particles agree with the names, p9 QT2).
+      const revision = CACHE_REVISION[locale];
+      const cacheType = (locale === "en" ? "monthly" : `monthly:${locale}`) + (revision ? `:r${revision}` : "");
       const { data: cached } = await ctx.supabase
         .from("astrology_horoscope_cache")
         .select("content_json")
@@ -169,7 +177,6 @@ Deno.serve(
       const oneThings = LONE_THING[locale];
       const outerThemes = LOUTER_PLANET_THEMES[locale];
       const keyDateLabels = LKEY_DATES[locale];
-      const outerFallback = OUTER_PLANET_FALLBACK[locale];
       const houseCusps: number[] = chartRow.natal_json.houses || [];
 
       const seed = year * 13 + month * 7 + sunSign.charCodeAt(0);
@@ -232,11 +239,10 @@ Deno.serve(
         const signData = lonToSign(lon);
         const planetEl = (SIGN_ELEMENTS[signData.sign] || "Fire") as LElement;
         const themes = outerThemes[name]?.[planetEl];
+        // The fallback's Korean particles agree with the names (p9 QT2).
         const theme = themes
           ? pick(themes, rng)
-          : outerFallback
-              .replace("{planet}", planetNames[name] ?? name)
-              .replace("{sign}", signNames[signData.sign] ?? signData.sign);
+          : outerPlanetFallback(locale, planetNames[name] ?? name, signNames[signData.sign] ?? signData.sign);
         outerPlanetTransits.push({
           planet: name,
           sign: signData.sign,
@@ -259,11 +265,8 @@ Deno.serve(
           if (sign !== prevSign && day > 1) {
             const pLocal = planetNames[pName] ?? pName;
             const sLocal = signNames[sign] ?? sign;
-            const enters =
-              locale === "en" ? `${pLocal} enters ${sLocal}` :
-              locale === "ja" ? `${pLocal}が${sLocal}に入る` :
-              locale === "ko" ? `${pLocal}이(가) ${sLocal}에 진입` :
-              /* zh */           `${pLocal}进入${sLocal}`;
+            // "수성이 물병자리에 진입", never 이(가) (p9 QT2).
+            const enters = monthlyIngress(locale, pLocal, sLocal);
             keyDates.push({ date: formatShortLocalized(d, locale), event: enters });
             break;
           }

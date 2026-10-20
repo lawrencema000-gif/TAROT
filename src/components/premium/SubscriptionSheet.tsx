@@ -20,7 +20,7 @@ type PortalCapable = BillingService & { openCustomerPortal?: () => Promise<boole
 // were promised; the labels come from premium.paywall.unlocks.*.
 const INCLUDED = [
   'adFree',
-  'allSpreads',
+  'everySpread',
   'compatibility',
   'partnerSynastry',
   'deepInterpretations',
@@ -36,8 +36,9 @@ const INCLUDED = [
   'reports',
 ] as const;
 
-/** English for the two entries added in Phase 5c (mirrors PaywallSheet). */
+/** English for the entries added since Phase 5c (mirrors PaywallSheet). */
 const INCLUDED_DEFAULTS: Partial<Record<(typeof INCLUDED)[number], string>> = {
+  everySpread: 'Every spread',
   celestialMap: 'Celestial Map',
   reports: 'Deep reports',
 };

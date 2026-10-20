@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { cardBackSources, DEFAULT_CARD_BACK, type ImageSources } from '../../utils/imageUrl';
 
 /**
  * Three card backs fanned on the table.
@@ -13,7 +14,14 @@ import type { CSSProperties } from 'react';
  * the entrance to its final frame, so the fan simply is there.
  *
  * `back` is the user's chosen card back, or the Arcana default. Every
- * copy is one `<img>` of the same URL, decoded once.
+ * copy is one `<img>` of the same URL, decoded once, at the size the card
+ * is drawn (src/utils/imageUrl.ts): the widest card here is 96px, and the
+ * stock back in Storage is a 2.6 MB PNG that drew top-down while it
+ * streamed. The default back is an SVG and needs no srcset.
+ *
+ * The deck sits on the canvas by itself. A blurred gold disc used to sit
+ * behind it; it was a glow by another name, and HomeHero shows the fan
+ * reads better without it.
  */
 
 export type DeckFanSize = 'sm' | 'md' | 'lg';
@@ -34,9 +42,19 @@ const SIZES: Record<DeckFanSize, { w: number; box: [number, number]; spread: num
 
 const KEYFRAMES = `@keyframes arcana-fan{from{opacity:0;transform:translate(-50%,-50%) translate(0,12px) rotate(0deg) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) translate(var(--fan-x),var(--fan-y)) rotate(var(--fan-r)) scale(1)}}`;
 
+/**
+ * The 1x source and the srcset for a card back on a `cssWidth`-px card.
+ * See src/utils/imageUrl.ts: the bundled card images use their 150/400
+ * renditions, the stock Storage back its 200/480 WebP, any other Storage
+ * file the image transform; the default SVG is used as given.
+ */
+export function deckFanSources(src: string, cssWidth = 96): ImageSources {
+  return cardBackSources(src, cssWidth);
+}
+
 export function DeckFan({ back, size = 'md', animate = true, className = '' }: DeckFanProps) {
-  const src = back || '/card-backs/default.svg';
   const s = SIZES[size];
+  const sources = deckFanSources(back || DEFAULT_CARD_BACK, s.w);
   const fan = [
     { r: -s.rot, x: -s.spread, y: s.drop },
     { r: 0, x: 0, y: 0 },
@@ -45,10 +63,6 @@ export function DeckFan({ back, size = 'md', animate = true, className = '' }: D
   return (
     <div className={`relative mx-auto ${className}`} style={{ width: s.box[0], height: s.box[1] }} aria-hidden>
       <style>{KEYFRAMES}</style>
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/10 blur-3xl"
-        style={{ width: s.box[1] * 1.2, height: s.box[1] * 1.2 }}
-      />
       {fan.map((f, i) => (
         <div
           key={i}
@@ -65,7 +79,17 @@ export function DeckFan({ back, size = 'md', animate = true, className = '' }: D
             } as CSSProperties
           }
         >
-          <img src={src} alt="" decoding="async" className="w-full h-full object-cover pointer-events-none select-none" draggable={false} />
+          <img
+            src={sources.src}
+            srcSet={sources.srcSet}
+            sizes={sources.sizes}
+            alt=""
+            width={s.w}
+            height={Math.round(s.w * 1.5)}
+            decoding="async"
+            className="w-full h-full object-cover pointer-events-none select-none"
+            draggable={false}
+          />
         </div>
       ))}
     </div>

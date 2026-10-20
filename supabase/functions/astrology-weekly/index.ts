@@ -12,8 +12,8 @@ import {
   ASPECT_ADVICE as LASPECT_ADVICE,
   STORYLINES as LSTORYLINES,
   BEST_DAYS_ACTIVITIES as LBEST_DAYS,
-  NATAL_WORD,
   formatShortLocalized,
+  weeklyAspectEvent,
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
@@ -30,6 +30,9 @@ const SIGN_ELEMENTS: Record<string, string> = {
 interface WeeklyRequest {
   locale?: string;
 }
+
+/** The cache revision of a locale's generated text (see the cache lookup in run). */
+const CACHE_REVISION: Partial<Record<Locale, number>> = { ko: 2 };
 
 // GEOCENTRIC longitudes via the shared helper (the old planet fallback
 // was heliocentric — wrong sign most days).
@@ -106,7 +109,11 @@ Deno.serve(
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
       const weekKey = formatDate(weekStart);
 
-      const cacheType = locale === "en" ? "weekly" : `weekly:${locale}`;
+      // A locale's revision is bumped when its generated text changes, so a
+      // week cached before the change is not served until Monday (ko r2:
+      // the particles agree with the names, p9 QT2).
+      const revision = CACHE_REVISION[locale];
+      const cacheType = (locale === "en" ? "weekly" : `weekly:${locale}`) + (revision ? `:r${revision}` : "");
       const { data: cached } = await ctx.supabase
         .from("astrology_horoscope_cache")
         .select("content_json")
@@ -151,7 +158,6 @@ Deno.serve(
       const aspectAdvice = LASPECT_ADVICE[locale];
       const storylines = LSTORYLINES[locale];
       const bestDaysPoolSrc = LBEST_DAYS[locale];
-      const natalWord = NATAL_WORD[locale];
       const planetNames = PLANET_NAMES[locale];
 
       const seed = weekKey.split("-").map(Number).reduce((a, b) => a * 31 + b, sunSign.charCodeAt(0));
@@ -180,11 +186,9 @@ Deno.serve(
                 const tPlanetLocal = planetNames[tName] ?? tName;
                 const nPlanetLocal = planetNames[np.planet] ?? np.planet;
                 const phrase = pick(eventPhrases, rng);
-                const eventText =
-                  locale === "en" ? `${tPlanetLocal} ${phrase} your ${natalWord} ${nPlanetLocal}` :
-                  locale === "ja" ? `${tPlanetLocal}${phrase}あなたの${natalWord}${nPlanetLocal}` :
-                  locale === "ko" ? `${tPlanetLocal}이(가) ${phrase} 당신의 ${natalWord} ${nPlanetLocal}` :
-                  /* zh */           `${tPlanetLocal}${phrase}你的${natalWord}${nPlanetLocal}`;
+                // In Korean the phrase is the whole sentence, and its
+                // particles agree with the two names (p9 QT2).
+                const eventText = weeklyAspectEvent(locale, phrase, tPlanetLocal, nPlanetLocal);
                 keyMoments.push({
                   day: dayName,
                   event: eventText,

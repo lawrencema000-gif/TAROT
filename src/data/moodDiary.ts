@@ -1,15 +1,25 @@
 // Mood Diary — 30-day mood curve with daily check-in.
 //
-// Persistence: localStorage per user. Each day gets one entry. Re-opening
-// the same day overwrites the previous entry. The last 30 days worth of
-// entries render as a curve on the Home screen + Profile.
-//
-// Future upgrade: migrate to Supabase table with RLS for cross-device
-// sync. localStorage is a safe V1 because mood data is small, per-device
-// is acceptable for most users, and we avoid a backend migration on
-// first ship.
+// Persistence: the `mood_entries` table (dal/moodEntries.ts) is the record;
+// localStorage is the cache and the offline fallback. Each day gets one
+// entry; re-opening the same day overwrites it. The functions below are
+// the local layer only — MoodDiaryPage merges them with the DAL and
+// uploads the account's own not-yet-synced days when the table answers.
+
+import type { MoodGlyphId } from '../components/journal/MoodGlyphs';
 
 export type MoodCategory = 'calm' | 'charged' | 'drained' | 'steady' | 'anxious' | 'joyful' | 'heavy' | 'curious';
+
+export const MOOD_CATEGORY_IDS: readonly MoodCategory[] = [
+  'calm', 'charged', 'drained', 'steady', 'anxious', 'joyful', 'heavy', 'curious',
+];
+
+export function isMoodCategory(value: unknown): value is MoodCategory {
+  return typeof value === 'string' && (MOOD_CATEGORY_IDS as readonly string[]).includes(value);
+}
+
+/** The primitives' tint tones (Chip.tsx `Tone`), named here so a data file does not import a component. */
+export type MoodTone = 'neutral' | 'gold' | 'teal' | 'coral' | 'blue' | 'violet' | 'rose';
 
 export interface MoodEntry {
   /** ISO date YYYY-MM-DD */
@@ -26,8 +36,9 @@ export interface MoodEntry {
 
 export interface MoodCategoryInfo {
   name: string;
-  emoji: string;
-  color: string;
+  /** Drawn glyph from components/journal/MoodGlyphs — the set the journal shares. */
+  glyph: MoodGlyphId;
+  tone: MoodTone;
   /** Suggested journal prompt for this mood */
   journalPrompt: string;
   /** Recommendation for this state */
@@ -37,63 +48,92 @@ export interface MoodCategoryInfo {
 export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
   calm: {
     name: 'Calm',
-    emoji: '🌊',
-    color: 'cosmic-blue',
+    glyph: 'wave',
+    tone: 'blue',
     journalPrompt: 'What is creating this quiet in me today? How can I protect it?',
-    recommendation: 'Stay close to what made this calm possible — don\'t over-schedule the rest of your day.',
+    recommendation: 'Stay close to what made this calm possible — don’t over-schedule the rest of your day.',
   },
   charged: {
     name: 'Charged',
-    emoji: '⚡',
-    color: 'gold',
+    glyph: 'spark',
+    tone: 'gold',
     journalPrompt: 'What is this energy asking me to do? What am I being called toward?',
     recommendation: 'Channel the charge into one focused action, not three scattered ones.',
   },
   drained: {
     name: 'Drained',
-    emoji: '🌙',
-    color: 'mystic-500',
+    glyph: 'moon',
+    tone: 'neutral',
     journalPrompt: 'What drained me? What have I been carrying that is not mine to carry?',
     recommendation: 'This is not a day to push. Rest is the work. Do the minimum and come back tomorrow.',
   },
   steady: {
     name: 'Steady',
-    emoji: '🌿',
-    color: 'emerald-400',
+    glyph: 'mountain',
+    tone: 'teal',
     journalPrompt: 'What is the rhythm holding me up today? Can I let more of this into my life?',
     recommendation: 'A good day to pick up something requiring sustained effort. You have the ground.',
   },
   anxious: {
     name: 'Anxious',
-    emoji: '🌬️',
-    color: 'pink-400',
+    glyph: 'wind',
+    tone: 'coral',
     journalPrompt: 'What specifically is my nervous system bracing for? What would it take to name the fear out loud?',
     recommendation: 'Breath slower than the thoughts. Five minutes of 4-7-8 breathing before any big decision.',
   },
   joyful: {
     name: 'Joyful',
-    emoji: '🌞',
-    color: 'gold',
+    glyph: 'sun',
+    tone: 'gold',
     journalPrompt: 'What brought the joy? Write it down — so future-you has a map back.',
-    recommendation: 'Let this be uncomplicated. Don\'t analyse joy; metabolise it.',
+    recommendation: 'Let this be uncomplicated. Don’t analyse joy; metabolise it.',
   },
   heavy: {
     name: 'Heavy',
-    emoji: '🌧️',
-    color: 'cosmic-violet',
+    glyph: 'drop',
+    tone: 'violet',
     journalPrompt: 'What am I grieving, even quietly? What is this weight trying to tell me?',
     recommendation: 'Move your body — a walk, a stretch. Heaviness lifts through motion more reliably than through thought.',
   },
   curious: {
     name: 'Curious',
-    emoji: '✨',
-    color: 'cosmic-blue',
+    glyph: 'leaf',
+    tone: 'teal',
     journalPrompt: 'What is tugging at me? What question wants to be followed today?',
-    recommendation: 'Follow the thread. Curiosity is rare — feed it while it\'s awake.',
+    recommendation: 'Follow the thread. Curiosity is rare — feed it while it’s awake.',
   },
 };
 
-const STORAGE_KEY = 'arcana_mood_diary_v1';
+/**
+ * The device cache is per ACCOUNT. It used to be one device-global key
+ * (`arcana_mood_diary_v1`) that sign-out never cleared, and the sync step
+ * uploads every cached day the server lacks — so on a shared phone the
+ * previous account's moods and private notes were written into whichever
+ * account signed in next (P7 review #1). Now:
+ *
+ *  - every read and write names the account (`arcana_mood_diary_v2:<uid>`),
+ *    so one account can never see, pre-fill or upload another's days;
+ *  - the legacy unscoped cache is never read into an account silently.
+ *    Nothing in it records who wrote it — but it is the only copy of every
+ *    diary the live app (web, Android v1.2.0) kept, so it is not deleted
+ *    unseen either: the diary ASKS the account that opens it whether those
+ *    days are its own (`legacyMoodOffer`). Claimed, they move into that
+ *    account's cache — from where the sync uploads them — and the device
+ *    copy is deleted (`claimLegacyMood`); declined, they stay on the device
+ *    for whoever logged them and that account is not asked again
+ *    (`declineLegacyMood`). Sign-out no longer deletes them (p8 F33).
+ *
+ * An account's own cache survives sign-out on purpose: a day saved offline
+ * and not yet synced is uploaded the next time THAT account loads the diary.
+ */
+const LEGACY_STORAGE_KEY = 'arcana_mood_diary_v1';
+const STORAGE_PREFIX = 'arcana_mood_diary_v2:';
+const LEGACY_DECLINED_PREFIX = 'arcana_mood_legacy_declined:';
+
+/** The cache key for one account. Exported for tests and sign-out tooling. */
+export function moodStorageKey(userId: string): string {
+  return STORAGE_PREFIX + userId;
+}
 
 // Local-calendar helper used internally by getLast30Days + getTodayEntry.
 // External callers (MoodDiaryPage, DailyMissionCard, AiCompanionPage)
@@ -103,55 +143,166 @@ const STORAGE_KEY = 'arcana_mood_diary_v1';
 // downstream chunk, producing `localDateStr is not defined` at runtime).
 import { localDateStr } from '../utils/localDate';
 
-export function loadMoodEntries(): MoodEntry[] {
-  if (typeof window === 'undefined') return [];
+const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+
+function writeCache(userId: string, entries: MoodEntry[], what: string): void {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    window.localStorage.setItem(moodStorageKey(userId), JSON.stringify(entries));
+  } catch (err) {
+    // Don't crash the UI — but DO log so a quota / private-mode failure is
+    // visible in DevTools instead of a silent "mood doesn't save".
+    console.warn(`[mood] ${what} failed to persist to localStorage:`, err);
+  }
+}
+
+/** This account's cached days. No account → nothing (the legacy cache is never read). */
+export function loadMoodEntries(userId: string | null | undefined): MoodEntry[] {
+  if (typeof window === 'undefined' || !userId) return [];
+  try {
+    const raw = window.localStorage.getItem(moodStorageKey(userId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((e): e is MoodEntry => (
-      e && typeof e.date === 'string' && typeof e.category === 'string' && typeof e.intensity === 'number'
+      e && typeof e.date === 'string' && isMoodCategory(e.category) && typeof e.intensity === 'number'
     ));
   } catch {
     return [];
   }
 }
 
-export function saveMoodEntry(entry: Omit<MoodEntry, 'savedAt'>): MoodEntry {
+export function saveMoodEntry(userId: string, entry: Omit<MoodEntry, 'savedAt'>): MoodEntry {
   const full: MoodEntry = { ...entry, savedAt: Date.now() };
-  const all = loadMoodEntries();
+  const all = loadMoodEntries(userId);
   // One entry per date — last write wins
   const filtered = all.filter((e) => e.date !== full.date);
   filtered.push(full);
   // Keep only last 90 days to bound storage size
-  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - NINETY_DAYS_MS;
   const trimmed = filtered.filter((e) => e.savedAt >= cutoff);
   trimmed.sort((a, b) => (a.date > b.date ? 1 : -1));
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch (err) {
-    // Don't crash the UI — but DO log to console so failures are
-    // visible in DevTools (quota exceeded, private-browsing storage
-    // disabled, JSON.stringify issue, etc.). Previously this catch
-    // silently swallowed all errors which made user-reported "mood
-    // doesn't work" issues impossible to diagnose.
-    console.warn('[mood] saveMoodEntry failed to persist to localStorage:', err);
-  }
+  writeCache(userId, trimmed, 'saveMoodEntry');
   return full;
 }
 
-export function getLast30Days(): MoodEntry[] {
-  const all = loadMoodEntries();
+/**
+ * Replace this account's cache with the merged set after a sync. Keeps the
+ * same 90-day bound as saveMoodEntry so the cache cannot outgrow the record.
+ */
+export function replaceLocalMoodEntries(userId: string, entries: MoodEntry[]): void {
+  if (typeof window === 'undefined') return;
+  const cutoff = Date.now() - NINETY_DAYS_MS;
+  const trimmed = entries.filter((e) => e.savedAt >= cutoff || e.date >= localDateStr(new Date(cutoff)));
+  trimmed.sort((a, b) => (a.date > b.date ? 1 : -1));
+  writeCache(userId, trimmed, 'replaceLocalMoodEntries');
+}
+
+/** Delete the pre-scoping, device-global cache. Only after its days were claimed by an account. */
+export function clearLegacyMoodCache(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {
+    /* storage unavailable — nothing to clear */
+  }
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The days the old build kept on this device (`arcana_mood_diary_v1`), one per date, oldest first. */
+export function loadLegacyMoodEntries(): MoodEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const byDate = new Map<string, MoodEntry>();
+    for (const e of parsed) {
+      if (!e || typeof e.date !== 'string' || !DATE_RE.test(e.date) || !isMoodCategory(e.category)) continue;
+      if (typeof e.intensity !== 'number' || !Number.isFinite(e.intensity)) continue;
+      const entry: MoodEntry = {
+        date: e.date,
+        category: e.category,
+        intensity: Math.min(5, Math.max(1, Math.round(e.intensity))) as MoodEntry['intensity'],
+        savedAt: typeof e.savedAt === 'number' && Number.isFinite(e.savedAt) ? e.savedAt : Date.parse(`${e.date}T12:00:00`),
+        ...(typeof e.note === 'string' && e.note.trim() ? { note: e.note } : {}),
+      };
+      const prev = byDate.get(entry.date);
+      if (!prev || entry.savedAt >= prev.savedAt) byDate.set(entry.date, entry);
+    }
+    return [...byDate.values()].sort((a, b) => (a.date > b.date ? 1 : -1));
+  } catch {
+    return [];
+  }
+}
+
+function legacyDeclinedKey(userId: string): string {
+  return LEGACY_DECLINED_PREFIX + userId;
+}
+
+/**
+ * The old device-global days this account should be asked about: all of
+ * them, unless this account already said they are not its own.
+ */
+export function legacyMoodOffer(userId: string | null | undefined): MoodEntry[] {
+  if (typeof window === 'undefined' || !userId) return [];
+  try {
+    if (window.localStorage.getItem(legacyDeclinedKey(userId))) return [];
+  } catch {
+    return [];
+  }
+  return loadLegacyMoodEntries();
+}
+
+/** This account says the old days are not its own: never ask it again; leave them for whoever logged them. */
+export function declineLegacyMood(userId: string): void {
+  try {
+    window.localStorage.setItem(legacyDeclinedKey(userId), '1');
+  } catch {
+    /* storage unavailable — the question comes back next time */
+  }
+}
+
+/*
+ * Claiming (MoodDiaryPage): the old days the account's record lacks — or
+ * holds an older copy of — are uploaded (pendingMoodUploads against the
+ * record), and only once the record has them is the device copy deleted
+ * (clearLegacyMoodCache). Offline, nothing moves and the question stays.
+ */
+
+/** Merge two sets by date; `preferred` wins a tie. */
+export function mergeMoodEntries(preferred: MoodEntry[], other: MoodEntry[]): MoodEntry[] {
+  const byDate = new Map<string, MoodEntry>();
+  for (const e of other) byDate.set(e.date, e);
+  for (const e of preferred) byDate.set(e.date, e);
+  return [...byDate.values()].sort((a, b) => (a.date > b.date ? 1 : -1));
+}
+
+/**
+ * The days of THIS account's cache the server does not have yet (or has an
+ * older copy of, by more than a minute of clock slack). The caller passes
+ * the account's own cache — never anything read from another key.
+ */
+export function pendingMoodUploads(local: MoodEntry[], remote: MoodEntry[]): MoodEntry[] {
+  const remoteByDate = new Map(remote.map((e) => [e.date, e]));
+  return local.filter((e) => {
+    const r = remoteByDate.get(e.date);
+    return !r || e.savedAt > r.savedAt + 60_000;
+  });
+}
+
+export function getLast30Days(userId: string | null | undefined): MoodEntry[] {
+  const all = loadMoodEntries(userId);
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
   const cutoffStr = localDateStr(cutoff);
   return all.filter((e) => e.date >= cutoffStr);
 }
 
-export function getTodayEntry(): MoodEntry | null {
+export function getTodayEntry(userId: string | null | undefined): MoodEntry | null {
   const today = localDateStr();
-  const all = loadMoodEntries();
+  const all = loadMoodEntries(userId);
   return all.find((e) => e.date === today) ?? null;
 }
 

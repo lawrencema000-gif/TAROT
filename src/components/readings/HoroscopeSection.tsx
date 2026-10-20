@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Star, Heart, Briefcase, Sun, Wind, Feather, Lock, Bookmark, BookmarkCheck, PenLine, Share2, TrendingUp, Gift, Globe, Shield, Flame, AlertTriangle, Droplets, Sword, Gem } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
-import { Card, Button, Progress, toast, ReadingProse } from '../ui';
+import { Card, Button, Progress, toast, ReadingProse, Skeleton } from '../ui';
 import { ZODIAC_ICONS } from '../icons';
+import { TodayForYouView } from '../horoscope/TodayForYou';
+import { useBirthTzBackfill } from '../horoscope/birthZone';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
+import { useNatalChart, useDailyHoroscope } from '../../hooks/useAstrology';
 import { savedHighlights } from '../../dal';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 import { localizeSignName } from '../../i18n/localizeNames';
@@ -20,9 +23,9 @@ import { fullDeck } from '../../data/tarotDeck';
 import { localizeCard } from '../../i18n/localizeCard';
 import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
-import { checkAchievementProgress } from '../../services/achievements';
 import { appStorage } from '../../lib/appStorage';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { localDateStr } from '../../utils/localDate';
 
 
@@ -30,14 +33,217 @@ interface HoroscopeSectionProps {
   onShowPaywall: (feature: string) => void;
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+type RangePart = { type: string; value: string; source?: string };
+type RangeFormatter = Intl.DateTimeFormat & {
+  formatRange?: (a: Date, b: Date) => string;
+  formatRangeToParts?: (a: Date, b: Date) => RangePart[];
+};
+
+/**
+ * A sign's dates ("Mar 21 - Apr 19" in utils/zodiac) in the app's language,
+ * through Intl: the locale's own range where it writes each end the way a
+ * single date is written (Mar 21 – Apr 19, 3월 21일 ~ 4월 19일). Japanese and
+ * Chinese switch a range to digits (03/21～04/19), so there each end is
+ * written alone (3月21日) and only the range's separator is borrowed. A
+ * string it cannot read is shown as it is.
+ */
+function localSignDates(range: string, locale: string): string {
+  const m = /^([A-Z][a-z]{2}) (\d{1,2}) - ([A-Z][a-z]{2}) (\d{1,2})$/.exec(range.trim());
+  const from = m ? MONTHS.indexOf(m[1]) : -1;
+  const to = m ? MONTHS.indexOf(m[3]) : -1;
+  if (!m || from < 0 || to < 0) return range;
+  try {
+    // One leap year for both ends: Capricorn's Dec 22 – Jan 19 keeps the
+    // order the eye reads and never prints a year.
+    const start = new Date(2000, from, Number(m[2]));
+    const end = new Date(2000, to, Number(m[4]));
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }) as RangeFormatter;
+    const a = fmt.format(start);
+    const b = fmt.format(end);
+    let whole: string | undefined;
+    let sep = ' – ';
+    try {
+      whole = fmt.formatRange?.(start, end);
+      const shared = fmt.formatRangeToParts?.(start, end).find((p) => p.source === 'shared' && p.type === 'literal');
+      // Only a bare separator: Korean's shared part also carries the 일 of the first date.
+      if (shared?.value.trim() && !/[\p{L}\p{N}]/u.test(shared.value)) sep = shared.value;
+    } catch {
+      /* an engine without ranges: the en dash */
+    }
+    if (whole && whole.length > a.length + b.length && whole.startsWith(a) && whole.endsWith(b)) return whole;
+    return `${a}${sep}${b}`;
+  } catch {
+    return range;
+  }
+}
+
+/**
+ * The Readings tab's horoscope.
+ *
+ * One "today": a signed-in user with a natal chart reads the same
+ * transit-based TodayForYou that /horoscope shows (m-4). The deterministic
+ * sun-sign text below is the fallback for a user with no chart yet.
+ */
 export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
+  const { user } = useAuth();
+  const { chart, loading: chartLoading, fetchChart } = useNatalChart();
+  // A chart cast before F21 is recast in the birth place's zone; reload.
+  useBirthTzBackfill(fetchChart);
+
+  if (user && chartLoading && !chart) {
+    return (
+      <div className="space-y-4" role="status" aria-busy="true">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-56 w-full rounded-sheet" />
+        <Skeleton className="h-20 w-full rounded-card" />
+      </div>
+    );
+  }
+
+  if (user && chart?.natalChart) {
+    return <TransitHoroscope onShowPaywall={onShowPaywall} />;
+  }
+
+  return <SunSignHoroscope onShowPaywall={onShowPaywall} />;
+}
+
+/** Shared action row: Save · Open the journal · Share (m-3: auto / 1fr / auto). */
+function ActionRow({
+  isSaved,
+  onSave,
+  onJournal,
+  onShare,
+}: {
+  isSaved: boolean;
+  onSave: () => void;
+  onJournal: () => void;
+  onShare: () => void;
+}) {
   const { t } = useT('app');
-  const { user, profile, refreshProfile } = useAuth();
+  return (
+    <div className="grid grid-cols-[auto_1fr_auto] gap-2">
+      <Button variant="outline" onClick={onSave} aria-label={t('horoscope.saveLabel', { defaultValue: 'Save horoscope' })} aria-pressed={isSaved}>
+        {isSaved ? <BookmarkCheck className="w-4 h-4" aria-hidden /> : <Bookmark className="w-4 h-4" aria-hidden />}
+      </Button>
+      <Button variant="outline" onClick={onJournal}>
+        <PenLine className="w-4 h-4 mr-2" aria-hidden />
+        {t('horoscope.journalButton')}
+      </Button>
+      <Button variant="outline" onClick={onShare} aria-label={t('horoscope.shareLabel', { defaultValue: 'Share horoscope' })}>
+        <Share2 className="w-4 h-4" aria-hidden />
+      </Button>
+    </div>
+  );
+}
+
+function PremiumUpsell({ onShowPaywall }: { onShowPaywall: (feature: string) => void }) {
+  const { t } = useT('app');
+  return (
+    <Card
+      padding="md"
+      interactive
+      onClick={() => onShowPaywall(t('horoscope.paywallFeatures.birthChart'))}
+      className="flex items-center justify-between"
+    >
+      <div className="flex items-center gap-3">
+        <Lock className="w-5 h-5 text-mystic-500" aria-hidden />
+        <div>
+          <h3 className="text-ui font-medium text-mystic-100">{t('horoscope.birthChartCard.title')}</h3>
+          <p className="text-meta text-mystic-400">{t('horoscope.birthChartCard.subtitle')}</p>
+        </div>
+      </div>
+      <Button variant="gold" size="sm">{t('horoscope.birthChartCard.upgrade')}</Button>
+    </Card>
+  );
+}
+
+function useHoroscopeXp(today: string) {
+  const { user, refreshProfile } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    const key = `arcana_horoscope_xp_${today}`;
+    appStorage.get(key).then((val) => {
+      if (val) return;
+      appStorage.set(key, '1');
+      // awardXP reports 'horoscope_viewed' to the badges itself — once a day,
+      // with the XP. A second report on every mount counted each visit again.
+      awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
+    });
+  }, [user, today]);
+}
+
+/** The transit-based reading, shared with /horoscope Today. */
+function TransitHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
+  const { t } = useT('app');
+  const { user, profile } = useAuth();
+  const { setActiveTab } = useUI();
+  const source = useDailyHoroscope();
+  const [isSaved, setIsSaved] = useState(false);
+  const today = localDateStr();
+  useHoroscopeXp(today);
+
+  const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
+  const signName = localizeSignName(zodiacData[zodiacSign].name as ZodiacSignPC);
+
+  const handleSave = async () => {
+    if (!user || !source.content) return;
+    const res = await savedHighlights.insert({
+      userId: user.id,
+      date: today,
+      highlightType: 'horoscope',
+      content: { theme: source.content.theme, summary: source.content.summary, zodiacSign },
+    });
+    if (!res.ok) {
+      toast(t('horoscope.toasts.saveFailed'), 'error');
+    } else {
+      setIsSaved(true);
+      toast(t('horoscope.toasts.horoscopeSaved'), 'success');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!source.content) return;
+    const shareText = t('horoscope.share.template', {
+      sign: signName,
+      // The theme is a heading with no closing punctuation: on its own line,
+      // as on screen, which reads right in every script. Joined with an
+      // ASCII ". " it read 'テーマ. 本文…' in ja and zh (p8 F30).
+      general: [source.content.theme, source.content.summary].filter(Boolean).join('\n'),
+      affirmation: source.content.powerMove,
+    });
+    const success = await shareToNative(t('horoscope.share.title'), shareText);
+    if (success) {
+      toast(t('horoscope.toasts.shared'), 'success');
+    } else {
+      const copied = await copyToClipboard(shareText);
+      toast(copied ? t('horoscope.toasts.copied') : t('horoscope.toasts.unableToShare'), copied ? 'success' : 'error');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <TodayForYouView
+        {...source}
+        actions={
+          source.content ? (
+            <ActionRow isSaved={isSaved} onSave={handleSave} onJournal={() => setActiveTab('journal')} onShare={handleShare} />
+          ) : undefined
+        }
+      />
+      {!profile?.isPremium && <PremiumUpsell onShowPaywall={onShowPaywall} />}
+    </div>
+  );
+}
+
+/** Fallback: the deterministic sun-sign reading for a user without a chart. */
+function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
+  const { t } = useT('app');
+  const { user, profile } = useAuth();
   const { setActiveTab } = useUI();
   const [isSaved, setIsSaved] = useState(false);
   const [showExtras, setShowExtras] = useState(false);
-
-  // Arrays of weekly / monthly insight strings pulled from translation bundle.
 
   // The local calendar date, like the Home ritual: a highlight saved after
   // midnight local time belongs to that day's "Saved today" strip.
@@ -52,17 +258,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const planetaryTransit = getPlanetaryTransit(today);
   const affirmation = getDailyAffirmation(zodiacSign, today);
   const luckyNumbers = getLuckyNumbers(today, 6);
-
-  useEffect(() => {
-    if (!user) return;
-    const key = `arcana_horoscope_xp_${today}`;
-    appStorage.get(key).then((val) => {
-      if (val) return;
-      appStorage.set(key, '1');
-      awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
-    });
-    checkAchievementProgress(user.id, 'horoscope_viewed');
-  }, [user, today]);
+  useHoroscopeXp(today);
 
   const getDailyTarotCard = () => {
     const dateNum = new Date(today).getTime();
@@ -72,7 +268,6 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   };
 
   const tarotCard = getDailyTarotCard();
-
 
   const moodVibe =
     horoscope.energy >= 4
@@ -106,13 +301,9 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
     }
   };
 
-  const handleJournalPrompt = () => {
-    setActiveTab('journal');
-  };
-
   const handleShare = async () => {
     const shareText = t('horoscope.share.template', {
-      sign: zodiacInfo.name,
+      sign: signName,
       general: horoscope.general,
       affirmation,
     });
@@ -137,8 +328,8 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
             <SignGlyph size={36} strokeWidth={1.5} aria-label={signName} />
           </div>
           <div className="flex-1">
-            <h2 className="font-display text-2xl text-gold">{signName}</h2>
-            <p className="text-meta text-mystic-400">{zodiacInfo.dateRange}</p>
+            <h2 className="heading-display-lg heading-strong text-mystic-100">{signName}</h2>
+            <p className="text-meta text-mystic-400">{localSignDates(zodiacInfo.dateRange, getLocale())}</p>
           </div>
           <button
             onClick={handleSave}
@@ -165,7 +356,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               label={t('horoscope.energyScore')}
               className="flex-1"
             />
-            <span className="text-sm text-gold font-medium">{horoscope.energy}/5</span>
+            <span className="text-ui text-gold font-medium tabular-nums">{horoscope.energy}/5</span>
           </div>
 
           <div>
@@ -204,18 +395,21 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
           <div className="pt-4 border-t border-mystic-700 space-y-4">
             <div>
               <h4 className="heading-display-md text-mystic-100 mb-3">{t('horoscope.luckyFocus')}</h4>
+              {/* A third of the card each: the colour and the vibe are labels,
+                  so a long katakana colour (オブシディアン) breaks between
+                  phrases, not inside the word (QU1 R-f; index.css .keep-phrases). */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.color')}</p>
-                  <p className="text-sm text-mystic-200 font-medium">{horoscope.luckyColor}</p>
+                  <p className="keep-phrases text-ui text-mystic-200 font-medium">{horoscope.luckyColor}</p>
                 </div>
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.number')}</p>
-                  <p className="text-lg font-display text-gold">{horoscope.luckyNumber}</p>
+                  <p className="text-title font-semibold text-gold tabular-nums">{horoscope.luckyNumber}</p>
                 </div>
                 <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.vibe')}</p>
-                  <p className="text-sm text-mystic-200 font-medium">
+                  <p className="keep-phrases text-ui text-mystic-200 font-medium">
                     {vibeLabel}
                   </p>
                 </div>
@@ -246,7 +440,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-control">
+            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 border border-mystic-700 rounded-control">
               <Globe className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.planetaryTransit')}</h4>
@@ -254,7 +448,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-cosmic-rose/10 to-gold/10 border border-cosmic-rose/20 rounded-control">
+            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 border border-cosmic-rose/20 rounded-control">
               <Feather className="w-5 h-5 text-cosmic-rose flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.dailyAffirmation')}</h4>
@@ -271,8 +465,11 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                       {tarotCard.arcana === 'major' ? <Star className="w-5 h-5 text-gold" aria-hidden /> : tarotCard.suit === 'wands' ? <Flame className="w-5 h-5 text-coral" aria-hidden /> : tarotCard.suit === 'cups' ? <Droplets className="w-5 h-5 text-cosmic-blue-ink" aria-hidden /> : tarotCard.suit === 'swords' ? <Sword className="w-5 h-5 text-mystic-300" aria-hidden /> : <Gem className="w-5 h-5 text-teal" aria-hidden />}
                     </div>
                   <div>
-                    <p className="text-sm text-gold font-medium">{tarotCard.name}</p>
-                    <p className="text-meta text-mystic-400 mt-0.5">{tarotCard.keywords.slice(0, 3).join(', ')}</p>
+                    <p className="text-ui text-gold font-medium">{tarotCard.name}</p>
+                    {/* Listed as the locale lists (、 in ja and zh), not with a Latin comma (QU2 R3 a). */}
+                    <p className="text-meta text-mystic-400 mt-0.5">
+                      {tarotCard.keywords.slice(0, 3).join(t('cardMeaning.listSeparator', { defaultValue: ', ' }))}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -290,14 +487,14 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                           key={i}
                           className="w-10 h-10 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center"
                         >
-                          <span className="text-sm font-semibold text-gold">{num}</span>
+                          <span className="text-ui font-semibold text-gold tabular-nums">{num}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/5 to-mystic-800/30 border border-gold/10 rounded-control">
+                <div className="flex items-start gap-3 p-4 bg-mystic-800/30 border border-gold/10 rounded-control">
                   <Flame className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.miniRitual')}</h4>
@@ -318,7 +515,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
             <button
               onClick={() => setShowExtras(!showExtras)}
               aria-expanded={showExtras}
-              className="w-full min-h-[44px] text-sm text-mystic-400 hover:text-gold transition-colors"
+              className="w-full min-h-[44px] text-ui text-mystic-400 hover:text-gold transition-colors"
             >
               {showExtras ? t('horoscope.showLess') : t('horoscope.showMore')}
             </button>
@@ -326,36 +523,9 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
         </div>
       </Card>
 
-      <div className="grid grid-cols-3 gap-2">
-        <Button variant="outline" onClick={handleSave} aria-label={t('horoscope.saveLabel', { defaultValue: 'Save horoscope' })} aria-pressed={isSaved}>
-          {isSaved ? <BookmarkCheck className="w-4 h-4" aria-hidden /> : <Bookmark className="w-4 h-4" aria-hidden />}
-        </Button>
-        <Button variant="outline" onClick={handleJournalPrompt}>
-          <PenLine className="w-4 h-4" />
-          {t('horoscope.journalButton')}
-        </Button>
-        <Button variant="outline" onClick={handleShare} aria-label={t('horoscope.shareLabel', { defaultValue: 'Share horoscope' })}>
-          <Share2 className="w-4 h-4" aria-hidden />
-        </Button>
-      </div>
+      <ActionRow isSaved={isSaved} onSave={handleSave} onJournal={() => setActiveTab('journal')} onShare={handleShare} />
 
-      {!profile?.isPremium && (
-        <Card
-          padding="md"
-          interactive
-          onClick={() => onShowPaywall(t('horoscope.paywallFeatures.birthChart'))}
-          className="flex items-center justify-between active:scale-[0.98] transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <Lock className="w-5 h-5 text-mystic-500" />
-            <div>
-              <h3 className="font-medium text-mystic-200">{t('horoscope.birthChartCard.title')}</h3>
-              <p className="text-ui text-mystic-400">{t('horoscope.birthChartCard.subtitle')}</p>
-            </div>
-          </div>
-          <Button variant="gold" size="sm">{t('horoscope.birthChartCard.upgrade')}</Button>
-        </Card>
-      )}
+      {!profile?.isPremium && <PremiumUpsell onShowPaywall={onShowPaywall} />}
     </div>
   );
 }

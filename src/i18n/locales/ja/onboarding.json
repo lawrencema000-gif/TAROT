@@ -2,7 +2,6 @@
   "language": {
     "title": "言語を選択",
     "subtitle": "後で設定からいつでも変更できます。",
-    "saveCta": "この言語で保存",
     "cta": "この言語で続ける"
   },
   "welcome": {
@@ -17,15 +16,17 @@
     "googleCta": "Google で続ける",
     "divider": "またはメールで登録",
     "emailPlaceholder": "メールアドレス",
-    "passwordPlaceholder": "パスワード(8文字以上、英字と数字)",
+    "passwordPlaceholder": "パスワード（8文字以上、英字と数字）",
     "newsletter": "ニュースレターとプロモーションを受け取る。占星術のヒントや限定オファーをお届けします。",
     "ageConfirm": "13歳以上であることを確認し、利用規約に同意します。",
     "submit": "アカウントを作成",
-    "switchToSignIn": "すでにアカウントをお持ちですか? ログイン",
+    "switchToSignIn": "すでにアカウントをお持ちですか？ログイン",
     "back": "前のステップへ",
     "appleCta": "Apple で続ける",
     "showPassword": "パスワードを表示",
-    "hidePassword": "パスワードを隠す"
+    "hidePassword": "パスワードを隠す",
+    "passwordPlaceholderShort": "パスワード",
+    "passwordRule": "8文字以上で、英字と数字を含めてください。"
   },
   "toast": {
     "invalidEmail": "メールアドレスの形式が正しくないようです。確認して、もう一度お試しください。",
@@ -34,20 +35,11 @@
     "profileSaveFailed": "アカウントは作成されましたが、プロフィールを保存できませんでした。接続を確認して、ログインして続けてください。",
     "accountCreated": "アカウントを作成しました。さっそくあなた好みにしていきましょう。"
   },
-  "signIn": {
-    "heading": "お帰りなさい",
-    "subheading": "続きからはじめましょう",
-    "googleCta": "Google でログイン",
-    "divider": "またはメールでログイン",
-    "submit": "ログイン",
-    "forgotPassword": "パスワードをお忘れですか?",
-    "switchToSignUp": "アカウントをお持ちでないですか？ 新規登録"
-  },
   "oauth": {
-    "welcome": "ようこそ、{{name}} さん。",
+    "welcome": "ようこそ、{{name}}さん。",
     "welcomeSub": "いくつかのステップで、あなただけの体験をつくっていきます",
     "goals": {
-      "heading": "どんなサポートが必要ですか?",
+      "heading": "どんなサポートが必要ですか？",
       "hint": "当てはまるものをすべて選んでください"
     },
     "basics": {
@@ -55,7 +47,7 @@
       "hint": "星座を決めるのに使います",
       "birthDate": "生年月日",
       "birthTime": "出生時刻",
-      "optional": "(任意)",
+      "optional": "（任意）",
       "birthTimeHint": "より正確な出生図のために",
       "birthPlace": "出生地",
       "birthPlaceHint": "のちほど出生図の計算に使います",
@@ -65,7 +57,7 @@
     },
     "tone": {
       "heading": "言葉のトーン",
-      "hint": "どんな語り口がお好みですか?",
+      "hint": "どんな語り口がお好みですか？",
       "gentle": {
         "label": "やさしく・寄り添って",
         "desc": "温かく、そっと支えるようなガイダンス"
@@ -83,17 +75,17 @@
       "reminderTime": "リマインダー時刻",
       "dailyPromise": "1日1回、あなたが選んだ時刻に。迷惑な通知はありません。",
       "webNote": "リマインダーはスマートフォンのArcanaアプリに届きます。設定は保存され、アプリをインストールしたときに反映されます。",
-      "heading": "毎日のリマインダーを受け取りますか?",
+      "heading": "毎日のリマインダーを受け取りますか？",
       "yes": "はい、毎日リマインドする",
       "no": "いいえ、結構です"
     },
     "next": "続ける",
-    "beginJourney": "最初のリチュアルをはじめる",
+    "finish": "完了",
     "toast": {
       "saveFailed": "情報を保存できませんでした。接続を確認して、もう一度お試しください。",
       "welcome": "Arcana へようこそ。"
     },
-    "back": "前のステップへ",
+    "back": "戻る",
     "welcomeNoName": "ようこそ。",
     "reveal": {
       "eyebrow": "あなたの太陽星座",

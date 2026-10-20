@@ -132,8 +132,13 @@ export function Chip({
   className = '',
   ...aria
 }: ChipProps) {
+  // max-w-full: a chip does not shrink (a filter row scrolls instead), so a
+  // label longer than its row widened the row and the page scrolled sideways
+  // (QU1 R-a, p9 Q30: ja Quick reading suggestions of 333–357 px in a 328 px
+  // row). Held to the row's width, a long label wraps inside the chip; the
+  // icon keeps its size (shrink-0).
   const baseStyles =
-    `inline-flex items-center rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
+    `inline-flex items-center max-w-full rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
   const iconNode = icon ? <span className="inline-flex shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5" aria-hidden>{icon}</span> : null;
 
   const variantStyles = {
@@ -227,17 +232,63 @@ export interface TagProps {
   tone?: Tone;
   size?: 'sm' | 'md';
   icon?: ReactNode;
+  /**
+   * `keyword` — the tracked-caps pill under a card: OPPORTUNITY · PROSPERITY.
+   * One size (min-h-7; a long keyword wraps inside it), one recipe; `tone` and `size` are ignored. On the canvas
+   * it is a gold tint with gold-light text; inside `.paper-prose` (a Paper)
+   * the `.keyword-pill` class flips it to an ink-gold fill with paper text
+   * (5.2:1) — the surface decides, not the caller, so a card detail that
+   * moves onto paper needs no prop change. Use KeywordRow for the set.
+   */
+  variant?: 'default' | 'keyword';
   className?: string;
 }
 
+// min-h-7, not h-7: a long playing-card keyword ("SMALL TALK THAT MUST
+// BECOME REAL TALK") wraps at phone width, and a fixed 28px pill let the
+// second line hang below its fill (P7 #75). One line is still exactly 28px
+// (py-1 + the 12px caption at leading-tight sits inside min-h-7); two lines
+// grow the pill and stay centred, never wider than the row.
+const KEYWORD_PILL =
+  'keyword-pill inline-flex items-center justify-center text-center max-w-full rounded-full px-3 py-1 min-h-7 text-caption leading-tight font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
+
 /** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
-export function Tag({ children, tone = 'neutral', size = 'sm', icon, className = '' }: TagProps) {
+export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {
+  if (variant === 'keyword') {
+    return <span className={`${KEYWORD_PILL} ${className}`.trim()}>{children}</span>;
+  }
   const sz = size === 'sm' ? 'px-2 py-0.5 text-caption gap-1' : 'px-2.5 py-1 text-meta gap-1.5';
   return (
     <span className={`inline-flex items-center rounded-full font-medium ${sz} ${TINT[tone]} ${className}`.trim()}>
       {icon}
       {children}
     </span>
+  );
+}
+
+export interface KeywordRowProps {
+  /** The card's keywords — tarotDeck.ts carries four per card; show all four. */
+  keywords: string[];
+  /**
+   * `center` under a centred heading or a drawn card (the default); `start`
+   * when the row sits in a left-aligned column of copy.
+   */
+  align?: 'center' | 'start';
+  className?: string;
+}
+
+/**
+ * The row of keyword pills under a card heading or a drawn card: centred,
+ * wrapping, 8px apart. Reads on the canvas and on paper (see Tag
+ * variant="keyword"). Not for tappable filters — that is ChipGroup.
+ */
+export function KeywordRow({ keywords, align = 'center', className = '' }: KeywordRowProps) {
+  return (
+    <div className={`flex flex-wrap ${align === 'start' ? 'justify-start' : 'justify-center'} gap-2 ${className}`.trim()}>
+      {keywords.map((k) => (
+        <Tag key={k} variant="keyword">{k}</Tag>
+      ))}
+    </div>
   );
 }
 
@@ -249,7 +300,13 @@ export interface BadgeProps {
   className?: string;
 }
 
-/** A status: LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny. */
+/**
+ * A status: LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny.
+ *
+ * Monetisation — Premium, Try, Unlocked, a credit count — is `tone="violet"`
+ * (cosmic-violet-ink, 5.0:1 on a card): one reserved hue so gold can go
+ * back to meaning CTA, eyebrow and active. Everything else keeps gold.
+ */
 export function Badge({ children, tone = 'gold', pulse = false, className = '' }: BadgeProps) {
   return (
     <span

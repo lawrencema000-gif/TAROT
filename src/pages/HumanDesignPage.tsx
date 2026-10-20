@@ -1,15 +1,33 @@
-import { useState, useEffect } from 'react';
-import { Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, Page, PageHeader, ResultLayout, Section, Disclosure, Tag } from '../components/ui';
+import { useState, useEffect, useRef } from 'react';
+import { Trans } from 'react-i18next';
+import { Calendar, Clock, Compass, Target, Share2 } from 'lucide-react';
+import {
+  Card, Button, Input, toast, Page, PageHeader, Section, Disclosure, Tag,
+  ResultSheet, AffirmationPanel, EyebrowLabel, SparkleFourPoint,
+} from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
+import { useContentOverlay } from '../i18n/contentOverlay';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { HD_TYPES } from '../data/humanDesign';
-import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesignCases';
+import { hdBodyName, localizeHumanDesign } from '../data/humanDesignReading';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { birthZoneOf, fallbackZone } from '../components/horoscope/birthZone';
+import { aiFailureOf } from '../components/reports/aiReading';
+
+/** The `error.code` a function answered with (a FunctionsHttpError keeps the Response on `context`). */
+async function functionErrorCode(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (!ctx || typeof (ctx as Response).clone !== 'function') return null;
+  try {
+    const body = (await (ctx as Response).clone().json()) as { error?: { code?: unknown } };
+    return typeof body?.error?.code === 'string' ? body.error.code : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Human Design reading page.
@@ -21,14 +39,15 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
  * gates on the HD Rave wheel, and derives the bodygraph: defined
  * centres, channels, Type, Authority, and Profile.
  *
- * The page renders:
- *   - Type card (Manifestor / Generator / MG / Projector / Reflector)
- *   - Strategy + Signature + Not-self theme
- *   - Authority with the concrete decision-making guidance
- *   - Profile (personality/design lines)
- *   - Interactive 9-centre bodygraph SVG
- *   - Defined channels list
- *   - All 13 Personality + 13 Design activations in a fold-out
+ * The page renders the reading on paper (ResultSheet: type, strategy,
+ * signature / not-self, authority, strengths, challenges, affirmation) and
+ * the instrument on the canvas beneath it (bodygraph, channels, activations,
+ * strategy-in-practice cases, the decision script). Type names come from
+ * humanDesign.types.<type>.name, which every locale carries; everything else
+ * the result reads out (the type copy, the cases, the scripts, and the
+ * strategy / signature / not-self / authority text the function returns in
+ * English) comes through the 'humanDesign' content overlay, keyed by the
+ * chart's Type and Authority (src/data/humanDesignReading.ts).
  */
 
 type Stage = 'input' | 'loading' | 'result';
@@ -64,33 +83,62 @@ interface HdChart {
 export function HumanDesignPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  // The result's text in ja/ko/zh. Fetched from the first render, so it is
+  // in memory long before a chart comes back; until it is, the result waits
+  // on the computing state rather than flash the English.
+  const { overlay, ready } = useContentOverlay('humanDesign');
   const [stage, setStage] = useState<Stage>('input');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [chart, setChart] = useState<HdChart | null>(null);
   const [showActivations, setShowActivations] = useState(false);
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('human-design');
+  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('human-design');
 
   useEffect(() => {
     if (profile?.birthDate) setBirthDate(profile.birthDate);
     if (profile?.birthTime) setBirthTime(profile.birthTime);
   }, [profile]);
 
+  /** The paid request in flight or last failed: its id and the body it was sent with. */
+  const attempt = useRef<{ id: string; body: string } | null>(null);
+  /** A calculation is between its first line and its last (set synchronously). */
+  const busy = useRef(false);
+
+  /**
+   * One tap, one 50-Moonstone charge (p8 F20). `busy` and the loading stage
+   * are set before the spend gate is awaited, so a second tap during its
+   * round trip returns at once and the button is disabled from the gate
+   * check on. The request carries a `requestId`, kept until a chart lands:
+   * the server debits once per (requestId, body), so a retry after a
+   * dropped connection gets the first run's chart back instead of a second
+   * charge, and skips the gate.
+   */
   const runCalc = async () => {
+    if (busy.current) return;
     if (!birthDate) {
       toast(t('humanDesign.needBirthDate', { defaultValue: 'Birth date is required' }), 'error');
       return;
     }
-    const ok = await tryConsume();
-    if (!ok) return;
+    busy.current = true;
     setStage('loading');
+    let landed = false;
     try {
+      // The profile's own birth is read in its birth place's zone (F21);
+      // the device's zone was wrong for anyone born elsewhere. A date typed
+      // for someone else has no place, so it is read in the device's zone.
+      const own = !!profile && birthDate === profile.birthDate;
+      const timezone = own && profile ? (await birthZoneOf(profile)).tz : fallbackZone(profile);
+      const body = { birthDate, birthTime: birthTime || undefined, timezone };
+      const signature = JSON.stringify(body);
+      if (attempt.current?.body !== signature) {
+        attempt.current = { id: crypto.randomUUID(), body: signature };
+        if (!(await tryConsume())) {
+          attempt.current = null;
+          return;
+        }
+      }
       const { data, error } = await supabase.functions.invoke('human-design-chart', {
-        body: {
-          birthDate,
-          birthTime: birthTime || undefined,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        },
+        body: { ...body, requestId: attempt.current!.id },
       });
       if (error) throw error;
       // Shared edge handler wraps responses as { data: result, correlationId } —
@@ -98,13 +146,32 @@ export function HumanDesignPage() {
       // doesn't go through the wrapper.
       const payload = (data as { data?: HdChart })?.data ?? (data as HdChart);
       if (!payload?.type) throw new Error('No chart returned');
+      attempt.current = null;
       setChart(payload);
+      landed = true;
       setStage('result');
     } catch (e) {
       await refund();
       console.error('[HumanDesign] chart calc failed:', e);
+      const failure = await aiFailureOf(e);
+      if (failure === 'insufficient' || failure === 'soft-cap') {
+        // Refused before the debit (the balance moved after the gate): a new
+        // press is a new request, and the gate opens the Earn sheet now.
+        attempt.current = null;
+        if (!(await tryConsume())) return;
+      } else if ((await functionErrorCode(e)) === 'REQUEST_ALREADY_USED') {
+        // The id was spent on a chart delivered once and no longer kept;
+        // pressing again with it would only get the same refusal.
+        attempt.current = null;
+        toast(t('humanDesign.errorSpent', {
+          defaultValue: 'This chart was already given once and can’t be shown again. Reveal my design starts a new one, charged as usual.',
+        }), 'error');
+        return;
+      }
       toast(t('humanDesign.calcFailed', { defaultValue: 'Could not calculate chart. Check your connection and try again.' }), 'error');
-      setStage('input');
+    } finally {
+      busy.current = false;
+      if (!landed) setStage('input');
     }
   };
 
@@ -114,7 +181,10 @@ export function HumanDesignPage() {
     setShowActivations(false);
   };
 
-  if (stage === 'input' || stage === 'loading') {
+  /** Computing, or the chart is in and its text is still downloading. */
+  const waiting = stage === 'loading' || (stage === 'result' && !ready);
+
+  if (stage === 'input' || waiting) {
     return (
       <Page spacing="md">
         <PageHeader
@@ -132,25 +202,25 @@ export function HumanDesignPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
-                <Calendar className="w-3 h-3" />
+              <label htmlFor="hd-birth-date" className="text-ui font-medium text-mystic-300 mb-1 flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" aria-hidden />
                 {t('humanDesign.birthDate', { defaultValue: 'Birth date' })}
               </label>
-              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+              <Input id="hd-birth-date" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
             </div>
             <div>
-              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
-                <Clock className="w-3 h-3" />
+              <label htmlFor="hd-birth-time" className="text-ui font-medium text-mystic-300 mb-1 flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5" aria-hidden />
                 {t('humanDesign.birthTime', { defaultValue: 'Birth time (sharpens the reading — without it we default to noon)' })}
               </label>
-              <Input type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
+              <Input id="hd-birth-time" type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
             </div>
           </div>
 
           <p className="text-caption text-mystic-500 mt-4 italic">
             {t('humanDesign.disclaimer', {
               defaultValue:
-                'Your chart is computed server-side from planetary positions at your exact birth moment + the Design moment 88° of solar arc earlier. For the full 64-gate bodygraph with colour/tone, export to a dedicated HD platform.',
+                'Your chart is computed from the planets’ positions at your exact birth moment and at the Design moment, 88° of solar arc earlier. For colour, tone and the finer layers of the bodygraph, a dedicated Human Design platform goes further.',
             })}
           </p>
         </Card>
@@ -160,23 +230,28 @@ export function HumanDesignPage() {
           size="lg"
           fullWidth
           onClick={runCalc}
-          disabled={stage === 'loading'}
-          loading={stage === 'loading'}
+          disabled={waiting}
+          loading={waiting}
         >
-          {stage === 'loading'
+          {waiting
             ? t('humanDesign.computing', { defaultValue: 'Computing your bodygraph…' })
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
         </Button>
         <MoonstoneCostLine />
+        {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         {EarnSheet}
       </Page>
     );
   }
 
   if (stage === 'result' && chart) {
-    const typeInfo = HD_TYPES[typeKey(chart.type)];
-    const typeContent = typeInfo ?? {
-      name: chart.type,
+    // The reading in the reader's language: the type copy, the cases and the
+    // script from the overlay, and the function's English strategy /
+    // signature / not-self / authority looked up by the chart's Type and
+    // Authority (each falls back to what the function sent).
+    const text = localizeHumanDesign(chart, overlay);
+    const key = text.typeKey;
+    const typeContent = text.info ?? {
       summary: '',
       strengths: [],
       challenges: [],
@@ -184,20 +259,29 @@ export function HumanDesignPage() {
       tarotPairing: '',
       percentOfPopulation: '',
     };
+    // The locale's name for the type (humanDesign.types.<key>.name exists in
+    // en/ja/ko/zh); the edge function's English display string is the fallback.
+    const typeName = key ? (t(`humanDesign.types.${key}.name`, { defaultValue: chart.type }) as string) : chart.type;
+    const { cases, script } = text;
 
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
-          title: chart.type,
+          title: typeName,
           subtitle: `${t('humanDesign.profileLabel', { defaultValue: 'Profile' })} ${chart.profile}`,
-          tagline: chart.strategy,
-          affirmation: typeContent.affirmation || chart.signature,
+          tagline: text.strategy,
+          affirmation: typeContent.affirmation || text.signature,
           brand: t('share.brand.humanDesign', { defaultValue: 'Human Design' }) as string,
         });
         const out = await shareOrDownload(
           blob,
-          `arcana-human-design-${typeKey(chart.type)}.png`,
-          `My Human Design: ${chart.type} (${chart.profile}). Strategy: ${chart.strategy}.`,
+          `arcana-human-design-${key ?? 'chart'}.png`,
+          t('humanDesign.shareText', {
+            defaultValue: 'My Human Design: {{type}} ({{profile}}). Strategy: {{strategy}}.',
+            type: typeName,
+            profile: chart.profile,
+            strategy: text.strategy,
+          }) as string,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
@@ -207,64 +291,105 @@ export function HumanDesignPage() {
     };
 
     return (
-      <ResultLayout
-        onBack={reset}
-        backLabel={t('humanDesign.backToInput', { defaultValue: 'Recalculate' }) as string}
-        glyph={<HoroscopeWheelIcon />}
-        eyebrow={typeContent.percentOfPopulation || t('humanDesign.title', { defaultValue: 'Human Design' })}
-        verdict={chart.type}
-        subtitle={
-          <>
-            <span className="block italic">"{chart.strategy}"</span>
-            <span className="block text-meta text-mystic-400 mt-1">
+      <Page spacing="sm">
+        {/* No back link of its own: Readings' "All systems" sits above, and
+            the result closes with its own "another chart" action. */}
+
+        {/* The reading, on paper. */}
+        <ResultSheet
+          glyph={<HoroscopeWheelIcon />}
+          eyebrow={
+            typeContent.percentOfPopulation
+              ? t('humanDesign.eyebrowWithShare', { defaultValue: 'Human Design · {{share}} of people', share: typeContent.percentOfPopulation }) as string
+              : (t('humanDesign.title', { defaultValue: 'Human Design' }) as string)
+          }
+          title={typeName}
+          summaryHeading={t('humanDesign.strategyLabel', { defaultValue: 'Your strategy' })}
+          summary={text.strategy}
+          disclaimer="general"
+        >
+          <div className="space-y-7">
+            <p className="reading-meta text-center">
               {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}
-              <span className="text-gold font-medium">{chart.profile}</span>
+              <span className="text-ink font-medium tabular-nums">{chart.profile}</span>
               {' · '}
               {t('humanDesign.authorityLabel', { defaultValue: 'Authority' })}{' '}
-              <span className="text-cosmic-blue font-medium">{chart.authority}</span>
-            </span>
-          </>
-        }
-        summary={typeContent.summary || undefined}
-        actions={
-          <>
-            <Button variant="outline" fullWidth onClick={handleShare}>
-              <Share2 className="w-4 h-4 mr-2" />
-              {t('humanDesign.share', { defaultValue: 'Share my design' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={reset}>
-              {t('humanDesign.recalculate', { defaultValue: 'Calculate another chart' })}
-            </Button>
-          </>
-        }
-        defaultDetailOpen
-      >
-        {/* Signature / Not-self */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card padding="md" className="border-teal/25">
-            <p className="text-meta text-mystic-400 mb-1">
-              {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
+              <span className="text-ink font-medium">{text.authority}</span>
             </p>
-            <p className="text-lg text-teal font-display">{chart.signature}</p>
-          </Card>
-          <Card padding="md" className="border-coral/25">
-            <p className="text-meta text-mystic-400 mb-1">
-              {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
-            </p>
-            <p className="text-lg text-coral font-display">{chart.notSelfTheme}</p>
-          </Card>
-        </div>
 
-        {/* Authority */}
-        <Section
-          title={<>{t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}</>}
-          headingLevel="h3"
-          spacing="sm"
-        >
-          <p className="reading-copy">{chart.authorityExplanation}</p>
-        </Section>
+            {typeContent.summary && <p className="reading-copy">{withEmphasis(typeContent.summary)}</p>}
 
-        {/* Bodygraph SVG */}
+            {/* Signature / Not-self */}
+            <div className="grid grid-cols-2 gap-4 border-t border-paper-hairline pt-6">
+              <div>
+                <EyebrowLabel tone="ink" align="left" className="block">
+                  {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
+                </EyebrowLabel>
+                <p className="font-display font-semibold text-title text-ink-teal mt-1">{text.signature}</p>
+              </div>
+              <div>
+                <EyebrowLabel tone="ink" align="left" className="block">
+                  {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
+                </EyebrowLabel>
+                <p className="font-display font-semibold text-title text-ink-coral mt-1">{text.notSelfTheme}</p>
+              </div>
+            </div>
+
+            {/* Authority */}
+            <section>
+              <h3 className="heading-display-md heading-strong text-ink mb-2">
+                {t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority: {{authority}}', authority: text.authority })}
+              </h3>
+              <p className="reading-copy">{text.authorityExplanation}</p>
+            </section>
+
+            {/* Strengths / Challenges */}
+            {(typeContent.strengths?.length > 0 || typeContent.challenges?.length > 0) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {typeContent.strengths?.length > 0 && (
+                  <section>
+                    <h3 className="heading-display-md heading-strong text-ink mb-2">
+                      {t('humanDesign.strengthsLabel', { defaultValue: 'Strengths' })}
+                    </h3>
+                    <ul className="reading-copy list-disc pl-5 space-y-1.5">
+                      {typeContent.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                  </section>
+                )}
+                {typeContent.challenges?.length > 0 && (
+                  <section>
+                    <h3 className="heading-display-md heading-strong text-ink mb-2">
+                      {t('humanDesign.challengesLabel', { defaultValue: 'Challenges' })}
+                    </h3>
+                    <ul className="reading-copy list-disc pl-5 space-y-1.5">
+                      {typeContent.challenges.map((c, i) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )}
+
+            {typeContent.affirmation && (
+              <div className="space-y-2">
+                <AffirmationPanel text={typeContent.affirmation} />
+                {typeContent.tarotPairing && (
+                  <p className="reading-meta text-center">
+                    {/* The label's punctuation is the locale's (「：」 in ja/zh). */}
+                    <Trans
+                      t={t}
+                      i18nKey="humanDesign.tarotPairing"
+                      defaults="Tarot pairing: <v>{{cards}}</v>"
+                      values={{ cards: typeContent.tarotPairing }}
+                      components={{ v: <span className="text-ink" /> }}
+                    />
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </ResultSheet>
+
+        {/* The instrument: bodygraph, channels, activations. */}
         <Card padding="lg">
           <h3 className="heading-display-md text-mystic-100 mb-3">
             {t('humanDesign.bodygraphLabel', { defaultValue: 'Your bodygraph' })}
@@ -274,7 +399,7 @@ export function HumanDesignPage() {
             definedGates={chart.definedGates}
             channels={chart.channels}
           />
-          <p className="text-meta text-mystic-400 mt-3 text-center">
+          <p className="text-meta text-mystic-400 mt-3 text-center tabular-nums">
             {chart.definedCenters.length}{' / 9 '}
             {t('humanDesign.centersDefined', { defaultValue: 'centres defined' })}
             {' · '}
@@ -283,7 +408,6 @@ export function HumanDesignPage() {
           </p>
         </Card>
 
-        {/* Channels */}
         {chart.channels.length > 0 && (
           <Section
             title={t('humanDesign.channelsHeading', { defaultValue: 'Your defined channels' })}
@@ -291,7 +415,7 @@ export function HumanDesignPage() {
           >
             <div className="flex flex-wrap gap-2">
               {chart.channels.map((c) => (
-                <Tag key={c} tone="violet" size="md">{c}</Tag>
+                <Tag key={c} tone="violet" size="md" className="tabular-nums">{c}</Tag>
               ))}
             </div>
             <p className="reading-copy mt-3">
@@ -303,33 +427,6 @@ export function HumanDesignPage() {
           </Section>
         )}
 
-        {/* Strengths / Challenges */}
-        {(typeContent.strengths?.length > 0 || typeContent.challenges?.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {typeContent.strengths?.length > 0 && (
-              <Card padding="lg">
-                <h3 className="heading-display-md text-mystic-100 mb-3">
-                  {t('humanDesign.strengthsLabel', { defaultValue: 'Strengths' })}
-                </h3>
-                <ul className="reading-copy space-y-2">
-                  {typeContent.strengths.map((s, i) => <li key={i}>• {s}</li>)}
-                </ul>
-              </Card>
-            )}
-            {typeContent.challenges?.length > 0 && (
-              <Card padding="lg">
-                <h3 className="heading-display-md text-mystic-100 mb-3">
-                  {t('humanDesign.challengesLabel', { defaultValue: 'Challenges' })}
-                </h3>
-                <ul className="reading-copy space-y-2">
-                  {typeContent.challenges.map((c, i) => <li key={i}>• {c}</li>)}
-                </ul>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* All activations — foldout */}
         <Disclosure
           label={t('humanDesign.activationsLabel', { defaultValue: 'All 26 activations' })}
           open={showActivations}
@@ -341,35 +438,25 @@ export function HumanDesignPage() {
             title={t('humanDesign.personalityLabel', { defaultValue: 'Personality (conscious) — at birth' }) as string}
             activations={chart.personality}
             tint="text-gold"
+            gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
+            lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
+            bodyName={(body) => hdBodyName(body, overlay)}
           />
           <ActivationList
             title={t('humanDesign.designLabel', { defaultValue: 'Design (unconscious) — 88° of solar arc before birth' }) as string}
             activations={chart.design}
-            tint="text-cosmic-blue"
+            tint="text-cosmic-blue-ink"
+            gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
+            lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
+            bodyName={(body) => hdBodyName(body, overlay)}
           />
         </Disclosure>
 
-        {typeContent.affirmation && (
-          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="heading-display-md text-gold mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4" />
-              {t('humanDesign.affirmationLabel', { defaultValue: 'Your affirmation' })}
-            </h3>
-            <blockquote className="reading-quote mt-0 mb-3">{typeContent.affirmation}</blockquote>
-            {typeContent.tarotPairing && (
-              <p className="text-meta text-mystic-400">
-                {t('humanDesign.tarotPairingLabel', { defaultValue: 'Tarot pairing' })}:{' '}
-                <span className="text-gold/80">{typeContent.tarotPairing}</span>
-              </p>
-            )}
-          </Card>
-        )}
-
         {/* Strategy in practice — concrete scenarios per Type. */}
-        {TYPE_CASES[typeKey(chart.type)] && TYPE_CASES[typeKey(chart.type)].length > 0 && (
+        {cases.length > 0 && (
           <Card padding="lg" className="border-teal/25">
             <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Target className="w-4 h-4" />
+              <Target className="w-4 h-4 text-teal" aria-hidden />
               {t('humanDesign.casesHeading', { defaultValue: 'Strategy in practice' })}
             </h3>
             <p className="text-ui text-mystic-400 mb-4 italic">
@@ -379,31 +466,32 @@ export function HumanDesignPage() {
               })}
             </p>
             <div className="space-y-4">
-              {TYPE_CASES[typeKey(chart.type)].map((c, i) => (
+              {cases.map((c, i) => (
                 <div key={i} className="space-y-2">
                   <p className="text-ui font-medium text-mystic-100">
                     {t('humanDesign.scenarioLabel', { defaultValue: 'Scenario' })}
                   </p>
                   <p className="reading-copy">{c.scenario}</p>
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="p-2.5 rounded-lg bg-coral/10 border border-coral/15">
+                    <div className="p-2.5 rounded-control bg-coral/10 border border-coral/15">
                       <p className="font-display-eyebrow text-coral mb-1">
                         {t('humanDesign.wrongMoveLabel', { defaultValue: 'The reactive move' })}
                       </p>
                       <p className="reading-copy">{c.wrongMove}</p>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-teal/10 border border-teal/15">
+                    <div className="p-2.5 rounded-control bg-teal/10 border border-teal/15">
                       <p className="font-display-eyebrow text-teal mb-1">
                         {t('humanDesign.alignedMoveLabel', { defaultValue: 'The aligned move' })}
                       </p>
                       <p className="reading-copy">{c.alignedMove}</p>
                     </div>
                   </div>
-                  <p className="text-meta text-gold/80 italic">
-                    ✦ {t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}
+                  <p className="text-meta text-gold italic flex items-start gap-1.5">
+                    <SparkleFourPoint size={10} className="mt-1 shrink-0" />
+                    <span>{t('humanDesign.signatureFelt', { defaultValue: 'Signature felt: {{signature}}', signature: c.signature })}</span>
                   </p>
-                  {i < TYPE_CASES[typeKey(chart.type)].length - 1 && (
-                    <div className="h-px bg-mystic-800/50 mt-3" />
+                  {i < cases.length - 1 && (
+                    <div className="h-px bg-mystic-800/50 mt-3" aria-hidden />
                   )}
                 </div>
               ))}
@@ -412,17 +500,17 @@ export function HumanDesignPage() {
         )}
 
         {/* Authority decision-making script. */}
-        {AUTHORITY_SCRIPTS[chart.authority as Authority] && (
+        {script && (
           <Card padding="lg" className="border-cosmic-blue/30">
             <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Compass className="w-4 h-4" />
+              <Compass className="w-4 h-4 text-cosmic-blue-ink" aria-hidden />
               {t('humanDesign.decisionScriptHeading', {
                 defaultValue: 'How to make decisions: {{authority}}',
-                authority: AUTHORITY_SCRIPTS[chart.authority as Authority].authorityName,
+                authority: script.authorityName,
               })}
             </h3>
             <ol className="reading-copy list-decimal list-inside space-y-2 mb-4">
-              {AUTHORITY_SCRIPTS[chart.authority as Authority].decisionMakingScript.map((step, i) => (
+              {script.decisionMakingScript.map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
@@ -430,44 +518,55 @@ export function HumanDesignPage() {
               <p className="font-display-eyebrow text-coral mb-1">
                 {t('humanDesign.commonMistakeLabel', { defaultValue: 'Common mistake' })}
               </p>
-              <p className="reading-copy">
-                {AUTHORITY_SCRIPTS[chart.authority as Authority].commonMistake}
-              </p>
+              <p className="reading-copy">{script.commonMistake}</p>
             </div>
             <div className="p-3 rounded-control bg-teal/10 border border-teal/15">
               <p className="font-display-eyebrow text-teal mb-1">
                 {t('humanDesign.realityCheckLabel', { defaultValue: 'Reality check' })}
               </p>
-              <p className="reading-copy">
-                {AUTHORITY_SCRIPTS[chart.authority as Authority].realityCheck}
-              </p>
+              <p className="reading-copy">{script.realityCheck}</p>
             </div>
           </Card>
         )}
-      </ResultLayout>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4" aria-hidden />
+            {t('humanDesign.share', { defaultValue: 'Share my design' })}
+          </Button>
+          <Button variant="outline" fullWidth onClick={reset}>
+            {t('humanDesign.recalculate', { defaultValue: 'Calculate another chart' })}
+          </Button>
+        </div>
+      </Page>
     );
   }
 
   return null;
 }
 
-// Map the edge fn's display-cased type string back to the type-info
-// lookup key used by the localised HD_TYPES dictionary.
-function typeKey(display: string): keyof typeof HD_TYPES {
-  switch (display) {
-    case 'Manifestor': return 'manifestor';
-    case 'Generator': return 'generator';
-    case 'Manifesting Generator': return 'manifesting-generator';
-    case 'Projector': return 'projector';
-    case 'Reflector': return 'reflector';
-    default: return 'generator';
-  }
+/** The type copy marks a stressed word as *word*; render it as emphasis
+ *  instead of printing the asterisks. */
+function withEmphasis(text: string): React.ReactNode[] {
+  return text.split(/(\*[^*\n]+\*)/g).map((part, i) =>
+    part.length > 2 && part.startsWith('*') && part.endsWith('*')
+      ? <em key={i}>{part.slice(1, -1)}</em>
+      : part,
+  );
 }
 
 // ─── Activation list ─────────────────────────────────────────────
 function ActivationList({
-  title, activations, tint,
-}: { title: string; activations: Activation[]; tint: string }) {
+  title, activations, tint, gateLabel, lineLabel, bodyName,
+}: {
+  title: string;
+  activations: Activation[];
+  tint: string;
+  gateLabel: string;
+  lineLabel: string;
+  /** The activation's body (Sun, Earth, NorthNode, …) as the reader calls it. */
+  bodyName: (body: string) => string;
+}) {
   return (
     <div>
       <p className={`font-display-eyebrow mb-2 ${tint}`}>{title}</p>
@@ -477,11 +576,11 @@ function ActivationList({
             key={`${a.body}-${a.gate}-${a.line}`}
             className="flex items-center justify-between py-1 border-b border-mystic-800/40 last:border-b-0 text-meta"
           >
-            <span className="text-mystic-300">{a.body}</span>
-            <span className="text-mystic-200">
-              {t0('Gate')} <span className="text-gold">{a.gate}</span>
+            <span className="text-mystic-300">{bodyName(a.body)}</span>
+            <span className="text-mystic-200 tabular-nums">
+              <span className="text-mystic-500">{gateLabel}</span> <span className="text-gold">{a.gate}</span>
               <span className="text-mystic-500 mx-1">·</span>
-              {t0('Line')} <span className="text-gold">{a.line}</span>
+              <span className="text-mystic-500">{lineLabel}</span> <span className="text-gold">{a.line}</span>
             </span>
           </div>
         ))}
@@ -489,7 +588,6 @@ function ActivationList({
     </div>
   );
 }
-function t0(s: string) { return <span className="text-mystic-500">{s}</span>; }
 
 // ─── Bodygraph SVG ────────────────────────────────────────────────
 // Simplified but recognisable 9-centre bodygraph. Defined centres
@@ -498,6 +596,7 @@ function t0(s: string) { return <span className="text-mystic-500">{s}</span>; }
 function Bodygraph({
   definedCenters, channels,
 }: { definedCenters: Center[]; definedGates: number[]; channels: string[] }) {
+  const { t } = useT('app');
   // Centre positions — rough but correct geometry (Head top, Root bottom,
   // Throat-G-Sacral on the midline, Ajna sits between Head and Throat,
   // Heart sits right of G, Spleen sits left of Sacral, Solar Plexus
@@ -541,7 +640,7 @@ function Bodygraph({
   };
 
   return (
-    <svg viewBox="0 0 300 410" className="w-full max-w-xs mx-auto" aria-label="Human Design bodygraph">
+    <svg viewBox="0 0 300 410" className="w-full max-w-xs mx-auto" role="img" aria-label={t('humanDesign.bodygraphAria', { defaultValue: 'Human Design bodygraph' }) as string}>
       {/* Channel lines behind centres */}
       {channels.map((ch) => {
         const [a, b] = ch.split('-').map((n) => parseInt(n, 10));
@@ -584,7 +683,7 @@ function Bodygraph({
               fontFamily="Inter, sans-serif"
               style={{ pointerEvents: 'none', userSelect: 'none' }}
             >
-              {pos.label.split(' ')[0]}
+              {t(`humanDesign.centerShort.${center}`, { defaultValue: pos.label.split(' ')[0] })}
             </text>
           </g>
         );

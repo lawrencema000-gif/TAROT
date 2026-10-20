@@ -1,0 +1,162 @@
+/**
+ * Where a visitor goes once they are signed in.
+ *
+ * /signin and /signup are screens of the signed-out app only. The signed-in
+ * route table used to fall through to `<Navigate to="/">` for them, so the
+ * app never had to leave those URLs itself; when the catch-all became the
+ * 404 page, every email sign-in, every sign-up and every OAuth return that
+ * started on /signin rendered "Page not found". Now the signed-in table maps
+ * both paths to a redirect, and this module decides where to: the `next`
+ * the visitor was sent to /signin with (a member route opened while signed
+ * out — /cartomancy/reading, /journal, an invite), else Home.
+ *
+ * `next` rides in the URL, and is also kept in sessionStorage for the trip
+ * through Google: the OAuth return comes back to /signin with a `code`, and
+ * AuthContext strips the whole query string while it exchanges it.
+ */
+
+const STORE_KEY = 'arcana_auth_next';
+/** A remembered destination older than this is a different visit. */
+const STORE_TTL_MS = 30 * 60 * 1000;
+
+/** The two signed-out entry screens. */
+export const AUTH_PATHS: readonly string[] = ['/signin', '/signup'];
+
+/**
+ * A pathname without its trailing slash(es); `/` stays `/`.
+ *
+ * Netlify serves every prerendered route at both `/x` and `/x/`, the live
+ * site 301s `/signin` to `/signin/`, and the sitemap and canonicals of the
+ * builds before p8 named the slash form, so `/signin/` and `/signup/` are in
+ * every returning visitor's history and in the search index. The shell's
+ * decisions (which entry screen, member page or unknown path) compare
+ * against this, never against the raw pathname (p8 F43).
+ */
+export function shellPath(pathname: string): string {
+  return pathname.replace(/(.)\/+$/, '$1');
+}
+
+export function isAuthPath(pathname: string): boolean {
+  return AUTH_PATHS.includes(shellPath(pathname));
+}
+
+/** The password-recovery screen, with or without a trailing slash. */
+export function isResetPasswordPath(pathname: string): boolean {
+  return shellPath(pathname) === '/reset-password';
+}
+
+/**
+ * Where a signed-out visitor who opened a member page goes: to sign-in, and
+ * back to the page afterwards — except right after a sign-out on that very
+ * page. Then the URL still names the last member's page (their journal,
+ * their person), and the next person at the device must not be brought back
+ * to it: they go to `/`.
+ *
+ * `signedOutFrom` is the path the visitor was on when the session ended, or
+ * null. It counts once, and only for the page the sign-out happened on: a
+ * visitor who signs out on a public page (the cartomancy hub, a card
+ * meaning) and then taps a member link goes to sign-in like anyone else
+ * (p8 F46; the flag it replaces stayed set for the rest of the session).
+ */
+export function signedOutMemberDestination(fullPath: string, pathname: string, signedOutFrom: string | null): string {
+  if (signedOutFrom !== null && shellPath(signedOutFrom) === shellPath(pathname)) return '/';
+  return signInPathFor(fullPath);
+}
+
+/**
+ * The shell's record of `signedOutFrom` from one render to the next: the
+ * page while signed in; after a sign-out, that page for as long as the
+ * visitor is still on it, then nothing.
+ *
+ * It must outlive the first signed-out render. The `<Navigate to="/">` that
+ * render returns lands one router update later, and the sign-out's own state
+ * changes (session, user, profile, the Settings sheet closing) re-render the
+ * shell in between, still at the old URL; a record cleared after the first
+ * of them sent that second render to sign-in with the last member's page as
+ * `next` (`/signin?next=%2Fjournal`). Kept while the URL is unchanged, and
+ * dropped as soon as the visitor is anywhere else: `/` once the redirect
+ * lands, or any member link after a sign-out on a public page (p8 F46).
+ */
+export function trackSignedInPath(
+  previous: string | null,
+  signedIn: boolean,
+  loading: boolean,
+  pathname: string,
+): string | null {
+  if (signedIn) return pathname;
+  if (loading || previous === null) return previous;
+  return shellPath(pathname) === shellPath(previous) ? previous : null;
+}
+
+/**
+ * `raw` as a same-origin in-app path (`/x?y#z`), or null. Anything that
+ * could leave the site (`//evil.com`, `https://…`, `/\evil.com`), carries
+ * control characters, or would loop back into the auth screens is refused.
+ */
+export function safeNextPath(raw: string | null | undefined): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+  // eslint-disable-next-line no-control-regex
+  if (/[\\\u0000-\u001f\u007f]/.test(raw)) return null;
+  let url: URL;
+  try {
+    url = new URL(raw, 'https://arcana.invalid');
+  } catch {
+    return null;
+  }
+  if (url.origin !== 'https://arcana.invalid') return null;
+  if (isAuthPath(url.pathname) || isResetPasswordPath(url.pathname)) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+/** The sign-in URL that comes back to `next` afterwards. */
+export function signInPathFor(next: string): string {
+  const safe = safeNextPath(next);
+  return safe && safe !== '/' ? `/signin?next=${encodeURIComponent(safe)}` : '/signin';
+}
+
+/** `/signin` or `/signup`, keeping the `next` of the current search string. */
+export function authPathKeepingNext(path: '/signin' | '/signup', search: string): string {
+  const next = safeNextPath(new URLSearchParams(search).get('next'));
+  return next && next !== '/' ? `${path}?next=${encodeURIComponent(next)}` : path;
+}
+
+/** Remember the `next` of an auth screen's URL for the OAuth round trip. */
+export function rememberNextFrom(search: string, now: number = Date.now()): void {
+  const next = safeNextPath(new URLSearchParams(search).get('next'));
+  if (!next) return;
+  try {
+    sessionStorage.setItem(STORE_KEY, JSON.stringify({ next, at: now }));
+  } catch {
+    /* storage blocked: the URL still carries it for the email paths */
+  }
+}
+
+function storedNext(now: number): string | null {
+  try {
+    const raw = sessionStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { next?: unknown; at?: unknown };
+    if (typeof parsed.at !== 'number' || now - parsed.at > STORE_TTL_MS) return null;
+    return safeNextPath(typeof parsed.next === 'string' ? parsed.next : null);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Where a signed-in visitor standing on /signin or /signup belongs. Pure
+ * (reads, never clears), so a StrictMode double render agrees with itself;
+ * call {@link forgetNext} once the redirect has happened.
+ */
+export function postAuthDestination(search: string, now: number = Date.now()): string {
+  return safeNextPath(new URLSearchParams(search).get('next')) ?? storedNext(now) ?? '/';
+}
+
+export function forgetNext(): void {
+  try {
+    sessionStorage.removeItem(STORE_KEY);
+  } catch {
+    /* nothing to forget */
+  }
+}

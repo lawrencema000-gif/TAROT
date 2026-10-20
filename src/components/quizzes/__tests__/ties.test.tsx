@@ -171,6 +171,27 @@ describe('a near tie on a dimensional quiz is a close call, not "the same"', () 
     }
   });
 
+  it('ja: nothing on a Dark Triad near tie (4.0 / 3.8) claims equal scores — verdict, box or summary', async () => {
+    // The summary under 「まずはナルシシズムの影として読む」 said 同率で並ぶ
+    // under a 僅差 box (p10 re-review); it now says the pair shares the top.
+    const levels: Record<string, number> = { narcissism: 4, machiavellianism: 4, psychopathy: 2 };
+    const result = calculateExtraQuiz(
+      'dark-triad-v1',
+      Object.fromEntries(darkTriadQuiz.questions.map((q) => [q.id, q.id === 'm5' ? 3 : levels[q.dimension ?? ''] ?? 2])),
+    )!;
+    expect(result.tied).toEqual(['narcissism', 'machiavellianism']);
+    expect([result.averages.narcissism, result.averages.machiavellianism]).toEqual([4, 3.8]);
+    await i18n.changeLanguage('ja');
+    try {
+      mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
+      expect(screen.getByText('僅差')).toBeInTheDocument();
+      expect(document.body.textContent).toContain('首位を分け合うあなたの影');
+      expect(document.body.textContent).not.toContain('同率');
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
   it('ja: the verdict line says 僅差 for a near tie and 同率 for an exact one', async () => {
     await i18n.changeLanguage('ja');
     try {
@@ -333,7 +354,7 @@ describe('p9 Q07 — a shared top is never read as a sole winner', () => {
   const tieBody = () => screen.getByRole('heading', { name: /first$|として読む$|부터 읽어요$|读起$/ }).parentElement!.textContent ?? '';
 
   it.each([
-    ['ja', 'ナルシシズムは、同率で並ぶあなたの影のひとつです。', /もっとも強く/],
+    ['ja', 'ナルシシズムは、首位を分け合うあなたの影のひとつです。', /もっとも強く/],
     ['ko', '자기애는 공동 1위인 당신의 그림자 중 하나예요', /가장 강하게/],
     ['zh', '自恋是你并列居首的几种阴影之一', /最为强烈/],
   ])('%s: Dark Triad all-Neutral reads narcissism as one of the shared tops', async (lng, lede, claim) => {

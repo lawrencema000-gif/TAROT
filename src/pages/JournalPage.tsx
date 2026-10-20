@@ -56,6 +56,7 @@ import {
 } from '../components/readings/tarot/SavedReadingSheet';
 import { calendarDay } from '../components/readings/tarot/readingDates';
 import { canonicalCardName, cardIdFromName } from '../components/readings/tarot/cardSlug';
+import { joinSentences } from '../components/readings/tarot/readingText';
 import { getPlayingCard } from '../data/cartomancy';
 import { localizePlayingCard, useCartomancyCorpus } from '../i18n/localizePlayingCard';
 import { localizeCard } from '../i18n/localizeCard';
@@ -196,6 +197,17 @@ function readingDay(reading: TarotReading): Date {
 
 type JournalTab = 'entries' | 'templates' | 'insights';
 
+const JOURNAL_TABS: readonly JournalTab[] = ['entries', 'templates', 'insights'];
+
+/**
+ * The tab another screen asked for in the route state, if any: the header
+ * search's "Journal prompts" sends `{ tab: 'templates' }`.
+ */
+function requestedTab(state: unknown): JournalTab | null {
+  const tab = (state as { tab?: unknown } | null)?.tab;
+  return JOURNAL_TABS.find((id) => id === tab) ?? null;
+}
+
 const ENTRIES_PAGE_SIZE = 20;
 
 const categoryIcons: Record<string, typeof Sun> = {
@@ -229,6 +241,22 @@ function snippet(text: string, max = 72): string {
   return line.length > max ? `${line.slice(0, max - 1)}…` : line;
 }
 
+/**
+ * The key counted most often, or null when two or more share the top count
+ * (or nothing was counted) — the rule of the mood diary's dominant(): a tie
+ * has no single winner to name.
+ */
+function soleTop(counts: Record<string, number>): string | null {
+  let top: string | null = null;
+  let max = 0;
+  let tie = false;
+  for (const [key, n] of Object.entries(counts)) {
+    if (n > max) { max = n; top = key; tie = false; }
+    else if (n === max) tie = true;
+  }
+  return tie ? null : top;
+}
+
 export function JournalPage() {
   const { t } = useT('app');
   const locale = getLocale();
@@ -246,7 +274,7 @@ export function JournalPage() {
   // The helplines, opened by a crisis reply from the coach (QS R-4).
   const [crisisOpen, setCrisisOpen] = useState(false);
   const closeCrisis = useCallback(() => setCrisisOpen(false), []);
-  const [activeTab, setActiveTab] = useState<JournalTab>('entries');
+  const [activeTab, setActiveTab] = useState<JournalTab>(() => requestedTab(location.state) ?? 'entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
@@ -264,7 +292,7 @@ export function JournalPage() {
   const [weekVersion, setWeekVersion] = useState(0);
   // Every entry, lean, for the Insights tab (null until that tab opens).
   const [insightEntries, setInsightEntries] = useState<JournalEntry[] | null>(null);
-  const activeTabRef = useRef<JournalTab>('entries');
+  const activeTabRef = useRef<JournalTab>(activeTab);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -294,11 +322,11 @@ export function JournalPage() {
   // strip sets it; "Write today" resets it (R6 A5: every entry used to
   // land on today).
   const [draftDate, setDraftDate] = useState(today);
-  const [todayPrompt, setTodayPrompt] = useState<string>(() => t('journal.defaultPrompt', { defaultValue: 'What are you reflecting on today?' }));
-
-  useEffect(() => {
-    setTodayPrompt(getDailyPrompt(today));
-  }, [today]);
+  // Read in render, in the language on screen (useT re-renders the page
+  // when it changes). Held in state from an effect keyed on the day, it
+  // kept the language it was first read in until a reload, as Home's
+  // prompt did (p10 d1-en-01).
+  const todayPrompt = getDailyPrompt(today);
 
   useEffect(() => {
     loadEntries();
@@ -629,6 +657,19 @@ export function JournalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
+  // A tab asked for by another screen: the header search's "Journal
+  // prompts" opens Templates (p10 d3-ko-13). Read on every navigation, not
+  // only at mount — the search opens over the Journal too, and a link to
+  // the page already on screen does not mount it again. Then spent, as
+  // compose is above: a reload or Back lands on the list.
+  useEffect(() => {
+    const tab = requestedTab(location.state);
+    if (!tab) return;
+    setActiveTab(tab);
+    navigate(location.pathname, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+
   const readingById = useMemo(() => {
     const map = new Map<string, TarotReading>();
     for (const r of recentReadings) map.set(r.id, r);
@@ -697,7 +738,14 @@ export function JournalPage() {
       if (i > 400) break;
     }
 
-    const busiestDay = Object.entries(writingDays).sort((a, b) => b[1] - a[1])[0];
+    // The weekday, mood and theme counted most, each only when one stands
+    // alone. The first of a tie used to be named: five entries on five
+    // different days made one of them the day "you write most often", and
+    // two moods logged twice each made one "your most common mood" — the
+    // mood curve's tie (p10 d3-ko-04), in the Journal.
+    const busiestDay = soleTop(writingDays);
+    const topMood = soleTop(moodCounts);
+    const topTag = soleTop(tagCounts);
 
     // Enough entries, and more than one mood or more than one theme —
     // otherwise there is no pattern to report and we say so (R6 A13).
@@ -726,36 +774,40 @@ export function JournalPage() {
       averageWordsPerEntry: entries.length > 0 ? Math.round(totalWords / entries.length) : 0,
       totalWords,
       hasSignal,
-      busiestDay: busiestDay ? Number(busiestDay[0]) : null,
-      topMood: sortedMoods[0] ?? null,
-      topTag: sortedTags[0] ?? null,
+      busiestDay: busiestDay === null ? null : Number(busiestDay),
+      topMood: topMood === null ? null : { mood: topMood, count: moodCounts[topMood] },
+      topTag,
       totalMoods,
       totalTagged: entries.filter(e => (e.tags ?? []).length > 0).length,
     };
   }, [insightEntries, entriesForStats, hasMoreEntries, profile?.streak, profile?.totalJournalEntries, locale]);
 
+  // One sentence for each pattern that holds. A tie makes no claim, as the
+  // mood diary's dominant() makes none: the weekday and the theme are left
+  // out, and the moods are said to be mixed.
   const generatedInsight = useMemo(() => {
-    if (!insights.hasSignal || insights.busiestDay === null || !insights.topMood) return '';
-    // A date on the busiest weekday, for Intl to name it.
-    const d = new Date();
-    d.setDate(d.getDate() + ((insights.busiestDay - d.getDay() + 7) % 7));
-    const weekday = longDayFmt.format(d);
-    const common = {
-      weekday,
-      mood: moodLabel(insights.topMood[0]),
-      n: insights.topMood[1],
-      total: insights.totalMoods,
-    };
-    return insights.topTag
-      ? t('journal.insight.withTag', {
-          defaultValue: 'You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries), and you return to {{tag}} more than any other theme.',
-          ...common,
-          tag: tagLabel(insights.topTag[0]),
-        })
-      : t('journal.insight.summary', {
-          defaultValue: 'You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries).',
-          ...common,
-        });
+    if (!insights.hasSignal || insights.totalMoods === 0) return '';
+    const sentences: string[] = [];
+    if (insights.busiestDay !== null) {
+      // A date on the busiest weekday, for Intl to name it.
+      const d = new Date();
+      d.setDate(d.getDate() + ((insights.busiestDay - d.getDay() + 7) % 7));
+      sentences.push(t('journal.insight.weekday', { defaultValue: 'You write most often on {{weekday}}.', weekday: longDayFmt.format(d) }));
+    }
+    sentences.push(
+      insights.topMood
+        ? t('journal.insight.mood', {
+            defaultValue: 'Your most common mood is {{mood}} ({{n}} of {{total}} entries).',
+            mood: moodLabel(insights.topMood.mood),
+            n: insights.topMood.count,
+            total: insights.totalMoods,
+          })
+        : t('journal.insight.moodTie', { defaultValue: 'Your moods are mixed — no single one comes up most often.' }),
+    );
+    if (insights.topTag) {
+      sentences.push(t('journal.insight.tag', { defaultValue: 'You return to {{tag}} more than any other theme.', tag: tagLabel(insights.topTag) }));
+    }
+    return joinSentences(sentences);
   }, [insights, longDayFmt, moodLabel, tagLabel, t]);
 
   const filteredTemplates = useMemo(() => {
@@ -1408,9 +1460,13 @@ export function JournalPage() {
                   <EyebrowLabel align="left" className="block text-mystic-500 mb-1.5">
                     {t('journalCoach.promptsLabel', { defaultValue: 'Sit with these' })}
                   </EyebrowLabel>
+                  {/* The dash is an em wide: an indent of 1.5em leaves half an
+                      em before the prompt at any reading size. pl-3 (12px)
+                      was narrower than the 13px dash, which touched the
+                      first letter (p10 d1-en-05). */}
                   <ul className="space-y-1.5">
                     {coachResult.prompts.map((p, i) => (
-                      <li key={i} className="text-meta text-mystic-300 pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violet-ink">
+                      <li key={i} className="text-meta text-mystic-300 pl-[1.5em] relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violet-ink">
                         {p}
                       </li>
                     ))}
@@ -1469,7 +1525,7 @@ export function JournalPage() {
                       icon={linkedReading && isPlaying(linkedReading) ? <PlayingCardIcon /> : <TarotCardIcon />}
                       tone="blue"
                       label={linkedReading ? readingName(linkedReading) : t('journal.editSheet.tarotLinked')}
-                      meta={linkedReading ? <span className="[word-break:auto-phrase]">{readingMeta(linkedReading)}</span> : undefined}
+                      meta={linkedReading ? <span className="keep-phrases">{readingMeta(linkedReading)}</span> : undefined}
                       trailing={
                         <button
                           type="button"
@@ -1591,9 +1647,9 @@ export function JournalPage() {
                 }
                 tone="blue"
                 label={readingName(reading)}
-                // auto-phrase: a second line breaks between words, never
-                // inside "スペードのエース".
-                meta={<span className="[word-break:auto-phrase]">{readingMeta(reading)}</span>}
+                // keep-phrases: a second line breaks between phrases (ja, zh)
+                // or words (ko), never inside "スペードのエース".
+                meta={<span className="keep-phrases">{readingMeta(reading)}</span>}
                 onClick={() => {
                   setLinkedReadingId(reading.id);
                   setShowAttachmentPicker(false);

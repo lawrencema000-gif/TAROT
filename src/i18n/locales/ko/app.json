@@ -451,7 +451,6 @@
       "insights": "인사이트"
     },
     "todaysPrompt": "오늘의 프롬프트",
-    "defaultPrompt": "오늘 무엇을 돌아보고 있나요?",
     "emptyState": "아직 저널이 없어요.",
     "emptyStateSub": "오늘부터 성찰의 여정을 시작해 보세요.",
     "loadMore": "더 불러오기",
@@ -518,8 +517,10 @@
     "hasEntry": "기록 있음",
     "insight": {
       "notYet": "기록을 몇 개 더 써 보세요 — 기록이 다섯 개가 되고 기분이나 주제가 두 가지 이상 나타나면 여기에 패턴이 보여요.",
-      "summary": "{{weekday}}에 가장 자주 써요. 가장 자주 기록한 기분은 {{mood}}, 전체 {{total}}개 중 {{n}}개예요.",
-      "withTag": "{{weekday}}에 가장 자주 써요. 가장 자주 기록한 기분은 {{mood}}, 전체 {{total}}개 중 {{n}}개이고, 다른 어떤 주제보다 {{tag}} 이야기로 자주 돌아와요."
+      "weekday": "{{weekday}}에 가장 자주 써요.",
+      "mood": "가장 자주 기록한 기분은 {{mood}}, 전체 {{total}}개 중 {{n}}개예요.",
+      "moodTie": "기분이 고루 섞여 있어요 — 특별히 자주 기록한 기분은 없어요.",
+      "tag": "다른 어떤 주제보다 {{tag}} 이야기로 자주 돌아와요."
     },
     "linkedShort": "리딩",
     "cardSeparator": ", ",
@@ -1932,9 +1933,9 @@
       "yourDimensions": "당신의 차원",
       "yourScores": "당신의 점수",
       "yourTraitScores": "당신의 특성 점수",
-      "closeCall": "근소한 차이",
-      "closeCallBody": "{{a}}, {{b}} 두 결과의 점수가 거의 차이 나지 않아요. 둘 다 읽어 보세요 — 당신에게 와닿는 쪽이 의미 있는 결과예요.",
-      "closeCallBodyMany": "{{names}}의 점수가 거의 차이 나지 않아요. 모두 읽어 보세요 — 당신에게 와닿는 것이 의미 있는 결과예요.",
+      "closeCall": "동점",
+      "closeCallBody": "{{a}}, {{b}} 두 결과의 점수가 같아요. 둘 다 읽어 보세요 — 당신에게 와닿는 쪽이 의미 있는 결과예요.",
+      "closeCallBodyMany": "{{names}}의 점수가 같아요. 모두 읽어 보세요 — 당신에게 와닿는 것이 의미 있는 결과예요.",
       "listSeparator": ", ",
       "listLastSeparator": ", ",
       "readingFirst": "{{name}}부터 읽어요",
@@ -4426,7 +4427,7 @@
     "caution": "주의",
     "planetaryTransit": "행성 트랜짓",
     "dailyAffirmation": "오늘의 확언",
-    "cardOfTheDay": "오늘의 카드",
+    "cardOfTheDay": "오늘의 별자리 카드",
     "luckyNumbersLabel": "행운의 숫자",
     "miniRitual": "미니 의식",
     "actionStep": "행동 단계",
@@ -5080,7 +5081,11 @@
     "emailInvalid": "올바른 이메일 주소를 입력해 주세요.",
     "emailFailed": "신청하지 못했어요. 잠시 후 다시 시도해 주세요.",
     "startReading": "리딩 시작하기",
-    "breadcrumb": "이동 경로"
+    "breadcrumb": "이동 경로",
+    "seo": {
+      "cardTitle": "{{name}} 타로 카드 의미 — {{group}}",
+      "cardDesc": "{{name}} 타로 카드의 의미: {{keywords}}. 정방향과 역방향 해석, 연애, 커리어, 예 / 아니오 리딩."
+    }
   },
   "admin": {
     "verifications": {
@@ -5167,7 +5172,7 @@
           "desc": "차트, 예보, 탐색"
         },
         "humanDesign": {
-          "label": "휴먼 디자인",
+          "label": "휴먼디자인",
           "desc": "바디그래프, 프로파일, 결정 권위"
         },
         "bazi": {
@@ -5683,11 +5688,6 @@
   },
   "search": {
     "placeholder": "카드, 저널, 별자리 운세 검색…",
-    "recent": {
-      "towerMeaning": "타워 카드 의미",
-      "loveCompatibilityAries": "양자리 연애 궁합",
-      "threeCardSpread": "세 장 스프레드"
-    },
     "recentSearches": "최근 검색",
     "quickLinks": "빠른 링크",
     "quickLink": {
@@ -5695,7 +5695,20 @@
       "journalPrompts": "저널 프롬프트",
       "personalityQuiz": "성격 퀴즈"
     },
-    "resultsFor": "\"{{query}}\"에 대한 검색 결과가 여기에 표시됩니다"
+    "groups": {
+      "tarot": "타로 카드",
+      "playing": "트럼프 카드",
+      "signs": "별자리",
+      "journal": "내 저널"
+    },
+    "noResults": "‘{{query}}’에 맞는 결과가 없어요",
+    "noResultsHint": "카드 이름, 별자리, 저널에 쓴 단어로 찾아보세요.",
+    "journalFailed": "저널을 검색하지 못했어요 — 연결을 확인해 주세요.",
+    "clearRecent": "지우기",
+    "clearRecentLabel": "최근 검색 지우기",
+    "resultCount": "결과 {{count}}개",
+    "resultCount_one": "결과 {{count}}개",
+    "resultCount_other": "결과 {{count}}개"
   },
   "saved": {
     "title": "저장됨",
@@ -6731,7 +6744,6 @@
     "questionPlaceholder": "지금 내가 이해하면 가장 도움이 될 것은 무엇일까요?",
     "castButton": "동전 던지기",
     "casting": "점치는 중…",
-    "hexagramLabel": "제",
     "judgement": "단전",
     "interpretation": "해석",
     "strengths": "강점",
@@ -6941,7 +6953,8 @@
     "readFullReading": "전체 리딩 읽기",
     "askOracleCta": "이 괘 읽어 주기",
     "share": "이 괘 공유",
-    "shareText": "나의 주역 괘: {{name}}. {{tagline}}"
+    "shareText": "나의 주역 괘: {{name}}. {{tagline}}",
+    "hexagramNumber": "제{{n}}괘"
   },
   "liuyao": {
     "hidden": {
@@ -10119,7 +10132,8 @@
       "mostlySteady": "이번 주는 주로 {{mood}}의 날이었어요. 한결같은 흐름이에요.",
       "rising": "곡선이 올라가고 있어요 — 이번 주는 지난주보다 가볍게 느껴져요.",
       "tooFew": "며칠 더 기록하면 패턴이 보이기 시작해요."
-    }
+    },
+    "dominantMixed": "섞인 무드"
   },
   "moodDiary": {
     "legacyTitle": "이 기기에 저장된 무드 기록",
@@ -10322,10 +10336,10 @@
     "anonymous": "익명",
     "loadFailed": "피드를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "empty": "아직 게시물이 없어요. 첫 번째가 되어 보세요.",
-    "signInFirst": "반응하려면 로그인이 필요합니다",
+    "signInFirst": "반응하려면 로그인해 주세요",
     "signInToPost": "게시, 반응, 댓글을 위해 로그인해 주세요.",
     "reactFailed": "반응을 남기지 못했어요 — 다시 시도해 주세요.",
-    "reported": "신고가 접수됐어요. 감사합니다.",
+    "reported": "신고가 접수됐어요. 고마워요.",
     "reportFailed": "신고를 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "report": "신고",
     "reportPostTitle": "게시물 신고",
@@ -10370,7 +10384,7 @@
     },
     "whisperingWell": {
       "title": "속삭이는 우물",
-      "intro": "말로 할 수 없는 것을 조용히 던질 수 있는 자리. 모든 게시물은 익명입니다. 서로에 대한 존중이 유일한 규칙이에요. 도움이 필요하면 분명히 말해 주세요 — 누군가 듣고 있습니다.",
+      "intro": "말로 할 수 없는 것을 조용히 던질 수 있는 자리. 모든 게시물은 익명이에요. 서로에 대한 존중이 유일한 규칙이에요. 도움이 필요하면 분명히 말해 주세요 — 누군가 듣고 있어요.",
       "newWhisper": "우물에 속삭이기",
       "placeholder": "말해야 하지만 들을 곳이 없는 말은?",
       "send": "속삭임 보내기",
@@ -10379,9 +10393,9 @@
       "deleteWhisper": "속삭임 삭제",
       "deleteTitle": "이 속삭임을 삭제할까요?"
     },
-    "postedUnderReview": "게시되었습니다 — 곧 검토하겠습니다.",
-    "commentUnderReview": "댓글이 게시되었습니다 — 곧 검토하겠습니다.",
-    "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 위배됩니다.",
+    "postedUnderReview": "게시됐어요 — 곧 검토할게요.",
+    "commentUnderReview": "댓글이 게시됐어요 — 곧 검토할게요.",
+    "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 어긋나요.",
     "publishPost": "내 글 올리기",
     "youMarker": "나",
     "options": "옵션",
@@ -10683,8 +10697,8 @@
   },
   "referral": {
     "title": "초대하고 적립",
-    "heading": "Arcana를 나누고 Moonstone 받기",
-    "subtitle": "당신의 코드로 가입한 친구마다 100 Moonstone을 드려요. 친구도 100을 받아요.",
+    "heading": "Arcana를 나누고 문스톤 받기",
+    "subtitle": "당신의 코드로 가입한 친구마다 문스톤 100개를 드려요. 친구도 100개를 받아요.",
     "yourCodeLabel": "내 코드",
     "copy": "링크 복사",
     "copied": "링크 복사됨",
@@ -10914,9 +10928,9 @@
       "mbti": "성격 (MBTI)",
       "love-language": "사랑의 언어",
       "attachment": "애착 유형",
-      "big-five": "Big Five",
-      "enneagram": "Enneagram",
-      "zodiac": "Zodiac",
+      "big-five": "빅 파이브",
+      "enneagram": "에니어그램",
+      "zodiac": "별자리",
       "element": "원소"
     },
     "shareLink": "내 초대 링크 공유",
@@ -10928,15 +10942,15 @@
     "notFound": "이 어드바이저를 찾을 수 없어요",
     "rate": "예상 요금: ${{dollars}}/시간",
     "durationLabel": "세션 길이",
-    "costPreview": "{{n}} Moonstones",
+    "costPreview": "문스톤 {{n}}개",
     "pickSlot": "시간 선택 (향후 7일)",
     "noAvailability": "이 어드바이저는 아직 예약 가능한 시간을 공개하지 않았어요.",
     "topicLabel": "무엇을 도와드릴까요? (선택)",
     "topicPlaceholder": "구체적인 것 — 결정, 관계, 트랜짓 등",
-    "bookCta": "{{n}} Moonstones로 예약",
+    "bookCta": "문스톤 {{n}}개로 예약",
     "booking": "예약 중…",
-    "bookedToast": "세션이 예약되었습니다 — {{n}} Moonstones가 차감되었습니다.",
-    "insufficientBalance": "Moonstones가 부족합니다. 충전 후 다시 시도하세요.",
+    "bookedToast": "세션을 예약했어요 — 문스톤 {{n}}개가 차감됐어요.",
+    "insufficientBalance": "문스톤이 부족해요. 충전한 뒤 다시 시도해 주세요.",
     "slotTaken": "방금 해당 시간이 선점되었습니다. 다른 시간을 선택하세요.",
     "bookFailed": "그 시간을 예약하지 못했어요 — 방금 다른 사람이 잡았을 수 있어요. 다른 시간을 골라 주세요.",
     "disclaimer": "세션 시작 전 언제든 취소하면 전액 환불됩니다.",
@@ -10956,7 +10970,7 @@
     "ended": "세션이 종료되었습니다",
     "end": "세션 종료",
     "cancelled": "이 세션은 취소되었습니다.",
-    "cancelledToast": "취소되었습니다. {{n}} Moonstones가 환불되었습니다.",
+    "cancelledToast": "취소했어요. 문스톤 {{n}}개를 환불했어요.",
     "noMessages": "인사로 시작해 보세요.",
     "composerPlaceholder": "메시지를 입력하세요…",
     "sendFailed": "메시지를 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -10970,7 +10984,7 @@
     "title": "상담가 대시보드",
     "notAdvisorTitle": "아직 어드바이저로 등록되지 않았어요",
     "notAdvisorBody": "어드바이저는 한 분 한 분 직접 심사해요. 신청하려면 저희에게 연락해 주시고, 답장을 받으면 본인 인증을 진행해 주세요.",
-    "apply": "Email advisors@tarotlife.app",
+    "apply": "advisors@tarotlife.app으로 이메일 보내기",
     "upcomingTitle": "예정된 세션",
     "noUpcoming": "예약된 세션이 없습니다.",
     "availabilityTitle": "주간 가능 시간",
@@ -10982,18 +10996,18 @@
     "saved": "가능 시간이 저장되었습니다",
     "invalidSlot": "종료 시간이 시작 시간 이후여야 합니다.",
     "payoutsTitle": "정산",
-    "payoutsSetupBody": "Stripe Connect 온보딩을 완료하면 Moonstone을 현금화할 수 있습니다.",
+    "payoutsSetupBody": "Stripe Connect 온보딩을 완료하면 문스톤을 현금화할 수 있어요.",
     "setupPayouts": "정산 설정",
     "continueOnboarding": "온보딩 계속",
     "opening": "여는 중…",
-    "cashableLabel": "현금화 가능한 Moonstone",
-    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashableLabel": "현금화 가능한 문스톤",
+    "rateNote": "문스톤 10개 = $1.00 · 플랫폼 수수료 30% · 수령 70%",
     "cashoutCta": "현금화",
     "cashingOut": "전송 중…",
-    "cashoutMinimum": "최소 현금화 금액은 Moonstone 100개입니다.",
+    "cashoutMinimum": "최소 현금화 금액은 문스톤 100개예요.",
     "cashoutExceeds": "금액이 현금화 가능 잔액을 초과했습니다.",
     "cashoutSent": "${{usd}}를 Stripe 계정으로 보냈습니다.",
-    "cashoutMinNote": "최소 Moonstone 100개($10 총액 / $7 수령).",
+    "cashoutMinNote": "최소 문스톤 100개($10 총액 / $7 수령).",
     "stripeFailed": "Stripe 온보딩을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "onboardingRequired": "먼저 Stripe 온보딩을 완료하세요."
   },
@@ -11050,7 +11064,7 @@
     "approvedBody": "고문 프로필이 디렉터리에 공개되었습니다.",
     "rejectedTitle": "승인 거부됨",
     "reasonLabel": "사유:",
-    "rejectedHelp": "Contact advisors@tarotlife.app if you believe this is wrong.",
+    "rejectedHelp": "잘못된 결정이라고 생각되면 advisors@tarotlife.app으로 연락해 주세요.",
     "goDashboard": "대시보드 열기",
     "legalNameLabel": "법적 성명",
     "countryLabel": "국가",
@@ -11376,7 +11390,7 @@
     "frictionsHeading": "서로를 확장시키는 지점",
     "tryAnother": "다른 사람과 점수 보기",
     "share": "스코어 공유",
-    "shareText": "우리의 Arcana 소울메이트 스코어는 {{score}}/100 ({{vibe}}). arcana.app에서 직접 해보세요",
+    "shareText": "우리의 Arcana 소울메이트 스코어는 {{score}}/100 ({{vibe}}). 당신의 스코어도 확인해 보세요: {{url}}",
     "disclaimer": "스코어는 판결이 아니라 대화를 위한 거울이에요. 차트는 운명이 아니라 패턴을 보여줘요.",
     "vibes": {
       "transcendent": "초월적",
@@ -11720,7 +11734,7 @@
     "disclaimer": "스팸 없음. 클릭 한 번으로 구독 취소. 5일 동안 이메일 3통."
   },
   "loveTree": {
-    "shareText": "나의 Arcana 사랑의 나무: {{title}} — {{archetype}}. 당신의 나무는 arcana.app/love-tree에서",
+    "shareText": "나의 Arcana 사랑의 나무: {{title}} — {{archetype}}. 당신의 나무도 키워 보세요: {{url}}",
     "title": "사랑의 나무",
     "intro": "12문항, 90초, 한 그루의 나무. 당신의 애착 유형을 살아 있는 형태로 그리고 — 당신이 사랑하는 방식을 꾸밈없이 읽어요.",
     "howItWorksLabel": "이렇게 진행돼요",

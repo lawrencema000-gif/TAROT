@@ -164,5 +164,8 @@
   },
   "resultLayout": {
     "readFullReading": "阅读完整解读"
+  },
+  "punctuation": {
+    "labelSeparator": "："
   }
 }

@@ -17,7 +17,7 @@ import { searchOpenMeteo, type GeoResult } from "./openmeteo.ts";
  *     carries the IANA timezone) — it answers "Tokyo", "Osaka", "Melbourne"
  *     and "Shibuya, Tokyo" correctly,
  *   - falls back to Nominatim for free-text places Open-Meteo cannot match,
- *     now identifying itself (User-Agent "Arcana/1.2 (support@arcana.app)" +
+ *     now identifying itself (User-Agent "Arcana/1.2 (support@tarotlife.app)" +
  *     the `email=` parameter) and serialised per isolate at ≥ 1.1 s apart,
  *   - remembers answers per isolate for a day so repeated searches cost nothing.
  * The response keeps the `{ results: [{ lat, lon, displayName }] }` shape
@@ -53,8 +53,10 @@ const MAX_BIRTH_PLACE_LEN = 200;
 // place name).
 const CONTROL_CHAR_RE = /[\x00-\x1F\x7F]/g;
 
-const USER_AGENT = "Arcana/1.2 (support@arcana.app)";
-const CONTACT_EMAIL = "support@arcana.app";
+// Nominatim's usage policy wants a contact that reaches us: the app's own
+// support mailbox, not an address on arcana.app, which is not ours (p10).
+const USER_AGENT = "Arcana/1.2 (support@tarotlife.app)";
+const CONTACT_EMAIL = "support@tarotlife.app";
 const UPSTREAM_TIMEOUT_MS = 7_000;
 // Nominatim usage policy: at most one request per second.
 const NOMINATIM_MIN_INTERVAL_MS = 1_100;

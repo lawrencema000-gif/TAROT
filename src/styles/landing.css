@@ -162,30 +162,17 @@
 }
 
 /* ── Google Play badge ────────────────────────────────────────────
-   public/google-play-badge.png is the official badge, but the file is a
-   900×554 PNG with a light checkerboard baked into the pixels around the
-   badge — there is no alpha channel. The badge itself occupies
-   x 177–722, y 198–354 (546×157). Rendering the whole file would put a
-   pale box on the page, so the <img> is scaled to a 48px badge height
-   and clipped one pixel inside that box; the 5px radius on the clip
-   hides the four corner specks left by the badge's own rounded corners.
+   Google's official badge in the page's language, unaltered: PlayBadge
+   (LandingPage.tsx) picks the file and sets it at a 48px badge height.
    The 12px padding is Google's clear space: one quarter of the badge
-   height on every side. Replace the asset with the transparent badge
-   from Google's generator and this reduces to `height: 48px`. */
+   height on every side. The clip that cut the old English badge out of
+   its checkerboard went with that file (p10 d2-ja-13). */
 .lp-play {
   display: inline-flex; padding: 12px;
   border-radius: var(--radius-control);
   transition: opacity var(--dur-fast) var(--ease-out);
 }
 .lp-play:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
-.lp-play-clip {
-  display: block; position: relative; overflow: hidden;
-  width: 168px; height: 48px; border-radius: 5px;
-}
-.lp-play-clip img {
-  position: absolute; left: -55.1px; top: -61.6px;
-  width: 278.7px; height: 171.6px; max-width: none;
-}
 @media (hover: hover) { .lp-play:hover { opacity: 0.88; } }
 
 /* ── Scroll-stop panels ───────────────────────────────────────────
@@ -327,7 +314,7 @@ html.lp-snap .lp-sec { scroll-snap-align: start; scroll-margin-top: 64px; }
 }
 .lp-timeline-watermark {
   position: absolute; top: -6px; right: 16px;
-  font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 4.5rem; font-weight: 600; line-height: 1; pointer-events: none;
   color: rgba(var(--gold-primary), 0.07);
 }
@@ -436,7 +423,6 @@ html.lp-snap .lp-sec { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-lang-option:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: -2px; }
 @media (hover: hover) { .lp-lang-option:hover { @apply text-mystic-100; background: rgba(var(--gold-primary), 0.09); } }
 .lp-lang-option.is-active { @apply text-mystic-100; background: rgba(var(--gold-primary), 0.12); }
-.lp-lang-flag { font-size: 18px; line-height: 1; }
 .lp-lang-name { flex: 1; }
 .lp-lang-check { @apply text-gold; }
 

@@ -33,6 +33,8 @@ function signColor(sign: string): string {
  */
 export function FriendCircleStats({ people }: { people: Person[] }) {
   const { t } = useT('app');
+  /** ': ' in English and Korean, '：' in Japanese and Chinese (p10 d2-ja-06). */
+  const labelSep = t('common:punctuation.labelSeparator', { defaultValue: ': ' });
   /** Element / modality names (data keys stay English). */
   const termLabel = (k: string) =>
     k in MODALITY_COLOR
@@ -63,7 +65,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
       <EyebrowLabel align="left" className="block">{label}</EyebrowLabel>
       <div className="flex h-2 bg-mystic-800 rounded-full overflow-hidden">
         {Object.entries(data).map(([k, v]) => v > 0 && (
-          <div key={k} title={`${termLabel(k)}: ${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
+          <div key={k} title={`${termLabel(k)}${labelSep}${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
@@ -97,7 +99,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
             // Drawn, not typed: U+2648–2653 come out as colour emoji on Android.
             const Glyph = ZODIAC_ICONS[sign];
             return (
-              <div key={sign} title={`${localizeSignName(sign as ZodiacSign)}: ${count}`} className="flex flex-col items-center gap-0.5">
+              <div key={sign} title={`${localizeSignName(sign as ZodiacSign)}${labelSep}${count}`} className="flex flex-col items-center gap-0.5">
                 <div className="w-full h-10 flex items-end">
                   <div className="w-full rounded-t-full transition-[height]"
                     style={{

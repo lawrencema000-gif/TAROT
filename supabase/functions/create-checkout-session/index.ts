@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import Stripe from "npm:stripe@14.10.0";
+import { isAppRedirectUrl } from "../_shared/cors.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 
 interface CheckoutRequest {
@@ -7,27 +8,6 @@ interface CheckoutRequest {
   productId?: string;
   successUrl?: string;
   cancelUrl?: string;
-}
-
-function isAllowedRedirectUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    const allowedHosts = [
-      "localhost",
-      "127.0.0.1",
-      "arcana.app",
-      "www.arcana.app",
-      "tarotlife.app",
-      "www.tarotlife.app",
-      "arcana-ritual-app.netlify.app",
-    ];
-    return allowedHosts.some(
-      (allowed) => host === allowed || host.endsWith(`.${allowed}`),
-    );
-  } catch {
-    return false;
-  }
 }
 
 Deno.serve(
@@ -47,7 +27,7 @@ Deno.serve(
         throw new AppError("MISSING_REQUIRED_FIELDS", "priceId, productId, successUrl, and cancelUrl are required", 400);
       }
 
-      if (!isAllowedRedirectUrl(successUrl) || !isAllowedRedirectUrl(cancelUrl)) {
+      if (!isAppRedirectUrl(successUrl) || !isAppRedirectUrl(cancelUrl)) {
         throw new AppError("INVALID_REDIRECT_URL", "Redirect URLs must be on an approved host", 400);
       }
 

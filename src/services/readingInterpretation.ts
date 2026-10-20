@@ -7,8 +7,14 @@ import { getPlayingCard } from '../data/cartomancy/deck';
 // receive the same lines, so it is shared rather than copied.
 // eslint-disable-next-line boundaries/element-types
 import { combinationLines } from '../components/cartomancy/cartoFlow';
-import { getLocale } from '../i18n/config';
+// One English spelling per tarot card id, the one saved readings and the
+// card pages use; it lives with the card links.
+// eslint-disable-next-line boundaries/element-types
+import { canonicalCardName } from '../components/readings/tarot/cardSlug';
+import { getLocale, type SupportedLocale } from '../i18n/config';
 import i18n from '../i18n/config';
+import { localizeCard } from '../i18n/localizeCard';
+import { localizeCombinationHit, localizePlayingCard } from '../i18n/localizePlayingCard';
 import { tArray } from '../utils/tArray';
 
 /** Which deck a reading's cards come from. The server defaults to 'tarot'. */
@@ -16,7 +22,16 @@ export type ReadingDeck = 'tarot' | 'playing';
 
 export interface ReadingCard {
   id: number;
+  /** The card's English name: how the model knows the card, and the name its Library row keeps. */
   name: string;
+  /**
+   * The name the reader's table shows, in the reading's language (ja
+   * クラブの5, ko 클로버 5, zh 梅花5). generate-reading heads the card with
+   * it and tells the model to write it exactly so. Given the English names
+   * alone, the paid Japanese reading said "Five of Clubs", or named a card
+   * its own way ("九のダイヤ" for ダイヤの9) (p10 d2-ja-01).
+   */
+  localName?: string;
   reversed: boolean;
   keywords?: string[];
   meaningUpright?: string;
@@ -136,10 +151,18 @@ export async function generatePremiumReading(
   return response.json();
 }
 
-export function tarotCardToReadingCard(card: TarotCard, reversed: boolean): ReadingCard {
+/**
+ * A tarot card as generate-reading reads it. The deck on the table is
+ * localized (getAllTarotCards), so its `name` is the display name: the
+ * English one comes from the card table by id, and `localName` is the
+ * card's name in `locale`, read by id too.
+ */
+export function tarotCardToReadingCard(card: TarotCard, reversed: boolean, locale: SupportedLocale = getLocale()): ReadingCard {
+  const name = canonicalCardName(card.id) || card.name;
   return {
     id: card.id,
-    name: card.name,
+    name,
+    localName: localizeCard({ ...card, name }, locale).name,
     reversed,
     keywords: card.keywords,
     meaningUpright: card.meaningUpright,
@@ -152,12 +175,16 @@ export function tarotCardToReadingCard(card: TarotCard, reversed: boolean): Read
 /**
  * Sibling of `tarotCardToReadingCard` for the playing deck. Ids stay in the
  * 100..153 range so a saved reading can never be confused with a tarot one;
- * `adviceMeaning` rides along as the "general" focus pick.
+ * `adviceMeaning` rides along as the "general" focus pick. The dealt cards
+ * are the English deck; `localName` is the name the table shows in
+ * `locale` (localizePlayingCard, as the reveal names them).
  */
-export function playingCardToReadingCard(card: PlayingCard, reversed: boolean): ReadingCard {
+export function playingCardToReadingCard(card: PlayingCard, reversed: boolean, locale: SupportedLocale = getLocale()): ReadingCard {
+  const source = getPlayingCard(card.id) ?? card;
   return {
     id: card.id,
-    name: card.name,
+    name: source.name,
+    localName: localizePlayingCard(source, locale).name,
     reversed,
     keywords: card.keywords,
     meaningUpright: card.meaningUpright,
@@ -170,20 +197,26 @@ export function playingCardToReadingCard(card: PlayingCard, reversed: boolean): 
 
 /**
  * `findCombinations()` hits → the short lines the server reads (≤ 6 are
- * used), folded exactly as the reader's own Combinations list folds them
- * (cartoFlow.combinationLines): one line per rule and meaning, its pairings
- * joined. The raw hits repeat a neighbour rule once per neighbour — the Ace
- * of Spades in a 3×3 grid can fire eight times — and six of those used to
- * fill the whole budget, so the model never saw the pairs and the
- * majorities the reader was looking at. English: the prompt's language is
- * set separately.
+ * used), as the reader's own Combinations list prints them
+ * (CartoCombinationList): folded by cartoFlow.combinationLines, one line
+ * per rule and meaning, its pairings joined. The raw hits repeat a
+ * neighbour rule once per neighbour — the Ace of Spades in a 3×3 grid can
+ * fire eight times — and six of those used to fill the whole budget, so
+ * the model never saw the pairs and the majorities the reader was looking
+ * at. In `locale`, labels and card names included: the lines were English
+ * whatever the reading's language, and their card names went into a paid
+ * Japanese reading as written ("Five of Clubs と Queen of Diamonds の並び",
+ * p10 d2-ja-01).
  */
-export function combinationHitsToLines(hits: CombinationHit[], limit = 6): string[] {
+export function combinationHitsToLines(hits: CombinationHit[], limit = 6, locale: SupportedLocale = getLocale()): string[] {
   return combinationLines(
     hits,
-    (h) => ({ label: h.label, meaning: h.meaning }),
-    (id) => getPlayingCard(id)?.name ?? '',
-    'en',
+    (h) => localizeCombinationHit(h, locale),
+    (id) => {
+      const card = getPlayingCard(id);
+      return card ? localizePlayingCard(card, locale).name : '';
+    },
+    locale,
   )
     .map((line) => fitCombinationLine(line.label.replace(/\s+/g, ' ').trim(), line.meaning.replace(/\s+/g, ' ').trim()))
     .filter(Boolean)

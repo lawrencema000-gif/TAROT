@@ -45,7 +45,7 @@ function pickThreeRandom(deck: Deck): TarotCard[] {
   const out: TarotCard[] = [];
   for (let i = 0; i < 3; i++) {
     const idx = Math.floor(Math.random() * pool.length);
-    out.push(localizeCard(pool.splice(idx, 1)[0]));
+    out.push(pool.splice(idx, 1)[0]);
   }
   return out;
 }
@@ -81,6 +81,9 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
   const { t } = useT('landing');
   const [stage, setStage] = useState<Stage>('prompt');
   const [cards, setCards] = useState<TarotCard[]>([]);
+  // The drawn cards are kept in English and the revealed one is read in the
+  // language on screen at each render (useT re-renders on a language
+  // change), so switching language mid-reading renames it at once (p10).
   const [chosen, setChosen] = useState<TarotCard | null>(null);
   const [reversed, setReversed] = useState(false);
   const [drawing, setDrawing] = useState(false);
@@ -115,6 +118,8 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
       reversed,
     });
   }, [reversed]);
+
+  const shown = chosen ? localizeCard(chosen) : null;
 
   const reset = useCallback(() => {
     setStage('prompt');
@@ -160,34 +165,34 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
         </div>
       )}
 
-      {stage === 'revealed' && chosen && (
+      {stage === 'revealed' && shown && (
         <div className="free-reading-revealed">
           <div className={`free-reading-card-face lp-flip ${reversed ? 'reversed' : ''}`}>
-            {getBundledFullPath(chosen.id) ? (
+            {getBundledFullPath(shown.id) ? (
               <img
-                src={getBundledFullPath(chosen.id)!}
-                alt={chosen.name}
+                src={getBundledFullPath(shown.id)!}
+                alt={shown.name}
                 width={400}
                 height={600}
                 loading="lazy"
                 decoding="async"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gold text-meta p-3 text-center">{chosen.name}</div>
+              <div className="w-full h-full flex items-center justify-center text-gold text-meta p-3 text-center">{shown.name}</div>
             )}
           </div>
           <div className="free-reading-result">
             <p className="text-caption font-semibold uppercase tracking-wider text-gold mb-1">
               {reversed ? t('demo.reversed') : t('demo.upright')}
             </p>
-            <h3 className="heading-display-md text-mystic-100">{chosen.name}</h3>
+            <h3 className="heading-display-md text-mystic-100">{shown.name}</h3>
             <div className="free-reading-keywords">
-              {chosen.keywords.slice(0, 4).map(k => (
+              {shown.keywords.slice(0, 4).map(k => (
                 <span key={k} className="text-caption px-2 py-0.5 rounded-full bg-gold/10 text-gold">{k}</span>
               ))}
             </div>
             <p className="text-ui text-mystic-300 mb-4">
-              {(reversed ? chosen.meaningReversed : chosen.meaningUpright).slice(0, 220)}…
+              {(reversed ? shown.meaningReversed : shown.meaningUpright).slice(0, 220)}…
             </p>
             <div className="free-reading-ctas">
               <Button variant="gold" onClick={handleSignUp}>

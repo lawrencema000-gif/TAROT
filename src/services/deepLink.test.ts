@@ -3,27 +3,31 @@ import { parseDeepLink, generateShareUrl } from './deepLink';
 
 describe('parseDeepLink', () => {
   it('parses reading URL', () => {
-    const result = parseDeepLink('https://arcana.app/reading/abc123');
+    const result = parseDeepLink('https://tarotlife.app/reading/abc123');
     expect(result).toEqual({ type: 'reading', id: 'abc123' });
   });
 
   it('parses card URL', () => {
-    const result = parseDeepLink('https://arcana.app/card/42');
+    const result = parseDeepLink('https://tarotlife.app/card/42');
     expect(result).toEqual({ type: 'card', id: '42' });
   });
 
   it('parses horoscope URL', () => {
-    const result = parseDeepLink('https://arcana.app/horoscope/aries');
+    const result = parseDeepLink('https://tarotlife.app/horoscope/aries');
     expect(result).toEqual({ type: 'horoscope', id: 'aries' });
   });
 
+  it('parses the www host', () => {
+    expect(parseDeepLink('https://www.tarotlife.app/reading/abc123')).toEqual({ type: 'reading', id: 'abc123' });
+  });
+
   it('returns unknown for unrecognized path', () => {
-    const result = parseDeepLink('https://arcana.app/settings/theme');
+    const result = parseDeepLink('https://tarotlife.app/settings/theme');
     expect(result).toEqual({ type: 'unknown' });
   });
 
   it('returns unknown for root path', () => {
-    const result = parseDeepLink('https://arcana.app/');
+    const result = parseDeepLink('https://tarotlife.app/');
     expect(result).toEqual({ type: 'unknown' });
   });
 
@@ -31,8 +35,14 @@ describe('parseDeepLink', () => {
     expect(parseDeepLink('https://google.com/reading/123')).toBeNull();
   });
 
+  // p10: arcana.app was taken for the app's own host; it is someone else's.
+  it('returns null for arcana.app, which is not ours', () => {
+    expect(parseDeepLink('https://arcana.app/reading/abc123')).toBeNull();
+    expect(parseDeepLink('https://www.arcana.app/card/42')).toBeNull();
+  });
+
   it('returns null for auth callback URLs', () => {
-    expect(parseDeepLink('https://arcana.app/auth?code=abc')).toBeNull();
+    expect(parseDeepLink('https://tarotlife.app/auth?code=abc')).toBeNull();
   });
 
   it('returns null for invalid URL', () => {
@@ -49,15 +59,19 @@ describe('parseDeepLink', () => {
 
 describe('generateShareUrl', () => {
   it('generates reading URL', () => {
-    expect(generateShareUrl('reading', 'abc123')).toBe('https://arcana.app/reading/abc123');
+    expect(generateShareUrl('reading', 'abc123')).toBe('https://tarotlife.app/reading/abc123');
   });
 
   it('generates card URL', () => {
-    expect(generateShareUrl('card', '42')).toBe('https://arcana.app/card/42');
+    expect(generateShareUrl('card', '42')).toBe('https://tarotlife.app/card/42');
   });
 
   it('encodes special characters', () => {
     const url = generateShareUrl('horoscope', 'hello world');
     expect(url).toContain('hello%20world');
+  });
+
+  it('builds a link the parser routes back', () => {
+    expect(parseDeepLink(generateShareUrl('reading', 'abc123'))).toEqual({ type: 'reading', id: 'abc123' });
   });
 });

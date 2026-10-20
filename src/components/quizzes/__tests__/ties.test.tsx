@@ -26,7 +26,8 @@ import { calculateCourtMatch, tarotCourtQuiz } from '../../../data/tarotCourtQui
 /**
  * What a person READS on a tied result (F19, F65) and on a self-compassion
  * result with no single weak component (O#160), through the real renderers
- * and the real locale files.
+ * and the real locale files. The close call says the scores are the same
+ * ("Tied", 同率); it used to call a tie a narrow gap (p10 d2-ja-07).
  */
 
 const noop = () => {};
@@ -53,7 +54,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
   it('Dark Triad all-Neutral: close call, "Shared with", three gold bars, and no "strongest" claim anywhere (p9 Q07)', () => {
     const result = calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!;
     const { verdict, container } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Narcissistic Shadow, Machiavellian Shadow and Psychopathic Shadow scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Narcissistic Shadow, Machiavellian Shadow and Psychopathic Shadow all scored the same. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Machiavellian Shadow and Psychopathic Shadow')).toBeInTheDocument();
     // The card is still read — as the first of the three, in the body, in words for a shared top.
     const heading = screen.getByRole('heading', { name: 'Reading Narcissistic Shadow first' });
@@ -67,7 +68,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
     const result = calculateExtraQuiz('dark-triad-v1', answers)!;
     const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
     expect(verdict.textContent).toMatch(/Your shadow runs coldest/);
-    expect(screen.queryByText('Close call')).toBeNull();
+    expect(screen.queryByText('Tied')).toBeNull();
     expect(screen.queryByText(/^Shared with/)).toBeNull();
     expect(emphasisedBars()).toHaveLength(1);
   });
@@ -75,7 +76,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
   it('a row saved before `tied` existed still names its pair', () => {
     const old: DimensionalResult = { ...calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!, tied: undefined };
     mount(<ExtraResult quiz={darkTriadQuiz} result={old} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Narcissistic Shadow and Machiavellian Shadow scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Narcissistic Shadow and Machiavellian Shadow scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
   });
 
   it('ja: the names are listed with 、 and the card is read 「まずは…として読む」', async () => {
@@ -85,7 +86,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
       const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
       const n = (k: string) => i18n.t(`extraQuizzes.dark-triad.results.${k}.name`, { ns: 'app' });
       expect(n('psychopathy')).not.toBe(`extraQuizzes.dark-triad.results.psychopathy.name`);
-      expect(screen.getByText(`${n('narcissism')}、${n('machiavellianism')}、${n('psychopathy')}のスコアは、ほんのわずかな差でした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。`)).toBeInTheDocument();
+      expect(screen.getByText(`${n('narcissism')}、${n('machiavellianism')}、${n('psychopathy')}のスコアは同じでした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。`)).toBeInTheDocument();
       expect(within(verdict).getByText(`${n('machiavellianism')}、${n('psychopathy')}と同率`)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: `まずは${n('narcissism')}として読む` })).toBeInTheDocument();
     } finally {
@@ -97,8 +98,8 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
 describe('F19 — the dosha result in an exact three-way tie', () => {
   it('REPRO 10/10/10: no two-name close call, no "leading today"; all three bars gold; read Vata first', () => {
     const { verdict } = mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(10, 10))} onBack={noop} onRetake={noop} />);
-    expect(screen.queryByText('Close call')).toBeNull();
-    expect(screen.queryByText(/scored within a hair/)).toBeNull();
+    expect(screen.queryByText('Tied')).toBeNull();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
     expect(screen.queryByText(/leading today/)).toBeNull();
     expect(verdict.textContent).toMatch(/Tridoshic/i);
     expect(verdict.textContent).toMatch(/Read the dosha below as a place to start/);
@@ -108,7 +109,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
 
   it('13/13/4 (not tridoshic): Vata and Pitta in the close call and under the verdict; the Vata card is read first', () => {
     const { verdict } = mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(13, 13))} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Vata and Pitta scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Vata and Pitta scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Pitta')).toBeInTheDocument();
     expect(verdict.textContent).not.toMatch(/Vata rules movement/);
     expect(screen.getByRole('heading', { name: 'Reading Vata first' }).parentElement?.textContent).toMatch(/Vata rules movement/);
@@ -118,7 +119,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
   it('a tridoshic profile with a clear leader (11/10/9: 11 − 9 = 2 ≤ 3) keeps "Reading Vata as the one leading today"', () => {
     mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(11, 10))} onBack={noop} onRetake={noop} />);
     expect(screen.getByRole('heading', { name: 'Reading Vata as the one leading today' })).toBeInTheDocument();
-    expect(screen.queryByText('Close call')).toBeNull();
+    expect(screen.queryByText('Tied')).toBeNull();
   });
 
   it('ja 10/10/10: 「まずはヴァータとして読む」 and no 「今日いちばん前に出ている」', async () => {
@@ -127,7 +128,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
       mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(10, 10))} onBack={noop} onRetake={noop} />);
       expect(screen.getByRole('heading', { name: 'まずはヴァータとして読む' })).toBeInTheDocument();
       expect(screen.queryByText(/今日いちばん前に出ている/)).toBeNull();
-      expect(screen.queryByText('僅差')).toBeNull();
+      expect(screen.queryByText('同率')).toBeNull();
     } finally {
       await i18n.changeLanguage('en');
     }
@@ -139,20 +140,20 @@ describe('the sibling screens name every tied result', () => {
     const { verdict } = mount(
       <LoveLanguageResult quiz={loveLanguageQuiz} result={calculateLoveLanguage(all(loveLanguageQuiz, 3))} onBack={noop} onRetake={noop} />,
     );
-    expect(screen.getByText('Receiving Gifts, Words of Affirmation, Acts of Service, Physical Touch and Quality Time scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Receiving Gifts, Words of Affirmation, Acts of Service, Physical Touch and Quality Time all scored the same. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with 4 others')).toBeInTheDocument();
     expect(emphasisedBars()).toHaveLength(5);
   });
 
   it('shadow archetypes all-Neutral: all seven', () => {
     mount(<ShadowResult quiz={shadowArchetypeQuiz} result={calculateShadowArchetype(all(shadowArchetypeQuiz, 3))} onBack={noop} onRetake={noop} />);
-    const body = screen.getByText(/scored within a hair of each other/).textContent ?? '';
+    const body = screen.getByText(/all scored the same/).textContent ?? '';
     for (const name of ['Lover', 'Warrior', 'Magician', 'Sovereign', 'Sage', 'Innocent', 'Explorer']) expect(body).toMatch(name);
   });
 
   it('enneagram all-Neutral: all nine types in the close call, "Shared with 8 others" in the verdict block', () => {
     const { verdict } = mount(<EnneagramResult quiz={enneagramQuiz} result={calculateEnneagram(all(enneagramQuiz, 3))} onBack={noop} onRetake={noop} />);
-    const body = screen.getByText(/scored within a hair of each other/).textContent ?? '';
+    const body = screen.getByText(/all scored the same/).textContent ?? '';
     for (let n = 1; n <= 9; n++) expect(body).toMatch(`Type ${n} `);
     expect(within(verdict).getByText('Shared with 8 others')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /^Reading Type 1 .+ first$/ })).toBeInTheDocument();
@@ -161,7 +162,7 @@ describe('the sibling screens name every tied result', () => {
   it('element: the unbroken fire/water split names both and reads Fire first', () => {
     const r = calculateElementAffinity({ el1: 1, el2: 1, el3: 3, el4: 1, el5: 1, el6: 2, el7: 2, el8: 2, el9: 3, el10: 2 });
     const { verdict } = mount(<ElementResult quiz={elementAffinityQuiz} result={r} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText(/^Fire and Water scored within a hair of each other/)).toBeInTheDocument();
+    expect(screen.getByText(/^Fire and Water scored the same/)).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Water')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Reading Fire first' })).toBeInTheDocument();
   });
@@ -169,7 +170,7 @@ describe('the sibling screens name every tied result', () => {
   it('court match still names its two cards', () => {
     const r = calculateCourtMatch({ ce1: 1, ce2: 1, ce3: 2, ce4: 2, ce5: 3, ce6: 4, cr1: 2, cr2: 2, cr3: 2, cr4: 2, cr5: 2, cr6: 2 });
     mount(<CourtMatchResult quiz={tarotCourtQuiz} result={r} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Knight of Wands and Knight of Cups scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Knight of Wands and Knight of Cups scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
   });
 });
 

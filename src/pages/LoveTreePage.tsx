@@ -46,6 +46,13 @@ import { supabase } from '../lib/supabase';
 
 type Stage = 'intro' | 'quiz' | 'result';
 
+/**
+ * Where a shared tree sends a friend: this page on the live app. The share
+ * text takes it as {{url}}, so no translation carries a host of its own —
+ * every language named arcana.app, which is not the app (p10 d2-ja-08).
+ */
+const SHARE_URL = 'https://tarotlife.app/love-tree';
+
 const LIKERT: Array<{ value: number; label: string }> = [
   { value: 1, label: 'Strongly disagree' },
   { value: 2, label: 'Disagree' },
@@ -181,9 +188,10 @@ export function LoveTreePage() {
   const shareAttachment = async (attachment: Attachment) => {
     const info = localizeAttachment(attachment, overlay);
     const shareText = t('loveTree.shareText', {
-      defaultValue: 'My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at arcana.app/love-tree',
+      defaultValue: 'My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at {{url}}',
       title: info.title,
       archetype: info.archetype,
+      url: SHARE_URL,
     }) as string;
 
     const outcome = await shareOrDownloadCard(
@@ -386,6 +394,8 @@ function AttachmentResult({
 }) {
   const info = localizeAttachment(attachment, overlay);
   const tx = (key: string, opts?: Record<string, unknown>) => t(key, opts) as string;
+  // ': ' in English and Korean, '：' after Japanese and Chinese (p10 d2-ja-06).
+  const labelSep = tx('common:punctuation.labelSeparator', { defaultValue: ': ' });
   return (
     <ResultLayout
       onBack={onBack}
@@ -413,8 +423,8 @@ function AttachmentResult({
         <LoveTree tree={info.tree} />
         {scores && (
           <div className="mt-3 flex justify-center gap-4 text-meta text-mystic-400 tabular-nums">
-            <span>{tx('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}: {scores.anxiety}</span>
-            <span>{tx('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}: {scores.avoidance}</span>
+            <span>{tx('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}{labelSep}{scores.anxiety}</span>
+            <span>{tx('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}{labelSep}{scores.avoidance}</span>
           </div>
         )}
       </Card>

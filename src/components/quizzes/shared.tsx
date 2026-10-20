@@ -230,6 +230,8 @@ export function useNameList() {
 /**
  * Named when the scorer reports a tie: every tied name, so a coin flip is
  * not read as a verdict. A three-way tie used to name two of the three.
+ * It says the scores are the same: it used to call a tie a narrow gap
+ * ("Close call … within a hair of each other", p10 d2-ja-07).
  */
 export function CloseCall({ names }: { names: readonly string[] }) {
   const { t } = useT('app');
@@ -238,17 +240,17 @@ export function CloseCall({ names }: { names: readonly string[] }) {
   return (
     <div className="rounded-control border border-paper-hairline bg-ink/5 px-4 py-3">
       <EyebrowLabel tone="ink" align="left">
-        {t('quizzes.resultSections.closeCall', { defaultValue: 'Close call' })}
+        {t('quizzes.resultSections.closeCall', { defaultValue: 'Tied' })}
       </EyebrowLabel>
       <p className="reading-copy mt-1">
         {names.length === 2
           ? t('quizzes.resultSections.closeCallBody', {
-              defaultValue: '{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.',
+              defaultValue: '{{a}} and {{b}} scored the same. Read both — the one you recognise is the one that counts.',
               a: names[0],
               b: names[1],
             })
           : t('quizzes.resultSections.closeCallBodyMany', {
-              defaultValue: '{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.',
+              defaultValue: '{{names}} all scored the same. Read them all — the one you recognise is the one that counts.',
               names: list(names),
             })}
       </p>

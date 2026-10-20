@@ -10,25 +10,28 @@ import {
   reasoningEffortFor,
 } from "../_shared/ai-providers.ts";
 import { localeInstruction } from "../_shared/locale.ts";
-import { cardPromptLines, fallbackReadingText } from "./reading-text.ts";
+import { cardHeadLine, cardNamesRule, cardPromptLines, fallbackReadingText } from "./reading-text.ts";
 
 /**
  * generate-reading — the AI interpretation of a laid spread, for the tarot
  * deck and (Phase 7) the ordinary 52-card playing deck.
  *
  * The client sends the cards WITH their canonical meanings (the server has
- * no deck data), the spread slug, and — for cartomancy spreads the server
- * has never heard of — the position labels, the rule-based combination
- * hits and, for the Yes/No and Wish spreads, the rule-based verdict, so the
- * model reads the table the way a reader would and explains the verdict
- * rather than contradicting it.
+ * no deck data) and the name each has on the reader's table, the spread
+ * slug, and — for cartomancy spreads the server has never heard of — the
+ * position labels, the rule-based combination hits and, for the Yes/No and
+ * Wish spreads, the rule-based verdict, so the model reads the table the
+ * way a reader would and explains the verdict rather than contradicting it.
  */
 
 type Deck = "tarot" | "playing";
 
 interface TarotCard {
   id: number;
+  /** English: how the model knows the card, and the name the Library row keeps. */
   name: string;
+  /** The name the reader's table shows, in the reading's language; the card is headed by it in the prompt. Older clients omit it. */
+  localName?: string;
   reversed: boolean;
   keywords?: string[];
   meaningUpright?: string;
@@ -114,6 +117,8 @@ const MAX_CARDS_TAROT = 10;
 /** The Romany spread lays 21 playing cards. */
 const MAX_CARDS_PLAYING = 21;
 const MAX_POSITION_LENGTH = 40;
+/** The longest card name in any locale is under 25 characters ("The Wheel of Fortune", 大王（红色鬼牌）). */
+const MAX_CARD_NAME_LENGTH = 60;
 const MAX_COMBINATIONS = 6;
 const MAX_COMBINATION_LENGTH = 200;
 const MAX_VERDICT_LENGTH = 120;
@@ -211,12 +216,17 @@ function buildPrompt(
 
   cards.forEach((card, index) => {
     const position = positions[index] || `Position ${index + 1}`;
-    const orientation = card.reversed ? "Reversed" : "Upright";
-    prompt += `\n- ${position}: ${card.name} (${orientation})\n`;
+    prompt += `\n${cardHeadLine(card, position)}\n`;
     for (const line of cardPromptLines(card, focusArea, excerptChars)) {
       prompt += `  ${line}\n`;
     }
   });
+
+  // Each card is called by the name the reader's table shows (p10 d2-ja-01).
+  const namesRule = cardNamesRule(cards);
+  if (namesRule) {
+    prompt += `\n${namesRule}\n`;
+  }
 
   if (combos.length) {
     prompt += `\nCombinations seen (rule-based, from the tradition's tables — read the table the way a reader would):\n`;
@@ -474,6 +484,12 @@ Deno.serve(
         if (!card || typeof card.name !== "string" || typeof card.id !== "number") {
           throw new AppError("INVALID_CARD", "Each card needs a numeric id and a name", 400);
         }
+        // Both names go into the prompt as a card's label: one short line,
+        // cleaned like every other string a client sends.
+        card.name = sanitizeUserInput(card.name, MAX_CARD_NAME_LENGTH);
+        card.localName = typeof card.localName === "string"
+          ? sanitizeUserInput(card.localName, MAX_CARD_NAME_LENGTH) || undefined
+          : undefined;
       }
 
       // --- Daily limit: count today's readings for this user ---
@@ -590,7 +606,8 @@ Deno.serve(
       // same inputs, so we cache aggressively (7d TTL). The tag is bumped on
       // every prompt/model change so no pre-change entry is served.
       // v4: reversed cards are read from their reversed meaning (p7 #13).
-      const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-reading-v4-reversed`;
+      // v5: cards are named as the reader's table names them (p10 d2-ja-01).
+      const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-reading-v5-table-names`;
       const cacheKey = await aiCacheKey("generate-reading", CACHE_MODEL_TAG, system, prompt);
       const cachedReading = await aiCacheGet<string>(ctx, cacheKey);
       if (cachedReading) {

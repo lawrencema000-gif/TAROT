@@ -156,7 +156,7 @@ describe('the other languages read as before', () => {
   it('weekly key moments', () => {
     expect(weeklyAspectEvent('en', ASPECT_EVENTS.en.conjunction[1], 'Jupiter', 'Moon')).toBe('Jupiter merges powerfully with your natal Moon');
     expect(weeklyAspectEvent('ja', ASPECT_EVENTS.ja.conjunction[1], '木星', '月')).toBe('木星と力強く融合します、対象はあなたのネイタル月');
-    expect(weeklyAspectEvent('zh', ASPECT_EVENTS.zh.conjunction[1], '木星', '月亮')).toBe('木星与之强力融合:你的本命月亮');
+    expect(weeklyAspectEvent('zh', ASPECT_EVENTS.zh.conjunction[1], '木星', '月亮')).toBe('木星与之强力融合：你的本命月亮');
   });
 
   it('monthly key dates and the outer-planet fallback', () => {
@@ -165,6 +165,6 @@ describe('the other languages read as before', () => {
     expect(monthlyIngress('zh', '水星', '水瓶座')).toBe('水星进入水瓶座');
     expect(outerPlanetFallback('en', 'Jupiter', 'Aries')).toBe('Jupiter transits through Aries, shaping collective themes.');
     expect(outerPlanetFallback('ja', '木星', '牡羊座')).toBe('木星が牡羊座を通過し、集合的なテーマを形作ります。');
-    expect(outerPlanetFallback('zh', '木星', '白羊座')).toBe('木星经过白羊座,塑造集体主题。');
+    expect(outerPlanetFallback('zh', '木星', '白羊座')).toBe('木星经过白羊座，塑造集体主题。');
   });
 });

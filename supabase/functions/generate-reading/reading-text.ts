@@ -9,7 +9,14 @@ import { normalizeAiLocale, type AiLocale } from "../_shared/locale.ts";
 
 export interface ReadingTextCard {
   id: number;
+  /** The card's English name: how the model knows the card, and the name the Library row keeps. */
   name: string;
+  /**
+   * The name the reader's table shows, in the reading's language (ja
+   * クラブの5). Sent since p10 d2-ja-01; an older client sends `name` alone,
+   * which is then the name its table shows.
+   */
+  localName?: string;
   reversed: boolean;
   keywords?: string[];
   meaningUpright?: string;
@@ -31,6 +38,43 @@ export function excerpt(input: string | undefined, maxChars: number): string {
   return (lastStop > Math.min(120, maxChars / 2) ? cut.slice(0, lastStop + 1) : cut).trim();
 }
 
+/** The name the reader's table shows the card by: `localName`, else `name`. */
+export function tableName(card: ReadingTextCard): string {
+  return card.localName || card.name;
+}
+
+/** True when the table names this card in another language than the English `name`. */
+function translatedName(card: ReadingTextCard): boolean {
+  return Boolean(card.localName) && card.localName !== card.name;
+}
+
+/**
+ * The line that opens a card in the prompt, under the name the reader's
+ * table shows: "- 過去から抱えているもの: クラブの5 (Upright)". It printed the
+ * English name, and a Japanese reading named its cards "Five of Clubs" and
+ * "Queen of Diamonds" — or translated them its own way, "九のダイヤ" for the
+ * table's ダイヤの9 (p10 d2-ja-01).
+ */
+export function cardHeadLine(card: ReadingTextCard, position: string): string {
+  return `- ${position}: ${tableName(card)} (${card.reversed ? "Reversed" : "Upright"})`;
+}
+
+/**
+ * The instruction after the card list: each card is called by its table
+ * name, exactly, in headings and in sentences. Only for a request that sent
+ * the table's names (an older client's prompt reads as before); the clause
+ * on English names only when some name is translated.
+ */
+export function cardNamesRule(cards: ReadingTextCard[]): string {
+  if (!cards.some((c) => c.localName)) return "";
+  const examples = [...new Set(cards.map(tableName))].slice(0, 3).map((n) => `"${n}"`).join(", ");
+  let rule = `Card names: call each card exactly by the name written after its position above (${examples}), character for character, in headings and in sentences alike — it is the name on the reader's table.`;
+  if (cards.some(translatedName)) {
+    rule += " Never write a card's English name (it is given only so you know the card), never translate a name yourself, and never shorten one to its rank or suit.";
+  }
+  return rule;
+}
+
 /**
  * The lines one card adds under its position in the prompt.
  *
@@ -41,9 +85,14 @@ export function excerpt(input: string | undefined, maxChars: number): string {
  * for the upright card, so a reversed Nine of Hearts reached the model as
  * its upright advice and the paid reading contradicted the result sheet
  * (p7 #13). Focus and advice lines now ride along as extra context.
+ *
+ * A card the table names in another language keeps its English name on a
+ * line of its own, for the model to know the card by (the playing deck's
+ * meanings are English); cardNamesRule keeps it out of the reading.
  */
 export function cardPromptLines(card: ReadingTextCard, focusArea: FocusArea | undefined, excerptChars: number): string[] {
   const lines: string[] = [];
+  if (translatedName(card)) lines.push(`English name (only so you know the card; never write it): ${card.name}`);
   if (card.keywords?.length) lines.push(`Keywords: ${card.keywords.slice(0, 6).join(", ")}`);
 
   const focusMeaning = focusArea === "love" ? card.loveMeaning : focusArea === "career" ? card.careerMeaning : undefined;
@@ -152,7 +201,7 @@ export function fallbackReadingText(p: {
   p.cards.forEach((card, index) => {
     const position = p.positions[index] || `${index + 1}`;
     const meaning = card.reversed ? (card.meaningReversed || card.meaningUpright) : card.meaningUpright;
-    reading += `**${position}: ${card.name}${card.reversed ? ` (${s.reversed})` : ""}**\n`;
+    reading += `**${position}: ${tableName(card)}${card.reversed ? ` (${s.reversed})` : ""}**\n`;
     reading += `${meaning || s.noMeaning}\n\n`;
   });
   if (p.verdict) reading += `**${s.verdict}:** ${p.verdict}\n\n`;

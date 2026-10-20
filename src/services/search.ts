@@ -1,299 +1,292 @@
-import { supabase } from '../lib/supabase';
-import { getAllTarotCards, getTarotCardById, getTarotCardsByArcana } from './tarotCards';
+import { journalEntries } from '../dal';
+import type { JournalEntryRow } from '../dal/journalEntries';
+import { getLocale, type SupportedLocale } from '../i18n/config';
+import { localizeCards } from '../i18n/localizeCard';
+import { ensureCartomancyCorpus, localizePlayingCards } from '../i18n/localizePlayingCard';
+import { localizeSignName } from '../i18n/localizeNames';
+import { PLAYING_CARDS_ALL } from '../data/cartomancy/deck';
+import { ZODIAC_SIGNS, type ZodiacSign } from '../types/astrology';
 import type { TarotCard } from '../types';
+import type { PlayingCard } from '../types/cartomancy';
 
-export interface SearchResult {
-  type: 'card' | 'reading' | 'journal' | 'saved';
+/*
+ * The header search (SearchSheet): the tarot and playing-card meanings, the
+ * zodiac signs and the member's own journal, matched in the language the
+ * app is in — 바보, 愚者 and 愚人 all find The Fool — and in English, which
+ * any member may type. Each result names what it is (a card id, a playing
+ * card's slug, a sign, an entry); the sheet opens its page.
+ *
+ * The sheet used to search nothing: "results will appear here" under every
+ * query, three made-up recent searches and quick links that did nothing
+ * (p10 d3-ko-13). Nothing called this module; its card search read the deck
+ * from the database once, in whatever language the app was in that day,
+ * and labelled its results in English.
+ */
+
+interface Hit {
+  /** Unique within its kind. */
   id: string;
+  /** In the reader's language: the card's or sign's name, an entry's title (empty when it has none). */
   title: string;
-  subtitle?: string;
-  preview?: string;
   relevance: number;
-  data: Record<string, unknown>;
 }
 
-let cachedDeck: TarotCard[] = [];
+export type CardResult = Hit & { type: 'card'; cardId: number; suit?: TarotCard['suit'] };
+export type PlayingCardResult = Hit & { type: 'playing-card'; slug: string; suit: PlayingCard['suit'] };
+export type SignResult = Hit & { type: 'sign'; sign: ZodiacSign };
+export type JournalResult = Hit & { type: 'journal'; date: string; excerpt: string };
+export type SearchResult = CardResult | PlayingCardResult | SignResult | JournalResult;
 
-async function getDeck(): Promise<TarotCard[]> {
-  if (cachedDeck.length === 0) {
-    cachedDeck = await getAllTarotCards();
+export interface SearchResults {
+  cards: CardResult[];
+  playingCards: PlayingCardResult[];
+  signs: SignResult[];
+  journal: JournalResult[];
+}
+
+/** The most of each kind the sheet lists, best first: a whole suit fits. */
+const LIMIT = 14;
+
+/**
+ * A string as the search compares it: NFKC (a full-width "ＦＯＯＬ" is
+ * "FOOL"), lower case, no spaces — "완드3" finds 완드 3, "thefool" The Fool.
+ */
+export function foldForSearch(text: string): string {
+  return text.normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+}
+
+/** A whole name 100, the start of one 80, part of one 60, part of a keyword 50; 0 is no match. */
+function relevanceOf(q: string, names: string[], keywords: string[] = []): number {
+  let best = 0;
+  for (const name of names) {
+    const n = foldForSearch(name);
+    if (!n) continue;
+    if (n === q) return 100;
+    if (n.startsWith(q)) best = Math.max(best, 80);
+    else if (n.includes(q)) best = Math.max(best, 60);
   }
-  return cachedDeck;
+  if (best === 0 && keywords.some((k) => foldForSearch(k).includes(q))) best = 50;
+  return best;
 }
 
-export function clearDeckCache(): void {
-  cachedDeck = [];
+/** Best first; equals keep their order (the deck's, the zodiac's, the journal's newest first). */
+function byRelevance<T extends Hit>(hits: T[]): T[] {
+  return [...hits].sort((a, b) => b.relevance - a.relevance);
 }
 
-export async function searchCards(query: string): Promise<SearchResult[]> {
-  const normalizedQuery = query.toLowerCase().trim();
-  if (!normalizedQuery) return [];
+/** "The Star" is also "Star". */
+function englishNames(name: string): string[] {
+  const bare = name.replace(/^the\s+/i, '');
+  return bare === name ? [name] : [name, bare];
+}
 
-  const results: SearchResult[] = [];
-  const deck = await getDeck();
+/*
+ * Names a reader types that the translations do not use, matched and never
+ * shown. The corpus names each card one way, but Chinese books call The
+ * Fool 愚人 as often as 愚者, Japanese ones the Hierophant 法王, Korean
+ * readers write the English names in Hangul as often as not (타워 for 탑),
+ * American English spells Judgment so, and Japanese horoscopes write the
+ * signs in kana (うお座). The English ones apply in every language.
+ */
+const TAROT_ALIASES: Partial<Record<SupportedLocale, Record<number, string[]>>> = {
+  en: { 20: ['Judgment'] },
+  ja: { 5: ['法王'] },
+  ko: {
+    1: ['매지션'], 2: ['하이 프리스티스'], 3: ['엠프레스'], 4: ['엠퍼러'], 5: ['하이어로펀트', '하이로펀트'],
+    6: ['러버즈', '러버스'], 7: ['채리엇'], 8: ['스트렝스'], 9: ['허밋'], 10: ['휠 오브 포춘'], 11: ['저스티스'],
+    12: ['행드맨'], 13: ['데스'], 14: ['템퍼런스'], 15: ['데빌'], 16: ['타워'], 17: ['스타'], 18: ['문'],
+    19: ['썬'], 20: ['저지먼트'], 21: ['월드'],
+  },
+  zh: { 0: ['愚人'], 1: ['魔法师'], 2: ['女教皇'], 3: ['皇后'], 9: ['隐者'], 12: ['吊人'], 16: ['高塔'] },
+};
 
-  deck.forEach(card => {
-    let relevance = 0;
+/** Other words for a suit, swapped into the names that carry it: 金貨のエース finds ペンタクルのエース, 红桃A finds 红心A. */
+const SUIT_SYNONYMS: Partial<Record<SupportedLocale, ReadonlyArray<readonly [string, readonly string[]]>>> = {
+  ja: [['ペンタクル', ['金貨', 'コイン']], ['ワンド', ['棒']], ['ソード', ['剣']], ['カップ', ['聖杯']]],
+  ko: [['클로버', ['클럽']]],
+  zh: [['星币', ['钱币', '金币']], ['红心', ['红桃']], ['梅花', ['草花']], ['方块', ['方片']]],
+};
 
-    const nameLower = card.name.toLowerCase();
-    if (nameLower === normalizedQuery) {
-      relevance = 100;
-    } else if (nameLower.startsWith(normalizedQuery)) {
-      relevance = 80;
-    } else if (nameLower.includes(normalizedQuery)) {
-      relevance = 60;
-    }
+const SIGN_ALIASES: Partial<Record<SupportedLocale, Partial<Record<ZodiacSign, string[]>>>> = {
+  ja: {
+    Aries: ['おひつじ座'], Taurus: ['おうし座'], Gemini: ['ふたご座'], Cancer: ['かに座'],
+    Leo: ['しし座'], Virgo: ['おとめ座'], Libra: ['てんびん座'], Scorpio: ['さそり座'],
+    Sagittarius: ['いて座'], Capricorn: ['やぎ座'], Aquarius: ['みずがめ座'], Pisces: ['うお座'],
+  },
+};
 
-    if (card.keywords.some(k => k.toLowerCase().includes(normalizedQuery))) {
-      relevance = Math.max(relevance, 50);
-    }
+/** A localized card name with each synonym of its suit swapped in. */
+function suitSpellings(name: string, locale: SupportedLocale): string[] {
+  const out: string[] = [];
+  for (const [word, others] of SUIT_SYNONYMS[locale] ?? []) {
+    if (name.includes(word)) for (const other of others) out.push(name.replace(word, other));
+  }
+  return out;
+}
 
-    if (card.suit && card.suit.toLowerCase().includes(normalizedQuery)) {
-      relevance = Math.max(relevance, 40);
-    }
-
-    if (card.arcana.toLowerCase().includes(normalizedQuery)) {
-      relevance = Math.max(relevance, 30);
-    }
-
-    if (relevance > 0) {
-      results.push({
-        type: 'card',
-        id: card.id.toString(),
-        title: card.name,
-        subtitle: card.arcana === 'major' ? 'Major Arcana' : `${card.suit} suit`,
-        preview: card.keywords.slice(0, 3).join(', '),
-        relevance,
-        data: card as unknown as Record<string, unknown>,
-      });
-    }
+/** The 78 tarot cards, by name (the reader's, English, the aliases) and the reader's keywords. */
+export async function searchCards(query: string): Promise<CardResult[]> {
+  const q = foldForSearch(query);
+  if (!q) return [];
+  const locale = getLocale();
+  // The deck ships with the app, as the card pages read it; the database
+  // copy was a round trip for the same names.
+  const { fullDeck } = await import('../data/tarotDeck');
+  const shown = localizeCards(fullDeck, locale);
+  const hits: CardResult[] = [];
+  fullDeck.forEach((en, i) => {
+    const card = shown[i];
+    const names = [
+      card.name,
+      ...suitSpellings(card.name, locale),
+      ...englishNames(en.name),
+      ...(TAROT_ALIASES.en?.[en.id] ?? []),
+      ...(locale === 'en' ? [] : TAROT_ALIASES[locale]?.[en.id] ?? []),
+    ];
+    const relevance = relevanceOf(q, names, card.keywords);
+    if (relevance > 0) hits.push({ type: 'card', id: String(en.id), title: card.name, relevance, cardId: en.id, suit: en.suit });
   });
-
-  return results.sort((a, b) => b.relevance - a.relevance);
+  return byRelevance(hits).slice(0, LIMIT);
 }
 
-export async function searchSavedItems(
-  userId: string,
-  query: string
-): Promise<SearchResult[]> {
-  const normalizedQuery = query.toLowerCase().trim();
-  if (!normalizedQuery) return [];
-
-  const { data, error } = await supabase
-    .from('saved_highlights')
-    .select('*')
-    .eq('user_id', userId);
-
-  if (error || !data) return [];
-
-  const results: SearchResult[] = [];
-
-  data.forEach(item => {
-    let relevance = 0;
-    const content = item.content as Record<string, unknown>;
-    const title = (content?.title as string) || '';
-    const notes = (content?.notes as string) || '';
-    const tags = (content?.tags as string[]) || [];
-
-    if (title.toLowerCase().includes(normalizedQuery)) {
-      relevance = 70;
-    }
-
-    if (notes.toLowerCase().includes(normalizedQuery)) {
-      relevance = Math.max(relevance, 60);
-    }
-
-    if (tags.some(t => t.toLowerCase().includes(normalizedQuery))) {
-      relevance = Math.max(relevance, 50);
-    }
-
-    if (relevance > 0) {
-      results.push({
-        type: 'saved',
-        id: item.id,
-        title: title || `Saved ${item.highlight_type}`,
-        subtitle: item.highlight_type,
-        preview: notes?.slice(0, 100) || undefined,
-        relevance,
-        data: content,
-      });
-    }
+/** The 54 playing cards. ja/ko/zh read the names from the cartomancy corpus, fetched here on the first search. */
+export async function searchPlayingCards(query: string): Promise<PlayingCardResult[]> {
+  const q = foldForSearch(query);
+  if (!q) return [];
+  await ensureCartomancyCorpus();
+  const locale = getLocale();
+  const shown = localizePlayingCards(PLAYING_CARDS_ALL, locale);
+  const hits: PlayingCardResult[] = [];
+  PLAYING_CARDS_ALL.forEach((en, i) => {
+    const card = shown[i];
+    const names = [card.name, ...suitSpellings(card.name, locale), ...englishNames(en.name)];
+    const relevance = relevanceOf(q, names, card.keywords);
+    if (relevance > 0) hits.push({ type: 'playing-card', id: String(en.id), title: card.name, relevance, slug: en.slug, suit: en.suit });
   });
-
-  return results.sort((a, b) => b.relevance - a.relevance);
+  return byRelevance(hits).slice(0, LIMIT);
 }
 
-export async function searchJournalEntries(
-  userId: string,
-  query: string
-): Promise<SearchResult[]> {
-  const normalizedQuery = query.toLowerCase().trim();
-  if (!normalizedQuery) return [];
-
-  const { data, error } = await supabase
-    .from('journal_entries')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error || !data) return [];
-
-  const results: SearchResult[] = [];
-
-  data.forEach(entry => {
-    let relevance = 0;
-    const content = (entry.content as string) || '';
-    const tags = (entry.tags as string[]) || [];
-    const prompt = (entry.prompt as string) || '';
-
-    if (content.toLowerCase().includes(normalizedQuery)) {
-      relevance = 70;
-    }
-
-    if (prompt.toLowerCase().includes(normalizedQuery)) {
-      relevance = Math.max(relevance, 60);
-    }
-
-    if (tags.some(t => t.toLowerCase().includes(normalizedQuery))) {
-      relevance = Math.max(relevance, 50);
-    }
-
-    if (relevance > 0) {
-      results.push({
-        type: 'journal',
-        id: entry.id,
-        title: new Date(entry.date).toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'short',
-          day: 'numeric',
-        }),
-        subtitle: tags.slice(0, 3).join(', ') || 'Journal Entry',
-        preview: content.slice(0, 120) + (content.length > 120 ? '...' : ''),
-        relevance,
-        data: entry as unknown as Record<string, unknown>,
-      });
-    }
-  });
-
-  return results.sort((a, b) => b.relevance - a.relevance);
+/** The twelve signs. */
+export function searchSigns(query: string): SignResult[] {
+  const q = foldForSearch(query);
+  if (!q) return [];
+  const locale = getLocale();
+  const hits: SignResult[] = [];
+  for (const sign of ZODIAC_SIGNS) {
+    const title = localizeSignName(sign, locale);
+    const relevance = relevanceOf(q, [title, sign, ...(SIGN_ALIASES[locale]?.[sign] ?? [])]);
+    if (relevance > 0) hits.push({ type: 'sign', id: sign, title, relevance, sign });
+  }
+  return byRelevance(hits);
 }
 
-export async function searchReadings(
-  userId: string,
-  query: string
-): Promise<SearchResult[]> {
-  const normalizedQuery = query.toLowerCase().trim();
-  if (!normalizedQuery) return [];
+/** How many of the member's newest entries the search reads. The journal's own search reads only the page it has loaded. */
+const JOURNAL_SCAN = 100;
 
-  const { data, error } = await supabase
-    .from('tarot_readings')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  if (error || !data) return [];
-
-  const results: SearchResult[] = [];
-
-  data.forEach(reading => {
-    let relevance = 0;
-    const interpretation = (reading.interpretation as string) || '';
-    const cards = (reading.cards as Array<{ card: TarotCard; position: string }>) || [];
-
-    if (interpretation.toLowerCase().includes(normalizedQuery)) {
-      relevance = 60;
-    }
-
-    const cardNames = cards.map(c => c.card?.name?.toLowerCase() || '');
-    if (cardNames.some(name => name.includes(normalizedQuery))) {
-      relevance = Math.max(relevance, 70);
-    }
-
-    const spreadType = (reading.spread_type as string) || '';
-    if (spreadType.toLowerCase().includes(normalizedQuery)) {
-      relevance = Math.max(relevance, 40);
-    }
-
-    if (relevance > 0) {
-      results.push({
-        type: 'reading',
-        id: reading.id,
-        title: `${spreadType.replace('-', ' ')} Reading`,
-        subtitle: new Date(reading.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }),
-        preview: cardNames.map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(', '),
-        relevance,
-        data: reading as unknown as Record<string, unknown>,
-      });
-    }
-  });
-
-  return results.sort((a, b) => b.relevance - a.relevance);
+/** The member's newest entries, newest first, to search; null when they could not be read. */
+export async function loadJournalForSearch(userId: string): Promise<JournalEntryRow[] | null> {
+  try {
+    const res = await journalEntries.listForUser(userId, { limit: JOURNAL_SCAN });
+    return res.ok ? res.data : null;
+  } catch {
+    return null;
+  }
 }
 
+/** An entry's opening words on one line, for its result. */
+function excerptOf(content: string, max = 90): string {
+  const line = content.replace(/\s+/g, ' ').trim();
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+/** Entries whose title, text, prompt or tags hold the query; a title match first. */
+export function searchJournalEntries(entries: JournalEntryRow[], query: string): JournalResult[] {
+  const q = foldForSearch(query);
+  if (!q) return [];
+  const hits: JournalResult[] = [];
+  for (const entry of entries) {
+    const title = entry.title?.trim() ?? '';
+    const content = entry.content ?? '';
+    const relevance =
+      title && foldForSearch(title).includes(q) ? 70
+      : foldForSearch(content).includes(q) ? 60
+      : entry.prompt && foldForSearch(entry.prompt).includes(q) ? 55
+      : (entry.tags ?? []).some((tag) => foldForSearch(tag).includes(q)) ? 50
+      : 0;
+    if (relevance > 0) hits.push({ type: 'journal', id: entry.id, title, relevance, date: entry.date, excerpt: excerptOf(content) });
+  }
+  return byRelevance(hits).slice(0, LIMIT);
+}
+
+/**
+ * Everything the header search finds for `query`, by kind. Playing cards
+ * only while their section is on (flag `cartomancy`: their pages are gated
+ * on it); the journal from the entries the caller loaded.
+ */
 export async function globalSearch(
-  userId: string | null,
   query: string,
-  options: { includeCards?: boolean; includeSaved?: boolean; includeJournal?: boolean; includeReadings?: boolean } = {}
-): Promise<SearchResult[]> {
-  const {
-    includeCards = true,
-    includeSaved = true,
-    includeJournal = true,
-    includeReadings = true,
-  } = options;
+  options: { playingCards?: boolean; journal?: JournalEntryRow[] | null } = {},
+): Promise<SearchResults> {
+  const [cards, playingCards] = await Promise.all([
+    // A deck chunk that will not load (a release since the app opened)
+    // leaves the other kinds to answer instead of failing the search.
+    searchCards(query).catch((): CardResult[] => []),
+    options.playingCards ? searchPlayingCards(query) : Promise.resolve([]),
+  ]);
+  return {
+    cards,
+    playingCards,
+    signs: searchSigns(query),
+    journal: options.journal ? searchJournalEntries(options.journal, query) : [],
+  };
+}
 
-  const results: SearchResult[] = [];
+// ── Recent searches ────────────────────────────────────────────────────
 
-  if (includeCards) {
-    const cardResults = await searchCards(query);
-    results.push(...cardResults);
+const RECENT_PREFIX = 'arcana_recent_searches:';
+/** How many recent searches a member keeps. */
+export const RECENT_SEARCH_LIMIT = 6;
+
+/** The device's list for one account. Exported for tests. */
+export function recentSearchesKey(userId: string): string {
+  return RECENT_PREFIX + userId;
+}
+
+/** What this member searched on this device, newest first. No account, or nothing stored: none. */
+export function loadRecentSearches(userId: string | null | undefined): string[] {
+  if (typeof window === 'undefined' || !userId) return [];
+  try {
+    const raw = window.localStorage.getItem(recentSearchesKey(userId));
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((s): s is string => typeof s === 'string' && s.trim() !== '').slice(0, RECENT_SEARCH_LIMIT);
+  } catch {
+    return [];
   }
+}
 
-  if (userId) {
-    const promises: Promise<SearchResult[]>[] = [];
-
-    if (includeSaved) {
-      promises.push(searchSavedItems(userId, query));
-    }
-    if (includeJournal) {
-      promises.push(searchJournalEntries(userId, query));
-    }
-    if (includeReadings) {
-      promises.push(searchReadings(userId, query));
-    }
-
-    const asyncResults = await Promise.all(promises);
-    asyncResults.forEach(r => results.push(...r));
+/**
+ * Keeps `query` as this member's newest search (the same search again moves
+ * up instead of repeating) and returns the list. A storage that refuses the
+ * write (private mode, a full quota) keeps nothing, quietly.
+ */
+export function rememberSearch(userId: string | null | undefined, query: string): string[] {
+  const q = query.trim().slice(0, 100);
+  if (!userId || !q) return loadRecentSearches(userId);
+  const next = [q, ...loadRecentSearches(userId).filter((s) => foldForSearch(s) !== foldForSearch(q))].slice(0, RECENT_SEARCH_LIMIT);
+  try {
+    window.localStorage.setItem(recentSearchesKey(userId), JSON.stringify(next));
+  } catch {
+    /* not kept */
   }
-
-  return results.sort((a, b) => b.relevance - a.relevance).slice(0, 50);
+  return next;
 }
 
-export async function getCardByName(name: string): Promise<TarotCard | undefined> {
-  const normalizedName = name.toLowerCase().trim();
-  const deck = await getDeck();
-  return deck.find(card => card.name.toLowerCase() === normalizedName);
-}
-
-export async function getCardById(id: number): Promise<TarotCard | null> {
-  return await getTarotCardById(id);
-}
-
-export async function getCardsBySuit(suit: string): Promise<TarotCard[]> {
-  const deck = await getDeck();
-  return deck.filter(card => card.suit === suit);
-}
-
-export async function getMajorArcana(): Promise<TarotCard[]> {
-  return await getTarotCardsByArcana('major');
-}
-
-export async function getMinorArcana(): Promise<TarotCard[]> {
-  return await getTarotCardsByArcana('minor');
+export function clearRecentSearches(userId: string | null | undefined): void {
+  if (!userId) return;
+  try {
+    window.localStorage.removeItem(recentSearchesKey(userId));
+  } catch {
+    /* nothing to clear */
+  }
 }

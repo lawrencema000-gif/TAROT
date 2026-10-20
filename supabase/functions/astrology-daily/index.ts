@@ -38,6 +38,9 @@ interface DailyRequest {
   locale?: string;
 }
 
+/** The cache revision of a locale's generated text (see the cache lookup in run). */
+const CACHE_REVISION: Partial<Record<Locale, number>> = { ja: 2, zh: 2 };
+
 function normDeg(d: number): number {
   return ((d % 360) + 360) % 360;
 }
@@ -206,8 +209,12 @@ Deno.serve(
 
       // Include locale in the cache type key so switching language
       // re-generates cleanly; English keeps the bare "daily" key so existing
-      // cache rows are still valid.
-      const cacheType = locale === "en" ? "daily" : `daily:${locale}`;
+      // cache rows are still valid. A locale's revision is bumped when its
+      // generated text changes, so a day cached before the change is not
+      // served for the rest of that day (ja and zh r2: full-width
+      // punctuation, p10 d2-ja-05, d3-ko-08).
+      const revision = CACHE_REVISION[locale];
+      const cacheType = (locale === "en" ? "daily" : `daily:${locale}`) + (revision ? `:r${revision}` : "");
 
       const { data: cached } = await ctx.supabase
         .from("astrology_horoscope_cache")

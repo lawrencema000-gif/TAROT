@@ -346,16 +346,44 @@ function formatMoney(amount: number, currency: string): string | null {
 }
 
 /**
+ * `amount` written the way `price` writes money: the same symbol in the same
+ * place, the same separators and the same number of decimals. The plan
+ * prices are the store's own strings, and Intl's currency style disagrees
+ * with them by locale: ko and zh write USD as "US$1.67" under a "$19.99"
+ * plan (p10 d3-ko-07). Null when `price` holds no figure to copy.
+ */
+function moneyLike(price: string, amount: number, currency: string): string | null {
+  const figure = /\d(?:[\d.,'\u00a0\u202f ]*\d)?/.exec(price);
+  if (!figure) return null;
+  const digits = figure[0];
+  let minor = 2;
+  try {
+    minor = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  } catch {
+    // An unknown code keeps two decimals.
+  }
+  // The decimal point is the separator the currency's minor digits follow;
+  // a price written without them ("₩29,000", "NT$590") keeps whole units.
+  const point = minor > 0 && new RegExp(`[.,]\\d{${minor}}$`).test(digits) ? digits[digits.length - minor - 1] : '';
+  const fraction = point ? minor : 0;
+  const group = /\D/.exec(point ? digits.slice(0, -(minor + 1)) : digits)?.[0] ?? '';
+  const [whole, part] = amount.toFixed(fraction).split('.');
+  const written = (group ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, group) : whole) + (part ? point + part : '');
+  return price.slice(0, figure.index) + written + price.slice(figure.index + digits.length);
+}
+
+/**
  * The yearly plan's monthly equivalent and how much it saves against twelve
  * months of the monthly plan. Both come from the products' own amounts; when
  * the store is unavailable the fallback prices work it out (58%). Nothing is
- * shown if the two plans are quoted in different currencies.
+ * shown if the two plans are quoted in different currencies. The monthly
+ * figure is written in the yearly price's own notation, beside which it sits.
  */
 function yearlyValue(plans: DisplayPlan[]): { perMonth: string | null; savePercent: number | null } {
   const monthly = plans.find((p) => p.id === 'monthly');
   const yearly = plans.find((p) => p.id === 'yearly');
   if (!yearly || yearly.amount <= 0) return { perMonth: null, savePercent: null };
-  const perMonth = formatMoney(yearly.amount / 12, yearly.currency);
+  const perMonth = moneyLike(yearly.price, yearly.amount / 12, yearly.currency) ?? formatMoney(yearly.amount / 12, yearly.currency);
   const comparable =
     monthly && monthly.amount > 0 && monthly.currency === yearly.currency && Boolean(monthly.product) === Boolean(yearly.product);
   const savePercent = comparable ? Math.round((1 - yearly.amount / (monthly.amount * 12)) * 100) : null;

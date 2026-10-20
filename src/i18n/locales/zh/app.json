@@ -451,7 +451,6 @@
       "insights": "洞察"
     },
     "todaysPrompt": "今日提示语",
-    "defaultPrompt": "今天想要反思什么？",
     "emptyState": "还没有日记。",
     "emptyStateSub": "今天就开始你的反思旅程吧。",
     "loadMore": "加载更多",
@@ -518,8 +517,10 @@
     "hasEntry": "已有日记",
     "insight": {
       "notYet": "再多写几条吧——当你有五条日记，且其中包含不止一种心情或主题时，规律就会在这里显现。",
-      "summary": "你最常在{{weekday}}写日记。你最常见的心情是{{mood}}（{{total}} 条中有 {{n}} 条）。",
-      "withTag": "你最常在{{weekday}}写日记。你最常见的心情是{{mood}}（{{total}} 条中有 {{n}} 条），而{{tag}}是你最常回到的主题。"
+      "weekday": "你最常在{{weekday}}写日记。",
+      "mood": "你最常见的心情是{{mood}}（{{total}} 条中有 {{n}} 条）。",
+      "moodTie": "你的心情多种多样，没有哪一种特别突出。",
+      "tag": "{{tag}}是你最常回到的主题。"
     },
     "linkedShort": "解读",
     "cardSeparator": "、",
@@ -1932,9 +1933,9 @@
       "yourDimensions": "你的维度",
       "yourScores": "你的得分",
       "yourTraitScores": "你的特质得分",
-      "closeCall": "难分高下",
-      "closeCallBody": "{{a}} 和 {{b}} 的得分只差一点点。两个都读一读——你认得出的那一个，才是算数的那一个。",
-      "closeCallBodyMany": "{{names}}的得分只差一点点。每一个都读一读——你认得出的那一个，才是算数的那一个。",
+      "closeCall": "得分相同",
+      "closeCallBody": "{{a}} 和 {{b}} 的得分相同。两个都读一读——你认得出的那一个，才是算数的那一个。",
+      "closeCallBodyMany": "{{names}}的得分相同。每一个都读一读——你认得出的那一个，才是算数的那一个。",
       "listSeparator": "、",
       "listLastSeparator": "和",
       "readingFirst": "先从{{name}}读起",
@@ -4426,7 +4427,7 @@
     "caution": "注意",
     "planetaryTransit": "行星行运",
     "dailyAffirmation": "每日肯定语",
-    "cardOfTheDay": "今日之牌",
+    "cardOfTheDay": "星座今日之牌",
     "luckyNumbersLabel": "幸运数字",
     "miniRitual": "小仪式",
     "actionStep": "行动步骤",
@@ -5080,7 +5081,11 @@
     "emailInvalid": "请输入有效的邮箱地址。",
     "emailFailed": "暂时无法为你订阅，请稍后再试。",
     "startReading": "开始解读",
-    "breadcrumb": "面包屑导航"
+    "breadcrumb": "面包屑导航",
+    "seo": {
+      "cardTitle": "塔罗牌{{name}}的含义——{{group}}",
+      "cardDesc": "塔罗牌{{name}}的含义：{{keywords}}。正位与逆位解读，以及爱情、事业和是 / 否解读。"
+    }
   },
   "admin": {
     "verifications": {
@@ -5683,11 +5688,6 @@
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",
-    "recent": {
-      "towerMeaning": "塔牌的含义",
-      "loveCompatibilityAries": "白羊座爱情配对",
-      "threeCardSpread": "三张牌阵"
-    },
     "recentSearches": "最近搜索",
     "quickLinks": "快捷入口",
     "quickLink": {
@@ -5695,7 +5695,20 @@
       "journalPrompts": "日记提示",
       "personalityQuiz": "人格测试"
     },
-    "resultsFor": "关于 \"{{query}}\" 的搜索结果将显示在这里"
+    "groups": {
+      "tarot": "塔罗牌",
+      "playing": "扑克牌",
+      "signs": "星座",
+      "journal": "我的日记"
+    },
+    "noResults": "没有与“{{query}}”匹配的结果",
+    "noResultsHint": "试试搜索牌名、星座或日记里的词语。",
+    "journalFailed": "无法搜索你的日记，请检查网络连接。",
+    "clearRecent": "清除",
+    "clearRecentLabel": "清除最近搜索",
+    "resultCount": "{{count}} 条结果",
+    "resultCount_one": "{{count}} 条结果",
+    "resultCount_other": "{{count}} 条结果"
   },
   "saved": {
     "title": "已收藏",
@@ -6731,7 +6744,6 @@
     "questionPlaceholder": "此刻对我最有帮助的是理解什么？",
     "castButton": "掷硬币",
     "casting": "占卜中…",
-    "hexagramLabel": "第",
     "judgement": "彖",
     "interpretation": "解读",
     "strengths": "长处",
@@ -6941,7 +6953,8 @@
     "readFullReading": "阅读完整解读",
     "askOracleCta": "请为我解读这一卦",
     "share": "分享这一卦",
-    "shareText": "我的易经卦象：{{name}}。{{tagline}}"
+    "shareText": "我的易经卦象：{{name}}。{{tagline}}",
+    "hexagramNumber": "第{{n}}卦"
   },
   "liuyao": {
     "hidden": {
@@ -10119,7 +10132,8 @@
       "mostlySteady": "这一周以{{mood}}为主，基调平稳。",
       "rising": "曲线上扬——这一周比上一周更轻松。",
       "tooFew": "再记录几天，看看会浮现出怎样的规律。"
-    }
+    },
+    "dominantMixed": "心境混杂"
   },
   "moodDiary": {
     "legacyTitle": "这台设备上保存的心境记录",
@@ -10683,8 +10697,8 @@
   },
   "referral": {
     "title": "邀请赚取",
-    "heading": "分享 Arcana，赚取月石",
-    "subtitle": "每位用你邀请码加入的好友可为你赚取100枚月石。他们也将获得100枚。",
+    "heading": "分享 Arcana，赚取月光石",
+    "subtitle": "每位用你邀请码加入的好友可为你赚取100枚月光石。他们也将获得100枚。",
     "yourCodeLabel": "你的邀请码",
     "copy": "复制链接",
     "copied": "已复制链接",
@@ -10914,7 +10928,7 @@
       "mbti": "性格（MBTI）",
       "love-language": "爱的语言",
       "attachment": "依恋类型",
-      "big-five": "大五（OCEAN）",
+      "big-five": "大五人格",
       "enneagram": "九型人格",
       "zodiac": "星座",
       "element": "元素"
@@ -10928,15 +10942,15 @@
     "notFound": "找不到这位顾问",
     "rate": "参考费率：${{dollars}}/小时",
     "durationLabel": "会话时长",
-    "costPreview": "{{n}} Moonstones",
+    "costPreview": "{{n}} 月光石",
     "pickSlot": "选择时间（未来7天）",
     "noAvailability": "这位顾问尚未发布可预约时间。",
     "topicLabel": "你想获得哪方面的帮助？（可选）",
     "topicPlaceholder": "任何具体事项——抉择、关系、行运等",
-    "bookCta": "以 {{n}} Moonstones 预订",
+    "bookCta": "以 {{n}} 月光石预订",
     "booking": "正在预订…",
-    "bookedToast": "已预订会话——我们已扣除 {{n}} Moonstones。",
-    "insufficientBalance": "Moonstones 余额不足。请充值后重试。",
+    "bookedToast": "已预订会话——我们已扣除 {{n}} 月光石。",
+    "insufficientBalance": "月光石余额不足。请充值后重试。",
     "slotTaken": "该时段刚被占用。请另选时间。",
     "bookFailed": "无法预订该时段，可能刚被别人订走了。请选择其他时间。",
     "disclaimer": "在会话开始前随时取消可全额退款。",
@@ -10956,7 +10970,7 @@
     "ended": "会话已结束",
     "end": "结束会话",
     "cancelled": "此会话已取消。",
-    "cancelledToast": "已取消。已退还 {{n}} Moonstones。",
+    "cancelledToast": "已取消。已退还 {{n}} 月光石。",
     "noMessages": "打个招呼开始吧。",
     "composerPlaceholder": "写条消息…",
     "sendFailed": "无法发送你的消息，请检查网络连接后重试。",
@@ -10970,7 +10984,7 @@
     "title": "顾问面板",
     "notAdvisorTitle": "你尚未开通顾问身份",
     "notAdvisorBody": "顾问均经人工审核。请写信给我们申请，收到回复后再验证你的身份。",
-    "apply": "Email advisors@tarotlife.app",
+    "apply": "发送邮件至 advisors@tarotlife.app",
     "upcomingTitle": "即将进行的会谈",
     "noUpcoming": "尚未预订会谈。",
     "availabilityTitle": "每周可约时间",
@@ -10982,18 +10996,18 @@
     "saved": "已保存可约时间",
     "invalidSlot": "结束时间须晚于开始时间。",
     "payoutsTitle": "提现",
-    "payoutsSetupBody": "完成 Stripe Connect 注册，将你的 Moonstones 兑换为现金。",
+    "payoutsSetupBody": "完成 Stripe Connect 注册，将你的月光石兑换为现金。",
     "setupPayouts": "设置提现",
     "continueOnboarding": "继续注册",
     "opening": "正在打开…",
-    "cashableLabel": "可提现 Moonstones",
-    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashableLabel": "可提现月光石",
+    "rateNote": "10 月光石 = $1.00 · 平台抽成 30% · 你得 70%",
     "cashoutCta": "提现",
     "cashingOut": "正在发送…",
-    "cashoutMinimum": "最低提现为 100 Moonstones。",
+    "cashoutMinimum": "最低提现为 100 月光石。",
     "cashoutExceeds": "金额超出可提现余额。",
     "cashoutSent": "已向你的 Stripe 账户发送 ${{usd}}。",
-    "cashoutMinNote": "最低 100 Moonstones（税前 $10 / 实得 $7）。",
+    "cashoutMinNote": "最低 100 月光石（税前 $10 / 实得 $7）。",
     "stripeFailed": "无法打开 Stripe 注册流程，请检查网络连接后重试。",
     "onboardingRequired": "请先完成 Stripe 注册。"
   },
@@ -11020,10 +11034,10 @@
     "notLiveYet": "主持人开始后将开启语音。",
     "rsvpToJoin": "先留座才能加入语音房间。",
     "tipHost": "打赏主持人",
-    "tipSent": "已向主持人发送 {{n}} 颗月石。",
+    "tipSent": "已向主持人发送 {{n}} 颗月光石。",
     "replayHeading": "回放",
-    "replayLocked": "任意时刻收听需 {{n}} 颗月石。",
-    "unlockReplay": "解锁回放 — {{n}} 颗月石",
+    "replayLocked": "任意时刻收听需 {{n}} 颗月光石。",
+    "unlockReplay": "解锁回放 — {{n}} 颗月光石",
     "unlocking": "正在解锁…",
     "replayUnlocked": "已解锁回放",
     "replayInsufficient": "月光石不足，无法解锁回放。可在首页组件充值，或通过每日签到赚取。",
@@ -11050,7 +11064,7 @@
     "approvedBody": "你的顾问资料已在目录中上线。",
     "rejectedTitle": "未通过审核",
     "reasonLabel": "原因：",
-    "rejectedHelp": "Contact advisors@tarotlife.app if you believe this is wrong.",
+    "rejectedHelp": "如果你认为这一结果有误，请联系 advisors@tarotlife.app。",
     "goDashboard": "打开控制台",
     "legalNameLabel": "法定姓名",
     "countryLabel": "国家",
@@ -11376,7 +11390,7 @@
     "frictionsHeading": "彼此磨合之处",
     "tryAnother": "再算一位",
     "share": "分享分数",
-    "shareText": "我们的 Arcana 灵魂伴侣分数是 {{score}}/100（{{vibe}}）。来 arcana.app 试试你的吧",
+    "shareText": "我们的 Arcana 灵魂伴侣分数是 {{score}}/100（{{vibe}}）。来试试你的吧：{{url}}",
     "disclaimer": "分数不是结论，而是对话的镜子。星盘描绘的是模式，不是命运。",
     "vibes": {
       "transcendent": "超越",
@@ -11720,7 +11734,7 @@
     "disclaimer": "无垃圾邮件。一键退订。5 天内 3 封邮件。"
   },
   "loveTree": {
-    "shareText": "我的 Arcana 爱之树：{{title}}——{{archetype}}。到 arcana.app/love-tree 找到你的",
+    "shareText": "我的 Arcana 爱之树：{{title}}——{{archetype}}。来找找你的爱之树：{{url}}",
     "title": "爱之树",
     "intro": "12 个问题，90 秒，一棵树。把你的依恋类型呈现为一个有生命的形状——再加上一段直白的解读，说说你如何去爱。",
     "howItWorksLabel": "如何进行",

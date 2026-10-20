@@ -215,8 +215,11 @@
   margin-bottom: 48px;
 }
 
+/* The display token, as every display heading reads it: Korean redefines
+   it, so the heading's Hangul and its marks come from the Korean face. The
+   stack spelled out here had no Korean face the app loads (p10 d3-ko-10). */
 .tm-related-title {
-  font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--tm-ink-100);

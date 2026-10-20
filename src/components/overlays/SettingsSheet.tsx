@@ -36,7 +36,7 @@ import { LanguagePicker } from '../i18n/LanguagePicker';
 import { EditProfileForm } from '../profile/EditProfileForm';
 import { BlockedMembers } from './BlockedMembers';
 import { useT } from '../../i18n/useT';
-import { getLocale, type SupportedLocale } from '../../i18n/config';
+import i18n, { getLocale, type SupportedLocale } from '../../i18n/config';
 import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
 import { shareFile } from '../../utils/nativeShare';
 import { cardBackSrc } from '../../utils/imageUrl';
@@ -64,7 +64,7 @@ type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'langu
  *  sync with the identical constant in App.tsx. */
 const CELESTIAL_BG_URL = 'celestial://animated';
 
-const SUPPORT_EMAIL = 'support@arcana.app';
+const SUPPORT_EMAIL = 'support@tarotlife.app';
 
 interface CardBackOption {
   url: string;
@@ -739,7 +739,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           console.warn('[Settings] Failed to persist locale:', e);
         }
       }
-      toast(tI18n('toast.languageChanged'), 'success');
+      // In the language just chosen. tI18n is this render's, from before the
+      // switch, and is bound to the language being left: the toast said
+      // "Language changed." over a sheet already in Japanese (p10 d1-en-02).
+      toast(i18n.t('toast.languageChanged', { ns: 'common', lng: locale }), 'success');
     };
 
     return (

@@ -242,6 +242,8 @@ export function FengShuiPage() {
     const loneFocus = focusAreas.length === 1 ? focusAreas[0] : null;
     const balancedTitle = t('fengshui.balanced.title', { defaultValue: 'Every area feels the same' }) as string;
     const balancedEyebrow = t('fengshui.balanced.eyebrow', { defaultValue: 'A balanced map' }) as string;
+    // ': ' in English and Korean, '：' after Japanese and Chinese (p10 d2-ja-06).
+    const labelSep = t('common:punctuation.labelSeparator', { defaultValue: ': ' }) as string;
 
     /** One focus area's remedy: what its low rating means, what to place, and where. */
     const focusRemedy = (area: BaguaArea, Heading: 'h3' | 'h4') => (
@@ -251,7 +253,7 @@ export function FengShuiPage() {
             {baguaText(area, 'lowReading')}
           </p>
           <p className="reading-meta mt-3">
-            {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {baguaText(area, 'element')} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {baguaText(area, 'color')}
+            {t('fengshui.elementLabel', { defaultValue: 'Element' })}{labelSep}{baguaText(area, 'element')} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}{labelSep}{baguaText(area, 'color')}
           </p>
         </section>
 

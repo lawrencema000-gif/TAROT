@@ -106,7 +106,7 @@ class RatePromptService {
   }
 
   getFeedbackEmail(): string {
-    return 'mailto:support@arcana.app?subject=Arcana%20App%20Feedback';
+    return 'mailto:support@tarotlife.app?subject=Arcana%20App%20Feedback';
   }
 }
 

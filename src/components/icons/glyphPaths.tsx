@@ -29,10 +29,12 @@ const ZODIAC_FRAGMENTS: Record<ZodiacSign, PathFragment> = {
       <circle cx="16" cy="14" r="0.7" fill="currentColor" stroke="none" />
     </>
   ),
+  // ♉'s horns are a cup resting on the head, rising to tips that turn
+  // outward. They used to arch down over the head (p10 d2-ja-11 check).
   Taurus: (
     <>
       <circle cx="16" cy="20" r="5.5" />
-      <path d="M 7 12 C 8.5 7, 12 6, 16 9 C 20 6, 23.5 7, 25 12" />
+      <path d="M 7 8 C 10 8, 11.5 14.5, 16 14.5 C 20.5 14.5, 22 8, 25 8" />
     </>
   ),
   Gemini: (
@@ -51,10 +53,13 @@ const ZODIAC_FRAGMENTS: Record<ZodiacSign, PathFragment> = {
       <circle cx="22" cy="17.8" r="2.2" fill="currentColor" stroke="none" />
     </>
   ),
+  // ♌: the small circle sits low on the left, and the stroke rises from it,
+  // arches over and comes down to a tail that flicks outward. It used to be
+  // drawn upside down, the circle on top (p10 d2-ja-11 check).
   Leo: (
     <>
-      <circle cx="13" cy="12" r="4.5" />
-      <path d="M 13 16.5 C 13 22, 17 24, 21 22 C 24 20.5, 24 17, 22.5 15.5" />
+      <circle cx="11" cy="19.5" r="3.5" />
+      <path d="M 14 17.5 C 12.5 13, 12.5 7.5, 17 7.5 C 21.5 7.5, 22.5 11.5, 20.5 16 C 19 19.5, 19 24, 22.5 24 C 24 24, 25 23, 25.5 21.5" />
     </>
   ),
   Virgo: (
@@ -101,10 +106,12 @@ const ZODIAC_FRAGMENTS: Record<ZodiacSign, PathFragment> = {
       <path d="M 6 20 L 10 17 L 14 20 L 18 17 L 22 20 L 26 17" />
     </>
   ),
+  // ♓ is ")–(": two crescents back to back, each bowing toward the other,
+  // the bar through both. The arcs used to bow outward, "(–)" (p10 d2-ja-11).
   Pisces: (
     <>
-      <path d="M 9 7 C 5 12, 5 20, 9 25" />
-      <path d="M 23 7 C 27 12, 27 20, 23 25" />
+      <path d="M 10 7 C 14.5 12, 14.5 20, 10 25" />
+      <path d="M 22 7 C 17.5 12, 17.5 20, 22 25" />
       <path d="M 8 16 L 24 16" />
     </>
   ),

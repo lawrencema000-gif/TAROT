@@ -181,7 +181,10 @@ export function IChingPage() {
   if (stage === 'result' && cast) {
     const primary = HEXAGRAMS[cast.primaryHexagram];
     const transformed = cast.transformedHexagram ? HEXAGRAMS[cast.transformedHexagram] : null;
-    const hexagramLabel = t('iching.hexagramLabel', { defaultValue: 'Hexagram' }) as string;
+    // "Hexagram 46" / 第46卦 / 제46괘: the number sits inside the language's
+    // own template. A label + space + number read 第 46 in Japanese and
+    // Chinese, with no 卦 (p10 d2-ja-14).
+    const hexagramNumber = (n: number) => t('iching.hexagramNumber', { defaultValue: 'Hexagram {{n}}', n }) as string;
 
     // The name is a UI string (iching.hexagrams.<n>.name); everything the
     // reading says comes from the 'iching' overlay, English where it has none.
@@ -193,7 +196,7 @@ export function IChingPage() {
       try {
         const blob = await renderShareCard({
           title: localizedName,
-          subtitle: `${hexagramLabel} ${primary.number}`,
+          subtitle: hexagramNumber(primary.number),
           tagline: reading.tagline,
           affirmation: reading.journalPrompt,
           brand: t('share.brand.iching', { defaultValue: 'I-Ching' }) as string,
@@ -228,8 +231,8 @@ export function IChingPage() {
             judgement, interpretation, strengths, cautions, the changing
             hexagram, the journal prompt. */}
         <ResultSheet
-          glyph={<HexagramGlyph number={primary.number} size={28} label={`${hexagramLabel} ${primary.number}`} />}
-          eyebrow={question ? t('iching.yourQuestion', { defaultValue: 'Your question' }) as string : `${hexagramLabel} ${primary.number}`}
+          glyph={<HexagramGlyph number={primary.number} size={28} label={hexagramNumber(primary.number)} />}
+          eyebrow={question ? t('iching.yourQuestion', { defaultValue: 'Your question' }) as string : hexagramNumber(primary.number)}
           title={question ? question : localizedName}
           summaryHeading={question ? `${localizedName} · ${reading.heading}` : reading.heading}
           summary={reading.tagline}
@@ -237,7 +240,7 @@ export function IChingPage() {
         >
           <div className="space-y-7">
             {question && (
-              <p className="reading-meta text-center">{`${hexagramLabel} ${primary.number}`}</p>
+              <p className="reading-meta text-center">{hexagramNumber(primary.number)}</p>
             )}
 
             <section>
@@ -284,7 +287,7 @@ export function IChingPage() {
                   </h3>
                 </div>
                 <div className="flex items-center gap-4">
-                  <HexagramGlyph number={transformed.number} size={44} className="text-ink-blue shrink-0" label={`${hexagramLabel} ${transformed.number}`} />
+                  <HexagramGlyph number={transformed.number} size={44} className="text-ink-blue shrink-0" label={hexagramNumber(transformed.number)} />
                   <div>
                     <p className="text-ink font-display font-semibold text-title">
                       {t(`iching.hexagrams.${transformed.number}.name`, { defaultValue: transformed.name })}

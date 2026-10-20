@@ -24,7 +24,10 @@ import { useT } from '../../i18n/useT';
  * Japanese — and is never cut: beside the streak pill, Japanese
  * "おはようございます." needed 293px of 244 and read "おはようござい…" every
  * morning (p8 F72). A title too wide for the line at the display size is set
- * one size down; only if that is still too wide does it wrap.
+ * one size down; only if that is still too wide does it wrap, between
+ * phrases (keep-phrases: Japanese and Chinese by phrase, Korean by word). It
+ * used to set [word-break:auto-phrase], which Chromium implements for
+ * Japanese only, so a Korean title broke between syllables (p10 d3-ko-09).
  */
 
 /**
@@ -110,7 +113,7 @@ export function HomeHero({
         <div ref={boxRef} className="min-w-0 flex-1">
           {name && <EyebrowLabel className="!text-mystic-400">{greeting}</EyebrowLabel>}
           <h1
-            className={`${fits ? 'heading-display-xl' : 'heading-display-lg line-clamp-2 [word-break:auto-phrase] [overflow-wrap:anywhere]'} lining-nums text-mystic-100 ${name ? 'mt-1' : ''}`}
+            className={`${fits ? 'heading-display-xl' : 'heading-display-lg line-clamp-2 keep-phrases [overflow-wrap:anywhere]'} lining-nums text-mystic-100 ${name ? 'mt-1' : ''}`}
           >
             {heading}
           </h1>

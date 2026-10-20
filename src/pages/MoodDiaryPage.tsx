@@ -583,6 +583,10 @@ export function MoodDiaryPage() {
 
   const entryCount = last30.filter((e) => e !== null).length;
   const avgIntensity = last30.filter((e): e is MoodEntry => e !== null).reduce((sum, e) => sum + e.intensity, 0) / Math.max(1, entryCount);
+  // The mood logged most often, or none when two or more share the top
+  // count — the rule the weekly card's dominant() keeps. Three moods logged
+  // once each named the first one logged, right above "a mixed week"
+  // (p10 d3-ko-04).
   const dominantMood = (() => {
     const counts = new Map<MoodCategory, number>();
     for (const e of last30) {
@@ -591,10 +595,12 @@ export function MoodDiaryPage() {
     }
     let max = 0;
     let top: MoodCategory | null = null;
+    let tie = false;
     for (const [cat, count] of counts) {
-      if (count > max) { max = count; top = cat; }
+      if (count > max) { max = count; top = cat; tie = false; }
+      else if (count === max) tie = true;
     }
-    return top;
+    return tie ? null : top;
   })();
 
   // SVG curve dimensions
@@ -685,21 +691,27 @@ export function MoodDiaryPage() {
         </div>
       </Card>
 
-      {dominantMood && (
+      {/* A tie shows no mood's glyph or name, only that the days were mixed;
+          the average intensity stays. */}
+      {entryCount > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-3">
-            <span
-              className={`shrink-0 inline-flex w-10 h-10 items-center justify-center rounded-control ${TILE_TONE[MOOD_CATEGORIES[dominantMood].tone]}`}
-              aria-hidden
-            >
-              <MoodGlyph glyph={MOOD_CATEGORIES[dominantMood].glyph} size={22} />
-            </span>
+            {dominantMood && (
+              <span
+                className={`shrink-0 inline-flex w-10 h-10 items-center justify-center rounded-control ${TILE_TONE[MOOD_CATEGORIES[dominantMood].tone]}`}
+                aria-hidden
+              >
+                <MoodGlyph glyph={MOOD_CATEGORIES[dominantMood].glyph} size={22} />
+              </span>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-meta text-mystic-400">
                 {t('mood.dominantLabel', { defaultValue: 'Most common mood' })}
               </p>
               <p className="text-ui text-mystic-100 font-medium">
-                {t(`mood.categories.${dominantMood}.name`, { defaultValue: MOOD_CATEGORIES[dominantMood].name })}
+                {dominantMood
+                  ? t(`mood.categories.${dominantMood}.name`, { defaultValue: MOOD_CATEGORIES[dominantMood].name })
+                  : t('mood.dominantMixed', { defaultValue: 'Mixed' })}
               </p>
             </div>
             <p className="text-meta text-mystic-400 tabular-nums text-right">

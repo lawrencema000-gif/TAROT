@@ -44,7 +44,7 @@ interface MonthlyRequest {
 }
 
 /** The cache revision of a locale's generated text (see the cache lookup in run). */
-const CACHE_REVISION: Partial<Record<Locale, number>> = { ko: 2 };
+const CACHE_REVISION: Partial<Record<Locale, number>> = { ko: 2, ja: 2, zh: 2 };
 
 function normDeg(d: number): number {
   return ((d % 360) + 360) % 360;
@@ -134,7 +134,8 @@ Deno.serve(
 
       // A locale's revision is bumped when its generated text changes, so a
       // month cached before the change is not served until the 1st (ko r2:
-      // the particles agree with the names, p9 QT2).
+      // the particles agree with the names, p9 QT2; ja and zh r2: full-width
+      // punctuation, p10 d2-ja-05, d3-ko-08).
       const revision = CACHE_REVISION[locale];
       const cacheType = (locale === "en" ? "monthly" : `monthly:${locale}`) + (revision ? `:r${revision}` : "");
       const { data: cached } = await ctx.supabase

@@ -22,6 +22,7 @@ import { getBundledCardPath } from '../../../config/bundledImages';
 import { localizeCardNameSync } from '../../../i18n/localizeCard';
 import { localizeCartoSpread, localizePlayingCard } from '../../../i18n/localizePlayingCard';
 import { useT } from '../../../i18n/useT';
+import { getLocale } from '../../../i18n/config';
 import type { TarotCard } from '../../../types';
 import type { CartoSpread, PlayingCard, PlayingSuit } from '../../../types/cartomancy';
 import type { FocusArea } from './types';
@@ -400,7 +401,11 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
   const { sharing, shareOnce } = useShareOnce();
 
   // The tarot deck, for the meanings (and for names saved before ids were
-  // kept): by id when the row carries one, by name otherwise.
+  // kept): by id when the row carries one, by name otherwise. It comes back
+  // in the language on screen, so a language change reads it again; read
+  // once, the reading kept the language it was opened in (p10 d1-en-01).
+  // The deck on hand stays until the new one is in.
+  const locale = getLocale();
   const [deck, setDeck] = useState<TarotCard[] | null>(null);
   useEffect(() => {
     if (playing) return;
@@ -411,7 +416,7 @@ export function SavedReadingSheet({ reading, dateLabel }: { reading: SavedReadin
     return () => {
       live = false;
     };
-  }, [playing]);
+  }, [playing, locale]);
 
   if (playing) {
     return (

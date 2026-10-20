@@ -340,6 +340,15 @@ export function LibrarySection() {
     return savedCardLine(t, (reading.cards ?? []).map((c) => ({ name: savedCardName(c, playing), reversed: c.reversed })));
   };
 
+  /**
+   * A row's focus in the reader's language: the saved spread's ("Career") and
+   * the AI reading's ("career", as the request sent it) alike. The AI row
+   * printed the stored value, capitalized: "Career" in the Japanese Library
+   * beside キャリア on the same reading's saved row (p10 d2-ja-03). Free text
+   * a row stored is shown as stored.
+   */
+  const focusLabel = (focus: string) => t(`readings.focusAreas.${focus.toLowerCase()}`, { defaultValue: focus });
+
   /** An AI reading's cards, named the same way (generate-reading stores the name the client sent). */
   const premiumCards = (reading: PremiumReading) => {
     const playing = isPlayingPremium(reading);
@@ -437,7 +446,7 @@ export function LibrarySection() {
                               <span className={asked ? 'text-meta text-mystic-400 truncate' : 'text-ui font-medium text-mystic-100 truncate'}>{name}</span>
                               {reading.focus_area && (
                                 <Tag tone="neutral" size="sm">
-                                  {t(`readings.focusAreas.${reading.focus_area.toLowerCase()}`, { defaultValue: reading.focus_area })}
+                                  {focusLabel(reading.focus_area)}
                                 </Tag>
                               )}
                             </span>
@@ -589,12 +598,12 @@ export function LibrarySection() {
                       <span className="flex-1 min-w-0 block">
                         <span className="flex items-center gap-2 mb-1 min-w-0">
                           <span className="text-ui font-medium text-mystic-100 truncate">{name}</span>
-                          {reading.context.usedLlm && (
+                          {reading.context?.usedLlm && (
                             <Badge tone="violet">AI</Badge>
                           )}
-                          {reading.context.focusArea && (
-                            <Tag tone="neutral" size="sm" className="capitalize">
-                              {reading.context.focusArea}
+                          {reading.context?.focusArea && (
+                            <Tag tone="neutral" size="sm">
+                              {focusLabel(reading.context.focusArea)}
                             </Tag>
                           )}
                         </span>
@@ -782,15 +791,17 @@ export function LibrarySection() {
               <h4 className="font-display-eyebrow mb-3">{t('library.reading.interpretation')}</h4>
               {/* As the reveal reads it (p9 Q10): the opening paragraph as the
                   lede, then each block under its heading, numbers dropped,
-                  the actions as a list. */}
+                  the actions as a list. The sections' own spacing runs from
+                  the lede down: the first heading sat flush under the lede,
+                  20px less than every heading after it (p10 d1-en-06). */}
               {(() => {
                 const { lede, rest } = splitLede(selectedReading.content);
                 if (!lede) return <ReadingProse text={selectedReading.content} />;
                 return (
-                  <>
+                  <div className="space-y-5">
                     <ReadingProse text={lede} />
                     {rest && <AiReadingSections text={rest} headingLevel="h5" />}
-                  </>
+                  </div>
                 );
               })()}
               {selectedReading.context.usedLlm && (

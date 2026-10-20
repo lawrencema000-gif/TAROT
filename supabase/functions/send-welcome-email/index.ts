@@ -18,6 +18,14 @@ interface WelcomeEmailPayload {
   user_id?: string;
 }
 
+const SITE_URL = "https://tarotlife.app";
+// The newsletter's sender and reply-to (send-newsletter-course). This email
+// was sent from an address on arcana.app, a domain that is not ours, so
+// Resend could never verify it and refused the send (p10). The reply-to
+// matters here: the unsubscribe page asks a reader it cannot match to reply.
+const FROM_EMAIL = Deno.env.get("NEWSLETTER_FROM_EMAIL") || "Arcana <onboarding@resend.dev>";
+const REPLY_TO = Deno.env.get("NEWSLETTER_REPLY_TO") || "lawrence.ma000@gmail.com";
+
 const generateWelcomeEmailHtml = (name: string) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -103,7 +111,7 @@ const generateWelcomeEmailHtml = (name: string) => `
               <table role="presentation" style="width: 100%; margin: 40px 0;">
                 <tr>
                   <td style="text-align: center;">
-                    <a href="https://arcana.app" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%); color: #0f0f1a; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);">
+                    <a href="${SITE_URL}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%); color: #0f0f1a; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);">
                       Begin Your Daily Ritual
                     </a>
                   </td>
@@ -127,9 +135,9 @@ const generateWelcomeEmailHtml = (name: string) => `
                       You're receiving this because you signed up for Arcana with newsletter subscription enabled.
                     </p>
                     <p style="margin: 0; font-size: 12px; color: #606070;">
-                      <a href="https://arcana.app/unsubscribe" style="color: #808090; text-decoration: underline;">Unsubscribe</a>
+                      <a href="${SITE_URL}/unsubscribe" style="color: #808090; text-decoration: underline;">Unsubscribe</a>
                       &nbsp;&bull;&nbsp;
-                      <a href="https://arcana.app/privacy" style="color: #808090; text-decoration: underline;">Privacy Policy</a>
+                      <a href="${SITE_URL}/privacy-policy.html" style="color: #808090; text-decoration: underline;">Privacy Policy</a>
                     </p>
                     <p style="margin: 15px 0 0; font-size: 11px; color: #505060;">
                       &copy; 2025 Arcana. All rights reserved.
@@ -212,8 +220,9 @@ Deno.serve(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Arcana <hello@arcana.app>",
+          from: FROM_EMAIL,
           to: [email],
+          reply_to: REPLY_TO,
           subject: "Welcome to Arcana - Your Cosmic Journey Begins",
           html: htmlContent,
         }),

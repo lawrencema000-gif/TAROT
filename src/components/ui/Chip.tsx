@@ -252,6 +252,18 @@ export interface TagProps {
 const KEYWORD_PILL =
   'keyword-pill inline-flex items-center justify-center text-center max-w-full rounded-full px-3 py-1 min-h-7 text-caption leading-tight font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
 
+// A Tag never shrinks, and breaks only between words. Beside a truncating
+// title in a row (the Library's 3枚引き：過去… [AI] [キャリア]) a pill that may
+// shrink is squeezed with the title, and inside a button the ja/ko/zh text
+// rules (index.css, `overflow-wrap: anywhere`) let it break anywhere: at
+// 390px the Library printed キャリ/ア, Car/eer and A/I, each pill two lines
+// tall (p10 d2-ja-04). shrink-0 leaves the room to the title, which
+// truncates. keep-all and `overflow-wrap: normal` keep a word whole — a
+// Japanese or Korean one too — while a sentence set as a Tag (the map's
+// "Drag to pan · Pinch to zoom · …" hint) still wraps at its spaces rather
+// than running off a phone, as nowrap would.
+const TAG_LINE = 'shrink-0 break-keep [overflow-wrap:normal]';
+
 /** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
 export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {
   if (variant === 'keyword') {
@@ -259,7 +271,7 @@ export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = '
   }
   const sz = size === 'sm' ? 'px-2 py-0.5 text-caption gap-1' : 'px-2.5 py-1 text-meta gap-1.5';
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${sz} ${TINT[tone]} ${className}`.trim()}>
+    <span className={`inline-flex items-center rounded-full font-medium ${TAG_LINE} ${sz} ${TINT[tone]} ${className}`.trim()}>
       {icon}
       {children}
     </span>
@@ -306,11 +318,14 @@ export interface BadgeProps {
  * Monetisation — Premium, Try, Unlocked, a credit count — is `tone="violet"`
  * (cosmic-violet-ink, 5.0:1 on a card): one reserved hue so gold can go
  * back to meaning CTA, eyebrow and active. Everything else keeps gold.
+ *
+ * One line, never shrunk: a status is a word or two, and beside a
+ * truncating title the Library's AI badge broke as A/I (p10 d2-ja-04).
  */
 export function Badge({ children, tone = 'gold', pulse = false, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
+      className={`inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
     >
       {pulse && <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />}
       {children}

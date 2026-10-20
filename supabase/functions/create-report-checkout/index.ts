@@ -19,6 +19,7 @@
  */
 
 import Stripe from "npm:stripe@14.10.0";
+import { isAppRedirectUrl } from "../_shared/cors.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
 
@@ -27,22 +28,6 @@ const REPORT_PRICES: Record<string, { label: string; amountCents: number }> = {
   'natal-chart-pdf':  { label: 'Full Natal Chart Report',  amountCents: 999 },
   'year-ahead':       { label: 'Year Ahead Forecast',      amountCents: 1299 },
 };
-
-const ALLOWED_HOSTS = [
-  'localhost', '127.0.0.1',
-  'arcana.app', 'www.arcana.app',
-  'tarotlife.app', 'www.tarotlife.app',
-  'arcana-ritual-app.netlify.app',
-];
-
-function allowedRedirect(url: string): boolean {
-  try {
-    const h = new URL(url).hostname.toLowerCase();
-    return ALLOWED_HOSTS.some((a) => h === a || h.endsWith(`.${a}`));
-  } catch {
-    return false;
-  }
-}
 
 const RequestSchema = z.object({
   reportKey: z.enum(['career-archetype', 'natal-chart-pdf', 'year-ahead']),
@@ -79,7 +64,7 @@ Deno.serve(handler<Req, Resp>({
   run: async (ctx, body) => {
     const { reportKey, reference, successUrl, cancelUrl, clientPlatform } = body;
 
-    if (!allowedRedirect(successUrl) || !allowedRedirect(cancelUrl)) {
+    if (!isAppRedirectUrl(successUrl) || !isAppRedirectUrl(cancelUrl)) {
       throw new AppError("INVALID_REDIRECT_URL", "Redirect URLs must be on an approved host", 400);
     }
 

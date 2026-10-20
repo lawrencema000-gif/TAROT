@@ -563,7 +563,7 @@ export function RedesignShowcasePage() {
       {/* Inputs */}
       <section className="space-y-4">
         <EyebrowLabel rules>Inputs</EyebrowLabel>
-        <Input label="Email address" placeholder="seeker@arcana.app" />
+        <Input label="Email address" placeholder="seeker@example.com" />
         <Input label="With error" error="Please enter a valid email" placeholder="seeker@arcana" />
         <TextArea label="Reflection" placeholder="What are you grateful for today?" rows={3} />
       </section>

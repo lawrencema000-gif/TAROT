@@ -13,6 +13,7 @@
  */
 
 import Stripe from "npm:stripe@14.10.0";
+import { isAppRedirectUrl } from "../_shared/cors.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
 
@@ -26,22 +27,6 @@ interface Resp {
   accountId: string;
 }
 
-const ALLOWED_HOSTS = [
-  'localhost', '127.0.0.1',
-  'arcana.app', 'www.arcana.app',
-  'tarotlife.app', 'www.tarotlife.app',
-  'arcana-ritual-app.netlify.app',
-];
-
-function allowedRedirect(url: string): boolean {
-  try {
-    const h = new URL(url).hostname.toLowerCase();
-    return ALLOWED_HOSTS.some((a) => h === a || h.endsWith(`.${a}`));
-  } catch {
-    return false;
-  }
-}
-
 // Deno.serve required on Supabase Edge Runtime when importing npm:stripe —
 // `export default handler(...)` alone makes OPTIONS preflight hang 15s+.
 Deno.serve(handler<Req, Resp>({
@@ -51,7 +36,7 @@ Deno.serve(handler<Req, Resp>({
   rateLimit: { max: 10, windowMs: 10 * 60_000 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
-    if (!allowedRedirect(body.returnUrl)) {
+    if (!isAppRedirectUrl(body.returnUrl)) {
       throw new AppError("INVALID_REDIRECT_URL", "Return URL must be on an approved host", 400);
     }
 

@@ -14,7 +14,7 @@ import { ShadowResult } from '../results/ShadowResult';
 import { EnneagramResult } from '../results/EnneagramResult';
 import { ElementResult } from '../results/ElementResult';
 import { CourtMatchResult } from '../results/CourtMatchResult';
-import { calculateExtraQuiz, darkTriadQuiz, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
+import { calculateExtraQuiz, darkTriadQuiz, discQuiz, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
 import { empathQuiz, selfCompassionQuiz } from '../../../data/extraQuizzesPart2';
 import { ayurvedaQuiz, calculateDosha } from '../../../data/ayurvedaQuiz';
 import { calculateLoveLanguage, loveLanguageQuiz } from '../../../data/quizzes';
@@ -27,7 +27,9 @@ import { calculateCourtMatch, tarotCourtQuiz } from '../../../data/tarotCourtQui
  * What a person READS on a tied result (F19, F65) and on a self-compassion
  * result with no single weak component (O#160), through the real renderers
  * and the real locale files. The close call says the scores are the same
- * ("Tied", 同率); it used to call a tie a narrow gap (p10 d2-ja-07).
+ * ("Tied", 同率) when they are; it used to call every tie a narrow gap
+ * (p10 d2-ja-07). A dimensional quiz's tie within TIE_MARGIN is still a
+ * close call.
  */
 
 const noop = () => {};
@@ -69,6 +71,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
     const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
     expect(verdict.textContent).toMatch(/Your shadow runs coldest/);
     expect(screen.queryByText('Tied')).toBeNull();
+    expect(screen.queryByText('Close call')).toBeNull();
     expect(screen.queryByText(/^Shared with/)).toBeNull();
     expect(emphasisedBars()).toHaveLength(1);
   });
@@ -89,6 +92,95 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
       expect(screen.getByText(`${n('narcissism')}、${n('machiavellianism')}、${n('psychopathy')}のスコアは同じでした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。`)).toBeInTheDocument();
       expect(within(verdict).getByText(`${n('machiavellianism')}、${n('psychopathy')}と同率`)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: `まずは${n('narcissism')}として読む` })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+});
+
+/*
+ * p10 d2-ja-07 made the close call say the tied scores are equal, and a
+ * dimensional quiz ties on any mean within TIE_MARGIN (0.25) of the top:
+ * DISC with every Dominance item Agree and every Influence item Agree but
+ * one Neutral is 4.0 to 3.8, and the box read "Tied — Dominance (D) and
+ * Influence (I) scored the same" over bars of 4.0 and 3.8. A tie whose
+ * means differ is a close call; equal means are still "the same".
+ */
+describe('a near tie on a dimensional quiz is a close call, not "the same"', () => {
+  /** DISC scored from answers: a listed dimension's items at `v`, its fifth item at `fifth` (default `v`); the rest Disagree (2). */
+  const disc = (levels: Record<string, [v: number, fifth?: number]>) =>
+    calculateExtraQuiz(
+      'disc-v1',
+      Object.fromEntries(discQuiz.questions.map((q) => {
+        const [v, fifth = v] = levels[q.dimension ?? ''] ?? [2];
+        return [q.id, q.id.endsWith('5') ? fifth : v];
+      })),
+    )!;
+  // Dominance 4.0, Influence 3.8, Steadiness and Conscientiousness 2.0.
+  const nearTie = () => disc({ dominance: [4], influence: [4, 3] });
+
+  it('DISC 4.0 / 3.8 (en): "Close call … within a hair", above the bars that show the gap', () => {
+    const result = nearTie();
+    expect(result.isTie).toBe(true);
+    expect(result.tied).toEqual(['dominance', 'influence']);
+    expect([result.averages.dominance, result.averages.influence]).toEqual([4, 3.8]);
+    const { verdict } = mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Close call')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D) and Influence (I) scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText('Tied')).toBeNull();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
+    // Still read as a shared top, with the two numbers it is close between.
+    expect(within(verdict).getByText('Shared with Influence (I)')).toBeInTheDocument();
+    expect(screen.getByText('4.0')).toBeInTheDocument();
+    expect(screen.getByText('3.8')).toBeInTheDocument();
+  });
+
+  it('a three-way near tie (4.0 / 4.0 / 3.8) names all three as close, not the same', () => {
+    const result = disc({ dominance: [4], influence: [4], steadiness: [4, 3] });
+    expect(result.tied).toEqual(['dominance', 'influence', 'steadiness']);
+    mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Close call')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D), Influence (I) and Steadiness (S) scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
+  });
+
+  it('DISC 4.0 / 4.0: equal means are still "Tied … scored the same"', () => {
+    const result = disc({ dominance: [4], influence: [4] });
+    expect(result.tied).toEqual(['dominance', 'influence']);
+    mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Tied')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D) and Influence (I) scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText('Close call')).toBeNull();
+  });
+
+  it.each([
+    { lng: 'ja', near: '僅差', tied: '同率', body: '{a}と{b}のスコアは、ほんのわずかな差でした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。' },
+    { lng: 'ko', near: '근소한 차이', tied: '동점', body: '{a}, {b} 두 결과의 점수가 거의 차이 나지 않아요. 둘 다 읽어 보세요 — 당신에게 와닿는 쪽이 의미 있는 결과예요.' },
+    { lng: 'zh', near: '难分高下', tied: '得分相同', body: '{a} 和 {b} 的得分只差一点点。两个都读一读——你认得出的那一个，才是算数的那一个。' },
+  ])('$lng: DISC 4.0 / 3.8 is headed $near, not $tied', async ({ lng, near, tied, body }) => {
+    await i18n.changeLanguage(lng);
+    try {
+      mount(<ExtraResult quiz={discQuiz} result={nearTie()} onBack={noop} onRetake={noop} />);
+      const n = (k: string) => i18n.t(`extraQuizzes.disc.results.${k}.name`, { ns: 'app' });
+      expect(n('influence')).not.toBe('extraQuizzes.disc.results.influence.name');
+      expect(screen.getByText(near)).toBeInTheDocument();
+      expect(screen.getByText(body.replace('{a}', n('dominance')).replace('{b}', n('influence')))).toBeInTheDocument();
+      expect(screen.queryByText(tied)).toBeNull();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('ja: the verdict line says 僅差 for a near tie and 同率 for an exact one', async () => {
+    await i18n.changeLanguage('ja');
+    try {
+      const influence = i18n.t('extraQuizzes.disc.results.influence.name', { ns: 'app' });
+      const near = mount(<ExtraResult quiz={discQuiz} result={nearTie()} onBack={noop} onRetake={noop} />);
+      expect(within(near.verdict).getByText(`${influence}と僅差`)).toBeInTheDocument();
+      expect(within(near.verdict).queryByText(/同率/)).toBeNull();
+      cleanup();
+      const exact = mount(<ExtraResult quiz={discQuiz} result={disc({ dominance: [4], influence: [4] })} onBack={noop} onRetake={noop} />);
+      expect(within(exact.verdict).getByText(`${influence}と同率`)).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage('en');
     }

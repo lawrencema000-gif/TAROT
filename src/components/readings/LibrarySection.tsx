@@ -444,8 +444,11 @@ export function LibrarySection() {
                                 question takes the title's full width (two lines at most). */}
                             <span className={`flex items-center gap-2 min-w-0 ${asked ? 'mb-0.5' : 'mb-1'}`}>
                               <span className={asked ? 'text-meta text-mystic-400 truncate' : 'text-ui font-medium text-mystic-100 truncate'}>{name}</span>
+                              {/* One unbroken pill: the title beside it truncates instead. A
+                                  pill that could shrink was squeezed with the title and, inside
+                                  the button, broke as キャリ/ア at 390px (p10 d2-ja-04). */}
                               {reading.focus_area && (
-                                <Tag tone="neutral" size="sm">
+                                <Tag tone="neutral" size="sm" className="shrink-0 whitespace-nowrap">
                                   {focusLabel(reading.focus_area)}
                                 </Tag>
                               )}
@@ -601,8 +604,10 @@ export function LibrarySection() {
                           {reading.context?.usedLlm && (
                             <Badge tone="violet">AI</Badge>
                           )}
+                          {/* One unbroken pill, as on a saved spread's row (Car/eer at
+                              390px, p10 d2-ja-04); a Badge is one line already. */}
                           {reading.context?.focusArea && (
-                            <Tag tone="neutral" size="sm">
+                            <Tag tone="neutral" size="sm" className="shrink-0 whitespace-nowrap">
                               {focusLabel(reading.context.focusArea)}
                             </Tag>
                           )}

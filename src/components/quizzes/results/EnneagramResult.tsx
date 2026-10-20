@@ -81,7 +81,7 @@ export function EnneagramResult({ quiz, result, onBack, onRetake, saving, saved,
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {shared && <CloseCall names={tied.map(fullName)} />}
+          {shared && <CloseCall exact names={tied.map(fullName)} />}
           {shared && <ReadingFirst name={fullName(n)}>{description}</ReadingFirst>}
 
           <ResultSection title={section('corePattern', 'Core pattern')}>

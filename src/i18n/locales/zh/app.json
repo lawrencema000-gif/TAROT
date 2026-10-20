@@ -1956,7 +1956,12 @@
       "avoidanceAxis": "回避",
       "whatYouNeedFromPartner": "你需要伴侣给予的",
       "courtSuitUnsettled": "你的答案对两种花色的倾向不相上下，而决胜题却指向了别处。",
-      "courtRankUnsettled": "你的答案对两个身份阶段的倾向不相上下，而决胜题却指向了别处。"
+      "courtRankUnsettled": "你的答案对两个身份阶段的倾向不相上下，而决胜题却指向了别处。",
+      "closeCallNear": "难分高下",
+      "closeCallNearBody": "{{a}} 和 {{b}} 的得分只差一点点。两个都读一读——你认得出的那一个，才是算数的那一个。",
+      "closeCallNearBodyMany": "{{names}}的得分只差一点点。每一个都读一读——你认得出的那一个，才是算数的那一个。",
+      "coPrimaryNear": "与{{name}}并列",
+      "sharedWithManyNear": "与另外{{n}}项并列"
     },
     "takeAnother": "再做一个测试",
     "courtCards": {

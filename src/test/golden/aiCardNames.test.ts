@@ -74,6 +74,16 @@ describe('d2-ja-01 — the request names each card as the table does', () => {
     for (const card of TABLE) expect(playingCardToReadingCard(card, false, 'en').localName).toBe(card.name);
   });
 
+  it('ja: a tarot card carries its English name and the table’s name (generate-reading files the reading under the latter)', () => {
+    const sent = [0, 1, 2].map((id) => tarotCardToReadingCard(localizeCard(fullDeck.find((c) => c.id === id)!, 'ja'), false, 'ja'));
+    // The Japanese tarot table generate-reading-card-names.test.ts sends through the real function.
+    expect(sent.map(({ name, localName }) => ({ name, localName }))).toEqual([
+      { name: 'The Fool', localName: '愚者' },
+      { name: 'The Magician', localName: '魔術師' },
+      { name: 'The High Priestess', localName: '女教皇' },
+    ]);
+  });
+
   it.each(LOCALES)('%s: a tarot card (the localized deck on the table) carries the card table’s English name and its own', (lng) => {
     for (const id of [3, 10, 64]) {
       const english = fullDeck.find((c) => c.id === id)!;

@@ -252,26 +252,23 @@ export interface TagProps {
 const KEYWORD_PILL =
   'keyword-pill inline-flex items-center justify-center text-center max-w-full rounded-full px-3 py-1 min-h-7 text-caption leading-tight font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
 
-// A Tag never shrinks, and breaks only between words. Beside a truncating
-// title in a row (the Library's 3枚引き：過去… [AI] [キャリア]) a pill that may
-// shrink is squeezed with the title, and inside a button the ja/ko/zh text
-// rules (index.css, `overflow-wrap: anywhere`) let it break anywhere: at
-// 390px the Library printed キャリ/ア, Car/eer and A/I, each pill two lines
-// tall (p10 d2-ja-04). shrink-0 leaves the room to the title, which
-// truncates. keep-all and `overflow-wrap: normal` keep a word whole — a
-// Japanese or Korean one too — while a sentence set as a Tag (the map's
-// "Drag to pan · Pinch to zoom · …" hint) still wraps at its spaces rather
-// than running off a phone, as nowrap would.
-const TAG_LINE = 'shrink-0 break-keep [overflow-wrap:normal]';
-
-/** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
+/**
+ * A read-only label: keyword, element, sign, category. Tinted, borderless, a span.
+ *
+ * It shrinks and wraps with its row, as text does. Some Tags carry a
+ * sentence (a quiz's early reading, a chart's blind spot, a custom spread's
+ * position name), and held to one unshrinking line they ran off a 360px
+ * phone (p10, the first d2-ja-04 fix). A pill that must stay whole beside a
+ * truncating title says so where it sits: the Library rows pass
+ * `shrink-0 whitespace-nowrap`.
+ */
 export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {
   if (variant === 'keyword') {
     return <span className={`${KEYWORD_PILL} ${className}`.trim()}>{children}</span>;
   }
   const sz = size === 'sm' ? 'px-2 py-0.5 text-caption gap-1' : 'px-2.5 py-1 text-meta gap-1.5';
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${TAG_LINE} ${sz} ${TINT[tone]} ${className}`.trim()}>
+    <span className={`inline-flex items-center rounded-full font-medium ${sz} ${TINT[tone]} ${className}`.trim()}>
       {icon}
       {children}
     </span>

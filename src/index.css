@@ -355,12 +355,14 @@
   --stagger-step: 40ms;
 }
 
-/* Korean display text: Cormorant for letters and figures, the Korean face
+/* Korean display text: Cormorant for letters and figures, Noto Serif KR
    for the Hangul and the marks that punctuate it (p10 d3-ko-10; see
-   'Cormorant Letters' at the top of this file). Noto Sans KR is the Korean
-   face the app loads (src/i18n/cjkFonts.ts); a device with Noto Serif KR
-   installed sets both in that instead. Either way the "?" of
-   「무엇에 집중할까요?」 is drawn by the face that draws the sentence. */
+   'Cormorant Letters' at the top of this file). The app loads it for
+   Korean at Cormorant's weights, 500 and 600 (src/i18n/cjkFonts.ts), so a
+   Korean heading stays a serif and the "?" of 「무엇에 집중할까요?」 is
+   drawn by the face that draws the sentence. Noto Sans KR, which the body
+   text loads, stands in while a slice of the serif is on its way, or if
+   it fails to load. */
 html:lang(ko) {
   --font-display: 'Cormorant Letters', 'Noto Serif KR', 'Noto Sans KR', 'Cormorant Fallback', 'Cormorant Fallback Android', Georgia, serif;
 }

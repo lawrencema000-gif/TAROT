@@ -10,10 +10,16 @@ import { join } from 'node:path';
  * 「僅差」 that said the scores differed 「ほんのわずか」. English said "Close
  * call … scored within a hair of each other", Korean 근소한 차이, Chinese
  * 只差一点点. In every language the box now says the scores are the same.
+ *
+ * Only for an exact tie, though: a dimensional quiz ties on any mean within
+ * TIE_MARGIN of the top, and DISC's 4.0 beside 3.8 then read "Tied — …
+ * scored the same". A near tie keeps the narrow-gap wording, under
+ * closeCallNear* (CloseCall's `exact`).
  */
 
 const read = (lng: string) => JSON.parse(readFileSync(join(process.cwd(), 'src', 'i18n', 'locales', lng, 'app.json'), 'utf8'));
 const KEYS = ['closeCall', 'closeCallBody', 'closeCallBodyMany'] as const;
+const NEAR_KEYS = ['closeCallNear', 'closeCallNearBody', 'closeCallNearBodyMany'] as const;
 
 /** Words for a narrow gap, and words for equal scores, per language. */
 const NARROW: Record<string, RegExp> = {
@@ -36,6 +42,18 @@ describe('the close-call box describes a tie (p10 d2-ja-07)', () => {
       expect(sections[key], `${lng} ${key}`).not.toMatch(NARROW[lng]);
       expect(sections[key], `${lng} ${key}`).toMatch(EQUAL[lng]);
     }
+  });
+
+  it.each(['en', 'ja', 'ko', 'zh'])('%s: the near-tie heading and both bodies say the scores are close, not equal', (lng) => {
+    const sections = read(lng).quizzes.resultSections as Record<string, string>;
+    for (const key of NEAR_KEYS) {
+      expect(sections[key], `${lng} ${key}`).toMatch(NARROW[lng]);
+      expect(sections[key], `${lng} ${key}`).not.toMatch(EQUAL[lng]);
+    }
+    // The same names go in as in the exact wording.
+    expect(sections.closeCallNearBody).toContain('{{a}}');
+    expect(sections.closeCallNearBody).toContain('{{b}}');
+    expect(sections.closeCallNearBodyMany).toContain('{{names}}');
   });
 
   it('ja: the box’s heading is the word the verdict line uses for the same tie', () => {

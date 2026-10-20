@@ -22,7 +22,7 @@ export type ReadingDeck = 'tarot' | 'playing';
 
 export interface ReadingCard {
   id: number;
-  /** The card's English name: how the model knows the card, and the name its Library row keeps. */
+  /** The card's English name: how the model knows the card. The Library row keeps localName when there is one. */
   name: string;
   /**
    * The name the reader's table shows, in the reading's language (ja

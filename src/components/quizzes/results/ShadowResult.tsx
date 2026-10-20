@@ -64,7 +64,7 @@ export function ShadowResult({ quiz, result, onBack, onRetake }: QuizResultViewP
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {shared && <CloseCall names={[name, ...tied.slice(1).map(nameOf)]} />}
+          {shared && <CloseCall exact names={[name, ...tied.slice(1).map(nameOf)]} />}
           <ResultSection title={section('gift', 'The gift')}>
             <Prose>{localized('gift', info.gift)}</Prose>
           </ResultSection>

@@ -69,6 +69,27 @@ export async function listForUser(
 }
 
 /**
+ * One of the member's entries, by id; null when there is none (deleted
+ * since). The header search finds entries older than the page the journal
+ * holds, and opens them by id. Bound to the member as updateById is, on top
+ * of RLS.
+ */
+export async function getById(id: string, userId: string): Promise<Result<JournalEntryRow | null>> {
+  const { data, error } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    captureException('dal.journalEntries.getById', error, { id, userId });
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, data: (data as JournalEntryRow | null) ?? null };
+}
+
+/**
  * Every entry dated within [from, to] (inclusive YYYY-MM-DD). The journal's
  * week strip reads this for the week on screen: the paged list only holds
  * the newest 20, so an older week showed no dots and tapping a written day

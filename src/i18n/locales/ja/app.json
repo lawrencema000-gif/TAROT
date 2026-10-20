@@ -1956,7 +1956,12 @@
       "avoidanceAxis": "回避",
       "whatYouNeedFromPartner": "パートナーに求めるもの",
       "courtSuitUnsettled": "あなたの回答は2つのスートに同じくらい傾き、決め手となる質問は、そのどちらでもないスートを指していました。",
-      "courtRankUnsettled": "あなたの回答は2つの段階に同じくらい傾き、決め手となる質問は、そのどちらでもない段階を指していました。"
+      "courtRankUnsettled": "あなたの回答は2つの段階に同じくらい傾き、決め手となる質問は、そのどちらでもない段階を指していました。",
+      "closeCallNear": "僅差",
+      "closeCallNearBody": "{{a}}と{{b}}のスコアは、ほんのわずかな差でした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。",
+      "closeCallNearBodyMany": "{{names}}のスコアは、ほんのわずかな差でした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。",
+      "coPrimaryNear": "{{name}}と僅差",
+      "sharedWithManyNear": "ほか{{n}}つと僅差"
     },
     "takeAnother": "別の診断を受ける",
     "courtCards": {

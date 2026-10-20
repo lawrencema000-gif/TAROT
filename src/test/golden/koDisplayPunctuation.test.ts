@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import postcss from 'postcss';
+import { CJK_FONTS } from '../../i18n/cjkFonts';
 
 /*
  * p10 d3-ko-10: the "?" of a Korean display heading — 「무엇에 집중할까요?」,
@@ -11,13 +12,14 @@ import postcss from 'postcss';
  * full-width ？, which Cormorant lacks; Korean writes the ASCII mark, which
  * Cormorant has. Korean display text now reads --font-display from
  * html:lang(ko): 'Cormorant Letters' (Cormorant's own files without the
- * sentence marks) and then the Korean face, which sets the Hangul and the
- * marks alike.
+ * sentence marks) and then Noto Serif KR, which sets the Hangul and the
+ * marks alike. The app loads that serif for Korean: named but never
+ * fetched, it let every Korean heading's Hangul fall to the body sans.
  *
  * jsdom applies no stylesheet and shapes no text, so this works the choice
  * out the way the browser's font matching does: for each character, the
  * first family in the stack with a face that covers it — a @font-face by
- * its unicode-range, the CJK web font the locale loads (src/i18n/cjkFonts.ts),
+ * its unicode-range, a CJK web font the locale loads (src/i18n/cjkFonts.ts),
  * and the platform's own faces for the rest.
  */
 
@@ -52,8 +54,20 @@ sheet.walkAtRules('font-face', (at) => {
 const inRanges = (cp: number, rs: Range[]) => rs.some(([a, b]) => cp >= a && cp <= b);
 /** What a Latin system face (Georgia, Noto Serif, the `serif` default for Latin) covers. */
 const LATIN: Range[] = ranges('U+0000-02FF,U+2000-206F,U+20A0-20CF');
-/** The CJK web font each locale loads; the Noto Serif families are no longer fetched (R8 §a7). */
-const LOADED: Record<string, string> = { ja: 'Noto Sans JP', ko: 'Noto Sans KR', zh: 'Noto Sans SC' };
+
+/**
+ * The CJK web fonts a locale loads (src/i18n/cjkFonts.ts): each family its
+ * Google Fonts query names, with the weights it asks for. The unicode-range
+ * slices Google serves for the Korean families cover the Hangul and every
+ * mark tested here.
+ */
+function loaded(lang: string): Map<string, number[]> {
+  const families = new Map<string, number[]>();
+  for (const [, family, weights] of (CJK_FONTS[lang] ?? '').matchAll(/family=([^:&]+):wght@([^&]+)/g)) {
+    families.set(family.replace(/\+/g, ' '), weights.split(';').map(Number));
+  }
+  return families;
+}
 
 /** The family that draws `ch` in `stack`, for a page in `lang`, at the display weight (500, normal). */
 function faceFor(stack: string[], ch: string, lang: string): string {
@@ -65,11 +79,28 @@ function faceFor(stack: string[], ch: string, lang: string): string {
       if (own.some((f) => (f.ranges ? inRanges(cp, f.ranges) : inRanges(cp, LATIN)))) return family;
       continue;
     }
-    if (family === LOADED[lang]) return family;
+    if (loaded(lang).has(family)) return family;
     if (family === 'Georgia' && inRanges(cp, LATIN)) return family;
     if (family === 'serif') return 'system';
   }
   return 'system';
+}
+
+/**
+ * The weight CSS font matching takes, of those `available`, for a `desired`
+ * one (CSS Fonts 4 §5.2): 400–500 looks up to 500 first, then down, then
+ * up; below 400 looks down first; above 500, up first.
+ */
+function matchWeight(desired: number, available: number[]): number | undefined {
+  const up = [...available].sort((a, b) => a - b);
+  const down = [...up].reverse();
+  const order =
+    desired >= 400 && desired <= 500
+      ? [...up.filter((w) => w >= desired && w <= 500), ...down.filter((w) => w < desired), ...up.filter((w) => w > 500)]
+      : desired < 400
+        ? [...down.filter((w) => w <= desired), ...up.filter((w) => w > desired)]
+        : [...up.filter((w) => w >= desired), ...down.filter((w) => w < desired)];
+  return order[0];
 }
 
 const families = (value: string) => value.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, ''));
@@ -114,12 +145,24 @@ describe('Korean display text sets its marks in the Korean face (p10 d3-ko-10)',
     expect(TAILWIND).toMatch(/\bdisplay:\s*\[\s*'var\(--font-display\)'\s*\]/);
   });
 
-  it('ko: the "?" of 「무엇에 집중할까요?」 is drawn by the face that draws the Hangul', () => {
+  it('ko: the Hangul of 「무엇에 집중할까요?」 and its "?" are drawn by one serif, Noto Serif KR', () => {
     const stack = displayStack('ko');
     const heading = '무엇에 집중할까요?';
     expect(faceFor(stack, '?', 'ko')).toBe(faceFor(stack, '요', 'ko'));
-    for (const ch of heading.replace(/ /g, '')) expect(faceFor(stack, ch, 'ko'), ch).toBe('Noto Sans KR');
-    for (const ch of SENTENCE_MARKS) expect(faceFor(stack, ch, 'ko'), ch).toBe('Noto Sans KR');
+    // Not the body sans: a Korean heading stays a serif, as Japanese and Chinese ones do.
+    for (const ch of heading.replace(/ /g, '')) expect(faceFor(stack, ch, 'ko'), ch).toBe('Noto Serif KR');
+    for (const ch of SENTENCE_MARKS) expect(faceFor(stack, ch, 'ko'), ch).toBe('Noto Serif KR');
+  });
+
+  it('ko: the serif is loaded at Cormorant’s weights, so a heading’s Hangul and its letters resolve to the same one', () => {
+    const serif = loaded('ko').get('Noto Serif KR');
+    expect(serif, 'Noto Serif KR in the Korean font query').toBeDefined();
+    const cormorant = [...new Set(FACES.filter((f) => f.family === 'Cormorant Letters' && f.style === 'normal').map((f) => Number(f.weight)))];
+    expect(cormorant.sort((a, b) => a - b)).toEqual([500, 600]);
+    // Any weight a heading asks for: .reading-quote's 400 (set at 500, as its
+    // letters are), the display classes' 500, .heading-strong's 600 — none
+    // synthesized — and whatever a utility beside `font-display` sets.
+    for (let w = 100; w <= 900; w += 100) expect(matchWeight(w, serif!), `font-weight ${w}`).toBe(matchWeight(w, cormorant));
   });
 
   it('ko: letters, figures and the marks inside them stay in Cormorant, so "$19.99" or "Arcana" is one face', () => {
@@ -127,10 +170,14 @@ describe('Korean display text sets its marks in the Korean face (p10 d3-ko-10)',
     for (const ch of LETTERS_AND_FIGURES) expect(faceFor(stack, ch, 'ko'), ch).toBe('Cormorant Letters');
   });
 
-  it.each(['en', 'ja', 'zh'])('%s: the display stack is unchanged', (lang) => {
+  it.each(['en', 'ja', 'zh'])('%s: the display stack is unchanged, and no serif is fetched for it', (lang) => {
     const stack = displayStack(lang);
     expect(stack).toEqual(ORIGINAL);
     for (const ch of `?!"'${LETTERS_AND_FIGURES}`) expect(faceFor(stack, ch, lang), ch).toBe('Cormorant Garamond');
+    // A heading's kana and Han characters fall through to the platform's serif, as before.
+    expect([...loaded(lang).keys()].filter((family) => /Serif/.test(family))).toEqual([]);
+    const cjk: Record<string, string> = { en: '', ja: '何に集中しますか', zh: '你想专注于什么' };
+    for (const ch of cjk[lang]) expect(faceFor(stack, ch, lang), ch).toBe('system');
   });
 
   it('Cormorant Letters is Cormorant Garamond’s own files, less the sentence marks and nothing else', () => {

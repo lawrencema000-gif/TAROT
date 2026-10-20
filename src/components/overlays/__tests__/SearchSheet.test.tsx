@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterAll, beforeEach } from 'vitest';
 import { render, screen, act, waitFor, fireEvent, cleanup } from '@testing-library/react';
-import { MemoryRouter, useLocation } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigationType } from 'react-router-dom';
 
 /*
  * p10 d3-ko-13: the header search never returned a result ("results for
@@ -41,10 +41,16 @@ function Where() {
   return <output data-testid="where">{`${pathname}${state ? ` ${JSON.stringify(state)}` : ''}`}</output>;
 }
 
-function renderSheet() {
+/** How the last navigation was made: PUSH adds a history entry, REPLACE does not. */
+function How() {
+  return <output data-testid="how">{useNavigationType()}</output>;
+}
+
+function renderSheet(from = '/readings') {
   const onClose = vi.fn();
   render(
-    <MemoryRouter initialEntries={['/readings']}>
+    <MemoryRouter initialEntries={[from]}>
+      <How />
       <Where />
       <SearchSheet open onClose={onClose} />
     </MemoryRouter>,
@@ -108,6 +114,18 @@ describe('SearchSheet', () => {
     type(query);
     fireEvent.click(await resultRow('愚者'));
     expect(screen.getByTestId('where')).toHaveTextContent('/tarot-meanings/the-fool');
+  });
+
+  it('a destination on the page already open replaces the history entry, so Back leaves in one press', async () => {
+    await inLanguage('en');
+    renderSheet('/journal');
+    fireEvent.click(screen.getByRole('button', { name: 'Journal prompts' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('/journal {"tab":"templates"}');
+    expect(screen.getByTestId('how')).toHaveTextContent('REPLACE');
+    cleanup();
+    renderSheet('/readings');
+    fireEvent.click(screen.getByRole('button', { name: 'Journal prompts' }));
+    expect(screen.getByTestId('how')).toHaveTextContent('PUSH');
   });
 
   it('opens the quick links’ screens and closes the sheet', async () => {

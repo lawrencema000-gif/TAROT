@@ -157,6 +157,26 @@ const NAMED = [
   { id: 108, name: 'Nine of Hearts', localName: 'ハートの9' },
 ];
 
+/**
+ * A Japanese three-card tarot reading as the client now sends it
+ * (readingInterpretation: tarotCardToReadingCard — aiCardNames.test.ts holds
+ * TAROT_NAMED to these values). The deck is left out: tarot is the default.
+ */
+const japaneseTarot = (cards: Array<{ id: number; name: string; localName?: string }>) => ({
+  cards: cards.map((c) => ({ ...c, reversed: c.id === 1, keywords: ['beginnings'], meaningUpright: 'A beginning.', meaningReversed: 'A delay.' })),
+  spreadType: 'three-card',
+  focusArea: 'general',
+  question: 'この先の流れはどうなりますか',
+  locale: 'ja',
+  requestId: crypto.randomUUID(),
+});
+
+const TAROT_NAMED = [
+  { id: 0, name: 'The Fool', localName: '愚者' },
+  { id: 1, name: 'The Magician', localName: '魔術師' },
+  { id: 2, name: 'The High Priestess', localName: '女教皇' },
+];
+
 async function call(body: Row): Promise<{ status: number; json: Row }> {
   const res = await h.served.fn!(new Request('http://fn.test/generate-reading', {
     method: 'POST',
@@ -213,14 +233,33 @@ describe('generate-reading: the model is given the table’s card names (p10 d2-
     ]);
   });
 
-  it('the Library row keeps the English names it always kept', async () => {
+  it('tarot: the Library row keeps the table’s names, as it always did', async () => {
+    // The Android v1.2.0 Library prints a row's names as stored: it listed
+    // this reading as "The Fool, The Magician (R), …" in Japanese while the
+    // row held the English names.
+    expect((await call(japaneseTarot(TAROT_NAMED))).status).toBe(200);
+    expect(h.state.premium).toHaveLength(1);
+    expect(h.state.premium[0].cards).toEqual([
+      { id: 0, name: '愚者', reversed: false },
+      { id: 1, name: '魔術師', reversed: true },
+      { id: 2, name: '女教皇', reversed: false },
+    ]);
+  });
+
+  it('playing: the Library row keeps the table’s names too', async () => {
     expect((await call(japaneseTable(NAMED))).status).toBe(200);
     expect(h.state.premium).toHaveLength(1);
     expect(h.state.premium[0].cards).toEqual([
-      { id: 117, name: 'Five of Clubs', reversed: false },
-      { id: 137, name: 'Queen of Diamonds', reversed: false },
-      { id: 108, name: 'Nine of Hearts', reversed: false },
+      { id: 117, name: 'クラブの5', reversed: false },
+      { id: 137, name: 'ダイヤのクイーン', reversed: false },
+      { id: 108, name: 'ハートの9', reversed: false },
     ]);
+  });
+
+  it('an older client (one name per card): the Library row keeps the name it sent', async () => {
+    // Android v1.2.0 and the pre-p10 web send the table's tarot names as `name`.
+    expect((await call(japaneseTarot(TAROT_NAMED.map(({ id, localName }) => ({ id, name: localName }))))).status).toBe(200);
+    expect((h.state.premium[0].cards as Row[]).map((c) => c.name)).toEqual(['愚者', '魔術師', '女教皇']);
   });
 
   it('an older client (English names only): the cards are headed as before, with no rule', async () => {

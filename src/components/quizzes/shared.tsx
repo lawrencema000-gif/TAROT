@@ -230,30 +230,50 @@ export function useNameList() {
 /**
  * Named when the scorer reports a tie: every tied name, so a coin flip is
  * not read as a verdict. A three-way tie used to name two of the three.
- * It says the scores are the same: it used to call a tie a narrow gap
- * ("Close call … within a hair of each other", p10 d2-ja-07).
+ *
+ * `exact`: the tied scores are equal, and the box says they are the same.
+ * It used to call every tie a narrow gap ("Close call … within a hair of
+ * each other"), a 15–15 love-language tie too (p10 d2-ja-07). A tie that is
+ * not exact keeps that wording: the dimensional quizzes tie within
+ * TIE_MARGIN, and DISC's 4.0 beside 3.8 is close, not the same. The
+ * love-language, enneagram, shadow, element, dosha and court scorers tie
+ * only on equal sums or votes, so their screens always pass `exact`;
+ * ExtraResult decides it from the means.
  */
-export function CloseCall({ names }: { names: readonly string[] }) {
+export function CloseCall({ names, exact }: { names: readonly string[]; exact: boolean }) {
   const { t } = useT('app');
   const list = useNameList();
   if (names.length < 2) return null;
+  const body =
+    names.length === 2
+      ? exact
+        ? t('quizzes.resultSections.closeCallBody', {
+            defaultValue: '{{a}} and {{b}} scored the same. Read both — the one you recognise is the one that counts.',
+            a: names[0],
+            b: names[1],
+          })
+        : t('quizzes.resultSections.closeCallNearBody', {
+            defaultValue: '{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.',
+            a: names[0],
+            b: names[1],
+          })
+      : exact
+        ? t('quizzes.resultSections.closeCallBodyMany', {
+            defaultValue: '{{names}} all scored the same. Read them all — the one you recognise is the one that counts.',
+            names: list(names),
+          })
+        : t('quizzes.resultSections.closeCallNearBodyMany', {
+            defaultValue: '{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.',
+            names: list(names),
+          });
   return (
     <div className="rounded-control border border-paper-hairline bg-ink/5 px-4 py-3">
       <EyebrowLabel tone="ink" align="left">
-        {t('quizzes.resultSections.closeCall', { defaultValue: 'Tied' })}
+        {exact
+          ? t('quizzes.resultSections.closeCall', { defaultValue: 'Tied' })
+          : t('quizzes.resultSections.closeCallNear', { defaultValue: 'Close call' })}
       </EyebrowLabel>
-      <p className="reading-copy mt-1">
-        {names.length === 2
-          ? t('quizzes.resultSections.closeCallBody', {
-              defaultValue: '{{a}} and {{b}} scored the same. Read both — the one you recognise is the one that counts.',
-              a: names[0],
-              b: names[1],
-            })
-          : t('quizzes.resultSections.closeCallBodyMany', {
-              defaultValue: '{{names}} all scored the same. Read them all — the one you recognise is the one that counts.',
-              names: list(names),
-            })}
-      </p>
+      <p className="reading-copy mt-1">{body}</p>
     </div>
   );
 }
@@ -262,17 +282,19 @@ export function CloseCall({ names }: { names: readonly string[] }) {
  * The verdict block's line when the top is shared: "Shared with B and C".
  * The verdict alone would read as the one result. Past three names (an
  * all-Neutral enneagram ties nine types) the headline gives the count and
- * the close call below names them all.
+ * the close call below names them all. `exact` as for CloseCall: Japanese
+ * says 同率 (equal scores) for an exact tie and 僅差 for a near one, so the
+ * headline does not claim equal scores above unequal bars (p10 review).
  */
-export function SharedWith({ names }: { names: readonly string[] }) {
+export function SharedWith({ names, exact = true }: { names: readonly string[]; exact?: boolean }) {
   const { t } = useT('app');
   const list = useNameList();
   if (names.length === 0) return null;
   return (
     <span className="block">
       {names.length > 3
-        ? t('quizzes.resultSections.sharedWithMany', { defaultValue: 'Shared with {{n}} others', n: names.length })
-        : t('quizzes.resultSections.coPrimary', { defaultValue: 'Shared with {{name}}', name: list(names) })}
+        ? t(exact ? 'quizzes.resultSections.sharedWithMany' : 'quizzes.resultSections.sharedWithManyNear', { defaultValue: 'Shared with {{n}} others', n: names.length })
+        : t(exact ? 'quizzes.resultSections.coPrimary' : 'quizzes.resultSections.coPrimaryNear', { defaultValue: 'Shared with {{name}}', name: list(names) })}
     </span>
   );
 }

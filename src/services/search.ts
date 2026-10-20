@@ -85,8 +85,9 @@ function englishNames(name: string): string[] {
  * shown. The corpus names each card one way, but Chinese books call The
  * Fool 愚人 as often as 愚者, Japanese ones the Hierophant 法王, Korean
  * readers write the English names in Hangul as often as not (타워 for 탑),
- * American English spells Judgment so, and Japanese horoscopes write the
- * signs in kana (うお座). The English ones apply in every language.
+ * American English spells Judgment so, Japanese horoscopes write the signs
+ * in kana (うお座) and Korean ones call Sagittarius 사수자리 as often as
+ * 궁수자리. The English ones apply in every language.
  */
 const TAROT_ALIASES: Partial<Record<SupportedLocale, Record<number, string[]>>> = {
   en: { 20: ['Judgment'] },
@@ -113,6 +114,7 @@ const SIGN_ALIASES: Partial<Record<SupportedLocale, Partial<Record<ZodiacSign, s
     Leo: ['しし座'], Virgo: ['おとめ座'], Libra: ['てんびん座'], Scorpio: ['さそり座'],
     Sagittarius: ['いて座'], Capricorn: ['やぎ座'], Aquarius: ['みずがめ座'], Pisces: ['うお座'],
   },
+  ko: { Sagittarius: ['사수자리'] },
 };
 
 /** A localized card name with each synonym of its suit swapped in. */
@@ -122,6 +124,42 @@ function suitSpellings(name: string, locale: SupportedLocale): string[] {
     if (name.includes(word)) for (const other of others) out.push(name.replace(word, other));
   }
   return out;
+}
+
+/**
+ * The ways Chinese writes each pip rank. The tarot corpus numbers the pips
+ * in hanzi (权杖三) and the playing cards in digits (红心4); readers type
+ * either for both, and the ace as A as well (权杖A).
+ */
+const ZH_RANKS: readonly (readonly string[])[] = [
+  ['一', '1', 'A'], ['二', '2'], ['三', '3'], ['四', '4'], ['五', '5'],
+  ['六', '6'], ['七', '7'], ['八', '8'], ['九', '9'], ['十', '10'],
+];
+
+/**
+ * A localized suit card's name with its rank written the reader's other
+ * way: 权杖3 finds 权杖三 and 红心四 红心4; ワンド3 finds ワンドの3 and
+ * ハート4 ハートの4, Japanese readers leaving out the の between suit and
+ * rank. Korean needs none: 완드3 is 완드 3 once spaces fold.
+ */
+function rankSpellings(name: string, locale: SupportedLocale): string[] {
+  if (locale === 'ja') {
+    const bare = name.replace('の', '');
+    return bare === name ? [] : [bare];
+  }
+  if (locale === 'zh') {
+    for (const forms of ZH_RANKS) {
+      const written = forms.find((form) => name.endsWith(form));
+      if (written) return forms.filter((form) => form !== written).map((form) => name.slice(0, -written.length) + form);
+    }
+  }
+  return [];
+}
+
+/** A suit card's localized name, each synonym of its suit, and each of those with the rank written the other way. */
+function suitCardSpellings(name: string, locale: SupportedLocale): string[] {
+  const suits = [name, ...suitSpellings(name, locale)];
+  return [...suits, ...suits.flatMap((spelling) => rankSpellings(spelling, locale))];
 }
 
 /** The 78 tarot cards, by name (the reader's, English, the aliases) and the reader's keywords. */
@@ -137,8 +175,8 @@ export async function searchCards(query: string): Promise<CardResult[]> {
   fullDeck.forEach((en, i) => {
     const card = shown[i];
     const names = [
-      card.name,
-      ...suitSpellings(card.name, locale),
+      // A major arcanum has no suit or rank to spell otherwise: 運命の輪 keeps its の.
+      ...(en.suit ? suitCardSpellings(card.name, locale) : [card.name]),
       ...englishNames(en.name),
       ...(TAROT_ALIASES.en?.[en.id] ?? []),
       ...(locale === 'en' ? [] : TAROT_ALIASES[locale]?.[en.id] ?? []),
@@ -159,7 +197,7 @@ export async function searchPlayingCards(query: string): Promise<PlayingCardResu
   const hits: PlayingCardResult[] = [];
   PLAYING_CARDS_ALL.forEach((en, i) => {
     const card = shown[i];
-    const names = [card.name, ...suitSpellings(card.name, locale), ...englishNames(en.name)];
+    const names = [...suitCardSpellings(card.name, locale), ...englishNames(en.name)];
     const relevance = relevanceOf(q, names, card.keywords);
     if (relevance > 0) hits.push({ type: 'playing-card', id: String(en.id), title: card.name, relevance, slug: en.slug, suit: en.suit });
   });

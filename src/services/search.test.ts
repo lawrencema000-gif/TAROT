@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import type { JournalEntryRow } from '../dal/journalEntries';
 
 /*
@@ -106,6 +106,33 @@ describe('tarot cards, in the reader’s language', () => {
     expect((await searchCards('金貨のエース'))[0]).toMatchObject({ title: 'ペンタクルのエース', suit: 'pentacles' });
   });
 
+  // The corpus spells a rank one way; readers type it the other. Chinese
+  // tarot numbers the pips in hanzi (权杖三) where the playing cards use
+  // digits (红心4), and Japanese readers leave out the の — as Korean
+  // readers leave out the space in 완드 3.
+  it.each([
+    ['zh', '权杖3', 24, '权杖三'],
+    ['zh', '圣杯10', 45, '圣杯十'],
+    ['zh', '宝剑2', 51, '宝剑二'],
+    ['zh', '权杖A', 22, '权杖一'],
+    ['zh', '权杖1', 22, '权杖一'],
+    // A suit synonym and a digit together.
+    ['zh', '钱币3', 66, '星币三'],
+    ['ja', 'ワンド3', 24, 'ワンドの3'],
+    ['ja', 'カップ10', 45, 'カップの10'],
+    ['ja', 'ソードエース', 50, 'ソードのエース'],
+    ['ja', '金貨エース', 64, 'ペンタクルのエース'],
+  ])('%s: “%s” finds card %i, named %s', async (lng, query, cardId, title) => {
+    await inLanguage(lng);
+    expect((await searchCards(query))[0]).toMatchObject({ cardId, title, relevance: 100 });
+  });
+
+  it('keeps the の of a name that has no rank: 運命の輪 is not 運命輪', async () => {
+    await inLanguage('ja');
+    expect(await searchCards('運命輪')).toEqual([]);
+    expect((await searchCards('運命の輪'))[0]).toMatchObject({ cardId: 10, relevance: 100 });
+  });
+
   it('matches the reader’s keywords below a name', async () => {
     await inLanguage('ja');
     const hits = await searchCards('新しい始まり');
@@ -131,6 +158,24 @@ describe('playing cards and signs', () => {
     expect((await searchPlayingCards('queen of spades'))[0]).toMatchObject({ title: 'Queen of Spades', slug: 'queen-of-spades' });
   });
 
+  it('finds a playing card by its rank written the reader’s other way, as the tarot cards', async () => {
+    await inLanguage('ja');
+    expect((await searchPlayingCards('ハート4'))[0]).toMatchObject({ title: 'ハートの4', slug: 'four-of-hearts', relevance: 100 });
+    expect((await searchPlayingCards('スペードエース'))[0]).toMatchObject({ title: 'スペードのエース', slug: 'ace-of-spades' });
+    await inLanguage('zh');
+    // Digits on the playing cards, hanzi on the tarot: either finds either.
+    expect((await searchPlayingCards('红心四'))[0]).toMatchObject({ title: '红心4', slug: 'four-of-hearts', relevance: 100 });
+    expect((await searchPlayingCards('红桃十'))[0]).toMatchObject({ title: '红心10', slug: 'ten-of-hearts' });
+  });
+
+  it('answers the sheet’s search for 权杖3 and ワンド3 with the card, not an empty result', async () => {
+    await inLanguage('zh');
+    expect((await globalSearch('权杖3', { playingCards: true })).cards[0]).toMatchObject({ cardId: 24, title: '权杖三' });
+    await inLanguage('ja');
+    const found = await globalSearch('ハート4', { playingCards: true });
+    expect(found.playingCards[0]).toMatchObject({ slug: 'four-of-hearts' });
+  });
+
   it('finds a sign by its name, its English name, or (Japanese) its kana', async () => {
     await inLanguage('ko');
     expect(searchSigns('양자리')[0]).toMatchObject({ type: 'sign', sign: 'Aries', title: '양자리', relevance: 100 });
@@ -139,6 +184,11 @@ describe('playing cards and signs', () => {
     expect(searchSigns('うお座')[0]).toMatchObject({ sign: 'Pisces', title: '魚座' });
     await inLanguage('zh');
     expect(searchSigns('双鱼')[0]).toMatchObject({ sign: 'Pisces', title: '双鱼座' });
+  });
+
+  it('finds Sagittarius by 사수자리, as Korean horoscopes as often call it, and names it 궁수자리', async () => {
+    await inLanguage('ko');
+    expect(searchSigns('사수자리')[0]).toMatchObject({ sign: 'Sagittarius', title: '궁수자리', relevance: 100 });
   });
 
   it('leaves the playing cards out while their section is off', async () => {
@@ -187,6 +237,11 @@ describe('recent searches: this member’s, on this device', () => {
   const A = '00000000-0000-4000-8000-00000000000a';
   const B = '00000000-0000-4000-8000-00000000000b';
 
+  // A storage stub must not outlive its test: the 'quota' one below threw
+  // later, when the language reset in afterAll wrote to storage (CI).
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
   beforeEach(() => {
     vi.stubGlobal('localStorage', memoryStorage());
   });

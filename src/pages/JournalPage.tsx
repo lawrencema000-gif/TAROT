@@ -208,6 +208,12 @@ function requestedTab(state: unknown): JournalTab | null {
   return JOURNAL_TABS.find((id) => id === tab) ?? null;
 }
 
+/** The entry another screen asked to open, if any: a journal result in the header search sends `{ entryId }`. */
+function requestedEntryId(state: unknown): string | null {
+  const id = (state as { entryId?: unknown } | null)?.entryId;
+  return typeof id === 'string' && id !== '' ? id : null;
+}
+
 const ENTRIES_PAGE_SIZE = 20;
 
 const categoryIcons: Record<string, typeof Sun> = {
@@ -281,6 +287,9 @@ export function JournalPage() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [pendingDelete, setPendingDelete] = useState<JournalEntry | null>(null);
+  // The entry another screen asked to open, held until it is: the page may
+  // still be loading, and the entry may be older than the page it loads.
+  const [entryToOpen, setEntryToOpen] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -657,18 +666,45 @@ export function JournalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  // A tab asked for by another screen: the header search's "Journal
-  // prompts" opens Templates (p10 d3-ko-13). Read on every navigation, not
-  // only at mount — the search opens over the Journal too, and a link to
-  // the page already on screen does not mount it again. Then spent, as
-  // compose is above: a reload or Back lands on the list.
+  // A tab or an entry asked for by another screen: the header search's
+  // "Journal prompts" opens Templates, and a journal result its entry, over
+  // Entries (p10 d3-ko-13). Read on every navigation, not only at mount —
+  // the search opens over the Journal too, and a link to the page already
+  // on screen does not mount it again. Then spent, as compose is above: a
+  // reload or Back lands on the list.
   useEffect(() => {
-    const tab = requestedTab(location.state);
+    const entryId = requestedEntryId(location.state);
+    const tab = entryId ? 'entries' : requestedTab(location.state);
     if (!tab) return;
     setActiveTab(tab);
+    if (entryId) setEntryToOpen(entryId);
     navigate(location.pathname, { replace: true, state: null });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
+
+  // The entry asked for opens as a tap in the list opens it (a locked one
+  // still asks for Premium): from the entries the page holds, else read by
+  // id — the page holds the newest twenty, the search reads a hundred.
+  useEffect(() => {
+    if (!entryToOpen || !user) return;
+    const held = entries.find(e => e.id === entryToOpen) ?? weekEntries.find(e => e.id === entryToOpen);
+    if (held) {
+      setEntryToOpen(null);
+      openEditEntry(held);
+      return;
+    }
+    let alive = true;
+    journalEntries.getById(entryToOpen, user.id).then((res) => {
+      if (!alive) return;
+      setEntryToOpen(null);
+      if (res.ok && res.data) openEditEntry(res.data as unknown as JournalEntry);
+      // Gone since the search read it (deleted on another device), or unreadable.
+      else if (res.ok) toast(t('common:errors.notFound', { defaultValue: 'Not found.' }), 'error');
+      else toast(t('common:errors.generic', { defaultValue: 'That didn’t work — check your connection and try again.' }), 'error');
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entryToOpen, user?.id]);
 
   const readingById = useMemo(() => {
     const map = new Map<string, TarotReading>();

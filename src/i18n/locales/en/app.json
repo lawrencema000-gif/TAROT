@@ -2161,7 +2161,12 @@
       "avoidanceAxis": "Avoidance",
       "whatYouNeedFromPartner": "What you need from a partner",
       "courtSuitUnsettled": "Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.",
-      "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere."
+      "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere.",
+      "closeCallNear": "Close call",
+      "closeCallNearBody": "{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.",
+      "closeCallNearBodyMany": "{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.",
+      "coPrimaryNear": "Shared with {{name}}",
+      "sharedWithManyNear": "Shared with {{n}} others"
     },
     "takeAnother": "Take another quiz",
     "courtCards": {

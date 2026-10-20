@@ -1956,7 +1956,12 @@
       "avoidanceAxis": "회피",
       "whatYouNeedFromPartner": "파트너에게 필요한 것",
       "courtSuitUnsettled": "답변이 두 슈트에 똑같이 기울었고, 동점을 가르는 질문은 또 다른 쪽을 가리켰어요.",
-      "courtRankUnsettled": "답변이 두 단계에 똑같이 기울었고, 동점을 가르는 질문은 또 다른 쪽을 가리켰어요."
+      "courtRankUnsettled": "답변이 두 단계에 똑같이 기울었고, 동점을 가르는 질문은 또 다른 쪽을 가리켰어요.",
+      "closeCallNear": "근소한 차이",
+      "closeCallNearBody": "{{a}}, {{b}} 두 결과의 점수가 거의 차이 나지 않아요. 둘 다 읽어 보세요 — 당신에게 와닿는 쪽이 의미 있는 결과예요.",
+      "closeCallNearBodyMany": "{{names}}의 점수가 거의 차이 나지 않아요. 모두 읽어 보세요 — 당신에게 와닿는 것이 의미 있는 결과예요.",
+      "coPrimaryNear": "공동 1위: {{name}}",
+      "sharedWithManyNear": "{{n}}개 결과와 공동 1위"
     },
     "takeAnother": "다른 퀴즈 풀기",
     "courtCards": {

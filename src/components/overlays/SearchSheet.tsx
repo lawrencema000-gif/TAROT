@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, BookOpen, Brain, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { HoroscopeWheelIcon, PlayingCardIcon, TarotCardIcon } from '../ui/NavIcons';
@@ -75,6 +75,7 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
   const { t } = useT(['app', 'common']);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const playingCards = useFeatureFlag('cartomancy');
   const locale = getLocale();
   const userId = user?.id ?? null;
@@ -130,16 +131,21 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
 
   const dateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric' }), [locale]);
 
+  // A destination on the page already open (an entry or the prompts while on
+  // the Journal) replaces this history entry rather than adding one, so Back
+  // leaves the page in one press.
+  const go = (path: string, state?: object) => navigate(path, { replace: path === pathname, ...(state ? { state } : {}) });
+
   const openResult = (result: SearchResult) => {
     setRecent(rememberSearch(userId, q));
     const { path, state } = destination(result);
     onClose();
-    navigate(path, state ? { state } : undefined);
+    go(path, state);
   };
 
   const openLink = (link: QuickLink) => {
     onClose();
-    navigate(link.path, link.state ? { state: link.state } : undefined);
+    go(link.path, link.state);
   };
 
   const clearRecent = () => {

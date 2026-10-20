@@ -28,9 +28,9 @@ type Deck = "tarot" | "playing";
 
 interface TarotCard {
   id: number;
-  /** English: how the model knows the card, and the name the Library row keeps. */
+  /** English: how the model knows the card. An older client sends the table's name here, and no localName. */
   name: string;
-  /** The name the reader's table shows, in the reading's language; the card is headed by it in the prompt. Older clients omit it. */
+  /** The name the reader's table shows, in the reading's language; the card is headed by it in the prompt, and the Library row keeps it. Older clients omit it. */
   localName?: string;
   reversed: boolean;
   keywords?: string[];
@@ -581,9 +581,14 @@ Deno.serve(
             verdict: body.verdict ? sanitizeUserInput(body.verdict, MAX_VERDICT_LENGTH) : undefined,
             usedLlm: llm,
           },
+          // Each card under the name the reader's table showed, as a tarot
+          // row always held it (the client sent its localized deck's names):
+          // the Android v1.2.0 Library prints a row's names as stored, and
+          // would list a Japanese member's web reading as "The Fool" (or
+          // "Five of Clubs"). The current Library names a card by its id.
           cards: body.cards.map((c) => ({
             id: c.id,
-            name: c.name,
+            name: c.localName || c.name,
             reversed: c.reversed,
           })),
         });

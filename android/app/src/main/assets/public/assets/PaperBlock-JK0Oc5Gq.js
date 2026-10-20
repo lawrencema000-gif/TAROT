@@ -1,0 +1,1 @@
+import{j as i}from"./vendor-react-B1cro10G.js";function n({w:e,h:r,className:t=""}){return i.jsx("div",{"aria-hidden":!0,className:`bg-paper-hairline rounded-inset ${t}`.trim(),style:{width:typeof e=="number"?`${e}px`:e,height:`${r}px`}})}export{n as P};

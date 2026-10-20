@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6V3H9HV31V');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- `maximum-scale=1.0, user-scalable=no` used to sit in here. Both are
+         removed: they disable pinch-zoom for every user on every screen,
+         which fails WCAG 1.4.4 (Resize Text) and is the single most common
+         accessibility defect on Android wrappers. Android WebView and
+         Chrome honour the lock; iOS Safari 10+ ignores it, so it was only
+         ever punishing the platform we actually ship the store build to.
+         The usual reason to add it — stopping the double-tap zoom that
+         iOS does on small tap targets — is already handled by
+         `touch-action: manipulation` on html in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The two faces the first paint needs: the display serif for the
+         greeting and the body sans. Everything else lazy-loads per
+         unicode-range from the @font-face rules in index.css. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-500-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-latin-400-normal.woff2" />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <meta name="theme-color" content="#07070f" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07070f" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Arcana" />
+
+    <meta name="application-name" content="Arcana" />
+    <meta name="msapplication-TileColor" content="#07070f" />
+    <meta name="msapplication-config" content="none" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>Judgement Tarot Card Meaning — Major Arcana | Arcana</title>
+    <meta name="description" content="Judgement tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+
+    <link rel="canonical" href="https://tarotlife.app/tarot-meanings/judgement" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcana" />
+    <meta property="og:url" content="https://tarotlife.app/tarot-meanings/judgement" />
+    <meta property="og:title" content="Judgement Tarot Card Meaning — Major Arcana | Arcana" />
+    <meta property="og:description" content="Judgement tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+    <meta property="og:image" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:secure_url" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tarotlife_app" />
+    <meta name="twitter:title" content="Judgement Tarot Card Meaning — Major Arcana | Arcana" />
+    <meta name="twitter:description" content="Judgement tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
+    <meta name="twitter:image" content="https://tarotlife.app/image.png" />
+
+    <!-- Site verification — fill in once domains are verified. The values
+         below are placeholders; replace with real codes from each console. -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
+    <!-- <meta name="msvalidate.01" content="REPLACE_WITH_BING_CODE" /> -->
+    <!-- <meta name="p:domain_verify" content="REPLACE_WITH_PINTEREST_CODE" /> -->
+    <!-- <meta name="facebook-domain-verification" content="REPLACE_WITH_FB_CODE" /> -->
+
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Judgement Tarot Card Meaning","description":"Complete Judgement tarot card meaning with upright + reversed + love + career interpretations.","url":"https://tarotlife.app/tarot-meanings/judgement","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+  <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
+  </head>
+  <body>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Judgement Tarot Card Meaning</h1><p class="seo-kw">Keywords: Judgement, Rebirth, Inner calling, Absolution</p><h2>Upright Meaning</h2><p>Judgment, rebirth, awakening, and answering your higher calling. This card represents the moment of profound reckoning when you are called to account for your choices, when the consequences of past actions crystallize, and when you must decide who you will be going forward. Like the figures rising from their graves at the angel's trumpet call, Judgement speaks to resurrection - becoming alive again after a period of merely existing, remembering who you truly are beneath the personas you've worn. This is the card of the wake-up call that cannot be ignored, the moment of self-evaluation that changes everything, the realization that leads to transformation. Judgement asks you to forgive yourself and others, to learn from the past without being imprisoned by it, and to answer the calling of your soul even if it means disappointing others' expectations. This is a time of clarity about your purpose, of understanding the patterns that have led you to this moment, and of making peace with your journey. The trumpet calls: will you rise and answer, or remain in the comfort of the familiar grave?</p><h2>Reversed Meaning</h2><p>Self-doubt, harsh self-judgment, ignoring your calling, or refusing to learn from the past. You may be unable to forgive yourself for past mistakes, being so critical of yourself that growth becomes impossible. This reversal can indicate that you are hearing the call to transformation but are afraid to answer it, staying in situations or identities that have expired because change feels too risky. You might be avoiding necessary self-evaluation, refusing to honestly assess your life choices, or resisting the accountability that spiritual growth requires. Alternatively, Judgement reversed can suggest being overly harsh in judgment of yourself or others - lacking the compassion that should accompany honest assessment. Sometimes this card reversed points to feeling unworthy of rebirth, believing that you don't deserve a second chance or that past mistakes define you permanently. It can also indicate that the transformation is happening internally, that you are undergoing a private reckoning that others cannot see. The reversal asks whether you are avoiding the call, being too harsh in self-judgment, or quietly answering in your own way.</p><h2>Love &amp; Relationships</h2><p>A moment of truth in relationships, resurrection of love thought dead, or accountability for romantic patterns. Judgement can indicate that you and a past partner are being given another chance, reconnecting with new awareness and maturity. If single, you may be experiencing revelation about your relationship patterns, understanding finally why previous connections failed and what needs to change. If partnered, this card suggests a moment of deep honesty where both partners must assess whether the relationship is serving your highest evolution. Judgement asks: is this relationship calling you to be your best self, or are old patterns keeping you small? This card can appear before major relationship decisions - engagements, separations, or renewals of commitment - where you must honestly evaluate the path forward. Sometimes Judgement indicates karmic relationships where past-life connections are being resolved. The message is clear: love at this level requires absolute honesty, forgiveness of past hurts, and commitment to growth.</p><h2>Career &amp; Money</h2><p>A calling to your true vocational purpose, professional rebirth, or reckoning with career choices. Judgement suggests that you are being called to step into work that genuinely matters to you, to align your profession with your soul's purpose rather than just earning income. This card can indicate dramatic career changes - leaving secure but unfulfilling work to pursue your calling, returning to school, or finally pursuing the dream you abandoned years ago. Judgement asks you to honestly evaluate whether your current professional path serves your highest evolution. Are you becoming who you're meant to be through this work, or have you compromised your truth for security or others' approval? This card favors careers in spiritual service, healing, counseling, ministry, or any work that facilitates transformation in others. You may be called to use your professional skills in service of something greater than profit. Listen to the trumpet - what is your work in the world? What are you being called to do, create, or become professionally?</p><h2>Astrological Correspondences</h2><p>Element: Spirit · Planet: Pluto · Hebrew letter: Shin</p><h2>Yes or No</h2><p>Yes. Judgement is a calling, an awakening, an absolution. To questions of rebirth and inner reckoning, the answer is yes.</p><h2>Numerology</h2><p>Twenty is the number of awakening and rebirth — the trumpet that calls the soul out of its long sleep into a higher octave.</p></article></main></div></div>
+  </body>
+</html>

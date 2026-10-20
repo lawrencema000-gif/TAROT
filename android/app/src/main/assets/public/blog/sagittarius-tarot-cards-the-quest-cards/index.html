@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>Sagittarius Tarot — The Quest Cards and Their Meanings | Arcana Blog</title>
     <meta name="description" content="Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings." />
 
-    <link rel="canonical" href="https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards/" />
+    <link rel="canonical" href="https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards/" />
+    <meta property="og:url" content="https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards" />
     <meta property="og:title" content="Sagittarius Tarot — The Quest Cards and Their Meanings | Arcana Blog" />
     <meta property="og:description" content="Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings." />
     <meta property="og:image" content="https://tarotlife.app/image.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Sagittarius Tarot — The Quest Cards and Their Meanings","description":"Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings.","image":"https://tarotlife.app/image.png","url":"https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards/","datePublished":"2026-08-05T09:01:18.505+00:00","dateModified":"2026-08-05T09:01:18.505+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Sagittarius Tarot — The Quest Cards and Their Meanings","description":"Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings.","image":"https://tarotlife.app/image.png","url":"https://tarotlife.app/blog/sagittarius-tarot-cards-the-quest-cards","datePublished":"2026-08-05T09:01:18.505+00:00","dateModified":"2026-08-05T09:01:18.505+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>Sagittarius Tarot — The Quest Cards and Their Meanings</h1><p>Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings.</p><p>Sagittarius Tarot — The Quest Cards and Their Meanings Sagittarius lives to seek: truth, horizons, the next leap. In tarot, three cards carry this fire across the map—Temperance, Wheel of Fortune, and the Knight of Wands. Here’s how to read them together, and how to use a seeker’s spread to navigate your next chapter. Sagittarius Personality Tarot Sagittarius is mutable fire: adaptive, candid, and purpose-driven. In tarot language, that looks like momentum guided by meaning—movement that isn’t random, but refined through experience. When Sagittarius shows up in a reading, look for themes of integration, risk with wisdom, and roads that open when you align belief with action. Core drives: exploration, learning, principled freedom. Shadows: overextension, restlessness, bluntness that burns bridges. Reading tip: weigh speed against synthesis. Ask not only “Where am I going?” but “What am I integrating as I go?” To see these currents in action, run a focused three-card check-in on Arcana’s tarot readings or tap a fast pulse with a quick AI reading when decisions stack up. Sagittarius Zodiac Tarot: The Ruling Cards Three cards anchor Sagittarius in the deck. Each one takes a facet of the Archer and makes it visible. Temperance — Sagittarius’ Sign Card Temperance is calibrated freedom. The angel pours from one cup to another, mixing extremes until they make medicine. This is Sagittarius at its best: strong opinions carried with grace, desire tempered by wisdom, optimism backed by practice. In career spreads, Temperance signals process design and sustainable pace. In love, it calls for truth delivered with care—boundaries that preserve the bond. Upright cues: balance through experimentation, healing through honest blending, travel for purpose. Reversed cues: impatience, dogma, spiritual bypassing, “all or nothing” thinking. Wheel of Fortune — Jupiter’s Hand Jupiter rules Sagittarius, and the Wheel is Jupiter in motion: cycles turn, doors open, luck favors the learner who stays awake. The Wheel doesn’t promise control; it invites participation. Time your moves, study the pattern, then say yes. Upright cues: momentum spikes, serendipity, curriculum of change. Reversed cues: clinging to a closed chapter, missing the window, repeating a lesson until it lands. Knight of Wands — The Pilgrim The Knight of Wands is the body of the quest—boots on, map optional. It’s charisma, ignition, the message that can’t wait. As a Sagittarius signature, it urges experiments, sprints, and honest feedback from the road. Upright cues: bold starts, thought-leadership, relocating for growth. Reversed cues: scattered fire, performative passion, quitting at mile two. Pairings matter. Temperance refines the Knight’s heat. The Wheel expands the field. Together, they read as “Aim, ignite, adapt.” Sagittarius Temperance: Practicing the Middle Path Without Losing Fire Temperance doesn’t douse flame; it channels it. For Sagittarius, that means choosing rhythms that protect curiosity. Batch your leaps. Set “integration days.” Trade soapbox certainty for Socratic clarity: questions that widen the room. In work: design sprints with cooldowns. Measure learning, not just output. In relationships: truth plus timing. Share the principle and the plan to uphold it. In self-growth: blend study with application. Journal, then test. Debrief, then iterate. When Temperance shows with the Wheel, schedule the risk. When it shows with the Knight, build a container: one target, one timeframe, one honest retrospective. The Seeker’s Spread for Sagittarius Use this five-card layout when the horizon is calling but you want wise momentum. It spotlights belief, timing, and the lesson that upgrades your aim. Card 1 — The Aim (What am I actually seeking?) Card 2 — The Fuel (What energizes this quest?) Card 3 — The Terrain (What changes around me?) Card 4 — The Tempering (What must I blend or balance?) Card 5 — The Arrow’s Flight (What action aligns now?) Reading notes: If Temperance lands in </p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Sagittarius Tarot — The Quest Cards and Their Meanings</h1><p>Discover the Sagittarius tarot cards: Temperance, Wheel of Fortune, and Knight of Wands. Decode Sagittarius energy, spreads, and seeker-style readings.</p><p>Sagittarius Tarot — The Quest Cards and Their Meanings Sagittarius lives to seek: truth, horizons, the next leap. In tarot, three cards carry this fire across the map—Temperance, Wheel of Fortune, and the Knight of Wands. Here’s how to read them together, and how to use a seeker’s spread to navigate your next chapter. Sagittarius Personality Tarot Sagittarius is mutable fire: adaptive, candid, and purpose-driven. In tarot language, that looks like momentum guided by meaning—movement that isn’t random, but refined through experience. When Sagittarius shows up in a reading, look for themes of integration, risk with wisdom, and roads that open when you align belief with action. Core drives: exploration, learning, principled freedom. Shadows: overextension, restlessness, bluntness that burns bridges. Reading tip: weigh speed against synthesis. Ask not only “Where am I going?” but “What am I integrating as I go?” To see these currents in action, run a focused three-card check-in on Arcana’s tarot readings or tap a fast pulse with a quick AI reading when decisions stack up. Sagittarius Zodiac Tarot: The Ruling Cards Three cards anchor Sagittarius in the deck. Each one takes a facet of the Archer and makes it visible. Temperance — Sagittarius’ Sign Card Temperance is calibrated freedom. The angel pours from one cup to another, mixing extremes until they make medicine. This is Sagittarius at its best: strong opinions carried with grace, desire tempered by wisdom, optimism backed by practice. In career spreads, Temperance signals process design and sustainable pace. In love, it calls for truth delivered with care—boundaries that preserve the bond. Upright cues: balance through experimentation, healing through honest blending, travel for purpose. Reversed cues: impatience, dogma, spiritual bypassing, “all or nothing” thinking. Wheel of Fortune — Jupiter’s Hand Jupiter rules Sagittarius, and the Wheel is Jupiter in motion: cycles turn, doors open, luck favors the learner who stays awake. The Wheel doesn’t promise control; it invites participation. Time your moves, study the pattern, then say yes. Upright cues: momentum spikes, serendipity, curriculum of change. Reversed cues: clinging to a closed chapter, missing the window, repeating a lesson until it lands. Knight of Wands — The Pilgrim The Knight of Wands is the body of the quest—boots on, map optional. It’s charisma, ignition, the message that can’t wait. As a Sagittarius signature, it urges experiments, sprints, and honest feedback from the road. Upright cues: bold starts, thought-leadership, relocating for growth. Reversed cues: scattered fire, performative passion, quitting at mile two. Pairings matter. Temperance refines the Knight’s heat. The Wheel expands the field. Together, they read as “Aim, ignite, adapt.” Sagittarius Temperance: Practicing the Middle Path Without Losing Fire Temperance doesn’t douse flame; it channels it. For Sagittarius, that means choosing rhythms that protect curiosity. Batch your leaps. Set “integration days.” Trade soapbox certainty for Socratic clarity: questions that widen the room. In work: design sprints with cooldowns. Measure learning, not just output. In relationships: truth plus timing. Share the principle and the plan to uphold it. In self-growth: blend study with application. Journal, then test. Debrief, then iterate. When Temperance shows with the Wheel, schedule the risk. When it shows with the Knight, build a container: one target, one timeframe, one honest retrospective. The Seeker’s Spread for Sagittarius Use this five-card layout when the horizon is calling but you want wise momentum. It spotlights belief, timing, and the lesson that upgrades your aim. Card 1 — The Aim (What am I actually seeking?) Card 2 — The Fuel (What energizes this quest?) Card 3 — The Terrain (What changes around me?) Card 4 — The Tempering (What must I blend or balance?) Card 5 — The Arrow’s Flight (What action aligns now?) Reading notes: If Temperance lands in </p></article></main></div></div>
   </body>
 </html>

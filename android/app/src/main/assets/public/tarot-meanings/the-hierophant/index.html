@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>The Hierophant Tarot Card Meaning — Major Arcana | Arcana</title>
     <meta name="description" content="The Hierophant tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
 
-    <link rel="canonical" href="https://tarotlife.app/tarot-meanings/the-hierophant/" />
+    <link rel="canonical" href="https://tarotlife.app/tarot-meanings/the-hierophant" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/tarot-meanings/the-hierophant/" />
+    <meta property="og:url" content="https://tarotlife.app/tarot-meanings/the-hierophant" />
     <meta property="og:title" content="The Hierophant Tarot Card Meaning — Major Arcana | Arcana" />
     <meta property="og:description" content="The Hierophant tarot meaning: upright and reversed interpretations, love, career, finances, yes/no readings, astrological correspondences, card combinations, and FAQ." />
     <meta property="og:image" content="https://tarotlife.app/image.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The Hierophant Tarot Card Meaning","description":"Complete The Hierophant tarot card meaning with upright + reversed + love + career interpretations.","url":"https://tarotlife.app/tarot-meanings/the-hierophant/","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The Hierophant Tarot Card Meaning","description":"Complete The Hierophant tarot card meaning with upright + reversed + love + career interpretations.","url":"https://tarotlife.app/tarot-meanings/the-hierophant","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>The Hierophant Tarot Card Meaning</h1><p class="seo-kw">Keywords: Spiritual wisdom, Tradition, Conformity, Morality</p><h2>Upright Meaning</h2><p>Spiritual wisdom, tradition, education, and connection to established systems of belief. The Hierophant is the bridge between the divine and the earthly, the teacher who transmits sacred knowledge through time-honored methods. He represents formal learning, mentorship, cultural values, and the wisdom preserved in institutions and traditions. This card speaks to seeking guidance from those who have walked the path before you, honoring the rituals and structures that connect you to something larger than yourself. The Hierophant shows that some truths are best learned within community, that there is power in shared beliefs and collective practices. He encourages you to find or become a teacher, to respect proven methods while understanding their deeper meaning, and to recognize that conformity can be a conscious choice rather than blind obedience. This is the card of initiations, commitments, and stepping into established roles within society or spiritual communities.</p><h2>Reversed Meaning</h2><p>Rebellion against tradition, questioning dogma, or feeling restricted by conventional expectations. You may be rejecting established institutions, challenging outdated beliefs, or seeking a more personal spiritual path outside organized systems. This reversal can indicate hypocrisy in authority figures, empty rituals performed without understanding, or rigid thinking that stifles growth. It may also suggest you are breaking free from limiting beliefs instilled by family, religion, or society. Consider whether you are rebelling with purpose or simply rejecting structure out of fear of commitment. Sometimes The Hierophant reversed calls you to become your own spiritual authority, trusting inner wisdom over external doctrine. Question everything, but also examine what wisdom traditions might still serve you.</p><h2>Love &amp; Relationships</h2><p>Traditional relationship milestones and commitment within societal structures. This card often appears before engagements, marriages, or meeting the family. If single, you may be drawn to someone who shares your core values and cultural background. If partnered, this is a time to honor your commitment publicly, perhaps through ceremony or formal recognition. The Hierophant can also represent seeking counsel from a therapist, religious advisor, or wise elder about relationship matters. Shared spiritual practices or values will strengthen your bond. This card reminds you that relationships exist not in isolation but within the context of community and tradition.</p><h2>Career &amp; Money</h2><p>Teaching, mentorship, and working within established institutions. This is an excellent time for formal education, certification programs, or apprenticeships. Your respect for protocol and ability to work within existing systems will advance your career. This card favors professions in education, religion, law, counseling, academia, or corporate training. You may take on a mentoring role or benefit greatly from a mentor. Success comes through patience, following proper channels, and mastering traditional methods before innovating. Your reputation and credentials matter now.</p><h2>Astrological Correspondences</h2><p>Element: Earth · Zodiac: Taurus · Hebrew letter: Vav</p><h2>Yes or No</h2><p>Maybe. The Hierophant favors convention and consultation. The answer depends on whether the path follows tradition or breaks from it.</p><h2>Numerology</h2><p>Five is the number of human experience and the bridge between matter and spirit — instruction, doctrine, and the search for meaning.</p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>The Hierophant Tarot Card Meaning</h1><p class="seo-kw">Keywords: Spiritual wisdom, Tradition, Conformity, Morality</p><h2>Upright Meaning</h2><p>Spiritual wisdom, tradition, education, and connection to established systems of belief. The Hierophant is the bridge between the divine and the earthly, the teacher who transmits sacred knowledge through time-honored methods. He represents formal learning, mentorship, cultural values, and the wisdom preserved in institutions and traditions. This card speaks to seeking guidance from those who have walked the path before you, honoring the rituals and structures that connect you to something larger than yourself. The Hierophant shows that some truths are best learned within community, that there is power in shared beliefs and collective practices. He encourages you to find or become a teacher, to respect proven methods while understanding their deeper meaning, and to recognize that conformity can be a conscious choice rather than blind obedience. This is the card of initiations, commitments, and stepping into established roles within society or spiritual communities.</p><h2>Reversed Meaning</h2><p>Rebellion against tradition, questioning dogma, or feeling restricted by conventional expectations. You may be rejecting established institutions, challenging outdated beliefs, or seeking a more personal spiritual path outside organized systems. This reversal can indicate hypocrisy in authority figures, empty rituals performed without understanding, or rigid thinking that stifles growth. It may also suggest you are breaking free from limiting beliefs instilled by family, religion, or society. Consider whether you are rebelling with purpose or simply rejecting structure out of fear of commitment. Sometimes The Hierophant reversed calls you to become your own spiritual authority, trusting inner wisdom over external doctrine. Question everything, but also examine what wisdom traditions might still serve you.</p><h2>Love &amp; Relationships</h2><p>Traditional relationship milestones and commitment within societal structures. This card often appears before engagements, marriages, or meeting the family. If single, you may be drawn to someone who shares your core values and cultural background. If partnered, this is a time to honor your commitment publicly, perhaps through ceremony or formal recognition. The Hierophant can also represent seeking counsel from a therapist, religious advisor, or wise elder about relationship matters. Shared spiritual practices or values will strengthen your bond. This card reminds you that relationships exist not in isolation but within the context of community and tradition.</p><h2>Career &amp; Money</h2><p>Teaching, mentorship, and working within established institutions. This is an excellent time for formal education, certification programs, or apprenticeships. Your respect for protocol and ability to work within existing systems will advance your career. This card favors professions in education, religion, law, counseling, academia, or corporate training. You may take on a mentoring role or benefit greatly from a mentor. Success comes through patience, following proper channels, and mastering traditional methods before innovating. Your reputation and credentials matter now.</p><h2>Astrological Correspondences</h2><p>Element: Earth · Zodiac: Taurus · Hebrew letter: Vav</p><h2>Yes or No</h2><p>Maybe. The Hierophant favors convention and consultation. The answer depends on whether the path follows tradition or breaks from it.</p><h2>Numerology</h2><p>Five is the number of human experience and the bridge between matter and spirit — instruction, doctrine, and the search for meaning.</p></article></main></div></div>
   </body>
 </html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6V3H9HV31V');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- `maximum-scale=1.0, user-scalable=no` used to sit in here. Both are
+         removed: they disable pinch-zoom for every user on every screen,
+         which fails WCAG 1.4.4 (Resize Text) and is the single most common
+         accessibility defect on Android wrappers. Android WebView and
+         Chrome honour the lock; iOS Safari 10+ ignores it, so it was only
+         ever punishing the platform we actually ship the store build to.
+         The usual reason to add it — stopping the double-tap zoom that
+         iOS does on small tap targets — is already handled by
+         `touch-action: manipulation` on html in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The two faces the first paint needs: the display serif for the
+         greeting and the body sans. Everything else lazy-loads per
+         unicode-range from the @font-face rules in index.css. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-500-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-latin-400-normal.woff2" />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <meta name="theme-color" content="#07070f" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07070f" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Arcana" />
+
+    <meta name="application-name" content="Arcana" />
+    <meta name="msapplication-TileColor" content="#07070f" />
+    <meta name="msapplication-config" content="none" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>Full Moon Manifestation: A Practical Guide That Works | Arcana Blog</title>
+    <meta name="description" content="Use the full moon for results: release what blocks you, amplify what’s ready, and work with lunar mansions. Includes a clear 4-step full moon ritual." />
+
+    <link rel="canonical" href="https://tarotlife.app/blog/full-moon-manifestation-practical-guide" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcana" />
+    <meta property="og:url" content="https://tarotlife.app/blog/full-moon-manifestation-practical-guide" />
+    <meta property="og:title" content="Full Moon Manifestation: A Practical Guide That Works | Arcana Blog" />
+    <meta property="og:description" content="Use the full moon for results: release what blocks you, amplify what’s ready, and work with lunar mansions. Includes a clear 4-step full moon ritual." />
+    <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/full-moon-manifestation-practical-guide-1783328439080.png" />
+    <meta property="og:image:secure_url" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tarotlife_app" />
+    <meta name="twitter:title" content="Full Moon Manifestation: A Practical Guide That Works | Arcana Blog" />
+    <meta name="twitter:description" content="Use the full moon for results: release what blocks you, amplify what’s ready, and work with lunar mansions. Includes a clear 4-step full moon ritual." />
+    <meta name="twitter:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/full-moon-manifestation-practical-guide-1783328439080.png" />
+
+    <!-- Site verification — fill in once domains are verified. The values
+         below are placeholders; replace with real codes from each console. -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
+    <!-- <meta name="msvalidate.01" content="REPLACE_WITH_BING_CODE" /> -->
+    <!-- <meta name="p:domain_verify" content="REPLACE_WITH_PINTEREST_CODE" /> -->
+    <!-- <meta name="facebook-domain-verification" content="REPLACE_WITH_FB_CODE" /> -->
+
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Full Moon Manifestation: A Practical Guide That Works","description":"Use the full moon for results: release what blocks you, amplify what’s ready, and work with lunar mansions. Includes a clear 4-step full moon ritual.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/full-moon-manifestation-practical-guide-1783328439080.png","url":"https://tarotlife.app/blog/full-moon-manifestation-practical-guide","datePublished":"2026-07-06T09:00:39.203+00:00","dateModified":"2026-07-06T09:00:39.203+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+  <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
+  </head>
+  <body>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Full Moon Manifestation: A Practical Guide That Works</h1><p>Use the full moon for results: release what blocks you, amplify what’s ready, and work with lunar mansions. Includes a clear 4-step full moon ritual.</p><p>Full Moon Manifestation: A Practical Guide That Works The full moon is a spotlight: it reveals, heightens, and completes. Use it to cut what hinders you and to charge what’s already in motion. Here’s how full moon manifestation actually works, which lunar timings support which goals, and a grounded 4-step ritual you can repeat every month. Full Moon Meaning: Completion, Clarity, and the Cut The full moon is the peak of the lunar cycle. Energetically it favors culmination, revelation, and decision. This is not new-seed energy; it’s harvest and pruning. Manifestation here means two things: release what blocks your path and magnify what is ripe. Think less wishing, more editing. Astrologically, the sign of the full moon filters the theme. A full moon in Virgo clarifies systems and health. Libra highlights relationships and agreements. Scorpio compels deep purging. Check the axis with the Sun sign for a clean read of tensions completing. Your daily horoscope and natal chart help map which house the lunation lights up in your life. Full Moon Energy: What It Amplifies and What to Avoid Full moons heighten the nervous system and emotions. Use the surge to choose, not to chase. Actions that align: Releasing attachments, clutter, debts, habits Finalizing, publishing, launching what is already finished Charging tools (journals, altars), and blessing commitments already underway Avoid initiating totally new, untested ventures. Instead, clarify the next step for plans seeded at the last new moon. If you must start, start small and precise—think pilot, not full rollout. Lunar Mansions and Timing Your Goals The Moon moves through 28 lunar mansions, each with specific virtues. Align your focus within a ±6–12 hour window around the full moon for best effect, or adjust a day earlier/later to hit the right mansion. Key mansions for common aims: Growth and success: Mansions 3 (Al Thurayya), 11 (Al Zubrah), 14 (Al Simak) favor advancement, visibility, and protection for endeavors already maturing. Love and harmony: Mansions 7 (Al Dhirah) and 13 (Al Awwa) support reconciliations, balancing dynamics, and blessing existing bonds. Protection and boundaries: Mansions 2 (Al Butain) and 26 (Al Fargh Al Thani) fortify, seal, and ward—excellent for releases and cutting cords. Career and recognition: Mansions 10 (Al Jabha) and 22 (Sa’d Al-Dhabih) aid honors, negotiations, and consolidating position. Healing and purification: Mansions 6 (Al Han’ah) and 18 (Al Kalb) focus on body repair, detox, and ending harmful loops. If mansion timing is out of reach, time your ritual when the Moon applies to a supportive aspect (trine/sextile) to your natal angles or benefics. Arcana’s quick AI reading and daily horoscope can flag windows that match your chart. A 4-Step Full Moon Ritual for Real Results This practice balances release with amplification. Keep it under 45 minutes. Precision over pageantry. Step 1: Reveal (10 minutes) Write two lists: What is complete? What is in the way? Be factual, not dramatic. Name behaviors, stories, debts, and open loops. Circle the single item whose removal would free the most energy. Step 2: Release (10 minutes) Craft one decisive sentence in the present tense: “I release X pattern and close Y loop.” Read it aloud once. Dispose physically: shred, salt-and-water rinse, or burn safely. Follow with one concrete action within 24 hours—unsubscribe, pay, decline, delete. Step 3: Charge What’s Ripe (15 minutes) Choose one active goal already underway. Define the next irreversible step. Write a clear commitment: “I advance Z by doing A on [date/time].” Hold a tangible token of the project—proposal, calendar invite, instrument—and breathe steadily for nine cycles, visualizing completion already achieved. Place the token on your workspace to anchor the charge. Step 4: Seal (5–10 minutes) Close your space: wipe surfaces, wash hands, dim screens. Say: “This is done.” Schedule the next two follow-through actions immediately. For guidance or conf</p></article></main></div></div>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6V3H9HV31V');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- `maximum-scale=1.0, user-scalable=no` used to sit in here. Both are
+         removed: they disable pinch-zoom for every user on every screen,
+         which fails WCAG 1.4.4 (Resize Text) and is the single most common
+         accessibility defect on Android wrappers. Android WebView and
+         Chrome honour the lock; iOS Safari 10+ ignores it, so it was only
+         ever punishing the platform we actually ship the store build to.
+         The usual reason to add it — stopping the double-tap zoom that
+         iOS does on small tap targets — is already handled by
+         `touch-action: manipulation` on html in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The two faces the first paint needs: the display serif for the
+         greeting and the body sans. Everything else lazy-loads per
+         unicode-range from the @font-face rules in index.css. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-500-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-latin-400-normal.woff2" />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <meta name="theme-color" content="#07070f" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07070f" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Arcana" />
+
+    <meta name="application-name" content="Arcana" />
+    <meta name="msapplication-TileColor" content="#07070f" />
+    <meta name="msapplication-config" content="none" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>Death Tarot Card Meaning: Transformation, Not Doom | Arcana Blog</title>
+    <meta name="description" content="The Death tarot card rarely signals literal death. Learn its true meaning—endings, release, and rebirth—plus love, career, and reversed interpretations." />
+
+    <link rel="canonical" href="https://tarotlife.app/blog/death-tarot-card-meaning-transformation-not-doom" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcana" />
+    <meta property="og:url" content="https://tarotlife.app/blog/death-tarot-card-meaning-transformation-not-doom" />
+    <meta property="og:title" content="Death Tarot Card Meaning: Transformation, Not Doom | Arcana Blog" />
+    <meta property="og:description" content="The Death tarot card rarely signals literal death. Learn its true meaning—endings, release, and rebirth—plus love, career, and reversed interpretations." />
+    <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/death-tarot-card-meaning-transformation-not-doom-1781686866402.png" />
+    <meta property="og:image:secure_url" content="https://tarotlife.app/image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tarotlife_app" />
+    <meta name="twitter:title" content="Death Tarot Card Meaning: Transformation, Not Doom | Arcana Blog" />
+    <meta name="twitter:description" content="The Death tarot card rarely signals literal death. Learn its true meaning—endings, release, and rebirth—plus love, career, and reversed interpretations." />
+    <meta name="twitter:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/death-tarot-card-meaning-transformation-not-doom-1781686866402.png" />
+
+    <!-- Site verification — fill in once domains are verified. The values
+         below are placeholders; replace with real codes from each console. -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
+    <!-- <meta name="msvalidate.01" content="REPLACE_WITH_BING_CODE" /> -->
+    <!-- <meta name="p:domain_verify" content="REPLACE_WITH_PINTEREST_CODE" /> -->
+    <!-- <meta name="facebook-domain-verification" content="REPLACE_WITH_FB_CODE" /> -->
+
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Death Tarot Card Meaning: Transformation, Not Doom","description":"The Death tarot card rarely signals literal death. Learn its true meaning—endings, release, and rebirth—plus love, career, and reversed interpretations.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/death-tarot-card-meaning-transformation-not-doom-1781686866402.png","url":"https://tarotlife.app/blog/death-tarot-card-meaning-transformation-not-doom","datePublished":"2026-06-17T09:01:06.568+00:00","dateModified":"2026-06-17T09:01:06.568+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+  <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
+  </head>
+  <body>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Death Tarot Card Meaning: Transformation, Not Doom</h1><p>The Death tarot card rarely signals literal death. Learn its true meaning—endings, release, and rebirth—plus love, career, and reversed interpretations.</p><p>Death Tarot Card Meaning: Transformation, Not Doom The Death card is the clean breath after a storm. It rarely touches the body; it renews the life around it. Here’s what Death actually means—endings that free you, rebirth that follows, and how to meet this card without flinching. What Death Really Signals: Endings, Release, Rebirth Death is the moment a door closes and the window truly opens. It announces a phase that has completed its purpose: habits that no longer fit, attachments that drain you, work that has run its course. The card says: stop clinging. Compost the old so new growth has somewhere to root. Where many cards offer advice, Death brings inevitability. You won’t outrun a turning season, but you can meet it with intention. When Death appears in a spread, map what is ending, then choose what you’ll carry into the next chapter. A ritual helps—delete the file, send the email, return the key. For a focused snapshot, pull a quick clarifier with a Quick AI Reading and name the one thing you’ll release this week. Common Misreadings and How to Sit With the Card The classic mistake is equating Death with catastrophe. But the skeleton rides calm; the sun rises between towers. This is structured change, not random chaos. The card does not punish— it prunes. How to sit with it: Name the loss honestly. Grief is part of growth. Identify the payoff of letting go: time, energy, integrity. Create a threshold moment: journal, cleanse your space, or schedule the ending. If the spread feels charged, anchor with a single-card pull from Tarot Readings to clarify the transition tone—what quality guides you across? Death Card Love: Clearing Space for Real Intimacy In love, Death invites a relationship to shed its dead skin. That could mean ending a connection that’s done, or ending a pattern inside a living one—stonewalling, chasing, performative harmony. The heart cannot renew while gripping an identity built on fear. If you’re single, Death can sweep away outdated “types” and scripts, making room for a bond aligned with who you are now. In established partnerships, consider a relationship retrograde: pause, review, renegotiate. What ritual closes an old cycle—an honest talk, new boundaries, a shared commitment? For dynamic insights across your charts, explore Partner Compatibility or the deeper Soulmate Score . Death Card Career: Strategic Endings and Fresh Tracks Workwise, Death means a chapter turns. Projects sunset, teams restructure, titles dissolve. Rather than scramble to preserve what’s expiring, treat this as portfolio management. Retire what doesn’t return energy; reinvest in skills and networks that match your next horizon. Think tactically: Archive with intention: document wins, extract lessons, hand off cleanly. Signal your pivot: update profiles, tell your story in “from → to” language. Make space before you fill it: leave white space on the calendar for emergence. If you want a quick outlook on timing and next steps, run a focused spread in Tarot Readings . Death Tarot Reversed: Resistance, Delay, or Gentle Unwinding Reversed, Death points to clinging—the job you’ve outgrown, the identity that once saved you, the relationship running on nostalgia. The change is still on the table; you’re the one riding the brakes. Sometimes the reversal suggests a tender, incremental release rather than a dramatic cut: unsubscribe, reduce contact, pilot the new habit quietly. Ask: what fear keeps me looping? What small ending can I enact today that honors a bigger truth? If emotions are tangled, let your subconscious speak—drop a nighttime question and use Arcana’s AI Dream Interpreter to surface what wants to end beneath the surface. Frequently Asked Questions Does the Death tarot card mean someone will die? No. In tarot, Death almost always symbolizes the end of a phase, not literal death. It’s about release, transformation, and the start that follows an ending. Is Death a good card in love readings? Yes—if you’re ready for honesty. I</p></article></main></div></div>
+  </body>
+</html>

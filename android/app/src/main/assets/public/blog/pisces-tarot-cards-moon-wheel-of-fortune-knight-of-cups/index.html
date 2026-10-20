@@ -1,19 +1,51 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-SsGXs1RC.js","/assets/i18n-ja-common-DHwPsb9q.js","/assets/i18n-ja-landing-BmgXnuG1.js","/assets/i18n-ja-onboarding-oz6C1VnQ.js","/assets/i18n-ja-tarot-CBcu-uEQ.js"],"ko":["/assets/i18n-ko-app-D3QMP5wO.js","/assets/i18n-ko-common-bc76wu-0.js","/assets/i18n-ko-landing-CrWlQg2E.js","/assets/i18n-ko-onboarding-C0a83aGr.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-BLpd0W1r.js","/assets/i18n-zh-common-csalHUpN.js","/assets/i18n-zh-landing-BLjdWd0-.js","/assets/i18n-zh-onboarding-pB7iW9pu.js","/assets/i18n-zh-tarot-DsD2BSX-.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
+    <meta charset="UTF-8">
+    <script>(function(){try{var m={"ja":["/assets/i18n-ja-app-C82Vr2K8.js","/assets/i18n-ja-common-B3Iqh7qD.js","/assets/i18n-ja-landing-wjLILG1N.js","/assets/i18n-ja-onboarding-sGDH3NeG.js","/assets/i18n-ja-tarot-Z6ubYUFM.js"],"ko":["/assets/i18n-ko-app-BPJN3WMl.js","/assets/i18n-ko-common-Cw78DlNT.js","/assets/i18n-ko-landing-UCXsd8bd.js","/assets/i18n-ko-onboarding-D9RbFLZg.js","/assets/i18n-ko-tarot-DQPVNo81.js"],"zh":["/assets/i18n-zh-app-DCxRwHbl.js","/assets/i18n-zh-common-hKSvG30o.js","/assets/i18n-zh-landing-DLs2bX0e.js","/assets/i18n-zh-onboarding-DdaJZvty.js","/assets/i18n-zh-tarot-DUYts22I.js"]};var q=new URLSearchParams(location.search).get('lang');var s=null;try{s=localStorage.getItem('arcana_locale')}catch(e){}var l=String(q||s||'').toLowerCase().split('-')[0];var c={"ja":"family=Noto+Sans+JP:wght@400;600","ko":"family=Noto+Sans+KR:wght@400;600","zh":"family=Noto+Sans+SC:wght@400;600"}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';k.href="https://fonts.googleapis.com/css2?"+c+"&display=swap";document.head.appendChild(k)}var f=m[l];if(!f)return;for(var i=0;i<f.length;i++){var e=document.createElement('link');e.rel='modulepreload';e.setAttribute('crossorigin','');e.href=f[i];document.head.appendChild(e)}}catch(e){}})();</script>
 
-    <meta charset="UTF-8" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
+    <!-- Google Analytics + Google Ads.
+         The gtag() queue is defined here, synchronously, so every call the
+         app makes before the loader arrives is kept and replayed. The
+         loader itself (190 KB) is appended after the window `load` event, in
+         an idle slot: it used to be the first request after the document
+         and owned the longest main-thread tasks on every page, ahead of the
+         app's own entry chunk.
+         The AW- (Google Ads) config is only issued where a conversion or a
+         paid landing can happen — the auth routes, or a visit carrying a
+         gclid / Google utm_source — because that config is what fires the
+         remarketing pixel on every page view. Conversions themselves are
+         GA4 events imported by Google Ads (see src/services/analytics.ts).
+         AdSense is not here any more: src/components/ads/adsense.ts injects
+         it the first time an ad component mounts, so the landing and the
+         signed-in app never download it. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
-      gtag('config', 'AW-18073938869');
+      (function(){
+        try {
+          var p = location.pathname, q = location.search;
+          if (/^\/(signup|signin)(\/|$)/.test(p) || /[?&](gclid|gbraid|wbraid)=/.test(q) || /[?&]utm_source=google\b/i.test(q)) {
+            gtag('config', 'AW-18073938869');
+          }
+        } catch (e) {}
+      })();
+      (function(){
+        function load(){
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V';
+          document.head.appendChild(s);
+        }
+        function idle(){
+          if ('requestIdleCallback' in window) { requestIdleCallback(load, { timeout: 4000 }); }
+          else { setTimeout(load, 1); }
+        }
+        if (document.readyState === 'complete') { idle(); }
+        else { window.addEventListener('load', idle, { once: true }); }
+      })();
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -31,7 +63,9 @@
 
     <!-- Performance: preconnect to the domains we hit on first paint.
          Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
-         is the polite fallback for browsers that don't honor preconnect. -->
+         is the polite fallback for browsers that don't honor preconnect.
+         The ad and analytics hosts are dns-prefetch only: neither is on the
+         first paint any more. -->
     <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,12 +97,12 @@
     <title>Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups | Arcana Blog</title>
     <meta name="description" content="Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio." />
 
-    <link rel="canonical" href="https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups/" />
+    <link rel="canonical" href="https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arcana" />
-    <meta property="og:url" content="https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups/" />
+    <meta property="og:url" content="https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups" />
     <meta property="og:title" content="Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups | Arcana Blog" />
     <meta property="og:description" content="Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio." />
     <meta property="og:image" content="https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups-1786179631357.png" />
@@ -91,18 +125,18 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DiUdewjG.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-D4vxpNZB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Cm3WmXCe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-DmL2fspy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-DmTQHl5B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-Bql_dgkS.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Bl3ndj0L.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-IYCC4TtN.css">
-      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups","description":"Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups-1786179631357.png","url":"https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups/","datePublished":"2026-08-08T09:00:31.484+00:00","dateModified":"2026-08-08T09:00:31.484+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
+    <script type="module" crossorigin src="/assets/index-bEyvlmSo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-B1cro10G.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DAgyKm8f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-RSlDhUo1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BWVev_FT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D3wfY_Fb.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-D3mS5PlF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DNtYe7Sv.css">
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups","description":"Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio.","image":"https://ulzlthhkqjuohzjangcq.supabase.co/storage/v1/object/public/blog-covers/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups-1786179631357.png","url":"https://tarotlife.app/blog/pisces-tarot-cards-moon-wheel-of-fortune-knight-of-cups","datePublished":"2026-08-08T09:00:31.484+00:00","dateModified":"2026-08-08T09:00:31.484+00:00","author":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"},"publisher":{"@type":"Organization","name":"Arcana","url":"https://tarotlife.app"}}</script>
   <style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>
   </head>
   <body>
-    <div id="root"><div class="seo-prerender"><main><article><h1>Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups</h1><p>Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio.</p><p>Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups Pisces swims by starlight and instinct, navigating tides others can’t see. In tarot, three cards crystallize that current: The Moon, the Wheel of Fortune, and the Knight of Cups. Here’s how to read this trio for love, purpose, and timing—without getting lost in the fog. Pisces Personality Tarot Pisces is porous and perceptive. In tarot spreads, that sensitivity shows up as themes of surrender, symbolic language, and compassionate courage. The core lesson isn’t to escape—it&amp;39;s to trust the inner compass while choosing real-world action. The Moon reveals the psychic weather: dreams, doubts, intuition sharpening in the dark. Wheel of Fortune marks the tide: cycles turning, fate flirting with free will. Knight of Cups carries the message: heart-led invitations, artistry, spiritual pursuit. When this pattern appears, read for emotional accuracy first, logistics second. Ask what the body knows, then confirm with facts. For quick clarity, pull a focused 3-card line with a follow-up on timing. Or let an AI draw on symbolism with a quick AI reading . Pisces Zodiac Tarot: Ruler Cards and Their Roles Astrologically, Pisces is ruled by Jupiter (classical) and Neptune (modern). Tarot mirrors that rulership through archetypes that speak to expansion, mystery, and mercy. The Moon (Pisces resonance): Not its strict astrological ruler, but the card most attuned to Pisces’ nocturnal sight. It maps the liminal: fear vs. instinct, illusion vs. imagination. Wheel of Fortune (Jupiter): The big spin. Jupiter’s tides of luck, grace, and growth. It spotlights cycles, karmic timing, and the invitation to align with momentum rather than muscle against it. Knight of Cups (Water of Air): The questing romantic. He brings offers, poems, and spiritual prompts—movement led by feeling, not force. In a Pisces-centered spread, this trio acts like a ritual: The Moon opens the portal, the Wheel turns it, the Knight walks through. To anchor the reading, add one Pentacles card for practical grounding, then sanity-check with your daily horoscope and natal chart . The Pisces Moon Card: Reading The Moon with Precision The Moon doesn’t confuse you; it exposes what was already unclear. Read it with crisp questions. Signal vs. noise: Are you sensing truth or echoing fear? Pair The Moon with the Ace of Swords to cut through, or with the High Priestess to deepen trust in silence. Dreamwork: Track recurring symbols for two lunar cycles. Pull The Moon as a significator, then ask, “What am I projecting? What is actually present?” Log insights and run them through the Arcana AI Dream Interpreter . Timing and tells: Night to dawn: two days to one month, peaking near the next full moon. Body cue: tight jaw, tidal sleep, vivid dreams—your system processing data your mind hasn’t parsed yet. If The Moon arrives with the Seven of Cups, simplify to one choice. If it meets Temperance, blend the feeling with a plan. The Wheel of Fortune: Jupiter’s Turn for Pisces When the Wheel spins in a Pisces reading, fate offers a current. Your job is to paddle, not control the river. Look for: Thresholds: job changes, relocations, endings that are actually promotions in disguise. Amplifiers: Jupiter rewards belief plus structure. Pair Wheel with the Emperor for sustainable growth, or with the Star for hopeful recalibration. Practical read: If you pull Wheel + The Moon, wait for more light before committing. The cycle is turning, but the map is misted. Wheel + Knight of Cups? An offer arrives fast. Say yes if your values and boundaries are clear on paper. Timing: Jupiter cycles: 12 days, 12 weeks, or around a Jupiter transit to your chart ruler. Check your forecast in the daily horoscope + natal chart to sync effort with opportunity. Knight of Cups: The Pisces Messenger This knight is motion with meaning. He signals incoming invitations, creative surges, and healing conversations—movement driven by sincerity. How to read him cleanly: U</p></article></main></div></div>
+    <div id="root"><div class="seo-prerender"><main><article><h1>Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups</h1><p>Decode Pisces tarot cards through The Moon, Wheel of Fortune, and the Knight of Cups. Learn Pisces personality in tarot, timing, and how to read this trio.</p><p>Pisces Tarot Cards: The Moon, Wheel of Fortune, Knight of Cups Pisces swims by starlight and instinct, navigating tides others can’t see. In tarot, three cards crystallize that current: The Moon, the Wheel of Fortune, and the Knight of Cups. Here’s how to read this trio for love, purpose, and timing—without getting lost in the fog. Pisces Personality Tarot Pisces is porous and perceptive. In tarot spreads, that sensitivity shows up as themes of surrender, symbolic language, and compassionate courage. The core lesson isn’t to escape—it&amp;39;s to trust the inner compass while choosing real-world action. The Moon reveals the psychic weather: dreams, doubts, intuition sharpening in the dark. Wheel of Fortune marks the tide: cycles turning, fate flirting with free will. Knight of Cups carries the message: heart-led invitations, artistry, spiritual pursuit. When this pattern appears, read for emotional accuracy first, logistics second. Ask what the body knows, then confirm with facts. For quick clarity, pull a focused 3-card line with a follow-up on timing. Or let an AI draw on symbolism with a quick AI reading . Pisces Zodiac Tarot: Ruler Cards and Their Roles Astrologically, Pisces is ruled by Jupiter (classical) and Neptune (modern). Tarot mirrors that rulership through archetypes that speak to expansion, mystery, and mercy. The Moon (Pisces resonance): Not its strict astrological ruler, but the card most attuned to Pisces’ nocturnal sight. It maps the liminal: fear vs. instinct, illusion vs. imagination. Wheel of Fortune (Jupiter): The big spin. Jupiter’s tides of luck, grace, and growth. It spotlights cycles, karmic timing, and the invitation to align with momentum rather than muscle against it. Knight of Cups (Water of Air): The questing romantic. He brings offers, poems, and spiritual prompts—movement led by feeling, not force. In a Pisces-centered spread, this trio acts like a ritual: The Moon opens the portal, the Wheel turns it, the Knight walks through. To anchor the reading, add one Pentacles card for practical grounding, then sanity-check with your daily horoscope and natal chart . The Pisces Moon Card: Reading The Moon with Precision The Moon doesn’t confuse you; it exposes what was already unclear. Read it with crisp questions. Signal vs. noise: Are you sensing truth or echoing fear? Pair The Moon with the Ace of Swords to cut through, or with the High Priestess to deepen trust in silence. Dreamwork: Track recurring symbols for two lunar cycles. Pull The Moon as a significator, then ask, “What am I projecting? What is actually present?” Log insights and run them through the Arcana AI Dream Interpreter . Timing and tells: Night to dawn: two days to one month, peaking near the next full moon. Body cue: tight jaw, tidal sleep, vivid dreams—your system processing data your mind hasn’t parsed yet. If The Moon arrives with the Seven of Cups, simplify to one choice. If it meets Temperance, blend the feeling with a plan. The Wheel of Fortune: Jupiter’s Turn for Pisces When the Wheel spins in a Pisces reading, fate offers a current. Your job is to paddle, not control the river. Look for: Thresholds: job changes, relocations, endings that are actually promotions in disguise. Amplifiers: Jupiter rewards belief plus structure. Pair Wheel with the Emperor for sustainable growth, or with the Star for hopeful recalibration. Practical read: If you pull Wheel + The Moon, wait for more light before committing. The cycle is turning, but the map is misted. Wheel + Knight of Cups? An offer arrives fast. Say yes if your values and boundaries are clear on paper. Timing: Jupiter cycles: 12 days, 12 weeks, or around a Jupiter transit to your chart ruler. Check your forecast in the daily horoscope + natal chart to sync effort with opportunity. Knight of Cups: The Pisces Messenger This knight is motion with meaning. He signals incoming invitations, creative surges, and healing conversations—movement driven by sincerity. How to read him cleanly: U</p></article></main></div></div>
   </body>
 </html>

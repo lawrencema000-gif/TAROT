@@ -52,7 +52,7 @@ export function LanguageDropdown({ triggerClassName = '' }: LanguageDropdownProp
         aria-expanded={open}
         // The visible code is part of the name, so "Language, EN" is what a
         // screen reader hears — not a globe with no state (R8 a11y).
-        aria-label={`${t('labels.language')}: ${t(`languages.${current}`)} (${LOCALE_CODES[current]})`}
+        aria-label={`${t('labels.language')}${t('punctuation.labelSeparator', { defaultValue: ': ' })}${t(`languages.${current}`)} (${LOCALE_CODES[current]})`}
         className={`lp-lang-trigger ${triggerClassName}`}
       >
         <Globe className="w-4 h-4" aria-hidden />

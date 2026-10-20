@@ -164,5 +164,8 @@
   },
   "resultLayout": {
     "readFullReading": "リーディングをすべて読む"
+  },
+  "punctuation": {
+    "labelSeparator": "："
   }
 }

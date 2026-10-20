@@ -77,7 +77,7 @@ export function ElementResult({ quiz, result, onBack, onRetake }: QuizResultView
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {shared && <CloseCall names={[name, ...tied.slice(1).map(nameOf)]} />}
+          {shared && <CloseCall exact names={[name, ...tied.slice(1).map(nameOf)]} />}
           {shared && <ReadingFirst name={name}>{description}</ReadingFirst>}
 
           {natal && (

@@ -109,9 +109,12 @@ export function MoonstoneWidget() {
           <div className="w-10 h-10 shrink-0 rounded-control bg-gold/10 text-gold flex items-center justify-center">
             <Moon className="w-5 h-5" aria-hidden />
           </div>
-          {/* auto-phrase: where a narrow phone still has to wrap a line here,
-              Japanese breaks between phrases, never inside a word. */}
-          <div className="min-w-0 flex-1 [word-break:auto-phrase] [overflow-wrap:anywhere]">
+          {/* keep-phrases: where a narrow phone still has to wrap a line here,
+              Japanese breaks between phrases and Korean between words, never
+              inside a word. [word-break:auto-phrase] did that for Japanese
+              only: Chromium has no phrases for Korean, so it broke between
+              syllables (p10 d3-ko-09). */}
+          <div className="min-w-0 flex-1 keep-phrases [overflow-wrap:anywhere]">
             <p className="text-meta text-mystic-400">
               {isPremium
                 ? t('moonstones.premiumLabel', { defaultValue: 'Premium · all readings unlocked' })

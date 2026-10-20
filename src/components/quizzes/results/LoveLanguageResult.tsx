@@ -73,7 +73,7 @@ export function LoveLanguageResult({ quiz, result, onBack, onRetake, saving, sav
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {shared && <CloseCall names={tied.map(name)} />}
+          {shared && <CloseCall exact names={tied.map(name)} />}
 
           <ResultSection title={section('yourScores', 'Your scores')}>
             <div className="space-y-4">

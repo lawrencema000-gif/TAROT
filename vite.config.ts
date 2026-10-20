@@ -159,7 +159,7 @@ function localePreloadPlugin(): Plugin {
           `var q=new URLSearchParams(location.search).get('lang');var s=null;` +
           `try{s=localStorage.getItem('arcana_locale')}catch(e){}` +
           `var l=String(q||s||'').toLowerCase().split('-')[0];` +
-          // The locale's CJK sans stylesheet, the URL loadCjkFonts asks for later.
+          // The locale's CJK stylesheet (Korean's carries Noto Serif KR too), the URL loadCjkFonts asks for later.
           `var c=${JSON.stringify(CJK_FONTS)}[l];if(c){var k=document.createElement('link');k.rel='preload';k.as='style';` +
           `k.href=${JSON.stringify(CJK_FONT_CSS_BASE)}+c+${JSON.stringify(CJK_FONT_CSS_SUFFIX)};document.head.appendChild(k)}` +
           `var f=m[l];if(!f)return;` +

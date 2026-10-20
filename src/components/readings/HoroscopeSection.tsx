@@ -18,7 +18,7 @@ import {
   getDailyAffirmation,
   getLuckyNumbers
 } from '../../data/horoscopes';
-import { generateDailyReading } from '../../services/dailyContent';
+import { energyBand, generateDailyReading } from '../../services/dailyContent';
 import { fullDeck } from '../../data/tarotDeck';
 import { localizeCard } from '../../i18n/localizeCard';
 import { shareToNative, copyToClipboard } from '../../services/share';
@@ -254,12 +254,20 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
   const SignGlyph = ZODIAC_ICONS[zodiacInfo.name as ZodiacSignPC];
   const signName = localizeSignName(zodiacInfo.name as ZodiacSignPC);
   const horoscope = generateDailyHoroscope(zodiacSign, today);
-  const dailyReading = generateDailyReading({ sign: zodiacSign, date: today });
+  // One score for the whole card: the mood is drawn for the energy shown
+  // above it, not from all fifteen moods (p10 d2-ja-12).
+  const dailyReading = generateDailyReading({ sign: zodiacSign, date: today, energy: horoscope.energy });
   const planetaryTransit = getPlanetaryTransit(today);
   const affirmation = getDailyAffirmation(zodiacSign, today);
   const luckyNumbers = getLuckyNumbers(today, 6);
   useHoroscopeXp(today);
 
+  // The sign's card for the day, as the rest of this reading is the sign's:
+  // every Pisces reads the same one. It is not Home's card, which is drawn
+  // for the member alone and lies face down until they turn it — repeating
+  // that one here would turn it over first, as this reading is often opened
+  // before the card is. So the heading says whose card it is
+  // (horoscope.cardOfTheDay: "Your sign’s card today").
   const getDailyTarotCard = () => {
     const dateNum = new Date(today).getTime();
     const signNum = zodiacSign.charCodeAt(0);
@@ -269,17 +277,19 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
 
   const tarotCard = getDailyTarotCard();
 
+  const band = energyBand(horoscope.energy);
+
   const moodVibe =
-    horoscope.energy >= 4
+    band === 'high'
       ? t('horoscope.vibe.productive')
-      : horoscope.energy >= 3
+      : band === 'mid'
         ? t('horoscope.vibe.balanced')
         : t('horoscope.vibe.reflective');
 
   const vibeLabel =
-    horoscope.energy >= 4
+    band === 'high'
       ? t('horoscope.vibe.expansive')
-      : horoscope.energy >= 3
+      : band === 'mid'
         ? t('horoscope.vibe.steady')
         : t('horoscope.vibe.introspective');
 

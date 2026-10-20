@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, toast } from '../ui';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
 import { useGamification } from '../../context/GamificationContext';
@@ -318,15 +319,31 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     return bundledPath || card.imageUrl;
   };
 
+  // The deck comes back in the language on screen, so a language change
+  // reads it again, and every card this section holds — the cards on the
+  // table, the one open in the detail sheet — is put back as the same card
+  // by id, in the new language. Its orientation, its place and whether it
+  // has turned stay as dealt: a reading in progress is not dealt again.
+  // Read once, the cards kept the language they were dealt in (p10 d1-en-01).
+  const locale = getLocale();
   useEffect(() => {
+    let live = true;
     const loadCards = async () => {
       setLoading(true);
       const cards = await getAllTarotCards();
+      if (!live) return;
       setTarotCards(cards);
+      const byId = new Map(cards.map((c) => [c.id, c]));
+      const same = <T extends { card: TarotCard }>(held: T): T => ({ ...held, card: byId.get(held.card.id) ?? held.card });
+      setDrawnCards((prev) => prev.map(same));
+      setSelectedCard((prev) => prev && { ...same(prev), siblings: prev.siblings.map(same) });
       setLoading(false);
     };
     loadCards();
-  }, [tarotRefreshTrigger]);
+    return () => {
+      live = false;
+    };
+  }, [tarotRefreshTrigger, locale]);
 
   useImagePreloader(
     tarotCards.slice(0, 6).map(card => card.imageUrl).filter((url): url is string => !!url),

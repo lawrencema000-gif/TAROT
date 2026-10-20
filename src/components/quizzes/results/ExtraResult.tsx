@@ -91,6 +91,12 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
   const levelPractice = quiz.id === 'self-compassion-v1' && weakestList.length === 0 && (resultKey === 'low' || resultKey === 'moderate');
   const tied = tiedKeys(resultKey, result.tied, result.secondary, result.isTie).filter((d) => entry.dimensions.includes(d) || d in entry.info);
   const shared = tied.length >= 2;
+  // A tie here is any mean within TIE_MARGIN of the top, so the close call
+  // says "the same" only when the numbers the tied bars draw are equal: a
+  // DISC result over bars of 4.0 and 3.8 read "Tied — Dominance (D) and
+  // Influence (I) scored the same" (p10 d2-ja-07 review).
+  const drawn = (d: string) => averages?.[d] ?? result.scores?.[d];
+  const exactTie = tied.every((d) => drawn(d) === drawn(resultKey));
   const emphasised = new Set([resultKey, ...tied, ...weakestList]);
   const isScreener = quiz.id === 'mood-screener-v1';
   const showCrisis = isScreener && (resultKey === 'seek-support' || resultKey === 'moderate');
@@ -104,7 +110,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
         shared ? (
           <>
             <span className="block">{tagline}</span>
-            <SharedWith names={tied.slice(1).map(dimName)} />
+            <SharedWith exact={exactTie} names={tied.slice(1).map(dimName)} />
           </>
         ) : (
           tagline
@@ -136,7 +142,7 @@ export function ExtraResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
             </AfterResult>
           }
         >
-          {shared && <CloseCall names={[name, ...tied.slice(1).map(dimName)]} />}
+          {shared && <CloseCall exact={exactTie} names={[name, ...tied.slice(1).map(dimName)]} />}
 
           {showCrisis && (
             <aside className="rounded-control border border-ink-coral/40 bg-ink/5 px-4 py-3" aria-label={t('extraQuizzes.mood-screener.crisisLabel', { defaultValue: 'Crisis resources' })}>

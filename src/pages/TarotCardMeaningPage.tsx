@@ -254,10 +254,19 @@ export function TarotCardMeaningPage() {
 
   useEffect(() => {
     if (!card || !enCard) return;
-    const suitLabel = card.suit ? ` — ${card.suit.charAt(0).toUpperCase() + card.suit.slice(1)}` : ' — Major Arcana';
+    // The tab title and description in the reader's language, as the
+    // playing-card pages have them. They were English templates around the
+    // localized name ("愚者 Tarot Card Meaning — Major Arcana", p10
+    // d2-ja-10). The prerendered head the crawlers read stays English
+    // (scripts/prerender-meta.mjs), and so does the JSON-LD below.
+    const group = card.suit ? t(`tarot.${card.suit}`) : t('tarot.majorArcana');
     setPageMeta(
-      `${card.name} Tarot Card Meaning${suitLabel}`,
-      `${card.name} tarot meaning: ${card.keywords.join(', ')}. Upright and reversed interpretations, love, career, yes/no readings.`,
+      t('tarot.seo.cardTitle', { name: card.name, group, defaultValue: '{{name}} Tarot Card Meaning — {{group}}' }),
+      t('tarot.seo.cardDesc', {
+        name: card.name,
+        keywords: card.keywords.join(t('cardMeaning.listSeparator', { defaultValue: ', ' })),
+        defaultValue: '{{name}} tarot meaning: {{keywords}}. Upright and reversed interpretations, love, career, yes/no readings.',
+      }),
       getBundledFullPath(card.id) || undefined
     );
     removeJsonLd();
@@ -348,7 +357,7 @@ export function TarotCardMeaningPage() {
       ],
     });
     window.scrollTo(0, 0);
-  }, [card, enCard]);
+  }, [card, enCard, t]);
 
   // The link's language is on its way (showVisitIn): nothing in English first.
   if (adopting) {
@@ -384,6 +393,8 @@ export function TarotCardMeaningPage() {
   // In ja/ko/zh only once the overlay has it (affirmationFor).
   const affirmation = affirmationFor(card.id, enrichOverlay);
   const elementName = (el: string) => t(`tarot.elements.${el.toLowerCase()}`, { defaultValue: el });
+  // ': ' in English and Korean, '：' after Japanese and Chinese (p10 d2-ja-06).
+  const labelSep = t('common:punctuation.labelSeparator', { defaultValue: ': ' });
   const nameList = (names: string[]) =>
     names
       .map((n) => {
@@ -576,11 +587,11 @@ export function TarotCardMeaningPage() {
                     <div>
                       <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
                       <ul className="reading-copy mt-1 list-disc pl-5 marker:text-ink-gold">
-                        <li><strong>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {elementName(enrichment.element)}</li>
-                        {enrichment.planet && <li><strong>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {ex('planet', enrichment.planet)}</li>}
-                        {enrichment.zodiac && <li><strong>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {ex('zodiac', enrichment.zodiac)}</li>}
-                        {enrichment.decan && <li><strong>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {ex('decan', enrichment.decan)}</li>}
-                        {enrichment.hebrewLetter && <li><strong>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {ex('hebrewLetter', enrichment.hebrewLetter)}</li>}
+                        <li><strong>{t('cardMeaning.element', { defaultValue: 'Element' })}{labelSep}</strong>{elementName(enrichment.element)}</li>
+                        {enrichment.planet && <li><strong>{t('cardMeaning.planet', { defaultValue: 'Planet' })}{labelSep}</strong>{ex('planet', enrichment.planet)}</li>}
+                        {enrichment.zodiac && <li><strong>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}{labelSep}</strong>{ex('zodiac', enrichment.zodiac)}</li>}
+                        {enrichment.decan && <li><strong>{t('cardMeaning.decan', { defaultValue: 'Decan' })}{labelSep}</strong>{ex('decan', enrichment.decan)}</li>}
+                        {enrichment.hebrewLetter && <li><strong>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}{labelSep}</strong>{ex('hebrewLetter', enrichment.hebrewLetter)}</li>}
                       </ul>
                     </div>
                     <div>

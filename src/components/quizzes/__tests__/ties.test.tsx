@@ -14,7 +14,7 @@ import { ShadowResult } from '../results/ShadowResult';
 import { EnneagramResult } from '../results/EnneagramResult';
 import { ElementResult } from '../results/ElementResult';
 import { CourtMatchResult } from '../results/CourtMatchResult';
-import { calculateExtraQuiz, darkTriadQuiz, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
+import { calculateExtraQuiz, darkTriadQuiz, discQuiz, EXTRA_QUIZ_SCORING, type DimensionalResult } from '../../../data/extraQuizzes';
 import { empathQuiz, selfCompassionQuiz } from '../../../data/extraQuizzesPart2';
 import { ayurvedaQuiz, calculateDosha } from '../../../data/ayurvedaQuiz';
 import { calculateLoveLanguage, loveLanguageQuiz } from '../../../data/quizzes';
@@ -26,7 +26,10 @@ import { calculateCourtMatch, tarotCourtQuiz } from '../../../data/tarotCourtQui
 /**
  * What a person READS on a tied result (F19, F65) and on a self-compassion
  * result with no single weak component (O#160), through the real renderers
- * and the real locale files.
+ * and the real locale files. The close call says the scores are the same
+ * ("Tied", 同率) when they are; it used to call every tie a narrow gap
+ * (p10 d2-ja-07). A dimensional quiz's tie within TIE_MARGIN is still a
+ * close call.
  */
 
 const noop = () => {};
@@ -53,7 +56,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
   it('Dark Triad all-Neutral: close call, "Shared with", three gold bars, and no "strongest" claim anywhere (p9 Q07)', () => {
     const result = calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!;
     const { verdict, container } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Narcissistic Shadow, Machiavellian Shadow and Psychopathic Shadow scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Narcissistic Shadow, Machiavellian Shadow and Psychopathic Shadow all scored the same. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Machiavellian Shadow and Psychopathic Shadow')).toBeInTheDocument();
     // The card is still read — as the first of the three, in the body, in words for a shared top.
     const heading = screen.getByRole('heading', { name: 'Reading Narcissistic Shadow first' });
@@ -67,6 +70,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
     const result = calculateExtraQuiz('dark-triad-v1', answers)!;
     const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
     expect(verdict.textContent).toMatch(/Your shadow runs coldest/);
+    expect(screen.queryByText('Tied')).toBeNull();
     expect(screen.queryByText('Close call')).toBeNull();
     expect(screen.queryByText(/^Shared with/)).toBeNull();
     expect(emphasisedBars()).toHaveLength(1);
@@ -75,7 +79,7 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
   it('a row saved before `tied` existed still names its pair', () => {
     const old: DimensionalResult = { ...calculateExtraQuiz('dark-triad-v1', all(darkTriadQuiz, 3))!, tied: undefined };
     mount(<ExtraResult quiz={darkTriadQuiz} result={old} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Narcissistic Shadow and Machiavellian Shadow scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Narcissistic Shadow and Machiavellian Shadow scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
   });
 
   it('ja: the names are listed with 、 and the card is read 「まずは…として読む」', async () => {
@@ -85,9 +89,119 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
       const { verdict } = mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
       const n = (k: string) => i18n.t(`extraQuizzes.dark-triad.results.${k}.name`, { ns: 'app' });
       expect(n('psychopathy')).not.toBe(`extraQuizzes.dark-triad.results.psychopathy.name`);
-      expect(screen.getByText(`${n('narcissism')}、${n('machiavellianism')}、${n('psychopathy')}のスコアは、ほんのわずかな差でした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。`)).toBeInTheDocument();
+      expect(screen.getByText(`${n('narcissism')}、${n('machiavellianism')}、${n('psychopathy')}のスコアは同じでした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。`)).toBeInTheDocument();
       expect(within(verdict).getByText(`${n('machiavellianism')}、${n('psychopathy')}と同率`)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: `まずは${n('narcissism')}として読む` })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+});
+
+/*
+ * p10 d2-ja-07 made the close call say the tied scores are equal, and a
+ * dimensional quiz ties on any mean within TIE_MARGIN (0.25) of the top:
+ * DISC with every Dominance item Agree and every Influence item Agree but
+ * one Neutral is 4.0 to 3.8, and the box read "Tied — Dominance (D) and
+ * Influence (I) scored the same" over bars of 4.0 and 3.8. A tie whose
+ * means differ is a close call; equal means are still "the same".
+ */
+describe('a near tie on a dimensional quiz is a close call, not "the same"', () => {
+  /** DISC scored from answers: a listed dimension's items at `v`, its fifth item at `fifth` (default `v`); the rest Disagree (2). */
+  const disc = (levels: Record<string, [v: number, fifth?: number]>) =>
+    calculateExtraQuiz(
+      'disc-v1',
+      Object.fromEntries(discQuiz.questions.map((q) => {
+        const [v, fifth = v] = levels[q.dimension ?? ''] ?? [2];
+        return [q.id, q.id.endsWith('5') ? fifth : v];
+      })),
+    )!;
+  // Dominance 4.0, Influence 3.8, Steadiness and Conscientiousness 2.0.
+  const nearTie = () => disc({ dominance: [4], influence: [4, 3] });
+
+  it('DISC 4.0 / 3.8 (en): "Close call … within a hair", above the bars that show the gap', () => {
+    const result = nearTie();
+    expect(result.isTie).toBe(true);
+    expect(result.tied).toEqual(['dominance', 'influence']);
+    expect([result.averages.dominance, result.averages.influence]).toEqual([4, 3.8]);
+    const { verdict } = mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Close call')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D) and Influence (I) scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText('Tied')).toBeNull();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
+    // Still read as a shared top, with the two numbers it is close between.
+    expect(within(verdict).getByText('Shared with Influence (I)')).toBeInTheDocument();
+    expect(screen.getByText('4.0')).toBeInTheDocument();
+    expect(screen.getByText('3.8')).toBeInTheDocument();
+  });
+
+  it('a three-way near tie (4.0 / 4.0 / 3.8) names all three as close, not the same', () => {
+    const result = disc({ dominance: [4], influence: [4], steadiness: [4, 3] });
+    expect(result.tied).toEqual(['dominance', 'influence', 'steadiness']);
+    mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Close call')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D), Influence (I) and Steadiness (S) scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
+  });
+
+  it('DISC 4.0 / 4.0: equal means are still "Tied … scored the same"', () => {
+    const result = disc({ dominance: [4], influence: [4] });
+    expect(result.tied).toEqual(['dominance', 'influence']);
+    mount(<ExtraResult quiz={discQuiz} result={result} onBack={noop} onRetake={noop} />);
+    expect(screen.getByText('Tied')).toBeInTheDocument();
+    expect(screen.getByText('Dominance (D) and Influence (I) scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.queryByText('Close call')).toBeNull();
+  });
+
+  it.each([
+    { lng: 'ja', near: '僅差', tied: '同率', body: '{a}と{b}のスコアは、ほんのわずかな差でした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。' },
+    { lng: 'ko', near: '근소한 차이', tied: '동점', body: '{a}, {b} 두 결과의 점수가 거의 차이 나지 않아요. 둘 다 읽어 보세요 — 당신에게 와닿는 쪽이 의미 있는 결과예요.' },
+    { lng: 'zh', near: '难分高下', tied: '得分相同', body: '{a} 和 {b} 的得分只差一点点。两个都读一读——你认得出的那一个，才是算数的那一个。' },
+  ])('$lng: DISC 4.0 / 3.8 is headed $near, not $tied', async ({ lng, near, tied, body }) => {
+    await i18n.changeLanguage(lng);
+    try {
+      mount(<ExtraResult quiz={discQuiz} result={nearTie()} onBack={noop} onRetake={noop} />);
+      const n = (k: string) => i18n.t(`extraQuizzes.disc.results.${k}.name`, { ns: 'app' });
+      expect(n('influence')).not.toBe('extraQuizzes.disc.results.influence.name');
+      expect(screen.getByText(near)).toBeInTheDocument();
+      expect(screen.getByText(body.replace('{a}', n('dominance')).replace('{b}', n('influence')))).toBeInTheDocument();
+      expect(screen.queryByText(tied)).toBeNull();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('ja: nothing on a Dark Triad near tie (4.0 / 3.8) claims equal scores — verdict, box or summary', async () => {
+    // The summary under 「まずはナルシシズムの影として読む」 said 同率で並ぶ
+    // under a 僅差 box (p10 re-review); it now says the pair shares the top.
+    const levels: Record<string, number> = { narcissism: 4, machiavellianism: 4, psychopathy: 2 };
+    const result = calculateExtraQuiz(
+      'dark-triad-v1',
+      Object.fromEntries(darkTriadQuiz.questions.map((q) => [q.id, q.id === 'm5' ? 3 : levels[q.dimension ?? ''] ?? 2])),
+    )!;
+    expect(result.tied).toEqual(['narcissism', 'machiavellianism']);
+    expect([result.averages.narcissism, result.averages.machiavellianism]).toEqual([4, 3.8]);
+    await i18n.changeLanguage('ja');
+    try {
+      mount(<ExtraResult quiz={darkTriadQuiz} result={result} onBack={noop} onRetake={noop} />);
+      expect(screen.getByText('僅差')).toBeInTheDocument();
+      expect(document.body.textContent).toContain('首位を分け合うあなたの影');
+      expect(document.body.textContent).not.toContain('同率');
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('ja: the verdict line says 僅差 for a near tie and 同率 for an exact one', async () => {
+    await i18n.changeLanguage('ja');
+    try {
+      const influence = i18n.t('extraQuizzes.disc.results.influence.name', { ns: 'app' });
+      const near = mount(<ExtraResult quiz={discQuiz} result={nearTie()} onBack={noop} onRetake={noop} />);
+      expect(within(near.verdict).getByText(`${influence}と僅差`)).toBeInTheDocument();
+      expect(within(near.verdict).queryByText(/同率/)).toBeNull();
+      cleanup();
+      const exact = mount(<ExtraResult quiz={discQuiz} result={disc({ dominance: [4], influence: [4] })} onBack={noop} onRetake={noop} />);
+      expect(within(exact.verdict).getByText(`${influence}と同率`)).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage('en');
     }
@@ -97,8 +211,8 @@ describe('F65 — a three-way tie on a dimensional quiz names all three', () => 
 describe('F19 — the dosha result in an exact three-way tie', () => {
   it('REPRO 10/10/10: no two-name close call, no "leading today"; all three bars gold; read Vata first', () => {
     const { verdict } = mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(10, 10))} onBack={noop} onRetake={noop} />);
-    expect(screen.queryByText('Close call')).toBeNull();
-    expect(screen.queryByText(/scored within a hair/)).toBeNull();
+    expect(screen.queryByText('Tied')).toBeNull();
+    expect(screen.queryByText(/scored the same/)).toBeNull();
     expect(screen.queryByText(/leading today/)).toBeNull();
     expect(verdict.textContent).toMatch(/Tridoshic/i);
     expect(verdict.textContent).toMatch(/Read the dosha below as a place to start/);
@@ -108,7 +222,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
 
   it('13/13/4 (not tridoshic): Vata and Pitta in the close call and under the verdict; the Vata card is read first', () => {
     const { verdict } = mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(13, 13))} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Vata and Pitta scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Vata and Pitta scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Pitta')).toBeInTheDocument();
     expect(verdict.textContent).not.toMatch(/Vata rules movement/);
     expect(screen.getByRole('heading', { name: 'Reading Vata first' }).parentElement?.textContent).toMatch(/Vata rules movement/);
@@ -118,7 +232,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
   it('a tridoshic profile with a clear leader (11/10/9: 11 − 9 = 2 ≤ 3) keeps "Reading Vata as the one leading today"', () => {
     mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(11, 10))} onBack={noop} onRetake={noop} />);
     expect(screen.getByRole('heading', { name: 'Reading Vata as the one leading today' })).toBeInTheDocument();
-    expect(screen.queryByText('Close call')).toBeNull();
+    expect(screen.queryByText('Tied')).toBeNull();
   });
 
   it('ja 10/10/10: 「まずはヴァータとして読む」 and no 「今日いちばん前に出ている」', async () => {
@@ -127,7 +241,7 @@ describe('F19 — the dosha result in an exact three-way tie', () => {
       mount(<DoshaResult quiz={ayurvedaQuiz} result={calculateDosha(dosha(10, 10))} onBack={noop} onRetake={noop} />);
       expect(screen.getByRole('heading', { name: 'まずはヴァータとして読む' })).toBeInTheDocument();
       expect(screen.queryByText(/今日いちばん前に出ている/)).toBeNull();
-      expect(screen.queryByText('僅差')).toBeNull();
+      expect(screen.queryByText('同率')).toBeNull();
     } finally {
       await i18n.changeLanguage('en');
     }
@@ -139,20 +253,20 @@ describe('the sibling screens name every tied result', () => {
     const { verdict } = mount(
       <LoveLanguageResult quiz={loveLanguageQuiz} result={calculateLoveLanguage(all(loveLanguageQuiz, 3))} onBack={noop} onRetake={noop} />,
     );
-    expect(screen.getByText('Receiving Gifts, Words of Affirmation, Acts of Service, Physical Touch and Quality Time scored within a hair of each other. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Receiving Gifts, Words of Affirmation, Acts of Service, Physical Touch and Quality Time all scored the same. Read them all — the one you recognise is the one that counts.')).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with 4 others')).toBeInTheDocument();
     expect(emphasisedBars()).toHaveLength(5);
   });
 
   it('shadow archetypes all-Neutral: all seven', () => {
     mount(<ShadowResult quiz={shadowArchetypeQuiz} result={calculateShadowArchetype(all(shadowArchetypeQuiz, 3))} onBack={noop} onRetake={noop} />);
-    const body = screen.getByText(/scored within a hair of each other/).textContent ?? '';
+    const body = screen.getByText(/all scored the same/).textContent ?? '';
     for (const name of ['Lover', 'Warrior', 'Magician', 'Sovereign', 'Sage', 'Innocent', 'Explorer']) expect(body).toMatch(name);
   });
 
   it('enneagram all-Neutral: all nine types in the close call, "Shared with 8 others" in the verdict block', () => {
     const { verdict } = mount(<EnneagramResult quiz={enneagramQuiz} result={calculateEnneagram(all(enneagramQuiz, 3))} onBack={noop} onRetake={noop} />);
-    const body = screen.getByText(/scored within a hair of each other/).textContent ?? '';
+    const body = screen.getByText(/all scored the same/).textContent ?? '';
     for (let n = 1; n <= 9; n++) expect(body).toMatch(`Type ${n} `);
     expect(within(verdict).getByText('Shared with 8 others')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /^Reading Type 1 .+ first$/ })).toBeInTheDocument();
@@ -161,7 +275,7 @@ describe('the sibling screens name every tied result', () => {
   it('element: the unbroken fire/water split names both and reads Fire first', () => {
     const r = calculateElementAffinity({ el1: 1, el2: 1, el3: 3, el4: 1, el5: 1, el6: 2, el7: 2, el8: 2, el9: 3, el10: 2 });
     const { verdict } = mount(<ElementResult quiz={elementAffinityQuiz} result={r} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText(/^Fire and Water scored within a hair of each other/)).toBeInTheDocument();
+    expect(screen.getByText(/^Fire and Water scored the same/)).toBeInTheDocument();
     expect(within(verdict).getByText('Shared with Water')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Reading Fire first' })).toBeInTheDocument();
   });
@@ -169,7 +283,7 @@ describe('the sibling screens name every tied result', () => {
   it('court match still names its two cards', () => {
     const r = calculateCourtMatch({ ce1: 1, ce2: 1, ce3: 2, ce4: 2, ce5: 3, ce6: 4, cr1: 2, cr2: 2, cr3: 2, cr4: 2, cr5: 2, cr6: 2 });
     mount(<CourtMatchResult quiz={tarotCourtQuiz} result={r} onBack={noop} onRetake={noop} />);
-    expect(screen.getByText('Knight of Wands and Knight of Cups scored within a hair of each other. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
+    expect(screen.getByText('Knight of Wands and Knight of Cups scored the same. Read both — the one you recognise is the one that counts.')).toBeInTheDocument();
   });
 });
 
@@ -240,7 +354,7 @@ describe('p9 Q07 — a shared top is never read as a sole winner', () => {
   const tieBody = () => screen.getByRole('heading', { name: /first$|として読む$|부터 읽어요$|读起$/ }).parentElement!.textContent ?? '';
 
   it.each([
-    ['ja', 'ナルシシズムは、同率で並ぶあなたの影のひとつです。', /もっとも強く/],
+    ['ja', 'ナルシシズムは、首位を分け合うあなたの影のひとつです。', /もっとも強く/],
     ['ko', '자기애는 공동 1위인 당신의 그림자 중 하나예요', /가장 강하게/],
     ['zh', '自恋是你并列居首的几种阴影之一', /最为强烈/],
   ])('%s: Dark Triad all-Neutral reads narcissism as one of the shared tops', async (lng, lede, claim) => {

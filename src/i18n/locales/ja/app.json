@@ -167,7 +167,7 @@
       "compatibility": "相性",
       "library": "ライブラリ",
       "iching": "易経",
-      "humanDesign": "HD",
+      "humanDesign": "ヒューマンデザイン",
       "bazi": "八字",
       "dream": "夢",
       "mood": "ムード",
@@ -451,7 +451,6 @@
       "insights": "インサイト"
     },
     "todaysPrompt": "今日のプロンプト",
-    "defaultPrompt": "今日、何について振り返っていますか？",
     "emptyState": "まだジャーナルがありません。",
     "emptyStateSub": "今日から振り返りの旅をはじめましょう。",
     "loadMore": "さらに読み込む",
@@ -518,8 +517,10 @@
     "hasEntry": "エントリーあり",
     "insight": {
       "notYet": "もう少しエントリーを書いてみてください。5件たまり、気分やテーマが2種類以上になると、ここにパターンが表示されます。",
-      "summary": "あなたがいちばんよく書くのは{{weekday}}です。最も多い気分は「{{mood}}」です（{{total}}件中{{n}}件）。",
-      "withTag": "あなたがいちばんよく書くのは{{weekday}}です。最も多い気分は「{{mood}}」で（{{total}}件中{{n}}件）、ほかのどのテーマよりも「{{tag}}」に立ち返っています。"
+      "weekday": "あなたがいちばんよく書くのは{{weekday}}です。",
+      "mood": "最も多い気分は「{{mood}}」です（{{total}}件中{{n}}件）。",
+      "moodTie": "気分はまちまちで、特に多いものはありません。",
+      "tag": "ほかのどのテーマよりも「{{tag}}」に立ち返っています。"
     },
     "linkedShort": "リーディング",
     "cardSeparator": "、",
@@ -1932,9 +1933,9 @@
       "yourDimensions": "あなたの次元",
       "yourScores": "あなたのスコア",
       "yourTraitScores": "あなたの特性スコア",
-      "closeCall": "僅差",
-      "closeCallBody": "{{a}}と{{b}}のスコアは、ほんのわずかな差でした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。",
-      "closeCallBodyMany": "{{names}}のスコアは、ほんのわずかな差でした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。",
+      "closeCall": "同率",
+      "closeCallBody": "{{a}}と{{b}}のスコアは同じでした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。",
+      "closeCallBodyMany": "{{names}}のスコアは同じでした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。",
       "listSeparator": "、",
       "listLastSeparator": "、",
       "readingFirst": "まずは{{name}}として読む",
@@ -1955,7 +1956,12 @@
       "avoidanceAxis": "回避",
       "whatYouNeedFromPartner": "パートナーに求めるもの",
       "courtSuitUnsettled": "あなたの回答は2つのスートに同じくらい傾き、決め手となる質問は、そのどちらでもないスートを指していました。",
-      "courtRankUnsettled": "あなたの回答は2つの段階に同じくらい傾き、決め手となる質問は、そのどちらでもない段階を指していました。"
+      "courtRankUnsettled": "あなたの回答は2つの段階に同じくらい傾き、決め手となる質問は、そのどちらでもない段階を指していました。",
+      "closeCallNear": "僅差",
+      "closeCallNearBody": "{{a}}と{{b}}のスコアは、ほんのわずかな差でした。両方を読んでみてください——自分だと感じられるほうが、あなたにとっての答えです。",
+      "closeCallNearBodyMany": "{{names}}のスコアは、ほんのわずかな差でした。どれも読んでみてください——自分だと感じられるものが、あなたにとっての答えです。",
+      "coPrimaryNear": "{{name}}と僅差",
+      "sharedWithManyNear": "ほか{{n}}つと僅差"
     },
     "takeAnother": "別の診断を受ける",
     "courtCards": {
@@ -4426,7 +4432,7 @@
     "caution": "注意",
     "planetaryTransit": "惑星のトランジット",
     "dailyAffirmation": "デイリーアファメーション",
-    "cardOfTheDay": "今日のカード",
+    "cardOfTheDay": "星座の今日のカード",
     "luckyNumbersLabel": "ラッキーナンバー",
     "miniRitual": "ミニリチュアル",
     "actionStep": "アクションステップ",
@@ -5080,7 +5086,11 @@
     "emailInvalid": "有効なメールアドレスを入力してください。",
     "emailFailed": "登録できませんでした。少し待ってからもう一度お試しください。",
     "startReading": "リーディングをはじめる",
-    "breadcrumb": "パンくずリスト"
+    "breadcrumb": "パンくずリスト",
+    "seo": {
+      "cardTitle": "タロットカード「{{name}}」の意味 — {{group}}",
+      "cardDesc": "タロットカード「{{name}}」の意味：{{keywords}}。正位置と逆位置の解釈、恋愛、仕事、YES / NO リーディング。"
+    }
   },
   "admin": {
     "verifications": {
@@ -5683,11 +5693,6 @@
   },
   "search": {
     "placeholder": "カード、ジャーナル、星占いを検索…",
-    "recent": {
-      "towerMeaning": "塔の意味",
-      "loveCompatibilityAries": "牡羊座との恋愛相性",
-      "threeCardSpread": "3枚スプレッド"
-    },
     "recentSearches": "最近の検索",
     "quickLinks": "クイックリンク",
     "quickLink": {
@@ -5695,7 +5700,20 @@
       "journalPrompts": "ジャーナルプロンプト",
       "personalityQuiz": "性格診断"
     },
-    "resultsFor": "「{{query}}」の検索結果がここに表示されます"
+    "groups": {
+      "tarot": "タロットカード",
+      "playing": "トランプ",
+      "signs": "星座",
+      "journal": "ジャーナル"
+    },
+    "noResults": "「{{query}}」に一致するものはありません",
+    "noResultsHint": "カードの名前、星座、ジャーナルに書いた言葉で探してみてください。",
+    "journalFailed": "ジャーナルを検索できませんでした。接続を確認してください。",
+    "clearRecent": "クリア",
+    "clearRecentLabel": "最近の検索をクリア",
+    "resultCount": "{{count}}件の結果",
+    "resultCount_one": "{{count}}件の結果",
+    "resultCount_other": "{{count}}件の結果"
   },
   "saved": {
     "title": "保存済み",
@@ -6731,7 +6749,6 @@
     "questionPlaceholder": "いま理解しておくと一番助けになることは何？",
     "castButton": "コインを投げる",
     "casting": "占っています…",
-    "hexagramLabel": "第",
     "judgement": "彖辞",
     "interpretation": "読み解き",
     "strengths": "強み",
@@ -6941,7 +6958,8 @@
     "readFullReading": "リーディングの全文を読む",
     "askOracleCta": "この卦を読み解いてもらう",
     "share": "この卦をシェア",
-    "shareText": "私の易経の卦：{{name}}。{{tagline}}"
+    "shareText": "私の易経の卦：{{name}}。{{tagline}}",
+    "hexagramNumber": "第{{n}}卦"
   },
   "liuyao": {
     "hidden": {
@@ -7360,7 +7378,7 @@
           "name": "ナルシシズムの影",
           "tagline": "飢えた自己——映し返されることを求め、取るに足らない存在になることを恐れる。",
           "summary": "あなたの影がもっとも強く表れているのは、ナルシシズムの領域です。見られたい、称賛されたい、特別でありたいという渇望。このエネルギーは、いくつもの帝国を築き、いくつもの災厄を生んできました。健全な形では、自信やカリスマ、自分の居場所を堂々と占める勇気になります。影の形では、いくら注いでも満たされない底なしの鏡になります。",
-          "summaryShared": "ナルシシズムは、同率で並ぶあなたの影のひとつです。見られたい、称賛されたい、特別でありたいという渇望。このエネルギーは、いくつもの帝国を築き、いくつもの災厄を生んできました。健全な形では、自信やカリスマ、自分の居場所を堂々と占める勇気になります。影の形では、いくら注いでも満たされない底なしの鏡になります。",
+          "summaryShared": "ナルシシズムは、首位を分け合うあなたの影のひとつです。見られたい、称賛されたい、特別でありたいという渇望。このエネルギーは、いくつもの帝国を築き、いくつもの災厄を生んできました。健全な形では、自信やカリスマ、自分の居場所を堂々と占める勇気になります。影の形では、いくら注いでも満たされない底なしの鏡になります。",
           "strengths": [
             "自信",
             "カリスマ",
@@ -7379,7 +7397,7 @@
           "name": "マキャベリズムの影",
           "tagline": "戦略家——ゲームを見抜き、何手も先を読む。",
           "summary": "あなたの影は戦略のほうへ傾いています。場の空気を読み、会話の舵を取り、長期戦を戦う。最良の形では、それは知恵であり、政治的な手腕です。影の形では親密さを蝕みます。いつも何手も先を読んでいるために、誰かがただそばにいてくれることを信じられなくなるのです。",
-          "summaryShared": "戦略は、同率で並ぶあなたの影のひとつです。場の空気を読み、会話の舵を取り、長期戦を戦う。最良の形では、それは知恵であり、政治的な手腕です。影の形では親密さを蝕みます。いつも何手も先を読んでいるために、誰かがただそばにいてくれることを信じられなくなるのです。",
+          "summaryShared": "戦略は、首位を分け合うあなたの影のひとつです。場の空気を読み、会話の舵を取り、長期戦を戦う。最良の形では、それは知恵であり、政治的な手腕です。影の形では親密さを蝕みます。いつも何手も先を読んでいるために、誰かがただそばにいてくれることを信じられなくなるのです。",
           "strengths": [
             "戦略的思考",
             "人を読む力",
@@ -7398,7 +7416,7 @@
           "name": "サイコパシーの影",
           "tagline": "冷たき者——恐れにも、絆にも縛られない。",
           "summary": "あなたの影は、もっとも冷たく流れています。恐れが少なく、愛着が薄く、ルールを破ることへのためらいが小さい。健全な形では、すくまない外科医、人を守る兵士、難しい決断を下すCEOです。影の形では断絶になります。あなたを支えてくれたはずのぬくもりが、凍りついてしまうのです。",
-          "summaryShared": "冷たさは、同率で並ぶあなたの影のひとつです。恐れが少なく、愛着が薄く、ルールを破ることへのためらいが小さい。健全な形では、すくまない外科医、人を守る兵士、難しい決断を下すCEOです。影の形では断絶になります。あなたを支えてくれたはずのぬくもりが、凍りついてしまうのです。",
+          "summaryShared": "冷たさは、首位を分け合うあなたの影のひとつです。恐れが少なく、愛着が薄く、ルールを破ることへのためらいが小さい。健全な形では、すくまない外科医、人を守る兵士、難しい決断を下すCEOです。影の形では断絶になります。あなたを支えてくれたはずのぬくもりが、凍りついてしまうのです。",
           "strengths": [
             "プレッシャー下での勇気",
             "難しい決断を下す力",
@@ -10119,7 +10137,8 @@
       "mostlySteady": "今週はおもに「{{mood}}」。安定した調子です。",
       "rising": "曲線は上向き。今週は先週より軽く感じられます。",
       "tooFew": "あと数日記録すると、パターンが見えてきます。"
-    }
+    },
+    "dominantMixed": "まちまち"
   },
   "moodDiary": {
     "legacyTitle": "この端末に残っている気分の記録",
@@ -10911,13 +10930,13 @@
       "generic": "回答を送信できませんでした。接続を確認して、もう一度お試しください。"
     },
     "kinds": {
-      "mbti": "Personality (MBTI)",
+      "mbti": "性格（MBTI）",
       "love-language": "ラブランゲージ",
       "attachment": "アタッチメントスタイル",
-      "big-five": "Big Five",
-      "enneagram": "Enneagram",
-      "zodiac": "Zodiac",
-      "element": "Element"
+      "big-five": "ビッグファイブ",
+      "enneagram": "エニアグラム",
+      "zodiac": "星座",
+      "element": "エレメント"
     },
     "shareLink": "招待リンクをシェア",
     "notFoundTitle": "この招待は見つかりません",
@@ -10970,7 +10989,7 @@
     "title": "アドバイザーダッシュボード",
     "notAdvisorTitle": "まだアドバイザーとして登録されていません",
     "notAdvisorBody": "アドバイザーは一人ひとり審査しています。応募はメッセージでご連絡ください。こちらから返信したあと、本人確認を行っていただきます。",
-    "apply": "Email advisors@tarotlife.app",
+    "apply": "advisors@tarotlife.app にメールする",
     "upcomingTitle": "今後のセッション",
     "noUpcoming": "予約されたセッションはまだありません。",
     "availabilityTitle": "週ごとの空き時間",
@@ -10982,18 +11001,18 @@
     "saved": "空き時間を保存しました",
     "invalidSlot": "終了時刻は開始時刻より後にしてください。",
     "payoutsTitle": "支払い",
-    "payoutsSetupBody": "Stripe Connectのオンボーディングを完了し、Moonstonesを現金化しましょう。",
+    "payoutsSetupBody": "Stripe Connectのオンボーディングを完了し、ムーンストーンを現金化しましょう。",
     "setupPayouts": "支払いを設定",
     "continueOnboarding": "オンボーディングを続ける",
     "opening": "開いています…",
-    "cashableLabel": "換金可能なMoonstones",
-    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashableLabel": "換金可能なムーンストーン",
+    "rateNote": "ムーンストーン10個 = $1.00 · プラットフォーム手数料30% · あなたの受取70%",
     "cashoutCta": "換金する",
     "cashingOut": "送信中…",
-    "cashoutMinimum": "最低換金額は100 Moonstonesです。",
+    "cashoutMinimum": "最低換金額はムーンストーン100個です。",
     "cashoutExceeds": "金額が換金可能残高を超えています。",
     "cashoutSent": "Stripeアカウントに${{usd}}を送金しました。",
-    "cashoutMinNote": "最低100 Moonstones（総額$10 / あなたの受取は$7）。",
+    "cashoutMinNote": "最低ムーンストーン100個（総額$10 / あなたの受取は$7）。",
     "stripeFailed": "Stripeのオンボーディングを開けませんでした。接続を確認して、もう一度お試しください。",
     "onboardingRequired": "先にStripeのオンボーディングを完了してください。"
   },
@@ -11050,7 +11069,7 @@
     "approvedBody": "あなたのアドバイザープロフィールがディレクトリで公開されています。",
     "rejectedTitle": "未承認",
     "reasonLabel": "理由：",
-    "rejectedHelp": "Contact advisors@tarotlife.app if you believe this is wrong.",
+    "rejectedHelp": "この判断が誤りだと思われる場合は、advisors@tarotlife.app までご連絡ください。",
     "goDashboard": "ダッシュボードを開く",
     "legalNameLabel": "本名（法的氏名）",
     "countryLabel": "国",
@@ -11376,7 +11395,7 @@
     "frictionsHeading": "刺激し合う点",
     "tryAnother": "別の相手でスコアを出す",
     "share": "スコアをシェア",
-    "shareText": "Arcanaのソウルメイトスコアは {{score}}/100（{{vibe}}）。あなたもarcana.appで試してみて。",
+    "shareText": "Arcanaのソウルメイトスコアは {{score}}/100（{{vibe}}）。あなたも試してみて：{{url}}",
     "disclaimer": "スコアは判定ではなく、対話のための鏡です。チャートは運命ではなく、パターンを示します。",
     "vibes": {
       "transcendent": "超越",
@@ -11720,7 +11739,7 @@
     "disclaimer": "迷惑メールはありません。ワンクリックで配信停止できます。5日間で3通のメールです。"
   },
   "loveTree": {
-    "shareText": "私のArcanaラブツリー：{{title}}——{{archetype}}。あなたのツリーは arcana.app/love-tree で",
+    "shareText": "私のArcanaラブツリー：{{title}}——{{archetype}}。あなたのツリーはこちらから：{{url}}",
     "title": "ラブツリー",
     "intro": "12の質問、90秒、1本の木。あなたのアタッチメントスタイルを生きた形として描き、あなたの愛し方を率直に読み解きます。",
     "howItWorksLabel": "しくみ",

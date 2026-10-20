@@ -6,6 +6,7 @@ import { firstSentences } from '../components/readings/tarot/readingText';
 import { cardMeaningPath, cardMeaningSlug } from '../components/readings/tarot/cardSlug';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useNavigate } from 'react-router-dom';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
@@ -106,9 +107,21 @@ export function PickACardPage() {
     return drawSeededCards(3, seed, deck);
   }, [deck, seed]);
 
+  // The deck comes back in the language on screen, so a language change
+  // reads it again. The three cards stay the same — the seed is the member
+  // and the day, and the deck comes in id order — and the pick is held by
+  // id: a card already chosen, or turning, stays chosen, now named and read
+  // in the new language. Read once, it kept the old one (p10 d1-en-01).
+  const locale = getLocale();
   useEffect(() => {
-    getAllTarotCards().then(setDeck);
-  }, []);
+    let live = true;
+    getAllTarotCards().then((cards) => {
+      if (live) setDeck(cards);
+    });
+    return () => {
+      live = false;
+    };
+  }, [locale]);
 
   // Load prior pick + streak.
   useEffect(() => {

@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext';
 import { compatInvites } from '../dal';
 import type { CompatInvitePublic, CompatJointResult } from '../dal/compatInvites';
 import { computeCompatibility, type MbtiType } from '../data/partnerCompat';
-import { getZodiacSign } from '../utils/zodiac';
+import { getZodiacSign, zodiacData } from '../utils/zodiac';
+import { localizeSignName } from '../i18n/localizeNames';
+import type { ZodiacSign as AstroSign } from '../types/astrology';
 
 /**
  * Landing page for compat deep-link invites: /invite/:code
@@ -228,6 +230,11 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
 
   const nameA = joined.inviter_name ?? t('compatInvite.inviterDefault', { defaultValue: 'Inviter' });
   const nameB = joined.responder_name ?? t('compatInvite.responderDefault', { defaultValue: 'You' });
+  // ': ' in English and Korean, '：' after Japanese and Chinese (p10 d2-ja-06).
+  const labelSep = t('common:punctuation.labelSeparator', { defaultValue: ': ' });
+  // The sun sign in the reader's language. getZodiacSign gives the id, which
+  // used to show as it is: "あなた: aries".
+  const sunSign = (birthDate: string) => localizeSignName(zodiacData[getZodiacSign(birthDate)].name as AstroSign);
 
   return (
     <ResultLayout
@@ -254,12 +261,12 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
               {t('compatInvite.yourSides', { defaultValue: 'What you shared' })}
             </p>
             <p className="text-meta text-mystic-300">
-              <span className="text-mystic-400">{nameA}:</span>{' '}
-              {a.mbti ?? (a.birthDate ? getZodiacSign(a.birthDate) : '—')}
+              <span className="text-mystic-400">{nameA}{labelSep}</span>
+              {a.mbti ?? (a.birthDate ? sunSign(a.birthDate) : '—')}
             </p>
             <p className="text-meta text-mystic-300 mt-1">
-              <span className="text-mystic-400">{nameB}:</span>{' '}
-              {b.mbti ?? (b.birthDate ? getZodiacSign(b.birthDate) : '—')}
+              <span className="text-mystic-400">{nameB}{labelSep}</span>
+              {b.mbti ?? (b.birthDate ? sunSign(b.birthDate) : '—')}
             </p>
           </Card>
         </>

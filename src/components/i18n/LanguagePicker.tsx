@@ -16,7 +16,12 @@ export const LOCALE_CODES: Record<SupportedLocale, string> = {
 };
 
 interface LanguagePickerProps {
-  /** Called after the locale is changed. */
+  /**
+   * Called after the locale is changed, its strings loaded. A `t` the
+   * caller took from useT() before the change is still bound to the
+   * language being left: anything it says about the change is said in the
+   * new one (`i18n.t(key, { lng: locale })`).
+   */
   onSelect?: (locale: SupportedLocale) => void;
   /** Compact layout for settings sheet vs. full-width for onboarding. */
   variant?: 'full' | 'compact';

@@ -44,6 +44,20 @@ export interface ReadingContext {
   date: string;
   goals?: Goal[];
   focusArea?: 'love' | 'career' | 'general';
+  /**
+   * The energy score (1–5) the reading is shown beside, when it comes from
+   * elsewhere (the Readings tab's horoscope scores the day with
+   * generateDailyHoroscope). The mood agrees with it, and so does the
+   * reading's own `energy`. Without one, the reading scores itself.
+   */
+  energy?: number;
+}
+
+/** The three ways the horoscope reads an energy score: 1–2, 3 and 4–5. */
+export type EnergyBand = 'low' | 'mid' | 'high';
+
+export function energyBand(energy: number): EnergyBand {
+  return energy >= 4 ? 'high' : energy >= 3 ? 'mid' : 'low';
 }
 
 function seededRandom(seed: number): () => number {
@@ -104,6 +118,23 @@ const MOOD_EN = [
   'Protective and fierce', 'Hopeful and forward-looking', 'Patient and steady',
   'Emotionally honest', 'Resilient and recovering', 'Creative and inspired',
 ];
+
+/**
+ * The moods each energy band can carry, as indexes into MOOD_EN (every
+ * locale's dailyInsights.moodDescriptors lists the same fifteen in the same
+ * order). The mood used to be drawn from all fifteen, whatever the score:
+ * 「エネルギースコア 2/5」 and 「雰囲気: 内省」 sat above 「今日のムード: 活気が
+ * あって人を惹きつける」 (p10 d2-ja-12).
+ */
+const MOODS_BY_BAND: Record<EnergyBand, number[]> = {
+  // Quietly powerful, Tender and raw, Contemplative and wise, Emotionally honest, Resilient and recovering
+  low: [0, 3, 6, 12, 13],
+  // Open and receptive, Grounded and resolute, Hopeful and forward-looking, Patient and steady
+  mid: [2, 4, 10, 11],
+  // Restless but purposeful, Playful and light, Energized and magnetic, Clear-headed and decisive,
+  // Protective and fierce, Creative and inspired
+  high: [1, 5, 7, 8, 9, 14],
+};
 
 const ACTION_STEPS_EN = [
   'Take 5 minutes to journal about what you are grateful for today.',
@@ -243,6 +274,17 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
   else if (goals.includes('career')) focusArea = focusAreasL[2] ?? focusArea;
   else if (goals.includes('healing')) focusArea = focusAreasL[5] ?? focusArea;
 
+  // Drawn in the order they always were, one number each, so a sign and a
+  // date keep their lucky number, colour and action step. A score given by
+  // the caller still uses up the reading's own draw.
+  const luckyNumber = Math.floor(random() * 99) + 1;
+  const luckyColor = selectFromArray(dailyI18n.colors(COLORS_EN), random);
+  const ownEnergy = Math.floor(random() * 5) + 1;
+  const energy = ctx.energy ?? ownEnergy;
+  const moodIndex = selectFromArray(MOODS_BY_BAND[energyBand(energy)], random);
+  const mood = dailyI18n.moodDescriptors(MOOD_EN)[moodIndex] ?? MOOD_EN[moodIndex];
+  const actionStep = selectFromArray(dailyI18n.actionSteps(ACTION_STEPS_EN), random);
+
   return {
     sign,
     date,
@@ -251,16 +293,16 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
     career: interpolateTemplate(careerTemplate, context),
     wellness: interpolateTemplate(wellnessTemplate, context),
     reflection: interpolateTemplate(reflectionTemplate, context),
-    luckyNumber: Math.floor(random() * 99) + 1,
-    luckyColor: selectFromArray(dailyI18n.colors(COLORS_EN), random),
-    energy: Math.floor(random() * 5) + 1,
+    luckyNumber,
+    luckyColor,
+    energy,
     focusArea,
     planetaryInfluence: localizedPlanet.positive,
     shadow: interpolateTemplate(shadowTemplate, context),
     caution: interpolateTemplate(cautionTemplate, context),
     miniRitual: interpolateTemplate(ritualTemplate, context),
-    mood: selectFromArray(dailyI18n.moodDescriptors(MOOD_EN), random),
-    actionStep: selectFromArray(dailyI18n.actionSteps(ACTION_STEPS_EN), random),
+    mood,
+    actionStep,
   };
 }
 

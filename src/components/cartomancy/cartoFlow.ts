@@ -438,6 +438,53 @@ function listItemsOf(lines: string[]): string[] | null {
   return items.length > 0 ? items : null;
 }
 
+/** An item's text when it reads as a heading without its marker ("- Past (Five of Clubs)" → "Past (Five of Clubs)"); null for any other line. */
+function markedHeadingOf(line: string): string | null {
+  return LIST_MARKER.test(line) ? headingOf(line.replace(LIST_MARKER, '')) : null;
+}
+
+/**
+ * A block's lines cut at each item that heads prose. Asked for "a section
+ * for each position", the model as often writes the heading as an item —
+ * "- 過去から抱えているもの（クラブの5）" over its paragraph — and the line
+ * was neither a heading (it starts with a marker) nor a list (prose follows
+ * it): the dash was printed (d2-ja-02). Such an item is a heading when prose
+ * comes next — the next line, or on the block's last line the paragraph
+ * that opens the next block (a blank line under the heading) — and the line
+ * before it is not an item, so a list, and a sentence closing one, stay
+ * whole. `afterItem`: the previous block ended in an item. A heading on the
+ * last line has no lines of its own: it heads the next block.
+ */
+function cutAtMarkedHeadings(
+  lines: string[],
+  nextBlock: string | undefined,
+  afterItem: boolean,
+): { lead: string[]; parts: { heading: string; lines: string[] }[]; endsInItem: boolean } {
+  const lead: string[] = [];
+  const parts: { heading: string; lines: string[] }[] = [];
+  let prevItem = afterItem;
+  lines.forEach((line, i) => {
+    const inBlock = i + 1 < lines.length;
+    const next = inBlock ? lines[i + 1] : nextBlock?.split('\n')[0];
+    const prose = next !== undefined && !LIST_MARKER.test(next) && (inBlock || headingOf(next) === null);
+    const heading = prose && !prevItem ? markedHeadingOf(line) : null;
+    if (heading) parts.push({ heading, lines: [] });
+    else (parts.length > 0 ? parts[parts.length - 1].lines : lead).push(line);
+    prevItem = !heading && LIST_MARKER.test(line);
+  });
+  return { lead, parts, endsInItem: prevItem };
+}
+
+/** One section: markdown marks dropped, the items when every line is one, and a heading that only counts them without the count. */
+function sectionOf(heading: string | null, lines: string[]): AiSection {
+  const body = lines.join('\n').replace(MARKDOWN_MARKS, '').trim();
+  const items = listItemsOf(lines);
+  let head = heading;
+  const count = head ? /^(\d{1,2})\s+(?=\p{Lu})/u.exec(head) : null;
+  if (head && count && items && items.length === Number(count[1])) head = head.slice(count[0].length);
+  return { ...(head ? { heading: head } : {}), body, ...(items ? { items } : {}) };
+}
+
 /**
  * An AI reading as blocks: the generators write "1) Overview" then the
  * paragraph, "2) The situation — Seven of Clubs" then its paragraph,
@@ -445,10 +492,11 @@ function listItemsOf(lines: string[]): string[] | null {
  * reads as a heading (and has a body under it) becomes {heading, body}; a
  * heading standing alone in its block heads the block after it (as the
  * tarot summary reads it, readingText.splitLede); any other block is body
- * alone. A body whose every line is a list item also comes as `items`, and
- * a heading that only counts them ("3 Practical Actions" over three
- * bullets) loses the count, which the list now shows. Markdown marks are
- * dropped.
+ * alone. An item that heads prose ("- Past (Five of Clubs)" over its
+ * paragraph) is a heading too, its marker dropped (cutAtMarkedHeadings). A
+ * body whose every line is a list item also comes as `items`, and a heading
+ * that only counts them ("3 Practical Actions" over three bullets) loses
+ * the count, which the list now shows. Markdown marks are dropped.
  */
 export function aiReadingSections(text: string): AiSection[] {
   const blocks = text
@@ -457,24 +505,29 @@ export function aiReadingSections(text: string): AiSection[] {
     .filter(Boolean);
   const sections: AiSection[] = [];
   let pending: string | null = null;
+  let afterItem = false;
   blocks.forEach((block, b) => {
     const lines = block.split('\n');
     const alone = lines.length === 1 ? headingOf(lines[0]) : null;
     if (alone && b < blocks.length - 1) {
       if (pending) sections.push({ heading: pending, body: '' });
       pending = alone;
+      afterItem = false;
       return;
     }
     const own = lines.length > 1 ? headingOf(lines[0]) : null;
     const rest = own ? lines.slice(1) : lines;
-    let heading = own ?? pending;
+    const heading = own ?? pending;
     if (own && pending) sections.push({ heading: pending, body: '' });
     pending = null;
-    const body = rest.join('\n').replace(MARKDOWN_MARKS, '').trim();
-    const items = listItemsOf(rest);
-    const count = heading ? /^(\d{1,2})\s+(?=\p{Lu})/u.exec(heading) : null;
-    if (heading && count && items && items.length === Number(count[1])) heading = heading.slice(count[0].length);
-    sections.push({ ...(heading ? { heading } : {}), body, ...(items ? { items } : {}) });
+    const { lead, parts, endsInItem } = cutAtMarkedHeadings(rest, blocks[b + 1], own ? false : afterItem);
+    afterItem = endsInItem;
+    if (lead.length > 0) sections.push(sectionOf(heading, lead));
+    else if (heading) sections.push({ heading, body: '' });
+    for (const part of parts) {
+      if (part.lines.length > 0) sections.push(sectionOf(part.heading, part.lines));
+      else pending = part.heading;
+    }
   });
   if (pending) sections.push({ heading: pending, body: '' });
   return sections;

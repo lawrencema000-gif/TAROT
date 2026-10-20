@@ -25,6 +25,9 @@ export function FreeEmailCourseCard() {
     title: t(`freeCourse.lessons.${n}.title`, { defaultValue: `Lesson ${n}` }) as string,
     topic: t(`freeCourse.lessons.${n}.topic`, { defaultValue: '' }) as string,
   }));
+  // ': ' in English and Korean, '：' after Japanese and Chinese — 第1回: read
+  // as a machine translation (p10 d2-ja-06).
+  const labelSep = t('common:punctuation.labelSeparator', { defaultValue: ': ' }) as string;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +82,8 @@ export function FreeEmailCourseCard() {
             <li key={l.title} className="flex items-start gap-2.5 text-ui">
               <Check className="w-4 h-4 text-gold flex-shrink-0 mt-1" aria-hidden />
               <span>
-                <span className="text-mystic-100 font-medium">{l.title}:</span>
-                <span className="text-mystic-400"> {l.topic}</span>
+                <span className="text-mystic-100 font-medium">{l.title}{labelSep}</span>
+                <span className="text-mystic-400">{l.topic}</span>
               </span>
             </li>
           ))}

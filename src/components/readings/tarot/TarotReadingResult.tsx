@@ -112,7 +112,7 @@ export function TarotReadingResult({
             const more =
               hasMoreThan(lead, taken + 2) || Boolean(focusText) || Boolean(uprightFocus) || Boolean(card.reflectionPrompt);
             return (
-              <section key={i} aria-label={`${getPositionLabel(i)}: ${card.name}`}>
+              <section key={i} aria-label={`${getPositionLabel(i)}${t('common:punctuation.labelSeparator', { defaultValue: ': ' })}${card.name}`}>
                 <div className="text-center">
                   <Tag tone="neutral" size="md">{getPositionLabel(i)}</Tag>
                   <h3 className="heading-display-md heading-strong text-title text-ink mt-3 lining-nums">{card.name}</h3>

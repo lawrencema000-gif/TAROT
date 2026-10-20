@@ -106,7 +106,11 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],
+        // The stack is the --font-display token in index.css (Cormorant
+        // Garamond, then the CJK serifs), so the `font-display` utility
+        // follows a language that redefines it: Korean sets its Hangul and
+        // the ASCII marks around it in the Korean face (p10 d3-ko-10).
+        display: ['var(--font-display)'],
         body: ['Inter', 'Inter Fallback', 'Inter Fallback Android', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       // ── Type scale ──────────────────────────────────────────────

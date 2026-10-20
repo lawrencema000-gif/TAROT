@@ -44,6 +44,7 @@ import { checkAchievementProgress } from '../services/achievements';
 import { ritualTimeReports } from '../components/ritual/ritualReports';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { DailyWisdomCard } from '../components/home/DailyWisdomCard';
 import { MoonstoneWidget } from '../components/home/MoonstoneWidget';
@@ -58,6 +59,28 @@ interface RitualState {
 
 /** How many nights the constellation shows. */
 const NIGHTS = 14;
+
+/*
+ * The celebration a completed ritual is owed. "Write" and "Read" leave Home
+ * the moment they are tapped, and when either finished the ritual, the
+ * celebration was set on a Home that was no longer there: it never appeared
+ * (p10 d1-en-04). The completion is recorded here instead, and the Home on
+ * screen takes it — the one that completed it, or the next one mounted that
+ * day for that member. Taking it clears it, so it is shown once.
+ */
+let owedCelebration: { userId: string; date: string } | null = null;
+const owedCelebrationListeners = new Set<() => void>();
+
+function oweCelebration(userId: string, date: string): void {
+  owedCelebration = { userId, date };
+  owedCelebrationListeners.forEach((listener) => listener());
+}
+
+function takeOwedCelebration(userId: string, date: string): boolean {
+  if (owedCelebration?.userId !== userId || owedCelebration.date !== date) return false;
+  owedCelebration = null;
+  return true;
+}
 
 export function HomePage() {
   const { t } = useT(['app', 'common']);
@@ -92,7 +115,6 @@ export function HomePage() {
   const [, setTarotCards] = useState<TarotCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [dailyPrompt, setDailyPrompt] = useState('');
   // A day is the user's day. One local calendar date keys everything on this
   // screen — the ritual row and its cache, the highlights, the card seed, the
   // prompt and the constellation window — so the ritual rolls over at the
@@ -100,6 +122,11 @@ export function HomePage() {
   // (Rows written before 2026-09-28 were keyed by the UTC date; a night done
   // near UTC midnight may sit one day off once. They are not migrated.)
   const today = localDateStr();
+  // The language on screen. useT re-renders this page when it changes, and
+  // the day's prompt and card are read in it: both used to keep the language
+  // they were first read in until a reload (p10 d1-en-01, d3-ko-05).
+  const locale = getLocale();
+  const dailyPrompt = getDailyPrompt(today);
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const [nights, setNights] = useState<ConstellationNight[]>(() => nightsFromRituals([], today, NIGHTS));
 
@@ -180,10 +207,6 @@ export function HomePage() {
     }
   }, [user, today]);
 
-  useEffect(() => {
-    setDailyPrompt(getDailyPrompt(today));
-  }, [today]);
-
   // A spread chosen on its public page before signing up (pendingSpread):
   // the first signed-in Home opens it, once.
   useEffect(() => {
@@ -192,18 +215,47 @@ export function HomePage() {
     if (slug) navigate('/readings', { state: { spreadSlug: slug } });
   }, [user, navigate]);
 
+  // The deck comes back in the language on screen, so a language change
+  // draws again: the seed is the member and the day, so it is the same card,
+  // now named and read in the new language.
+  const userId = user?.id;
   useEffect(() => {
+    let live = true;
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
+      if (!live) return;
       setTarotCards(cards);
-      const seed = `${user?.id || 'anonymous'}_${today}`;
+      const seed = `${userId || 'anonymous'}_${today}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);
       cacheLastViewedCard(drawn.card, drawn.reversed);
     };
     loadAndDrawCard();
+    return () => {
+      live = false;
+    };
+  }, [userId, today, locale, tarotRefreshTrigger]);
+
+  useEffect(() => {
     checkRitualStatus();
   }, [checkRitualStatus, tarotRefreshTrigger]);
+
+  // A completion owed to this member today is celebrated here, once: now,
+  // when this Home completed the ritual itself, or on the first Home on
+  // screen after Write or Read completed it from the page they opened.
+  useEffect(() => {
+    if (!userId) return;
+    const settle = () => {
+      if (!takeOwedCelebration(userId, today)) return;
+      setCelebrationReason('complete');
+      setShowCelebration(true);
+    };
+    settle();
+    owedCelebrationListeners.add(settle);
+    return () => {
+      owedCelebrationListeners.delete(settle);
+    };
+  }, [userId, today]);
 
   useEffect(() => {
     if (profile) {
@@ -291,8 +343,9 @@ export function HomePage() {
       }
       await refreshProfile();
 
-      setCelebrationReason('complete');
-      setShowCelebration(true);
+      // Owed, not set: by now Write or Read may have taken the member off
+      // Home, and the Home on screen (this one or the next) celebrates it.
+      oweCelebration(user.id, today);
     }
   };
 

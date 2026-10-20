@@ -4,7 +4,7 @@ import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge, TarotFace, 
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { getLocale } from '../i18n/config';
+import { getLocale, type SupportedLocale } from '../i18n/config';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
@@ -95,14 +95,18 @@ export function TarotCompanionPage() {
   const { tryConsume, EarnSheet } = useMoonstoneSpend('tarot-companion-session');
   /** "New card" was pressed with a conversation on screen: it asks before closing it (p9 Q06). */
   const [confirmNewCard, setConfirmNewCard] = useState(false);
+  /** The language the deck was in when the card on screen was read from it (the deck is localized as it is read). */
+  const cardLocale = useRef<SupportedLocale | null>(null);
 
   const draw = useCallback(async () => {
     setDrawing(true);
     const deck = await getAllTarotCards();
+    const readIn = getLocale();
     const seed = `${userId || 'anon'}:${Date.now()}`;
     const [drawn] = drawSeededCards(1, seed, deck);
     // small delay for the shuffle feel
     await new Promise((r) => setTimeout(r, 600));
+    cardLocale.current = readIn;
     setCard(drawn);
     // A new card is a new conversation: a new id, and nothing charged until it is read.
     setConvo({ conversationId: newConversationId(), messages: [] });
@@ -119,9 +123,11 @@ export function TarotCompanionPage() {
       const saved = loadTarotSession(userId);
       if (saved) {
         const deck = await getAllTarotCards();
+        const readIn = getLocale();
         const found = deck.find((c) => c.id === saved.cardId);
         if (cancelled) return;
         if (found) {
+          cardLocale.current = readIn;
           setCard({ card: found, reversed: saved.reversed });
           setConvo(saved.conversation);
           return;
@@ -133,6 +139,27 @@ export function TarotCompanionPage() {
       cancelled = true;
     };
   }, [userId, draw]);
+
+  // The card on screen in the language on screen. It is held as it was
+  // read, so a language changed in Settings left its name and meaning in
+  // the old one until a new card was drawn (p10 d1-en-01). The deck is read
+  // again and the same card put back by id: its orientation and its
+  // conversation stay, and nothing is drawn again or charged.
+  const locale = getLocale();
+  useEffect(() => {
+    const cardId = card?.card.id;
+    if (cardId === undefined || cardLocale.current === locale) return;
+    let live = true;
+    void getAllTarotCards().then((deck) => {
+      const found = deck.find((c) => c.id === cardId);
+      if (!live || !found) return;
+      cardLocale.current = locale;
+      setCard((cur) => (cur && cur.card.id === cardId ? { ...cur, card: found } : cur));
+    });
+    return () => {
+      live = false;
+    };
+  }, [locale, card]);
 
   // Auto-scroll
   useEffect(() => {

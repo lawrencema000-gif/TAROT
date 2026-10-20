@@ -92,7 +92,7 @@ export function DoshaResult({ quiz, result, onBack, onRetake }: QuizResultViewPr
       }
       footer={
         <ResultBody after={<AfterResult onRetake={onRetake} onBack={onBack} />}>
-          {shared && !allLevel && <CloseCall names={[name, ...others]} />}
+          {shared && !allLevel && <CloseCall exact names={[name, ...others]} />}
 
           <ResultSection title={t('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}>
             <div className="space-y-4">

@@ -2,9 +2,9 @@
  * Deep link handler for content sharing URLs.
  *
  * Supported routes:
- *   https://arcana.app/reading/:id
- *   https://arcana.app/card/:cardId
- *   https://arcana.app/horoscope/:sign
+ *   https://tarotlife.app/reading/:id
+ *   https://tarotlife.app/card/:cardId
+ *   https://tarotlife.app/horoscope/:sign
  */
 
 export interface DeepLinkRoute {
@@ -12,10 +12,12 @@ export interface DeepLinkRoute {
   id?: string;
 }
 
-const DEEP_LINK_HOST = 'arcana.app';
 // The live web app (and every share URL built via window.location.origin)
-// lives on tarotlife.app — accept both hosts so shared links open in-app.
-const DEEP_LINK_HOSTS = [DEEP_LINK_HOST, 'tarotlife.app', 'www.tarotlife.app'];
+// lives on tarotlife.app, and the Android app opens its links (the App Links
+// in AndroidManifest.xml). The host was arcana.app, which is not ours, so a
+// share URL built here sent friends to someone else's server (p10).
+const DEEP_LINK_HOST = 'tarotlife.app';
+const DEEP_LINK_HOSTS = [DEEP_LINK_HOST, 'www.tarotlife.app'];
 
 export function parseDeepLink(url: string): DeepLinkRoute | null {
   try {

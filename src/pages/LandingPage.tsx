@@ -10,6 +10,7 @@ import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
+import { getLocale, type SupportedLocale } from '../i18n/config';
 import {
   Button,
   Card,
@@ -175,13 +176,38 @@ function AnimNum({ to }: { to: number }) {
 }
 
 // ─── Google Play badge ─────────────────────────────────────────
-// The official asset, cropped by .lp-play-clip (see landing.css for why).
-function PlayBadge({ alt, eager = false }: { alt: string; eager?: boolean }) {
+// Google's own badge in the page's language, unaltered: play.google.com/
+// intl/en_us/badges/static/images/badges/{en,ja,ko,zh-cn}_badge_web_generic.png
+// (p10 d2-ja-13 — every language showed one English copy, with a
+// checkerboard baked into its pixels around the badge). Each file is
+// 646×250, the badge on a transparent ground: the English one has 41px of
+// ground on every side (badge 564×168), the Japanese, Korean and Chinese
+// ones 29px above and below only (badge 646×192). The <img> is scaled to a
+// 48px badge and a negative margin takes the ground back, so every
+// language's badge takes the same room and .lp-play's 12px padding stays
+// the clear space Google asks for.
+const PLAY_BADGES: Record<SupportedLocale, { src: string; fit: string }> = {
+  // ×48/168: 184.6×71.4, 11.7px of ground on every side.
+  en: { src: '/google-play-badge-en.png', fit: 'h-[71.43px] -m-[11.71px]' },
+  // ×48/192: 161.5×62.5, 7.25px of ground above and below.
+  ja: { src: '/google-play-badge-ja.png', fit: 'h-[62.5px] -my-[7.25px]' },
+  ko: { src: '/google-play-badge-ko.png', fit: 'h-[62.5px] -my-[7.25px]' },
+  zh: { src: '/google-play-badge-zh.png', fit: 'h-[62.5px] -my-[7.25px]' },
+};
+
+export function PlayBadge({ alt, eager = false }: { alt: string; eager?: boolean }) {
+  const badge = PLAY_BADGES[getLocale()];
   return (
     <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="lp-play">
-      <span className="lp-play-clip">
-        <img src="/google-play-badge.png" alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
-      </span>
+      <img
+        src={badge.src}
+        alt={alt}
+        width={646}
+        height={250}
+        className={`w-auto max-w-none ${badge.fit}`}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+      />
     </a>
   );
 }
@@ -713,7 +739,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.company')}</EyebrowLabel>
               <ul className="-mt-1.5">
                 <li><FooterLink href="/privacy-policy.html">{t('footer.links.privacy')}</FooterLink></li>
-                <li><FooterLink href="mailto:support@arcana.app">{t('footer.links.contact')}</FooterLink></li>
+                <li><FooterLink href="mailto:support@tarotlife.app">{t('footer.links.contact')}</FooterLink></li>
                 <li><FooterLink href="https://yinyangguardian.com/" external>{t('footer.links.shopPartner')}</FooterLink></li>
               </ul>
             </div>

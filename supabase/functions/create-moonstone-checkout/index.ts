@@ -16,6 +16,7 @@
  */
 
 import Stripe from "npm:stripe@14.10.0";
+import { isAppRedirectUrl } from "../_shared/cors.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
 
@@ -25,22 +26,6 @@ const PACKS: Record<string, { amountCents: number; moonstones: number; label: st
   'arcana_moonstones_750':  { amountCents: 1699, moonstones: 750,  label: '750 Moonstones' },
   'arcana_moonstones_2000': { amountCents: 3999, moonstones: 2000, label: '2000 Moonstones' },
 };
-
-const ALLOWED_HOSTS = [
-  'localhost', '127.0.0.1',
-  'arcana.app', 'www.arcana.app',
-  'tarotlife.app', 'www.tarotlife.app',
-  'arcana-ritual-app.netlify.app',
-];
-
-function allowedRedirect(url: string): boolean {
-  try {
-    const h = new URL(url).hostname.toLowerCase();
-    return ALLOWED_HOSTS.some((a) => h === a || h.endsWith(`.${a}`));
-  } catch {
-    return false;
-  }
-}
 
 const RequestSchema = z.object({
   packId: z.enum([
@@ -80,7 +65,7 @@ Deno.serve(handler<Req, Resp>({
       );
     }
 
-    if (!allowedRedirect(successUrl) || !allowedRedirect(cancelUrl)) {
+    if (!isAppRedirectUrl(successUrl) || !isAppRedirectUrl(cancelUrl)) {
       throw new AppError("INVALID_REDIRECT_URL", "Redirect URLs must be on an approved host", 400);
     }
 

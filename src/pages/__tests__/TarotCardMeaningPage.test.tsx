@@ -85,7 +85,9 @@ afterEach(async () => {
 describe('TarotCardMeaningPage: a card link shared with ?hl opens in its language (p9 R13)', () => {
   it('a signed-out English visitor reads the card in Japanese; leaving the page, the app is theirs again', async () => {
     renderCard('/tarot-meanings/the-fool?hl=ja');
-    await waitFor(async () => expect(await cardName()).toBe('愚者'));
+    // 3 s, not waitFor's 1 s: a language switch loads a corpus, and the full
+    // suite on a loaded machine has taken longer than a second (p10).
+    await waitFor(async () => expect(await cardName()).toBe('愚者'), { timeout: 3000 });
     expect(screen.getByText('クイックリファレンス')).toBeInTheDocument();
     expect(getLocale()).toBe('ja');
     // Opening a link is not a choice: nothing is stored.
@@ -93,7 +95,7 @@ describe('TarotCardMeaningPage: a card link shared with ?hl opens in its languag
 
     fireEvent.click(screen.getByRole('link', { name: 'すべてのカード' }));
     await screen.findByText('all-cards');
-    await waitFor(() => expect(getLocale()).toBe('en'));
+    await waitFor(() => expect(getLocale()).toBe('en'), { timeout: 3000 });
     expect(store.get(LOCALE_STORAGE_KEY)).toBe('en');
   });
 

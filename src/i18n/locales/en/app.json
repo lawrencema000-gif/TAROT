@@ -656,7 +656,6 @@
       "insights": "Insights"
     },
     "todaysPrompt": "Today’s prompt",
-    "defaultPrompt": "What are you reflecting on today?",
     "emptyState": "No journal entries yet.",
     "emptyStateSub": "Start your reflection journey today.",
     "loadMore": "Load more entries",
@@ -723,8 +722,10 @@
     "hasEntry": "has an entry",
     "insight": {
       "notYet": "Write a few more entries — a pattern shows here once there are five with more than one mood or theme.",
-      "summary": "You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries).",
-      "withTag": "You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries), and you return to {{tag}} more than any other theme."
+      "weekday": "You write most often on {{weekday}}.",
+      "mood": "Your most common mood is {{mood}} ({{n}} of {{total}} entries).",
+      "moodTie": "Your moods are mixed — no single one comes up most often.",
+      "tag": "You return to {{tag}} more than any other theme."
     },
     "linkedShort": "Reading",
     "cardSeparator": ", ",
@@ -2137,9 +2138,9 @@
       "yourDimensions": "Your dimensions",
       "yourScores": "Your scores",
       "yourTraitScores": "Your trait scores",
-      "closeCall": "Close call",
-      "closeCallBody": "{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.",
-      "closeCallBodyMany": "{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.",
+      "closeCall": "Tied",
+      "closeCallBody": "{{a}} and {{b}} scored the same. Read both — the one you recognise is the one that counts.",
+      "closeCallBodyMany": "{{names}} all scored the same. Read them all — the one you recognise is the one that counts.",
       "listSeparator": ", ",
       "listLastSeparator": " and ",
       "readingFirst": "Reading {{name}} first",
@@ -2160,7 +2161,12 @@
       "avoidanceAxis": "Avoidance",
       "whatYouNeedFromPartner": "What you need from a partner",
       "courtSuitUnsettled": "Your answers leaned equally toward two suits, and the tie-break question pointed elsewhere.",
-      "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere."
+      "courtRankUnsettled": "Your answers leaned equally toward two ranks, and the tie-break question pointed elsewhere.",
+      "closeCallNear": "Close call",
+      "closeCallNearBody": "{{a}} and {{b}} scored within a hair of each other. Read both — the one you recognise is the one that counts.",
+      "closeCallNearBodyMany": "{{names}} scored within a hair of each other. Read them all — the one you recognise is the one that counts.",
+      "coPrimaryNear": "Shared with {{name}}",
+      "sharedWithManyNear": "Shared with {{n}} others"
     },
     "takeAnother": "Take another quiz",
     "courtCards": {
@@ -4632,7 +4638,7 @@
     "caution": "Caution",
     "planetaryTransit": "Planetary transit",
     "dailyAffirmation": "Daily affirmation",
-    "cardOfTheDay": "Card of the day",
+    "cardOfTheDay": "Your sign’s card today",
     "luckyNumbersLabel": "Lucky numbers",
     "miniRitual": "Mini ritual",
     "actionStep": "Action step",
@@ -5286,7 +5292,11 @@
     "emailInvalid": "Enter a valid email address.",
     "emailFailed": "Couldn’t sign you up. Try again in a moment.",
     "startReading": "Start a reading",
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "seo": {
+      "cardTitle": "{{name}} Tarot Card Meaning — {{group}}",
+      "cardDesc": "{{name}} tarot meaning: {{keywords}}. Upright and reversed interpretations, love, career, yes/no readings."
+    }
   },
   "admin": {
     "verifications": {
@@ -5873,11 +5883,6 @@
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",
-    "recent": {
-      "towerMeaning": "The Tower meaning",
-      "loveCompatibilityAries": "Love compatibility Aries",
-      "threeCardSpread": "Three card spread"
-    },
     "recentSearches": "Recent searches",
     "quickLinks": "Quick links",
     "quickLink": {
@@ -5885,7 +5890,20 @@
       "journalPrompts": "Journal prompts",
       "personalityQuiz": "Personality quiz"
     },
-    "resultsFor": "Search results for \"{{query}}\" will appear here"
+    "groups": {
+      "tarot": "Tarot cards",
+      "playing": "Playing cards",
+      "signs": "Zodiac signs",
+      "journal": "Your journal"
+    },
+    "noResults": "Nothing matches ‘{{query}}’",
+    "noResultsHint": "Try a card’s name, a zodiac sign or a word from your journal.",
+    "journalFailed": "Couldn’t search your journal — check your connection.",
+    "clearRecent": "Clear",
+    "clearRecentLabel": "Clear recent searches",
+    "resultCount": "{{count}} results",
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results"
   },
   "saved": {
     "title": "Saved",
@@ -6921,7 +6939,6 @@
     "questionPlaceholder": "What would be most helpful for me to understand right now?",
     "castButton": "Cast the coins",
     "casting": "Casting…",
-    "hexagramLabel": "Hexagram",
     "judgement": "The Judgement",
     "interpretation": "Interpretation",
     "strengths": "Strengths",
@@ -6937,7 +6954,8 @@
     "readFullReading": "Read the full reading",
     "askOracleCta": "Read this hexagram for me",
     "share": "Share this hexagram",
-    "shareText": "My I Ching reading: {{name}}. {{tagline}}"
+    "shareText": "My I Ching reading: {{name}}. {{tagline}}",
+    "hexagramNumber": "Hexagram {{n}}"
   },
   "liuyao": {
     "hidden": {
@@ -10115,7 +10133,8 @@
       "mostlySteady": "Mostly {{mood}} this week. A steady note.",
       "rising": "Curve rising — this week feels lighter than last.",
       "tooFew": "Log a few more days to see a pattern emerge."
-    }
+    },
+    "dominantMixed": "Mixed"
   },
   "moodDiary": {
     "legacyTitle": "Mood days saved on this device",
@@ -11404,7 +11423,7 @@
     "frictionsHeading": "Where you stretch each other",
     "tryAnother": "Score another",
     "share": "Share score",
-    "shareText": "Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at arcana.app",
+    "shareText": "Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at {{url}}",
     "disclaimer": "A score isn’t a verdict — it’s a mirror for conversation. Charts describe patterns, not fate.",
     "vibes": {
       "transcendent": "Transcendent",
@@ -11511,7 +11530,7 @@
     "disclaimer": "No spam. Unsubscribe with one click. 3 emails over 5 days."
   },
   "loveTree": {
-    "shareText": "My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at arcana.app/love-tree",
+    "shareText": "My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at {{url}}",
     "title": "Love Tree",
     "intro": "12 questions, 90 seconds, one tree. Your attachment style rendered as a living shape — and a plain-spoken read on how you love.",
     "howItWorksLabel": "How it works",

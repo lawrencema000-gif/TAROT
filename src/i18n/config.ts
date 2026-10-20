@@ -476,10 +476,22 @@ i18n.on('languageChanged', syncDocumentLang);
 // Serif families were five more font files per CJK visitor: the display
 // serif falls back to the system CJK face for the few heading glyphs the
 // Latin Cormorant lacks, and the body tier renders in 400/600, which is
-// all the type roles ask for.
+// all the type roles ask for. Korean is the exception: its headings set
+// the Hangul in Noto Serif KR (p10 d3-ko-10, see cjkFonts.ts).
+//
+// Only the current language's stylesheet applies. One loaded earlier in
+// the session (the picker, or the account's language followed after boot)
+// is switched off, as a fresh load never had it: every other language's
+// display stack names 'Noto Serif KR', which covers kana and some 4,600 Han
+// characters, so after a Korean session a Japanese or Chinese heading would
+// set those in the Korean serif and the rest in the platform's.
 function loadCjkFonts(lng: string) {
   if (typeof document === 'undefined') return;
   const locale = normalizeLocale(lng) ?? 'en';
+  for (const other of Object.keys(CJK_FONTS)) {
+    const sheet = document.getElementById(`arcana-font-${other}`) as HTMLLinkElement | null;
+    if (sheet) sheet.disabled = other !== locale;
+  }
   const query = CJK_FONTS[locale];
   if (!query) return;
   const id = `arcana-font-${locale}`;

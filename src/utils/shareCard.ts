@@ -1029,6 +1029,11 @@ async function ensureFonts(opts: ShareCardOpts): Promise<void> {
     '600 40px Inter',
     // A quotation's figures (drawMixedLines sets them in Inter, italic too).
     'italic 400 40px Inter',
+    // Korean display text is drawn in Noto Serif KR (DISPLAY), a web font for
+    // ko since p10: load the slices this card's text needs, so its Hangul is
+    // one face. In other languages the family is not declared and this is a no-op.
+    '600 84px "Noto Serif KR"',
+    '500 52px "Noto Serif KR"',
   ];
   const loads = Promise.all(wanted.map((f) => document.fonts.load(f, text)));
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, FONT_WAIT_MS));

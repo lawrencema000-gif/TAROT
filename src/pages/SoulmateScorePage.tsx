@@ -6,6 +6,7 @@ import { PLANET_ICONS } from '../components/icons';
 import type { Planet } from '../types/astrology';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
+import { localizePlanetName } from '../i18n/localizeNames';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { shareOrDownloadCard } from '../utils/shareCard';
@@ -31,6 +32,13 @@ import { birthZoneOf } from '../components/horoscope/birthZone';
  * Moonstone price (premium bypasses). The header must not say "Free"
  * above a cost line (R7).
  */
+
+/**
+ * Where a shared score sends a friend: this page on the live app. The share
+ * text takes it as {{url}}, so no translation carries a host of its own —
+ * every language named arcana.app, which is not the app (p10 d2-ja-08).
+ */
+const SHARE_URL = 'https://tarotlife.app/soulmate-score';
 
 type AspectType = 'conjunction' | 'trine' | 'sextile' | 'square' | 'opposition';
 
@@ -111,6 +119,13 @@ function PlanetMark({ name }: { name: string }) {
   );
 }
 
+/**
+ * A planet from the synastry payload, named in the reader's language: the
+ * rows read "Venus Mars 합" in Korean (p10 d3-ko-01). A name outside the ten
+ * comes back as sent.
+ */
+const planetName = (name: string) => localizePlanetName(name as Planet);
+
 /** One cross-aspect: partner planet — aspect — natal planet, with the glyphs drawn. */
 function AspectRow({ aspect, tone, t }: { aspect: CrossAspect; tone: 'teal' | 'coral'; t: (k: string, o?: Record<string, unknown>) => string }) {
   const aspectName = t(`soulmate.aspects.${aspect.type}`, { defaultValue: aspect.type });
@@ -118,9 +133,9 @@ function AspectRow({ aspect, tone, t }: { aspect: CrossAspect; tone: 'teal' | 'c
     <li className="flex items-center justify-between gap-3 text-ui">
       <span className="flex items-center gap-1.5 text-mystic-200 min-w-0">
         <PlanetMark name={aspect.partnerPlanet} />
-        <span className="truncate">{aspect.partnerPlanet}</span>
+        <span className="truncate">{planetName(aspect.partnerPlanet)}</span>
         <AspectGlyph aspect={aspect.type} size={14} className={`shrink-0 ${tone === 'teal' ? 'text-teal' : 'text-coral'}`} />
-        <span className="truncate">{aspect.natalPlanet}</span>
+        <span className="truncate">{planetName(aspect.natalPlanet)}</span>
         <PlanetMark name={aspect.natalPlanet} />
       </span>
       <span className={`shrink-0 text-meta ${tone === 'teal' ? 'text-teal' : 'text-coral'}`}>{aspectName}</span>
@@ -292,9 +307,10 @@ export function SoulmateScorePage() {
     const vibeLocalized = t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe }) as string;
     const vibeDescription = t(`soulmate.vibeDescriptions.${result.vibe}`, { defaultValue: '' }) as string;
     const shareText = t('soulmate.shareText', {
-      defaultValue: 'Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at arcana.app',
+      defaultValue: 'Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at {{url}}',
       score: result.score,
       vibe: vibeLocalized,
+      url: SHARE_URL,
     }) as string;
 
     const outcome = await shareOrDownloadCard(
@@ -380,12 +396,16 @@ export function SoulmateScorePage() {
               <SoulmatePortrait pendingOnly />
             </div>
             <Card padding="lg">
+              {/* Each eyebrow is its field's label (htmlFor ↔ id): the name
+                  field was announced by its placeholder alone, and the date
+                  and time fields had no name at all (p10 d3-ko-11). */}
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-1.5">
+                  <label htmlFor="soulmate-partner-name" className="block mb-1.5">
                     <EyebrowLabel>{t('soulmate.partnerNameLabel', { defaultValue: "Partner's name" })}</EyebrowLabel>
                   </label>
                   <Input
+                    id="soulmate-partner-name"
                     value={partnerName}
                     onChange={(e) => setPartnerName(e.target.value)}
                     placeholder={t('soulmate.partnerNamePlaceholder', { defaultValue: 'Optional' }) as string}
@@ -393,10 +413,11 @@ export function SoulmateScorePage() {
                   />
                 </div>
                 <div>
-                  <label className="block mb-1.5">
+                  <label htmlFor="soulmate-birth-date" className="block mb-1.5">
                     <EyebrowLabel>{t('soulmate.birthDateLabel', { defaultValue: 'Birth date' })}</EyebrowLabel>
                   </label>
                   <Input
+                    id="soulmate-birth-date"
                     type="date"
                     value={partnerBirthDate}
                     onChange={(e) => setPartnerBirthDate(e.target.value)}
@@ -404,10 +425,11 @@ export function SoulmateScorePage() {
                   />
                 </div>
                 <div>
-                  <label className="block mb-1.5">
+                  <label htmlFor="soulmate-birth-time" className="block mb-1.5">
                     <EyebrowLabel>{t('soulmate.birthTimeLabel', { defaultValue: 'Birth time (optional — sharpens the score)' })}</EyebrowLabel>
                   </label>
                   <Input
+                    id="soulmate-birth-time"
                     type="time"
                     value={partnerBirthTime}
                     onChange={(e) => setPartnerBirthTime(e.target.value)}

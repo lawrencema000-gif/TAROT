@@ -3,8 +3,6 @@ const ALLOWED_ORIGINS = [
   "http://localhost:4173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
-  "https://arcana.app",
-  "https://www.arcana.app",
   "https://tarotlife.app",
   "https://www.tarotlife.app",
   "https://arcana-ritual-app.netlify.app",
@@ -13,20 +11,42 @@ const ALLOWED_ORIGINS = [
   "https://localhost",
 ];
 
+// Any local dev server port (Vite picks 5173 by default, the Phase 7 QA
+// server ran on 5199). A browser never sends a forged localhost Origin.
+const LOCAL_DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
+
 // Netlify preview deploys land at `https://<branch-or-slug>--arcana-ritual-app.netlify.app`.
 // Keep these allowed automatically so QA agents testing audit-smoke builds
 // don't get `Access-Control-Allow-Origin: http://localhost:5173` back.
 const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
   /^https:\/\/[a-z0-9-]+--arcana-ritual-app\.netlify\.app$/i,
-  // Any local dev server port (Vite picks 5173 by default, the Phase 7 QA
-  // server ran on 5199). A browser never sends a forged localhost Origin.
-  /^http:\/\/(localhost|127\.0\.0\.1):\d+$/,
+  LOCAL_DEV_ORIGIN,
 ];
 
 function isAllowedOrigin(origin: string): boolean {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   return ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
+}
+
+/**
+ * Whether a Stripe redirect (checkout success / cancel, the billing portal's
+ * return, payout onboarding's return) leads back into the app: an origin the
+ * app is served from — production, the Netlify site, a local dev server, the
+ * Android app's https://localhost. The whole origin must match. The five
+ * Stripe functions each kept a host list of their own, matched with a
+ * subdomain rule, and every list carried arcana.app, which is not ours: any
+ * subdomain of it passed, an open redirect from our checkout (p10). Preview
+ * deploys stay out, as before.
+ */
+export function isAppRedirectUrl(url: string): boolean {
+  let origin: string;
+  try {
+    origin = new URL(url).origin;
+  } catch {
+    return false;
+  }
+  return ALLOWED_ORIGINS.includes(origin) || LOCAL_DEV_ORIGIN.test(origin);
 }
 
 /**

@@ -252,7 +252,16 @@ export interface TagProps {
 const KEYWORD_PILL =
   'keyword-pill inline-flex items-center justify-center text-center max-w-full rounded-full px-3 py-1 min-h-7 text-caption leading-tight font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
 
-/** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
+/**
+ * A read-only label: keyword, element, sign, category. Tinted, borderless, a span.
+ *
+ * It shrinks and wraps with its row, as text does. Some Tags carry a
+ * sentence (a quiz's early reading, a chart's blind spot, a custom spread's
+ * position name), and held to one unshrinking line they ran off a 360px
+ * phone (p10, the first d2-ja-04 fix). A pill that must stay whole beside a
+ * truncating title says so where it sits: the Library rows pass
+ * `shrink-0 whitespace-nowrap`.
+ */
 export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {
   if (variant === 'keyword') {
     return <span className={`${KEYWORD_PILL} ${className}`.trim()}>{children}</span>;
@@ -306,11 +315,14 @@ export interface BadgeProps {
  * Monetisation — Premium, Try, Unlocked, a credit count — is `tone="violet"`
  * (cosmic-violet-ink, 5.0:1 on a card): one reserved hue so gold can go
  * back to meaning CTA, eyebrow and active. Everything else keeps gold.
+ *
+ * One line, never shrunk: a status is a word or two, and beside a
+ * truncating title the Library's AI badge broke as A/I (p10 d2-ja-04).
  */
 export function Badge({ children, tone = 'gold', pulse = false, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
+      className={`inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
     >
       {pulse && <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />}
       {children}

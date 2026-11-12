@@ -13059,6 +13059,14 @@
   },
   "unsubscribe": {
     "metaTitle": "Unsubscribe",
-    "metaDescription": "Confirm your unsubscribe from Arcana newsletter."
+    "metaDescription": "Confirm your unsubscribe from Arcana newsletter.",
+    "processing": "Processing your request…",
+    "doneTitle": "You’re unsubscribed",
+    "doneBody": "<email>{{email}}</email> will no longer receive Arcana emails.",
+    "mistake": "If this was a mistake, just sign up again at any time.",
+    "alreadyTitle": "Already unsubscribed",
+    "alreadyBody": "No further emails will be sent.",
+    "invalidTitle": "Link not recognised",
+    "invalidBody": "This unsubscribe link looks invalid or has expired. If you keep receiving emails you didn’t expect, reply to one of them — we’ll handle it manually."
   }
 }

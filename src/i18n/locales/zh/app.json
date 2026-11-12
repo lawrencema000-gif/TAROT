@@ -13268,6 +13268,14 @@
   },
   "unsubscribe": {
     "metaTitle": "退订",
-    "metaDescription": "确认退订 Arcana 通讯。"
+    "metaDescription": "确认退订 Arcana 通讯。",
+    "processing": "正在处理你的请求…",
+    "doneTitle": "你已退订",
+    "doneBody": "<email>{{email}}</email> 将不再收到 Arcana 的邮件。",
+    "mistake": "如果是误操作，随时可以重新订阅。",
+    "alreadyTitle": "已经退订过了",
+    "alreadyBody": "今后不会再给你发送邮件。",
+    "invalidTitle": "无法识别此链接",
+    "invalidBody": "这个退订链接似乎无效或已过期。如果你一直收到意料之外的邮件，请回复其中任意一封——我们会人工处理。"
   }
 }

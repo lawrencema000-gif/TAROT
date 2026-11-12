@@ -189,7 +189,10 @@ export function TrialReminderModal() {
   return (
     // The scrim is fill, not blur: an 85% canvas over the page separates the
     // card from it as well as a blur did and costs nothing per frame.
+    // data-back-closes: Android Back sends Escape to what is on top, and
+    // finds the reminder by it (it is no Sheet, so body.sheet-open is unset).
     <div
+      data-back-closes
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-mystic-950/85"
       onClick={() => setOpen(false)}
     >

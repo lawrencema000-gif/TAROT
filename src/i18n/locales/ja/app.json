@@ -13268,6 +13268,14 @@
   },
   "unsubscribe": {
     "metaTitle": "配信停止",
-    "metaDescription": "Arcanaのニュースレターの配信停止を確認します。"
+    "metaDescription": "Arcanaのニュースレターの配信停止を確認します。",
+    "processing": "リクエストを処理しています…",
+    "doneTitle": "配信を停止しました",
+    "doneBody": "<email>{{email}}</email> には、今後Arcanaからのメールは届きません。",
+    "mistake": "間違えて停止した場合は、いつでも登録し直せます。",
+    "alreadyTitle": "すでに配信停止済みです",
+    "alreadyBody": "今後メールをお送りすることはありません。",
+    "invalidTitle": "リンクを確認できませんでした",
+    "invalidBody": "この配信停止リンクは無効か、有効期限が切れているようです。心当たりのないメールが届き続ける場合は、そのうちの1通に返信してください。こちらで個別に対応します。"
   }
 }

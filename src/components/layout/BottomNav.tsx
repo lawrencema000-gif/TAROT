@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3, Orbit, CalendarCheck, Star } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon, PlayingCardIcon } from '../ui/NavIcons';
@@ -6,6 +6,7 @@ import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { isMoreGroupRoute, isTabRoot, resolveTab } from '../../context/UIContext';
 import { leaveOrAsk } from '../../context/leaveGuard';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -52,6 +53,12 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // A new page closes the menu, however it came: a link opened from outside
+  // the app, a leave sheet's "Leave", Back. Only the menu's own items used to.
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
   const communityEnabled = useFeatureFlag('community');
   const whisperingWellEnabled = useFeatureFlag('whispering-well');
   const companionEnabled = useFeatureFlag('ai-companion');
@@ -98,6 +105,24 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   // (People, Charts, the social rooms…), flag on or off.
   const isMoreActive = (activeTab !== null && moreTabIds.includes(activeTab)) || isMoreGroupRoute(pathname);
 
+  // The open menu holds focus as a sheet does (useFocusTrap): focus moves in
+  // to its close button, Tab stays inside, and closing it hands focus back to
+  // the More button. The trap also says whether the menu is on top.
+  const { isTop } = useFocusTrap(panelRef, moreOpen);
+
+  // Escape closes the menu, and Android Back with it: androidBack sends
+  // Escape to whatever is on top, and finds the menu by data-back-closes.
+  // Only while the menu is on top: a sheet (a rate prompt, a level-up) or the
+  // trial reminder can open over it, and one Escape used to close both.
+  useEffect(() => {
+    if (!moreOpen || !isTop) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [moreOpen, isTop]);
+
   /**
    * A tab, or a route from the More menu. A tap that leaves the page on
    * screen asks first when the page would lose something by it — a reading
@@ -105,17 +130,6 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
    * once the member says so; the bar used to leave such a reading without a
    * word. A tap on the page already on screen leaves nothing, and goes at once.
    */
-  // Escape closes the menu, and Android Back with it: androidBack sends
-  // Escape to whatever is on top, and finds the menu by data-back-closes.
-  useEffect(() => {
-    if (!moreOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMoreOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [moreOpen]);
-
   const goTo = (onScreen: boolean, go: () => void) => {
     setMoreOpen(false);
     if (onScreen) go();
@@ -136,7 +150,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           />
 
           {/* Slide-up menu panel */}
-          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
+          <div ref={panelRef} className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
             <div className="bg-mystic-800 border border-mystic-700/40 rounded-card overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-1 border-b border-mystic-700/30">

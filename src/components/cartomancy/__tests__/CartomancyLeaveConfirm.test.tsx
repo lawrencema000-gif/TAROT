@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { render, screen, act, waitFor, fireEvent, cleanup, within } from '@testing-library/react';
-import type { ReactElement } from 'react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect, type ReactElement } from 'react';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 /*
  * p9 QZ-4: the playing-card reveal threw a bought AI interpretation away on
@@ -69,7 +69,8 @@ import i18n from '../../../i18n/config';
 import { CartomancySection } from '../CartomancySection';
 import { BottomNav } from '../../layout/BottomNav';
 import { UIProvider, useUI } from '../../../context/UIContext';
-import { androidBack, type AndroidBackShell } from '../../../App';
+import { ratePromptService } from '../../../services/ratePrompt';
+import { androidBack, openDeepLink, type AndroidBackShell } from '../../../App';
 
 const tt = (key: string, opts?: Record<string, unknown>) => i18n.t(`app:${key}`, opts);
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -89,15 +90,33 @@ function Path() {
   return <output data-testid="path">{useLocation().pathname}</output>;
 }
 
-/** The reading page in the app's shell: its route, the bottom bar; any other path is a blank page. */
+/** App's appUrlOpen listener: a link opened from outside the app goes to openDeepLink with the shell's own hands. */
+const appUrlOpen: { listener: ((url: string) => void) | null } = { listener: null };
+function LinkListener() {
+  const { closeOverlay, setActiveTab } = useUI();
+  const navigate = useNavigate();
+  useEffect(() => {
+    appUrlOpen.listener = (url) => openDeepLink(url, { closeOverlay, navigate, setActiveTab });
+    return () => {
+      appUrlOpen.listener = null;
+    };
+  }, [closeOverlay, navigate, setActiveTab]);
+  return null;
+}
+const openLink = (url: string) => act(() => appUrlOpen.listener?.(url));
+
+/** The reading page in the app's shell: its route in <main>, the bottom bar; any other path is a blank page. */
 const inShell = (section: ReactElement) => (
   <MemoryRouter initialEntries={['/cartomancy/reading']}>
     <UIProvider>
-      <Routes>
-        <Route path="/cartomancy/reading" element={section} />
-        <Route path="*" element={null} />
-      </Routes>
+      <main className="relative z-10">
+        <Routes>
+          <Route path="/cartomancy/reading" element={section} />
+          <Route path="*" element={null} />
+        </Routes>
+      </main>
       <Bar />
+      <LinkListener />
       <Path />
     </UIProvider>
   </MemoryRouter>
@@ -143,12 +162,44 @@ function backOnTable(): AndroidBackShell {
   };
 }
 const pressBack = (shell: AndroidBackShell) => act(() => androidBack(shell));
+const pressEscape = () =>
+  act(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+  });
+const moreMenuOpen = () => document.querySelector('[data-back-closes]') !== null;
+
+/** A request held on the wire until the test lets it answer. */
+function held<T>() {
+  let release!: (value: T) => void;
+  const promise = new Promise<T>((resolve) => {
+    release = resolve;
+  });
+  return { promise, release };
+}
+
+/** Longer than a sheet's exit (180 ms): a sheet told to close has left the page by then. */
+const pastExit = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 250)));
+
+/** The sheet's two answers. */
+const answersOn = (sheet: HTMLElement) => ({
+  save: within(sheet).getByRole('button', { name: tt('readings.revealView.leaveConfirm.save') }),
+  leave: within(sheet).getByRole('button', { name: tt('readings.revealView.leaveConfirm.leave') }),
+});
+
+/** Every way the sheet hears "Stay": its close button, the scrim, Escape, Android Back (which sends Escape). */
+function tryToStay(sheet: HTMLElement, shell: AndroidBackShell) {
+  fireEvent.click(within(sheet).getByRole('button', { name: i18n.t('common:actions.close') }));
+  fireEvent.click(sheet.querySelector(':scope > [aria-hidden="true"]')!);
+  pressEscape();
+  pressBack(shell);
+}
 
 beforeEach(async () => {
   cleanup();
   insertReturningId.mockReset().mockResolvedValue({ ok: true, data: { id: 'saved-1' } });
   updateInterpretation.mockReset().mockResolvedValue({ ok: true, data: null });
   generatePremiumReading.mockReset();
+  vi.mocked(ratePromptService.incrementPositiveActions).mockReset().mockResolvedValue(1);
   await act(async () => { await i18n.changeLanguage('ja'); });
 });
 afterAll(async () => {
@@ -321,5 +372,125 @@ describe('CartomancySection: a tab on the bottom bar and Android Back ask the sa
     await waitFor(() => expect(path()).toBe('/'));
     expect(leaveSheet()).toBeNull();
     expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * "Save and leave" is the member's answer, and the first answer is final
+ * (TarotLeaveConfirm's twin). Stay used to close the sheet while the row was
+ * written, and the held step still ran when it landed; after the insert
+ * "Leave without saving" came back while the save still awaited the ad and
+ * the rate prompt, and a tap on it went to the spreads before the held step
+ * ran too. The sheet spins through the whole save now, holds both answers,
+ * and hears no Stay; the step runs once, after it.
+ */
+describe('CartomancySection: "Save and leave" is final until the save has answered', { timeout: 20_000 }, () => {
+  it('while the row is written, Stay and "Leave" do nothing; the tab is taken once it lands', async () => {
+    const insert = held<{ ok: true; data: { id: string } }>();
+    insertReturningId.mockReturnValue(insert.promise);
+    await revealWithAi({ shell: true });
+    tapTab('horoscope');
+    const sheet = await findLeaveSheet();
+    answer(sheet, 'save');
+    expect(answersOn(sheet).save).toBeDisabled();
+    expect(answersOn(sheet).leave).toBeDisabled();
+
+    const shell = backOnTable();
+    tryToStay(sheet, shell);
+    fireEvent.click(answersOn(sheet).leave);
+    await pastExit();
+    expect(leaveSheet()).not.toBeNull();
+    expect(path()).toBe('/cartomancy/reading');
+    expect(onHome()).toBeNull();
+
+    await act(async () => insert.release({ ok: true, data: { id: 'saved-1' } }));
+    await waitFor(() => expect(path()).toBe('/horoscope'));
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+    expect(shell.navigateBack).not.toHaveBeenCalled();
+  });
+
+  it('after the insert, while the ad and the rate prompt are awaited, it still holds; then one step, Back’s own', async () => {
+    const prompt = held<number>();
+    vi.mocked(ratePromptService.incrementPositiveActions).mockReturnValueOnce(prompt.promise);
+    await revealWithAi();
+    const shell = backOnTable();
+    pressBack(shell);
+    const sheet = await findLeaveSheet();
+    answer(sheet, 'save');
+    // The row is written; the save is still waiting on the rate prompt.
+    await waitFor(() => expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1));
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+    expect(answersOn(sheet).save).toBeDisabled();
+    expect(answersOn(sheet).leave).toBeDisabled();
+
+    fireEvent.click(answersOn(sheet).leave);
+    tryToStay(sheet, shell);
+    await pastExit();
+    expect(leaveSheet()).not.toBeNull();
+    expect(onHome()).toBeNull();
+    expect(shell.navigateBack).not.toHaveBeenCalled();
+
+    await act(async () => prompt.release(1));
+    await waitFor(() => expect(shell.navigateBack).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    // One step: Back's. The section did not go to its spreads as well.
+    expect(onHome()).toBeNull();
+    expect(shell.goHome).not.toHaveBeenCalled();
+    expect(shell.exitApp).not.toHaveBeenCalled();
+  });
+
+  it('a save that fails lets go of the answer: the sheet closes as before, and asked again, Stay and "Leave" answer', async () => {
+    insertReturningId.mockResolvedValueOnce({ ok: false, error: 'offline' });
+    await revealWithAi();
+    startOver();
+    answer(await findLeaveSheet(), 'save');
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    expect(screen.getByText('落ち着いて進みましょう。')).toBeInTheDocument();
+
+    startOver();
+    const again = await findLeaveSheet();
+    expect(answersOn(again).save).toBeEnabled();
+    expect(answersOn(again).leave).toBeEnabled();
+    fireEvent.click(within(again).getByRole('button', { name: i18n.t('common:actions.close') }));
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+
+    startOver();
+    answer(await findLeaveSheet(), 'leave');
+    await waitFor(() => expect(onHome()).not.toBeNull());
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * The sheet was drawn in the shell's <main> (a stacking context at z-10),
+ * under the More menu App mounts beside it; a link opened from outside the
+ * app with the menu open asked from beneath it, and one Escape closed the
+ * question and the menu together. The sheet is drawn on <body> now, above
+ * the menu, and only the one on top answers Escape.
+ */
+describe('CartomancySection: the question is asked above everything open', { timeout: 20_000 }, () => {
+  it('a link with the More menu open asks above the menu, outside <main>; Escape answers the question, the next closes the menu', async () => {
+    await revealWithAi({ shell: true });
+    tapTab('more');
+    const menu = document.querySelector('[data-back-closes]')!;
+    expect(menu).not.toBeNull();
+
+    openLink('https://tarotlife.app/horoscope/leo');
+    const sheet = await findLeaveSheet();
+    expect(sheet.closest('main')).toBeNull();
+    // Drawn after the menu, at its z or above: on top of it.
+    expect(menu.compareDocumentPosition(sheet) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(Number(sheet.style.zIndex)).toBeGreaterThanOrEqual(50);
+
+    // Escape is the question's (Stay): the link is dropped, the menu stays.
+    pressEscape();
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    expect(moreMenuOpen()).toBe(true);
+    expect(path()).toBe('/cartomancy/reading');
+    expect(screen.getByText('落ち着いて進みましょう。')).toBeInTheDocument();
+
+    pressEscape();
+    expect(moreMenuOpen()).toBe(false);
+    expect(insertReturningId).not.toHaveBeenCalled();
   });
 });

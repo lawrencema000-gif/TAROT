@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { Trans } from 'react-i18next';
 import { Check, X, Loader2 } from 'lucide-react';
 import { PageHeader } from '../components/ui';
 import { supabase } from '../lib/supabase';
@@ -51,13 +52,17 @@ export function UnsubscribePage() {
     return () => { cancelled = true; };
   }, [token]);
 
+  // The page itself, too: it was English in all four. The link home reads as
+  // the public shell's footer link beneath it does, to the same place.
+  const backToArcana = t('publicNav.backToArcana', { defaultValue: 'Back to Arcana' });
+
   return (
     <div className="max-w-2xl mx-auto min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="max-w-md w-full text-center">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 text-mystic-400 animate-spin" />
-            <p className="text-sm text-mystic-400">Processing your request…</p>
+            <p className="text-sm text-mystic-400">{t('unsubscribe.processing', { defaultValue: 'Processing your request…' })}</p>
           </div>
         )}
 
@@ -69,18 +74,24 @@ export function UnsubscribePage() {
             <PageHeader
               align="center"
               className="mb-4"
-              title="You're unsubscribed"
+              title={t('unsubscribe.doneTitle', { defaultValue: 'You’re unsubscribed' })}
               subtitle={
                 email ? (
-                  <>
-                    <span className="text-mystic-200">{email}</span> will no longer receive Arcana emails.
-                  </>
+                  <Trans
+                    t={t}
+                    i18nKey="unsubscribe.doneBody"
+                    defaults="<email>{{email}}</email> will no longer receive Arcana emails."
+                    values={{ email }}
+                    components={{ email: <span className="text-mystic-200" /> }}
+                  />
                 ) : undefined
               }
             />
-            <p className="text-caption text-mystic-500 mb-6">If this was a mistake, just sign up again at any time.</p>
+            <p className="text-caption text-mystic-500 mb-6">
+              {t('unsubscribe.mistake', { defaultValue: 'If this was a mistake, just sign up again at any time.' })}
+            </p>
             <Link to="/" className="inline-flex items-center min-h-[44px] px-5 py-2 rounded-control border border-mystic-700 text-mystic-200 hover:text-mystic-100 hover:border-gold/40 transition-colors no-underline text-sm">
-              Back to Arcana
+              {backToArcana}
             </Link>
           </div>
         )}
@@ -90,11 +101,11 @@ export function UnsubscribePage() {
             <PageHeader
               align="center"
               className="mb-6"
-              title="Already unsubscribed"
-              subtitle="No further emails will be sent."
+              title={t('unsubscribe.alreadyTitle', { defaultValue: 'Already unsubscribed' })}
+              subtitle={t('unsubscribe.alreadyBody', { defaultValue: 'No further emails will be sent.' })}
             />
             <Link to="/" className="inline-flex items-center min-h-[44px] px-5 py-2 rounded-control border border-mystic-700 text-mystic-200 hover:text-mystic-100 no-underline text-sm">
-              Back to Arcana
+              {backToArcana}
             </Link>
           </div>
         )}
@@ -107,11 +118,14 @@ export function UnsubscribePage() {
             <PageHeader
               align="center"
               className="mb-6"
-              title="Link not recognised"
-              subtitle="This unsubscribe link looks invalid or has expired. If you keep receiving emails you didn't expect, reply to one of them — we'll handle it manually."
+              title={t('unsubscribe.invalidTitle', { defaultValue: 'Link not recognised' })}
+              subtitle={t('unsubscribe.invalidBody', {
+                defaultValue:
+                  'This unsubscribe link looks invalid or has expired. If you keep receiving emails you didn’t expect, reply to one of them — we’ll handle it manually.',
+              })}
             />
             <Link to="/" className="inline-flex items-center min-h-[44px] px-5 py-2 rounded-control border border-mystic-700 text-mystic-200 hover:text-mystic-100 no-underline text-sm">
-              Back to Arcana
+              {backToArcana}
             </Link>
           </div>
         )}

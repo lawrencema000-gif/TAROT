@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { render, screen, act, waitFor, fireEvent, cleanup, within } from '@testing-library/react';
-import type { ReactElement } from 'react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect, type ReactElement } from 'react';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 /*
  * p9 QU1 R-c: an AI interpretation bought for a reading on the table was
@@ -83,8 +83,10 @@ vi.mock('../../../lib/supabase', () => {
 import i18n from '../../../i18n/config';
 import { TarotSection } from '../TarotSection';
 import { BottomNav } from '../../layout/BottomNav';
+import { Sheet } from '../../ui/Sheet';
 import { UIProvider, useUI } from '../../../context/UIContext';
-import { androidBack, type AndroidBackShell } from '../../../App';
+import { ratePromptService } from '../../../services/ratePrompt';
+import { androidBack, openDeepLink, type AndroidBackShell } from '../../../App';
 
 const tt = (key: string, opts?: Record<string, unknown>) => i18n.t(`app:${key}`, opts);
 const AI_TEXT = '1) 概要\n道が開けつつあります。\n\n2) 結び\n落ち着いて進みましょう。';
@@ -100,15 +102,55 @@ function Path() {
   return <output data-testid="path">{useLocation().pathname}</output>;
 }
 
-/** The Readings page in the app's shell: its route, the bottom bar; any other path is a blank page. */
+/** The header's Saved button, in <main> with the page, as App's Header is. */
+function SavedButton() {
+  const { openOverlay } = useUI();
+  return (
+    <button type="button" onClick={() => openOverlay('saved')}>
+      Open Saved
+    </button>
+  );
+}
+
+/** The shell's Saved overlay, beside <main> as App mounts it. */
+function SavedOverlay() {
+  const { activeOverlay, closeOverlay } = useUI();
+  return (
+    <Sheet open={activeOverlay === 'saved'} onClose={closeOverlay} title="Saved">
+      <p>Saved readings</p>
+    </Sheet>
+  );
+}
+
+/** App's appUrlOpen listener: a link opened from outside the app goes to openDeepLink with the shell's own hands. */
+const appUrlOpen: { listener: ((url: string) => void) | null } = { listener: null };
+function LinkListener() {
+  const { closeOverlay, setActiveTab } = useUI();
+  const navigate = useNavigate();
+  useEffect(() => {
+    appUrlOpen.listener = (url) => openDeepLink(url, { closeOverlay, navigate, setActiveTab });
+    return () => {
+      appUrlOpen.listener = null;
+    };
+  }, [closeOverlay, navigate, setActiveTab]);
+  return null;
+}
+const openLink = (url: string) => act(() => appUrlOpen.listener?.(url));
+
+/** The Readings page in the app's shell: its route in <main>, the bottom bar, the Saved overlay; any other path is a blank page. */
 const inShell = (section: ReactElement) => (
   <MemoryRouter initialEntries={['/readings']}>
     <UIProvider>
-      <Routes>
-        <Route path="/readings" element={section} />
-        <Route path="*" element={null} />
-      </Routes>
+      <main className="relative z-10">
+        <SavedButton />
+        <Routes>
+          <Route path="/readings" element={section} />
+          <Route path="*" element={null} />
+        </Routes>
+      </main>
       <Bar />
+      <SavedOverlay />
+      <LinkListener />
       <Path />
     </UIProvider>
   </MemoryRouter>
@@ -156,11 +198,40 @@ function backOnReadings(): AndroidBackShell {
 }
 const pressBack = (shell: AndroidBackShell) => act(() => androidBack(shell));
 
+/** A request held on the wire until the test lets it answer. */
+function held<T>() {
+  let release!: (value: T) => void;
+  const promise = new Promise<T>((resolve) => {
+    release = resolve;
+  });
+  return { promise, release };
+}
+
+/** Longer than a sheet's exit (180 ms): a sheet told to close has left the page by then. */
+const pastExit = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 250)));
+
+/** The sheet's two answers. */
+const answersOn = (sheet: HTMLElement) => ({
+  save: within(sheet).getByRole('button', { name: tt('readings.revealView.leaveConfirm.save') }),
+  leave: within(sheet).getByRole('button', { name: tt('readings.revealView.leaveConfirm.leave') }),
+});
+
+/** Every way the sheet hears "Stay": its close button, the scrim, Escape, Android Back (which sends Escape). */
+function tryToStay(sheet: HTMLElement, shell: AndroidBackShell) {
+  fireEvent.click(within(sheet).getByRole('button', { name: i18n.t('common:actions.close') }));
+  fireEvent.click(sheet.querySelector(':scope > [aria-hidden="true"]')!);
+  act(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+  });
+  pressBack(shell);
+}
+
 beforeEach(async () => {
   cleanup();
   insertReturningId.mockReset().mockResolvedValue({ ok: true, data: { id: 'saved-1' } });
   updateInterpretation.mockReset().mockResolvedValue({ ok: true, data: null });
   generatePremiumReading.mockReset();
+  vi.mocked(ratePromptService.incrementPositiveActions).mockReset().mockResolvedValue(1);
   await act(async () => { await i18n.changeLanguage('ja'); });
 });
 afterAll(async () => {
@@ -351,5 +422,143 @@ describe('TarotSection: a tab on the bottom bar and Android Back ask the same qu
     await waitFor(() => expect(path()).toBe('/'));
     expect(leaveSheet()).toBeNull();
     expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * "Save and leave" is the member's answer, and the first answer is final.
+ * Stay used to close the sheet while the row was written, and the step it
+ * held still ran when the row landed; after the insert the sheet woke up
+ * again — "Leave without saving" enabled — while the save still awaited the
+ * ad and the rate prompt, so a tap on it went to the spreads and the held
+ * step ran on top. The sheet now spins through the whole save, holds both
+ * answers, and hears no Stay; the step runs once, after it.
+ */
+describe('TarotSection: "Save and leave" is final until the save has answered', { timeout: 20_000 }, () => {
+  it('while the row is written, Stay and "Leave" do nothing; the tab is taken once it lands', async () => {
+    const insert = held<{ ok: true; data: { id: string } }>();
+    insertReturningId.mockReturnValue(insert.promise);
+    await revealWithAi({ shell: true });
+    tapTab('horoscope');
+    const sheet = await findLeaveSheet();
+    answer(sheet, 'save');
+    expect(answersOn(sheet).save).toBeDisabled();
+    expect(answersOn(sheet).leave).toBeDisabled();
+
+    const shell = backOnReadings();
+    tryToStay(sheet, shell);
+    fireEvent.click(answersOn(sheet).leave);
+    await pastExit();
+    expect(leaveSheet()).not.toBeNull();
+    expect(path()).toBe('/readings');
+    expect(onHome()).toBeNull();
+
+    await act(async () => insert.release({ ok: true, data: { id: 'saved-1' } }));
+    await waitFor(() => expect(path()).toBe('/horoscope'));
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+    expect(shell.goHome).not.toHaveBeenCalled();
+  });
+
+  it('after the insert, while the ad and the rate prompt are awaited, it still holds; then one step, Back’s own', async () => {
+    const prompt = held<number>();
+    vi.mocked(ratePromptService.incrementPositiveActions).mockReturnValueOnce(prompt.promise);
+    await revealWithAi();
+    const shell = backOnReadings();
+    pressBack(shell);
+    const sheet = await findLeaveSheet();
+    answer(sheet, 'save');
+    // The row is written; the save is still waiting on the rate prompt.
+    await waitFor(() => expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1));
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+    expect(answersOn(sheet).save).toBeDisabled();
+    expect(answersOn(sheet).leave).toBeDisabled();
+
+    fireEvent.click(answersOn(sheet).leave);
+    tryToStay(sheet, shell);
+    await pastExit();
+    expect(leaveSheet()).not.toBeNull();
+    expect(onHome()).toBeNull();
+    expect(shell.goHome).not.toHaveBeenCalled();
+
+    await act(async () => prompt.release(1));
+    await waitFor(() => expect(shell.goHome).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    // One step: Back's. The section did not go to its spreads as well.
+    expect(onHome()).toBeNull();
+    expect(shell.navigateBack).not.toHaveBeenCalled();
+    expect(shell.exitApp).not.toHaveBeenCalled();
+  });
+
+  it('a save that fails lets go of the answer: the sheet closes as before, and asked again, Stay and "Leave" answer', async () => {
+    insertReturningId.mockResolvedValueOnce({ ok: false, error: 'offline' });
+    await revealWithAi();
+    startOver();
+    answer(await findLeaveSheet(), 'save');
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    expect(screen.getByText('道が開けつつあります。')).toBeInTheDocument();
+
+    startOver();
+    const again = await findLeaveSheet();
+    expect(answersOn(again).save).toBeEnabled();
+    expect(answersOn(again).leave).toBeEnabled();
+    fireEvent.click(within(again).getByRole('button', { name: i18n.t('common:actions.close') }));
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+
+    startOver();
+    answer(await findLeaveSheet(), 'leave');
+    await waitFor(() => expect(onHome()).not.toBeNull());
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * The page is drawn in the shell's <main>, a stacking context of its own
+ * (z-10), and the sheet was drawn there too: under the Search, Saved or
+ * Settings sheet and the More menu, which App mounts beside <main>. A link
+ * opened from outside the app asked from under the open Saved sheet — a
+ * question the member could not see, which the first Android Back answered
+ * with Stay: the link was dropped and the overlay stayed. The overlay closes
+ * before the link asks now, and the sheet is drawn on <body>, above it all.
+ */
+describe('TarotSection: the question is asked above everything open', { timeout: 20_000 }, () => {
+  it('the sheet is drawn on <body>, outside the page’s <main>', async () => {
+    await revealWithAi({ shell: true });
+    tapTab('home');
+    const sheet = await findLeaveSheet();
+    expect(sheet.closest('main')).toBeNull();
+    expect(sheet.parentElement).toBe(document.body);
+  });
+
+  it('a link opened from outside the app closes the Saved sheet first, then asks; "Leave" takes the link', async () => {
+    await revealWithAi({ shell: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Open Saved' }));
+    await screen.findByRole('dialog', { name: 'Saved' });
+
+    openLink('https://tarotlife.app/horoscope/leo');
+    const sheet = await findLeaveSheet();
+    // The Saved sheet has gone, and the question is the only thing up.
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Saved' })).toBeNull());
+    expect(sheet.closest('main')).toBeNull();
+    expect(path()).toBe('/readings');
+
+    answer(sheet, 'leave');
+    await waitFor(() => expect(path()).toBe('/horoscope'));
+    expect(insertReturningId).not.toHaveBeenCalled();
+  });
+
+  it('a link under the Saved sheet, then Android Back: Back answers the question on screen (Stay) and nothing is left open', async () => {
+    await revealWithAi({ shell: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Open Saved' }));
+    await screen.findByRole('dialog', { name: 'Saved' });
+
+    openLink('https://tarotlife.app/reading/abc123');
+    await findLeaveSheet();
+    const shell = backOnReadings();
+    pressBack(shell);
+    await waitFor(() => expect(leaveSheet()).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Saved' })).toBeNull());
+    expect(path()).toBe('/readings');
+    expect(screen.getByText('道が開けつつあります。')).toBeInTheDocument();
+    expect(shell.goHome).not.toHaveBeenCalled();
   });
 });

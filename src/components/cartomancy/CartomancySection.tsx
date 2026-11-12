@@ -164,6 +164,17 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * those go home.
    */
   const pendingLeaveRef = useRef<(() => void) | null>(null);
+  /**
+   * The sheet's "Save and leave" is running, and the member's first answer
+   * is final: until the save has answered — the insert, then the ad and the
+   * rate prompt it still awaits — the sheet spins with both its actions
+   * held, and Stay does nothing (TarotSection's guard). Stay used to close
+   * the sheet while the step still ran once the row landed, and "Leave
+   * without saving" came back after the insert, so a tap on it took a second
+   * step. The ref is the guard, the state its face.
+   */
+  const [leaving, setLeaving] = useState(false);
+  const leavingRef = useRef(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const { sharing, shareOnce } = useShareOnce();
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
@@ -387,12 +398,21 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * The sheet's "Save and leave": the way out once the row is written; a
    * failed save stays (its toast says so). A section that has gone by then
    * (left another way while the row was written) takes no second step.
+   * Nothing else on the sheet answers until the save has (leavingRef).
    */
   const saveAndLeave = async () => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    setLeaving(true);
     const leave = takeLeave();
-    const saved = await handleSaveReading();
-    setConfirmLeave(false);
-    if (saved && mountedRef.current) leave();
+    try {
+      const saved = await handleSaveReading();
+      setConfirmLeave(false);
+      if (saved && mountedRef.current) leave();
+    } finally {
+      leavingRef.current = false;
+      setLeaving(false);
+    }
   };
 
   const handleDraw = () => {
@@ -875,13 +895,16 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       <LeaveReadingSheet
         open={confirmLeave && view === 'reveal'}
         inLibrary={aiInLibrary}
-        saving={saving}
+        // The whole of "Save and leave", not only its insert (`saving`).
+        saving={saving || leaving}
         onStay={() => {
+          if (leavingRef.current) return;
           pendingLeaveRef.current = null;
           setConfirmLeave(false);
         }}
         onSaveAndLeave={() => void saveAndLeave()}
         onLeave={() => {
+          if (leavingRef.current) return;
           const leave = takeLeave();
           setConfirmLeave(false);
           leave();

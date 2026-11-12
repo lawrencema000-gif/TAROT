@@ -13268,6 +13268,14 @@
   },
   "unsubscribe": {
     "metaTitle": "구독 취소",
-    "metaDescription": "Arcana 뉴스레터 구독 취소를 확인해요."
+    "metaDescription": "Arcana 뉴스레터 구독 취소를 확인해요.",
+    "processing": "요청을 처리하는 중이에요…",
+    "doneTitle": "구독을 취소했어요",
+    "doneBody": "<email>{{email}}</email> 주소로 더 이상 Arcana 이메일이 오지 않아요.",
+    "mistake": "실수였다면 언제든 다시 구독하면 돼요.",
+    "alreadyTitle": "이미 구독을 취소했어요",
+    "alreadyBody": "앞으로 이메일을 보내지 않아요.",
+    "invalidTitle": "링크를 확인할 수 없어요",
+    "invalidBody": "이 구독 취소 링크가 유효하지 않거나 만료된 것 같아요. 예상하지 못한 이메일이 계속 온다면 그중 한 통에 답장해 주세요. 직접 처리해 드릴게요."
   }
 }

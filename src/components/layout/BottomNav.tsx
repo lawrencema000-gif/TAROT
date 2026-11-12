@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3, Orbit, CalendarCheck, Star } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon, PlayingCardIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
-import { isMoreGroupRoute } from '../../context/UIContext';
+import { isMoreGroupRoute, isTabRoot, resolveTab } from '../../context/UIContext';
+import { leaveOrAsk } from '../../context/leaveGuard';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -97,16 +98,37 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   // (People, Charts, the social rooms…), flag on or off.
   const isMoreActive = (activeTab !== null && moreTabIds.includes(activeTab)) || isMoreGroupRoute(pathname);
 
-  const handleMoreItemClick = (tab: Tab) => {
-    onTabChange(tab);
+  /**
+   * A tab, or a route from the More menu. A tap that leaves the page on
+   * screen asks first when the page would lose something by it — a reading
+   * with a bought AI interpretation it has not saved (leaveGuard) — and goes
+   * once the member says so; the bar used to leave such a reading without a
+   * word. A tap on the page already on screen leaves nothing, and goes at once.
+   */
+  // Escape closes the menu, and Android Back with it: androidBack sends
+  // Escape to whatever is on top, and finds the menu by data-back-closes.
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [moreOpen]);
+
+  const goTo = (onScreen: boolean, go: () => void) => {
     setMoreOpen(false);
+    if (onScreen) go();
+    else leaveOrAsk(go);
   };
+  const selectTab = (tab: Tab) => goTo(isTabRoot(pathname) && resolveTab(pathname) === tab, () => onTabChange(tab));
+  const openRoute = (route: string) => goTo(pathname === route, () => navigate(route));
 
   return (
     <>
       {/* More menu overlay */}
       {moreOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div data-back-closes className="fixed inset-0 z-50 flex items-end justify-center">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-mystic-950/70"
@@ -179,7 +201,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     return (
                       <button
                         key={item.id}
-                        onClick={() => { setMoreOpen(false); navigate(item.route); }}
+                        onClick={() => openRoute(item.route)}
                         className={baseClass}
                       >
                         {inner}
@@ -190,7 +212,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   return (
                     <button
                       key={item.id}
-                      onClick={() => handleMoreItemClick(item.id)}
+                      onClick={() => selectTab(item.id)}
                       className={baseClass}
                     >
                       {inner}
@@ -223,10 +245,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               return (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setMoreOpen(false);
-                    onTabChange(tab.id);
-                  }}
+                  onClick={() => selectTab(tab.id)}
                   role="tab"
                   aria-selected={isActive}
                   aria-label={t(tab.labelKey)}

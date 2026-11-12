@@ -36,13 +36,22 @@ export function SpreadDetailPage() {
   const { user } = useAuth();
   const { overlay } = useContentOverlay('spreads');
   const spread = slug ? getSpreadBySlug(slug) : null;
+  const name = spread ? t(`spreads.catalog.${spread.slug}.name`, { defaultValue: spread.name }) : '';
+  // The tab title and description in the reader's language, the spread named
+  // and described as the catalogue has it (spreads.catalog.<slug>); they were
+  // English in all four. The JSON-LD below stays English.
+  const metaTitle = spread ? t('spreadDetail.metaTitle', { name, defaultValue: '{{name}} Tarot Spread — Position Meanings' }) : '';
+  const metaDescription = spread
+    ? t('spreadDetail.metaDescription', {
+        description: t(`spreads.catalog.${spread.slug}.description`, { defaultValue: spread.shortDescription }),
+        n: spread.cardCount,
+        defaultValue: '{{description}} {{n}}-card layout with position-by-position interpretation.',
+      })
+    : '';
 
   useEffect(() => {
     if (!spread) return;
-    setPageMeta(
-      `${spread.name} Tarot Spread — Position Meanings`,
-      `${spread.shortDescription} ${spread.cardCount}-card layout with position-by-position interpretation.`,
-    );
+    setPageMeta(metaTitle, metaDescription);
     removeJsonLd();
     const url = `https://tarotlife.app/spreads/${spread.slug}`;
     addJsonLd({
@@ -79,7 +88,11 @@ export function SpreadDetailPage() {
         { '@type': 'ListItem', position: 3, name: spread.name, item: url },
       ],
     });
-    window.scrollTo(0, 0);
+  }, [spread, metaTitle, metaDescription]);
+
+  // To the top for a new spread, not when the head is rewritten in another language.
+  useEffect(() => {
+    if (spread) window.scrollTo(0, 0);
   }, [spread]);
 
   if (!spread) {
@@ -101,7 +114,6 @@ export function SpreadDetailPage() {
   const s = spread.slug;
   // The prose in the reader's language; the English stands for anything the overlay lacks.
   const prose = ctEntry(spread, overlay, s, ['longDescription', 'bestFor', 'whenToUse', 'history', 'exampleQuestions']);
-  const name = t(`spreads.catalog.${s}.name`, { defaultValue: spread.name });
 
   const related = spread.relatedSpreads
     .map((r) => tarotSpreads.find((x) => x.slug === r))

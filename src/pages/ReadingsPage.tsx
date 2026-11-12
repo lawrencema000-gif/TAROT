@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useEffect, type ComponentType } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { leaveOrAsk } from '../context/leaveGuard';
 import type { CustomSpreadInput } from '../components/readings/TarotSection';
 import { Sun, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft } from 'lucide-react';
 import { TarotCardIcon, PlayingCardIcon } from '../components/ui/NavIcons';
@@ -150,13 +151,19 @@ export function ReadingsPage() {
 
   const tabLabel = (tab: TabDef) => (tab.defaultLabel ? t(tab.labelKey, { defaultValue: tab.defaultLabel }) : t(tab.labelKey));
 
+  // Another tab unmounts the section on screen: a reveal with a bought AI
+  // interpretation it has not saved asks first (leaveGuard), as the bottom
+  // bar and Android Back do. The tab already on screen leaves nothing.
   const handleTabClick = (tab: TabDef) => {
-    if (tab.id === 'cartomancy') {
-      // The playing-card section has its own header, hub and library.
-      navigate('/cartomancy');
-      return;
-    }
-    setActiveTab(tab.id);
+    if (tab.id === activeTab) return;
+    leaveOrAsk(() => {
+      if (tab.id === 'cartomancy') {
+        // The playing-card section has its own header, hub and library.
+        navigate('/cartomancy');
+        return;
+      }
+      setActiveTab(tab.id);
+    });
   };
 
   const openSystem = (system: SystemDef) => {

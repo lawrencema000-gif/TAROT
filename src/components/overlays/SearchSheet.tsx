@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { leaveOrAsk } from '../../context/leaveGuard';
 import { Search, BookOpen, Brain, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { HoroscopeWheelIcon, PlayingCardIcon, TarotCardIcon } from '../ui/NavIcons';
@@ -134,7 +135,10 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
   // A destination on the page already open (an entry or the prompts while on
   // the Journal) replaces this history entry rather than adding one, so Back
   // leaves the page in one press.
-  const go = (path: string, state?: object) => navigate(path, { replace: path === pathname, ...(state ? { state } : {}) });
+  // Leaving the page asks first when a reading on it would lose a bought AI
+  // interpretation (leaveGuard).
+  const go = (path: string, state?: object) =>
+    leaveOrAsk(() => navigate(path, { replace: path === pathname, ...(state ? { state } : {}) }));
 
   const openResult = (result: SearchResult) => {
     setRecent(rememberSearch(userId, q));

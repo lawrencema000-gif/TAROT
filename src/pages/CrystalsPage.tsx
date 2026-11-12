@@ -26,9 +26,14 @@ export function CrystalsPage() {
   const { overlay, ready } = useLearnOverlay('crystals');
 
   useEffect(() => {
+    // The tab title and description in the reader's language; they were
+    // English in all four. The JSON-LD stays English.
     setPageMeta(
-      'Crystal Meanings — 30 Stones Explained',
-      `Comprehensive crystal reference: 30 stones with metaphysical properties, chakra associations, Mohs hardness, and tarot connections.`,
+      t('learn.crystals.seo.hubTitle', { defaultValue: 'Crystal Meanings — {{n}} Stones Explained', n: crystalEntries.length }),
+      t('learn.crystals.seo.hubDesc', {
+        defaultValue: 'Comprehensive crystal reference: {{n}} stones with metaphysical properties, chakra associations, Mohs hardness, and tarot connections.',
+        n: crystalEntries.length,
+      }),
     );
     removeJsonLd();
     addJsonLd({
@@ -57,7 +62,7 @@ export function CrystalsPage() {
         { '@type': 'ListItem', position: 2, name: 'Crystals', item: 'https://tarotlife.app/crystals' },
       ],
     });
-  }, []);
+  }, [t]);
 
   const sep = t('learn.listSeparator', { defaultValue: ', ' });
 

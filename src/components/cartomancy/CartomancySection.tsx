@@ -8,6 +8,7 @@ import { getLocale } from '../../i18n/config';
 import { localizeCartoSpread, localizePlayingCard, useCartomancyCorpus } from '../../i18n/localizePlayingCard';
 import { useAuth } from '../../context/AuthContext';
 import { useGamification } from '../../context/GamificationContext';
+import { useLeaveGuard } from '../../context/leaveGuard';
 import { tarotReadings } from '../../dal';
 import { combinationHitsToLines, generatePremiumReading, playingCardToReadingCard } from '../../services/readingInterpretation';
 import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
@@ -150,8 +151,19 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * the side of saving (TarotSection reads it the same way).
    */
   const [aiInLibrary, setAiInLibrary] = useState(false);
-  /** "Start a new reading" or Back on an unsaved table with a bought interpretation: asked first (p9 QZ-4). */
+  /**
+   * "Start a new reading" or Back on an unsaved table with a bought
+   * interpretation: asked first (p9 QZ-4). So are a tab on the bottom bar
+   * and Android Back (useLeaveGuard below).
+   */
   const [confirmLeave, setConfirmLeave] = useState(false);
+  /**
+   * The step the sheet holds for a way out of the page — the tab that was
+   * tapped, Android Back's step — taken on "Leave" or a saved "Save and
+   * leave". Null when the reveal's own Back or "Start a new reading" asked:
+   * those go home.
+   */
+  const pendingLeaveRef = useRef<(() => void) | null>(null);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const { sharing, shareOnce } = useShareOnce();
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
@@ -175,6 +187,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
 
   const shuffleTimerRef = useRef<number | null>(null);
   const rewardedRef = useRef(false);
+  /** The section is on screen: a "Save and leave" that lands after it has gone takes no step. */
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Re-read the corpus when it lands: the section stays mounted through a
   // language change (CartomancyCorpusGate holds only the first mount), so the
@@ -321,6 +342,13 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     setView('home');
   };
 
+  /** Leaving now would throw away a bought AI interpretation: the table is not saved, nor being saved. */
+  const leavingLosesAi = () => {
+    const tableId = readingIdRef.current;
+    const unsaved = !isSaved && !savedIdRef.current && !(tableId !== null && savingRef.current === tableId);
+    return view === 'reveal' && !!aiInterpretation && unsaved;
+  };
+
   /**
    * The reveal's "Start a new reading" and Back. A bought AI interpretation
    * on a table that is not saved (nor being saved) went with one tap; the
@@ -328,20 +356,43 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * where the text is.
    */
   const leaveReveal = () => {
-    const tableId = readingIdRef.current;
-    const unsaved = !isSaved && !savedIdRef.current && !(tableId !== null && savingRef.current === tableId);
-    if (aiInterpretation && unsaved) {
+    if (leavingLosesAi()) {
+      pendingLeaveRef.current = null;
       setConfirmLeave(true);
       return;
     }
     goHome();
   };
 
-  /** The sheet's "Save and leave": home once the row is written; a failed save stays (its toast says so). */
+  /*
+   * The shell's ways out — a tab on the bottom bar, Android Back — left the
+   * same table without a word. They ask the same question now, and the
+   * sheet holds their step until it is answered.
+   */
+  useLeaveGuard((leave) => {
+    if (!leavingLosesAi()) return false;
+    pendingLeaveRef.current = leave;
+    setConfirmLeave(true);
+    return true;
+  });
+
+  /** The way out the sheet was asked about, let go of: the step it held, or home. */
+  const takeLeave = (): (() => void) => {
+    const leave = pendingLeaveRef.current ?? goHome;
+    pendingLeaveRef.current = null;
+    return leave;
+  };
+
+  /**
+   * The sheet's "Save and leave": the way out once the row is written; a
+   * failed save stays (its toast says so). A section that has gone by then
+   * (left another way while the row was written) takes no second step.
+   */
   const saveAndLeave = async () => {
+    const leave = takeLeave();
     const saved = await handleSaveReading();
     setConfirmLeave(false);
-    if (saved) goHome();
+    if (saved && mountedRef.current) leave();
   };
 
   const handleDraw = () => {
@@ -825,11 +876,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
         open={confirmLeave && view === 'reveal'}
         inLibrary={aiInLibrary}
         saving={saving}
-        onStay={() => setConfirmLeave(false)}
+        onStay={() => {
+          pendingLeaveRef.current = null;
+          setConfirmLeave(false);
+        }}
         onSaveAndLeave={() => void saveAndLeave()}
         onLeave={() => {
+          const leave = takeLeave();
           setConfirmLeave(false);
-          goHome();
+          leave();
         }}
       />
 

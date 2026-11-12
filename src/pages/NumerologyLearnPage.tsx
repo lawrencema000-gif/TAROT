@@ -27,9 +27,13 @@ export function NumerologyLearnPage() {
   const { overlay, ready } = useLearnOverlay('numerology');
 
   useEffect(() => {
+    // The tab title and description in the reader's language; they were
+    // English in all four. The JSON-LD stays English.
     setPageMeta(
-      'Numerology — Life Path Numbers Explained',
-      `Complete numerology reference: 9 core numbers + 3 master numbers (11, 22, 33). Pythagorean tradition, life-path meanings, tarot correspondences.`,
+      t('learn.numerology.seo.hubTitle', { defaultValue: 'Numerology — Life Path Numbers Explained' }),
+      t('learn.numerology.seo.hubDesc', {
+        defaultValue: 'Complete numerology reference: 9 core numbers + 3 master numbers (11, 22, 33). Pythagorean tradition, life-path meanings, tarot correspondences.',
+      }),
     );
     removeJsonLd();
     addJsonLd({
@@ -58,7 +62,7 @@ export function NumerologyLearnPage() {
         { '@type': 'ListItem', position: 2, name: 'Numerology', item: 'https://tarotlife.app/numerology' },
       ],
     });
-  }, []);
+  }, [t]);
 
   return (
     <Page spacing="lg">

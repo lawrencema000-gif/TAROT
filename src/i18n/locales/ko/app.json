@@ -11471,7 +11471,9 @@
     "lede": "십이궁, 십사주성, 사화 — 음력 생년월일과 시진으로 배치해요.",
     "noTimeNote": "출생 시각이 없으면 정오(午時)로 가정해요. 별의 배치는 그대로 맞지만, 명궁은 달라질 수 있어요.",
     "lifePalaceIn": "명궁(命宮): {{branch}}",
-    "lunarDate": "음력 {{date}}"
+    "lunarDate": "음력 {{date}}",
+    "metaTitle": "자미두수 명반",
+    "metaDescription": "내 자미두수 명반을 확인해 보세요. 십이궁, 십사주성, 사화를 정확한 음력으로 계산해요."
   },
   "mansions": {
     "title": "이십팔수",
@@ -11493,7 +11495,9 @@
     "nothingFavoured": "역서에 이날 길한 일로 기록된 것이 없어요 — 새로 시작하기보다 작게 지내는 날이에요.",
     "sukuyo": "일본의 宿曜道(스쿠요도) 전통은 다르게 세요 — 이어지는 날의 주기가 아니라 음력 생월과 생일을 기준으로요 — 그리고 당신의 수는 <gold>{{mansion}}</gold>예요. 둘 다 진짜 전통이에요. 조금 다른 질문에 답하기 때문에, 하나를 골라 드리기보다 따로 보여 드려요.",
     "sukuyoEyebrow": "스쿠요 · 일본식 풀이",
-    "seasonElement": "{{season}}, {{element}}"
+    "seasonElement": "{{season}}, {{element}}",
+    "metaTitle": "이십팔수(二十八宿) — 달이 지나가는 스물여덟 수",
+    "metaDescription": "달이 지나가는 하늘을 중국식으로 나눈 이십팔수예요. 오늘을 다스리는 수와 당신이 태어난 날의 수를 알려 줘요."
   },
   "dates": {
     "title": "좋은 날 고르기",
@@ -11517,7 +11521,9 @@
       "inauspiciousGeneral": "{{mansion}}宿는 凶宿(흉수)예요 — 대체로 불리한 날이고, 이 일에 관해 따로 기록된 것은 없어요",
       "yearClash": "그날이 당신의 연지와 충해요(沖太歲)"
     },
-    "exportFailed": "캘린더 파일을 저장하지 못했어요. 다시 시도해 주세요."
+    "exportFailed": "캘린더 파일을 저장하지 못했어요. 다시 시도해 주세요.",
+    "metaTitle": "길일 고르기 — 택일(擇日)",
+    "metaDescription": "결혼, 이사, 개업, 여행에 좋은 날을 이십팔수와 당신의 사주로 찾아요."
   },
   "celestial": {
     "needBirthDate": {
@@ -11990,7 +11996,9 @@
       "knight": "기사",
       "page": "페이지",
       "queen": "여왕"
-    }
+    },
+    "metaTitle": "거울 — 당신의 리딩 패턴",
+    "metaDescription": "타로 리딩을 모아 본 통계예요. 자주 나온 카드, 슈트 분포, 역방향 비율, 연속 기록을 보여 줘요."
   },
   "spreadDetail": {
     "notFound": "스프레드를 찾을 수 없어요",
@@ -12012,7 +12020,9 @@
     "quoted": "“{{text}}”",
     "related": "관련 스프레드",
     "signUpToRead": "가입하고 이 스프레드로 읽기",
-    "whenToUse": "쓰기 좋은 때"
+    "whenToUse": "쓰기 좋은 때",
+    "metaTitle": "{{name}} — 타로 스프레드 자리별 의미",
+    "metaDescription": "{{description}} {{n}}장 배치를 자리별로 풀이해요."
   },
   "chartSuite": {
     "eyebrow": "차트 라이브러리",
@@ -12275,7 +12285,8 @@
     "echoCount_one": "{{count}}명이 함께 빌어요",
     "echoCount_other": "{{count}}명이 함께 빌어요",
     "wishCount_one": "소원 {{count}}개",
-    "wishCount_other": "소원 {{count}}개"
+    "wishCount_other": "소원 {{count}}개",
+    "metaDescription": "모든 소원이 별이 되는, 함께 나누는 하늘이에요. 소원을 빌고, 다른 모두의 소원 곁에서 빛나는 모습을 지켜보세요."
   },
   "spreadBuilder": {
     "signInPrompt": "직접 만든 스프레드는 계정에 저장돼요.",
@@ -12808,7 +12819,9 @@
         "description": "내면 작업, 통합, 하이어 셀프의 안내.",
         "title": "영성과 섀도우"
       }
-    }
+    },
+    "metaTitle": "타로 스프레드 — 전체 모음",
+    "metaDescription": "타로 스프레드 종합 모음: 켈틱 크로스, 세 장 스프레드, 연애, 커리어, 달의 주기, 섀도우 워크 등. 자리별 의미까지 담았어요."
   },
   "share": {
     "youAnd": "당신과 {{name}}",
@@ -13103,7 +13116,10 @@
         "aspect": "각도"
       },
       "notFound": "항목을 찾을 수 없어요",
-      "backToHub": "점성술 항목 전체"
+      "backToHub": "점성술 항목 전체",
+      "seo": {
+        "entryTitle": "{{name}} — {{kind}}"
+      }
     },
     "numerology": {
       "title": "수비학",
@@ -13131,7 +13147,12 @@
       "lifePathEyebrow": "라이프 패스 수",
       "lifePathMasterEyebrow": "라이프 패스 수 (마스터)",
       "notFound": "숫자를 찾을 수 없어요",
-      "backToHub": "숫자 전체"
+      "backToHub": "숫자 전체",
+      "seo": {
+        "entryTitle": "{{name}} — 라이프 패스 수의 의미",
+        "hubTitle": "수비학 — 라이프 패스 수 해설",
+        "hubDesc": "수비학 총정리: 핵심 수 9개와 마스터 수 3개(11, 22, 33). 피타고라스 전통에 따른 라이프 패스의 의미와 타로 대응까지 담았어요."
+      }
     },
     "glossary": {
       "title": "용어집",
@@ -13153,7 +13174,12 @@
         "matches_other": "{{count}}개 일치"
       },
       "notFound": "용어를 찾을 수 없어요",
-      "backToHub": "용어 전체"
+      "backToHub": "용어 전체",
+      "seo": {
+        "entryTitle": "{{term}} — 용어 정의",
+        "hubTitle": "용어집 — 타로, 점성술, 수비학 용어",
+        "hubDesc": "타로, 점성술, 수비학, 영성, 점술에 걸친 용어 {{n}}개를 정의와 함께 담았어요."
+      }
     },
     "crystals": {
       "title": "크리스털",
@@ -13191,7 +13217,12 @@
       "kind": "크리스털",
       "mohs": "모스 {{value}}",
       "notFound": "크리스털을 찾을 수 없어요",
-      "backToHub": "크리스털 전체"
+      "backToHub": "크리스털 전체",
+      "seo": {
+        "entryTitle": "{{name}} — 의미, 속성, 활용법",
+        "hubTitle": "크리스털의 의미 — 원석 {{n}}종 해설",
+        "hubDesc": "크리스털 종합 가이드: 원석 {{n}}종의 형이상학적 속성, 차크라 대응, 모스 경도, 타로와의 연결까지 담았어요."
+      }
     },
     "enums": {
       "elements": {
@@ -13234,5 +13265,9 @@
   "authPage": {
     "metaTitle": "로그인",
     "metaDescription": "Arcana에 로그인하세요 — 매일의 타로, 점성술, 성찰 저널 쓰기를 한곳에서. 당신의 의식을 이어 가세요."
+  },
+  "unsubscribe": {
+    "metaTitle": "구독 취소",
+    "metaDescription": "Arcana 뉴스레터 구독 취소를 확인해요."
   }
 }

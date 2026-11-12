@@ -11471,7 +11471,9 @@
     "lede": "十二宫、十四主星、四化——依你的农历出生日期与时辰排布。",
     "noTimeNote": "没有出生时间时，我们默认为正午（午时）。星曜格局依然成立，但你的命宫可能会有所移动。",
     "lifePalaceIn": "命宫在{{branch}}",
-    "lunarDate": "农历 {{date}}"
+    "lunarDate": "农历 {{date}}",
+    "metaTitle": "紫微斗数命盘",
+    "metaDescription": "排出你的紫微斗数命盘——十二宫、十四主星与四化，依真实农历推算。"
   },
   "mansions": {
     "title": "二十八宿",
@@ -11493,7 +11495,9 @@
     "nothingFavoured": "通书在此没有记载宜做之事——这一天适合守着小事，不宜开始新事。",
     "sukuyo": "日本的宿曜道传统算法不同——依据你的农历出生月与日，而不是连续的值日循环——它把你归入<gold>{{mansion}}</gold>。两者都有真实的传承；它们回答的问题略有不同，所以我们分开呈现，而不是替你选一个。",
     "sukuyoEyebrow": "宿曜 · 日本的解读",
-    "seasonElement": "{{season}} · {{element}}"
+    "seasonElement": "{{season}} · {{element}}",
+    "metaTitle": "二十八宿——月亮行经的星宿",
+    "metaDescription": "中国对月亮行经天区的划分：今日值日的星宿，以及你出生那天的星宿。"
   },
   "dates": {
     "title": "择日",
@@ -11517,7 +11521,9 @@
       "inauspiciousGeneral": "{{mansion}}宿为凶宿——总体不利，但对这件事没有具体记载",
       "yearClash": "当日与你的年支相冲（冲太岁）"
     },
-    "exportFailed": "无法保存日历文件，请重试。"
+    "exportFailed": "无法保存日历文件，请重试。",
+    "metaTitle": "择日——挑选吉日",
+    "metaDescription": "为结婚、搬家、开业或出行挑选好日子，依据二十八宿与你自己的四柱。"
   },
   "celestial": {
     "needBirthDate": {
@@ -11990,7 +11996,9 @@
       "knight": "骑士",
       "page": "侍从",
       "queen": "王后"
-    }
+    },
+    "metaTitle": "镜子——你的解读模式",
+    "metaDescription": "你的塔罗解读统计：常出现的牌、花色分布、逆位比例与连续天数。"
   },
   "spreadDetail": {
     "notFound": "未找到该牌阵",
@@ -12012,7 +12020,9 @@
     "quoted": "“{{text}}”",
     "related": "相关牌阵",
     "signUpToRead": "注册后用这个牌阵解读",
-    "whenToUse": "适用时机"
+    "whenToUse": "适用时机",
+    "metaTitle": "{{name}}——塔罗牌阵逐个位置的含义",
+    "metaDescription": "{{description}}{{n}} 张牌的布局，逐个位置解读。"
   },
   "chartSuite": {
     "eyebrow": "星盘库",
@@ -12275,7 +12285,8 @@
     "echoCount_one": "{{count}} 次呼应",
     "echoCount_other": "{{count}} 次呼应",
     "wishCount_one": "{{count}} 个愿望",
-    "wishCount_other": "{{count}} 个愿望"
+    "wishCount_other": "{{count}} 个愿望",
+    "metaDescription": "一片共享的星空，每个愿望都是一颗星。许下愿望，看它在所有人的愿望旁亮起来。"
   },
   "spreadBuilder": {
     "signInPrompt": "自定义牌阵会保存到你的账号。",
@@ -12808,7 +12819,9 @@
         "description": "内在功课、整合，以及高我的指引。",
         "title": "灵性与阴影"
       }
-    }
+    },
+    "metaTitle": "塔罗牌阵——完整牌阵库",
+    "metaDescription": "全面的塔罗牌阵库：凯尔特十字、三张牌、爱情、事业、月相周期、阴影工作等。附逐个位置的含义。"
   },
   "share": {
     "youAnd": "你和{{name}}",
@@ -13103,7 +13116,10 @@
         "aspect": "相位"
       },
       "notFound": "未找到该条目",
-      "backToHub": "全部占星条目"
+      "backToHub": "全部占星条目",
+      "seo": {
+        "entryTitle": "{{name}}——{{kind}}"
+      }
     },
     "numerology": {
       "title": "数字学",
@@ -13131,7 +13147,12 @@
       "lifePathEyebrow": "生命数",
       "lifePathMasterEyebrow": "生命数（大师数）",
       "notFound": "未找到该数字",
-      "backToHub": "全部数字"
+      "backToHub": "全部数字",
+      "seo": {
+        "entryTitle": "{{name}}——生命数的含义",
+        "hubTitle": "数字学——生命数详解",
+        "hubDesc": "完整的数字学参考：9 个核心数与 3 个大师数（11、22、33）。毕达哥拉斯体系、生命数的含义与塔罗对应。"
+      }
     },
     "glossary": {
       "title": "术语表",
@@ -13153,7 +13174,12 @@
         "matches_other": "{{count}} 个结果"
       },
       "notFound": "未找到该术语",
-      "backToHub": "全部术语"
+      "backToHub": "全部术语",
+      "seo": {
+        "entryTitle": "{{term}}——术语释义",
+        "hubTitle": "术语表——塔罗、占星与数字学术语",
+        "hubDesc": "{{n}} 个术语及其释义，涵盖塔罗、占星、数字学、灵性与占卜。"
+      }
     },
     "crystals": {
       "title": "水晶",
@@ -13191,7 +13217,12 @@
       "kind": "水晶",
       "mohs": "莫氏硬度 {{value}}",
       "notFound": "未找到该水晶",
-      "backToHub": "全部水晶"
+      "backToHub": "全部水晶",
+      "seo": {
+        "entryTitle": "{{name}}——含义、属性与使用方法",
+        "hubTitle": "水晶含义——{{n}} 种水晶详解",
+        "hubDesc": "全面的水晶参考：{{n}} 种水晶的能量属性、脉轮对应、莫氏硬度与塔罗对应。"
+      }
     },
     "enums": {
       "elements": {
@@ -13234,5 +13265,9 @@
   "authPage": {
     "metaTitle": "登录",
     "metaDescription": "登录 Arcana——你的每日塔罗、占星与反思日记练习。继续你的仪式。"
+  },
+  "unsubscribe": {
+    "metaTitle": "退订",
+    "metaDescription": "确认退订 Arcana 通讯。"
   }
 }

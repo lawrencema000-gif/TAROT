@@ -25,10 +25,21 @@ export function CrystalEntryPage() {
   const navigate = useNavigate();
   const source = slug ? getCrystalEntry(slug) : null;
   const { overlay, ready } = useLearnOverlay('crystals');
+  // The tab title and description in the reader's language: the localized
+  // entry once its overlay is in. Until then the entry is English, and so is
+  // all of the head (`lng`), never its English name in the reader's frame.
+  // The prerendered head the crawlers read (scripts/prerender-meta.mjs) and
+  // the JSON-LD stay English.
+  const head = source && ready ? localizeCrystalEntry(source, overlay) : source;
+  const lng = ready ? undefined : 'en';
+  const metaTitle = head
+    ? t('learn.crystals.seo.entryTitle', { lng, name: head.name, defaultValue: '{{name}} — Meaning, Properties & How to Use' })
+    : '';
+  const metaDescription = head?.shortDescription;
 
   useEffect(() => {
     if (!source) return;
-    setPageMeta(`${source.name} — Meaning, Properties & How to Use`, source.shortDescription);
+    setPageMeta(metaTitle, metaDescription);
     removeJsonLd();
     const url = `https://tarotlife.app/crystals/${source.slug}`;
     addJsonLd({
@@ -61,7 +72,11 @@ export function CrystalEntryPage() {
         { '@type': 'ListItem', position: 3, name: source.name, item: url },
       ],
     });
-    window.scrollTo(0, 0);
+  }, [source, metaTitle, metaDescription]);
+
+  // To the top for a new entry, not when the head is rewritten in another language.
+  useEffect(() => {
+    if (source) window.scrollTo(0, 0);
   }, [source]);
 
   if (!source) {

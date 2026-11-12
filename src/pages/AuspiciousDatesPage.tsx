@@ -77,12 +77,15 @@ export function AuspiciousDatesPage() {
   const [intention, setIntention] = useState<Intention>('wedding');
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  // The tab title and description in the reader's language; they were English in all four.
   useEffect(() => {
     setPageMeta(
-      'Auspicious Dates — 擇日',
-      'Find a good day for a wedding, a move, a launch or a journey, read from the lunar mansions and your own birth pillars.',
+      t('dates.metaTitle', { defaultValue: 'Auspicious Dates — 擇日' }),
+      t('dates.metaDescription', {
+        defaultValue: 'Find a good day for a wedding, a move, a launch or a journey, read from the lunar mansions and your own birth pillars.',
+      }),
     );
-  }, []);
+  }, [t]);
 
   const birth = useMemo(
     () => (profile?.birthDate ? computeBazi(profile.birthDate, profile.birthTime || undefined) : null),

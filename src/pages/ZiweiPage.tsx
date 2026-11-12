@@ -51,9 +51,15 @@ export function ZiweiPage() {
   const [touched, setTouched] = useState(false);
   const [openPalace, setOpenPalace] = useState<string | null>('life');
 
+  // The tab title and description in the reader's language; they were English in all four.
   useEffect(() => {
-    setPageMeta('Zi Wei Dou Shu Chart', 'Cast your 紫微斗数 chart — 12 palaces, 14 major stars, and the four transformations, computed from the true lunar calendar.');
-  }, []);
+    setPageMeta(
+      t('ziwei.metaTitle', { defaultValue: 'Zi Wei Dou Shu Chart' }) as string,
+      t('ziwei.metaDescription', {
+        defaultValue: 'Cast your 紫微斗数 chart — 12 palaces, 14 major stars, and the four transformations, computed from the true lunar calendar.',
+      }) as string,
+    );
+  }, [t]);
 
   // Auto-cast: the profile can resolve after first paint, so follow it once.
   useEffect(() => {

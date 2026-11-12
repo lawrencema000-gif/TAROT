@@ -121,16 +121,20 @@ export interface LeaveReadingSheetProps {
   inLibrary: boolean;
   /** The save is on its way: "Save and leave" spins and ignores taps. */
   saving: boolean;
-  /** Stay on the reading (the sheet's close, Escape, the scrim). */
+  /** Stay on the reading (the sheet's close, Escape or Android Back, the scrim). */
   onStay: () => void;
+  /** Save, then go the way the member asked: home, the tab they tapped, Android Back's step. */
   onSaveAndLeave: () => void;
+  /** Go that way without saving. */
   onLeave: () => void;
 }
 
 /**
- * Asked before "Start a new reading" or Back leaves an unsaved reveal whose
- * AI interpretation was bought (QU1 R-c): one tap used to throw it away.
- * Shared by the reveals that sell one; the section decides when to ask.
+ * Asked before a way out leaves an unsaved reveal whose AI interpretation
+ * was bought (QU1 R-c): one tap used to throw it away. "Start a new
+ * reading" and Back ask, and so do a tab on the bottom bar and Android Back
+ * (leaveGuard). Shared by the reveals that sell one; the section decides
+ * when to ask.
  */
 export function LeaveReadingSheet({ open, inLibrary, saving, onStay, onSaveAndLeave, onLeave }: LeaveReadingSheetProps) {
   const { t } = useT('app');

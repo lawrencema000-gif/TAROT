@@ -40,9 +40,13 @@ export function MirrorPage() {
   // lazy, so bump once it has loaded and the names re-render translated.
   const [, setDeckReady] = useState(0);
 
+  // The tab title and description in the reader's language; they were English in all four.
   useEffect(() => {
-    setPageMeta('Mirror — your reading patterns', 'Aggregate stats from your tarot readings: most-drawn cards, suit balance, reversal rate, and streaks.');
-  }, []);
+    setPageMeta(
+      t('mirror.metaTitle', { defaultValue: 'Mirror — your reading patterns' }),
+      t('mirror.metaDescription', { defaultValue: 'Aggregate stats from your tarot readings: most-drawn cards, suit balance, reversal rate, and streaks.' }),
+    );
+  }, [t]);
 
   useEffect(() => {
     if (!user) return;

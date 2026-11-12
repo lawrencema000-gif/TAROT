@@ -11467,7 +11467,9 @@
     "lede": "Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.",
     "noTimeNote": "Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.",
     "lifePalaceIn": "命宮 in {{branch}}",
-    "lunarDate": "農曆 {{date}}"
+    "lunarDate": "農曆 {{date}}",
+    "metaTitle": "Zi Wei Dou Shu Chart",
+    "metaDescription": "Cast your 紫微斗数 chart — 12 palaces, 14 major stars, and the four transformations, computed from the true lunar calendar."
   },
   "mansions": {
     "title": "The Lunar Mansions",
@@ -11489,7 +11491,9 @@
     "nothingFavoured": "The almanacs record nothing favoured here — a day to keep small rather than start.",
     "sukuyo": "The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than the running day cycle — and puts you in <gold>{{mansion}}</gold>. Both are genuine; they answer slightly different questions, so we show them separately rather than pick one for you.",
     "sukuyoEyebrow": "Sukuyō · the Japanese reading",
-    "seasonElement": "{{season}}, {{element}}"
+    "seasonElement": "{{season}}, {{element}}",
+    "metaTitle": "Lunar Mansions — 二十八宿",
+    "metaDescription": "The Chinese division of the sky the Moon passes through: today’s governing mansion, and the mansion of the day you were born."
   },
   "dates": {
     "title": "Pick a good day",
@@ -11513,7 +11517,9 @@
       "inauspiciousGeneral": "{{mansion}} is a 凶宿 — generally unfavourable, with nothing specific recorded for this",
       "yearClash": "The day clashes with your year branch (沖太歲)"
     },
-    "exportFailed": "Couldn’t save the calendar file. Try again."
+    "exportFailed": "Couldn’t save the calendar file. Try again.",
+    "metaTitle": "Auspicious Dates — 擇日",
+    "metaDescription": "Find a good day for a wedding, a move, a launch or a journey, read from the lunar mansions and your own birth pillars."
   },
   "freeCourse": {
     "errors": {
@@ -11781,7 +11787,9 @@
       "knight": "Knight",
       "page": "Page",
       "queen": "Queen"
-    }
+    },
+    "metaTitle": "Mirror — your reading patterns",
+    "metaDescription": "Aggregate stats from your tarot readings: most-drawn cards, suit balance, reversal rate, and streaks."
   },
   "spreadDetail": {
     "notFound": "Spread not found",
@@ -11803,7 +11811,9 @@
     "quoted": "“{{text}}”",
     "related": "Related spreads",
     "signUpToRead": "Sign up to read this spread",
-    "whenToUse": "When to use"
+    "whenToUse": "When to use",
+    "metaTitle": "{{name}} Tarot Spread — Position Meanings",
+    "metaDescription": "{{description}} {{n}}-card layout with position-by-position interpretation."
   },
   "chartSuite": {
     "eyebrow": "Chart Library",
@@ -12066,7 +12076,8 @@
     "echoCount_one": "{{count}} echo",
     "echoCount_other": "{{count}} echoes",
     "wishCount_one": "{{count}} wish",
-    "wishCount_other": "{{count}} wishes"
+    "wishCount_other": "{{count}} wishes",
+    "metaDescription": "A shared sky where every wish is a star. Make a wish, and see it light up beside everyone else’s."
   },
   "spreadBuilder": {
     "signInPrompt": "Custom spreads are saved to your account.",
@@ -12599,7 +12610,9 @@
         "description": "Inner work, integration, and higher-self guidance.",
         "title": "Spiritual & shadow"
       }
-    }
+    },
+    "metaTitle": "Tarot Spreads — Complete Library",
+    "metaDescription": "Comprehensive tarot spread library: Celtic Cross, three-card, love, career, lunar cycles, shadow work, and more. Position-by-position meanings."
   },
   "share": {
     "youAnd": "You and {{name}}",
@@ -12894,7 +12907,10 @@
         "aspect": "Aspect"
       },
       "notFound": "Entry not found",
-      "backToHub": "All astrology entries"
+      "backToHub": "All astrology entries",
+      "seo": {
+        "entryTitle": "{{name}} — {{kind}}"
+      }
     },
     "numerology": {
       "title": "Numerology",
@@ -12922,7 +12938,12 @@
       "lifePathEyebrow": "Life path number",
       "lifePathMasterEyebrow": "Life path number (master)",
       "notFound": "Number not found",
-      "backToHub": "All numbers"
+      "backToHub": "All numbers",
+      "seo": {
+        "entryTitle": "{{name}} — Life Path Meaning",
+        "hubTitle": "Numerology — Life Path Numbers Explained",
+        "hubDesc": "Complete numerology reference: 9 core numbers + 3 master numbers (11, 22, 33). Pythagorean tradition, life-path meanings, tarot correspondences."
+      }
     },
     "glossary": {
       "title": "Glossary",
@@ -12944,7 +12965,12 @@
         "matches_other": "{{count}} matches"
       },
       "notFound": "Term not found",
-      "backToHub": "All terms"
+      "backToHub": "All terms",
+      "seo": {
+        "entryTitle": "{{term}} — Definition",
+        "hubTitle": "Glossary — Tarot, Astrology, Numerology Terms",
+        "hubDesc": "{{n}} terms with definitions across tarot, astrology, numerology, spirituality, and divination."
+      }
     },
     "crystals": {
       "title": "Crystals",
@@ -12982,7 +13008,12 @@
       "kind": "Crystal",
       "mohs": "Mohs {{value}}",
       "notFound": "Crystal not found",
-      "backToHub": "All crystals"
+      "backToHub": "All crystals",
+      "seo": {
+        "entryTitle": "{{name}} — Meaning, Properties & How to Use",
+        "hubTitle": "Crystal Meanings — {{n}} Stones Explained",
+        "hubDesc": "Comprehensive crystal reference: {{n}} stones with metaphysical properties, chakra associations, Mohs hardness, and tarot connections."
+      }
     },
     "enums": {
       "elements": {
@@ -13025,5 +13056,9 @@
   "authPage": {
     "metaTitle": "Sign in",
     "metaDescription": "Sign in to Arcana — your daily tarot, astrology, and reflective journaling practice. Continue your ritual."
+  },
+  "unsubscribe": {
+    "metaTitle": "Unsubscribe",
+    "metaDescription": "Confirm your unsubscribe from Arcana newsletter."
   }
 }

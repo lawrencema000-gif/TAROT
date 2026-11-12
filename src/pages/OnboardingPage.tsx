@@ -89,12 +89,16 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const onboardingStartTime = useRef(Date.now());
   const stepStartTime = useRef(Date.now());
 
+  // The tab title and description in the reader's language, the one the
+  // first step picks; they were English in all four.
   useEffect(() => {
     setPageMeta(
-      'Sign up — Free 3-day trial',
-      'Create your free Arcana account. Daily tarot readings, personalized horoscopes, journaling, and a 3-day free trial of Premium.',
+      t('meta.title', { defaultValue: 'Sign up — Free 3-day trial' }),
+      t('meta.description', {
+        defaultValue: 'Create your free Arcana account. Daily tarot readings, personalized horoscopes, journaling, and a 3-day free trial of Premium.',
+      }),
     );
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     trackOnboardingStepViewed({ step, stepName: stepNames[step] });

@@ -25,12 +25,13 @@ const USER = { id: '00000000-0000-4000-8000-0000000000b8', email: 'qa@example.co
 const insertReturningId = vi.fn();
 const updateInterpretation = vi.fn();
 const generatePremiumReading = vi.fn();
+const openRatePrompt = vi.fn();
 
 vi.mock('../../../context/AuthContext', () => ({
   useAuth: () => ({ user: USER, profile: { isPremium: true, isAdFree: true, card_back_url: null, goals: [] }, refreshProfile: vi.fn() }),
 }));
 vi.mock('../../../context/RitualContext', () => ({ useRitual: () => ({ tarotRefreshTrigger: 0 }) }));
-vi.mock('../../../context/GamificationContext', () => ({ useGamification: () => ({ openRatePrompt: vi.fn() }) }));
+vi.mock('../../../context/GamificationContext', () => ({ useGamification: () => ({ openRatePrompt: () => openRatePrompt() }) }));
 vi.mock('../../../dal', () => ({
   tarotReadings: {
     insertReturningId: (...a: unknown[]) => insertReturningId(...a),
@@ -86,6 +87,7 @@ import { BottomNav } from '../../layout/BottomNav';
 import { Sheet } from '../../ui/Sheet';
 import { UIProvider, useUI } from '../../../context/UIContext';
 import { ratePromptService } from '../../../services/ratePrompt';
+import { adsService } from '../../../services/ads';
 import { androidBack, openDeepLink, type AndroidBackShell } from '../../../App';
 
 const tt = (key: string, opts?: Record<string, unknown>) => i18n.t(`app:${key}`, opts);
@@ -231,7 +233,11 @@ beforeEach(async () => {
   insertReturningId.mockReset().mockResolvedValue({ ok: true, data: { id: 'saved-1' } });
   updateInterpretation.mockReset().mockResolvedValue({ ok: true, data: null });
   generatePremiumReading.mockReset();
+  vi.mocked(adsService.checkAndShowAd).mockReset().mockResolvedValue(undefined);
   vi.mocked(ratePromptService.incrementPositiveActions).mockReset().mockResolvedValue(1);
+  vi.mocked(ratePromptService.shouldShowPrompt).mockReset().mockResolvedValue(false);
+  vi.mocked(ratePromptService.recordPromptShown).mockReset();
+  openRatePrompt.mockReset();
   await act(async () => { await i18n.changeLanguage('ja'); });
 });
 afterAll(async () => {
@@ -428,13 +434,17 @@ describe('TarotSection: a tab on the bottom bar and Android Back ask the same qu
 /*
  * "Save and leave" is the member's answer, and the first answer is final.
  * Stay used to close the sheet while the row was written, and the step it
- * held still ran when the row landed; after the insert the sheet woke up
- * again — "Leave without saving" enabled — while the save still awaited the
- * ad and the rate prompt, so a tap on it went to the spreads and the held
- * step ran on top. The sheet now spins through the whole save, holds both
- * answers, and hears no Stay; the step runs once, after it.
+ * held still ran when the row landed. The sheet spins through the insert,
+ * holds both answers, and hears no Stay; the step runs once.
+ *
+ * It holds through the insert and no further. It used to hold through the
+ * ad check and the rate prompt the save awaited after the insert as well —
+ * a flag fetch and two to five requests, none with a timeout — so on a
+ * stalled network the member was held, spinning, over a reading already
+ * saved. The step is taken as the row lands; the ad and the rate prompt run
+ * after it. The bookmark still waits for them, as it always did.
  */
-describe('TarotSection: "Save and leave" is final until the save has answered', { timeout: 20_000 }, () => {
+describe('TarotSection: "Save and leave" is final until its insert has answered', { timeout: 20_000 }, () => {
   it('while the row is written, Stay and "Leave" do nothing; the tab is taken once it lands', async () => {
     const insert = held<{ ok: true; data: { id: string } }>();
     insertReturningId.mockReturnValue(insert.promise);
@@ -459,43 +469,71 @@ describe('TarotSection: "Save and leave" is final until the save has answered', 
     expect(shell.goHome).not.toHaveBeenCalled();
   });
 
-  it('after the insert, while the ad and the rate prompt are awaited, it still holds; then one step, Back’s own', async () => {
+  it('the row written, the sheet closes and Back’s step is taken at once, the rate prompt still on the wire; then nothing more', async () => {
     const prompt = held<number>();
     vi.mocked(ratePromptService.incrementPositiveActions).mockReturnValueOnce(prompt.promise);
     await revealWithAi();
     const shell = backOnReadings();
     pressBack(shell);
-    const sheet = await findLeaveSheet();
-    answer(sheet, 'save');
-    // The row is written; the save is still waiting on the rate prompt.
-    await waitFor(() => expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1));
-    expect(insertReturningId).toHaveBeenCalledTimes(1);
-    expect(answersOn(sheet).save).toBeDisabled();
-    expect(answersOn(sheet).leave).toBeDisabled();
+    answer(await findLeaveSheet(), 'save');
 
-    fireEvent.click(answersOn(sheet).leave);
-    tryToStay(sheet, shell);
-    await pastExit();
-    expect(leaveSheet()).not.toBeNull();
-    expect(onHome()).toBeNull();
-    expect(shell.goHome).not.toHaveBeenCalled();
-
-    await act(async () => prompt.release(1));
+    // The rate prompt has not answered; the step is taken, and the sheet goes.
     await waitFor(() => expect(shell.goHome).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(leaveSheet()).toBeNull());
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+    expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1);
+    expect(ratePromptService.shouldShowPrompt).not.toHaveBeenCalled();
+    // The ad check and the rate prompt start after the step, not before it.
+    expect(vi.mocked(shell.goHome).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(adsService.checkAndShowAd).mock.invocationCallOrder[0],
+    );
+
+    await act(async () => prompt.release(1));
+    await waitFor(() => expect(ratePromptService.shouldShowPrompt).toHaveBeenCalledTimes(1));
     // One step: Back's. The section did not go to its spreads as well.
+    expect(shell.goHome).toHaveBeenCalledTimes(1);
     expect(onHome()).toBeNull();
     expect(shell.navigateBack).not.toHaveBeenCalled();
     expect(shell.exitApp).not.toHaveBeenCalled();
   });
 
-  it('a save that fails lets go of the answer: the sheet closes as before, and asked again, Stay and "Leave" answer', async () => {
-    insertReturningId.mockResolvedValueOnce({ ok: false, error: 'offline' });
-    await revealWithAi();
-    startOver();
+  it('nor does the step wait for the ad check (a flag fetch and an interstitial on Android); the rate prompt follows the ad, as before', async () => {
+    const ad = held<void>();
+    vi.mocked(adsService.checkAndShowAd).mockReturnValueOnce(ad.promise);
+    await revealWithAi({ shell: true });
+    tapTab('horoscope');
     answer(await findLeaveSheet(), 'save');
+
+    await waitFor(() => expect(path()).toBe('/horoscope'));
+    expect(adsService.checkAndShowAd).toHaveBeenCalledTimes(1);
+    expect(ratePromptService.incrementPositiveActions).not.toHaveBeenCalled();
+    // The page has gone; what the row earns still arrives.
+    await act(async () => ad.release());
+    await waitFor(() => expect(ratePromptService.shouldShowPrompt).toHaveBeenCalledTimes(1));
+    expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1);
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+
+  it('a save that fails lets go of the answer: the sheet closes as before, the step is not taken, and asked again, Stay and "Leave" answer', async () => {
+    const insert = held<{ ok: false; error: string }>();
+    insertReturningId.mockReturnValueOnce(insert.promise);
+    await revealWithAi();
+    const shell = backOnReadings();
+    pressBack(shell);
+    const sheet = await findLeaveSheet();
+    answer(sheet, 'save');
+    // Stay is not heard while the insert runs, even one that will fail.
+    tryToStay(sheet, shell);
+    await pastExit();
+    expect(leaveSheet()).not.toBeNull();
+
+    await act(async () => insert.release({ ok: false, error: 'offline' }));
     await waitFor(() => expect(leaveSheet()).toBeNull());
+    expect(shell.goHome).not.toHaveBeenCalled();
     expect(screen.getByText('道が開けつつあります。')).toBeInTheDocument();
+    // Nothing written, nothing earned.
+    expect(adsService.checkAndShowAd).not.toHaveBeenCalled();
+    expect(ratePromptService.incrementPositiveActions).not.toHaveBeenCalled();
 
     startOver();
     const again = await findLeaveSheet();
@@ -507,6 +545,38 @@ describe('TarotSection: "Save and leave" is final until the save has answered', 
     startOver();
     answer(await findLeaveSheet(), 'leave');
     await waitFor(() => expect(onHome()).not.toBeNull());
+    expect(insertReturningId).toHaveBeenCalledTimes(1);
+  });
+
+  it('the bookmark is as it was: it spins through the insert, then waits on the ad check and the rate prompt in turn', async () => {
+    const insert = held<{ ok: true; data: { id: string } }>();
+    insertReturningId.mockReturnValueOnce(insert.promise);
+    const prompt = held<number>();
+    vi.mocked(ratePromptService.incrementPositiveActions).mockReturnValueOnce(prompt.promise);
+    vi.mocked(ratePromptService.shouldShowPrompt).mockResolvedValueOnce(true);
+    await revealWithAi();
+
+    fireEvent.click(screen.getByRole('button', { name: tt('readings.revealView.save') }));
+    expect(screen.getByRole('button', { name: tt('readings.revealView.save') })).toHaveAttribute('aria-busy', 'true');
+    expect(adsService.checkAndShowAd).not.toHaveBeenCalled();
+
+    await act(async () => insert.release({ ok: true, data: { id: 'saved-1' } }));
+    await screen.findByRole('button', { name: tt('readings.revealView.saved') });
+    await waitFor(() => expect(ratePromptService.incrementPositiveActions).toHaveBeenCalledTimes(1));
+    expect(adsService.checkAndShowAd).toHaveBeenCalledTimes(1);
+    // Each waits for the one before it.
+    expect(ratePromptService.shouldShowPrompt).not.toHaveBeenCalled();
+    expect(openRatePrompt).not.toHaveBeenCalled();
+
+    await act(async () => prompt.release(1));
+    await waitFor(() => expect(openRatePrompt).toHaveBeenCalledTimes(1));
+    expect(ratePromptService.recordPromptShown).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(adsService.checkAndShowAd).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(ratePromptService.incrementPositiveActions).mock.invocationCallOrder[0],
+    );
+    // No question, and the reading stays on the table.
+    expect(leaveSheet()).toBeNull();
+    expect(screen.getByText('道が開けつつあります。')).toBeInTheDocument();
     expect(insertReturningId).toHaveBeenCalledTimes(1);
   });
 });

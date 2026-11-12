@@ -121,14 +121,16 @@ export interface LeaveReadingSheetProps {
    */
   inLibrary: boolean;
   /**
-   * A save is on its way — for "Save and leave", until all of it has
-   * answered, the ad and the rate prompt after the insert included: "Save
-   * and leave" spins, and neither action takes a tap.
+   * The insert of "Save and leave" is on its way: "Save and leave" spins,
+   * and neither action takes a tap. The insert only — the ad and the rate
+   * prompt the row earns run after the member's step, and the sheet does
+   * not wait for them.
    */
   saving: boolean;
   /**
    * Stay on the reading (the sheet's close, Escape or Android Back, the
-   * scrim). The section does nothing with it while "Save and leave" runs.
+   * scrim). The section does nothing with it while the insert of "Save and
+   * leave" runs.
    */
   onStay: () => void;
   /** Save, then go the way the member asked: home, the tab they tapped, Android Back's step. */

@@ -282,12 +282,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const pendingLeaveRef = useRef<(() => void) | null>(null);
   /**
    * The sheet's "Save and leave" is running, and the member's first answer
-   * is final: until the save has answered — the insert, then the ad and the
-   * rate prompt it still awaits — the sheet spins with both its actions
-   * held, and Stay does nothing. Stay used to close the sheet while the step
-   * still ran once the row landed, and "Leave without saving" came back after
-   * the insert, so a tap on it took a second step. The ref is the guard, the
-   * state its face.
+   * is final: until its insert has answered the sheet spins with both its
+   * actions held, and Stay does nothing. Stay used to close the sheet while
+   * the step still ran once the row landed. The answer is held for the
+   * insert only: the step is taken as the row lands, and what the row earns
+   * (afterSave) runs after it. The ref is the guard, the state its face.
    */
   const [leaving, setLeaving] = useState(false);
   const leavingRef = useRef(false);
@@ -547,21 +546,30 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * The sheet's "Save and leave": the way out once the row is written; a
    * failed save stays (its toast says so). A section that has gone by then
    * (left another way while the row was written) takes no second step.
-   * Nothing else on the sheet answers until the save has (leavingRef).
+   * Nothing else on the sheet answers until the insert has (leavingRef).
+   *
+   * What the row earns — the ad check and the rate prompt (afterSave) —
+   * comes after the step, and nothing waits for it: both belong to the
+   * shell (a native interstitial; RateAppSheet waits for a clear screen).
+   * The sheet used to wait for them too, spinning with the reading already
+   * saved, through the ad's flag fetch and two to five rate-prompt
+   * requests, none with a timeout.
    */
   const saveAndLeave = async () => {
     if (leavingRef.current) return;
     leavingRef.current = true;
     setLeaving(true);
     const leave = takeLeave();
+    let outcome = { saved: false, written: false };
     try {
-      const saved = await handleSaveReading();
-      setConfirmLeave(false);
-      if (saved && mountedRef.current) leave();
+      outcome = await saveReading();
     } finally {
       leavingRef.current = false;
       setLeaving(false);
     }
+    setConfirmLeave(false);
+    if (outcome.saved && mountedRef.current) leave();
+    if (outcome.written) void afterSave();
   };
 
   // Auto-launch into the reading flow when arriving from the custom-spread
@@ -997,14 +1005,17 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * a second tap or a double tap during the insert left two copies in the
    * Library. A save in flight or already made is a no-op — read from refs
    * as well as `isSaved`, which renders only after the insert has answered
-   * (savedIdRef is set in the same tick the insert returns). Resolves true
-   * once the reading on screen is saved (now or before), false when it is
-   * not, so "Save and leave" (LeaveReadingSheet) leaves only a saved reading.
+   * (savedIdRef is set in the same tick the insert returns).
+   *
+   * Answers as soon as the insert has: `saved` once the reading on screen
+   * is saved (now or before), so "Save and leave" (LeaveReadingSheet)
+   * leaves only a saved reading; `written` when this call wrote the row,
+   * which earns what afterSave runs.
    */
-  const handleSaveReading = async (): Promise<boolean> => {
-    if (!user || drawnCards.length === 0) return false;
-    if (isSaved || savedIdRef.current) return true;
-    if (savingRef.current) return false;
+  const saveReading = async (): Promise<{ saved: boolean; written: boolean }> => {
+    if (!user || drawnCards.length === 0) return { saved: false, written: false };
+    if (isSaved || savedIdRef.current) return { saved: true, written: false };
+    if (savingRef.current) return { saved: false, written: false };
     savingRef.current = true;
     setSaving(true);
     const res = await tarotReadings.insertReturningId(savedRow(aiInterpretation));
@@ -1013,24 +1024,35 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
-      return false;
-    } else {
-      savedIdRef.current = res.data.id;
-      setIsSaved(true);
-      toast(t('readings.toasts.readingSaved'), 'success');
-
-      // awardXP reports 'reading_saved' to the badges itself (one report, not two).
-      awardXP(user.id, 'reading_saved').then(() => refreshProfile());
-      await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
-
-      await ratePromptService.incrementPositiveActions(user.id);
-      const shouldShow = await ratePromptService.shouldShowPrompt(user.id);
-      if (shouldShow) {
-        await ratePromptService.recordPromptShown(user.id);
-        openRatePrompt();
-      }
-      return true;
+      return { saved: false, written: false };
     }
+    savedIdRef.current = res.data.id;
+    setIsSaved(true);
+    toast(t('readings.toasts.readingSaved'), 'success');
+    return { saved: true, written: true };
+  };
+
+  /**
+   * What a newly saved row earns: the XP, the ad check, the rate prompt.
+   * The bookmark waits for it; "Save and leave" takes its step first.
+   */
+  const afterSave = async () => {
+    if (!user) return;
+    // awardXP reports 'reading_saved' to the badges itself (one report, not two).
+    awardXP(user.id, 'reading_saved').then(() => refreshProfile());
+    await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
+
+    await ratePromptService.incrementPositiveActions(user.id);
+    const shouldShow = await ratePromptService.shouldShowPrompt(user.id);
+    if (shouldShow) {
+      await ratePromptService.recordPromptShown(user.id);
+      openRatePrompt();
+    }
+  };
+
+  /** The reveal's bookmark: the save, then what it earns, in turn — as it always was. */
+  const handleSaveReading = async () => {
+    if ((await saveReading()).written) await afterSave();
   };
 
   /**
@@ -1327,7 +1349,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       <LeaveReadingSheet
         open={confirmLeave && view === 'reveal'}
         inLibrary={aiInLibrary}
-        // The whole of "Save and leave", not only its insert (`saving`).
+        // From the tap on "Save and leave" until its insert has answered.
         saving={saving || leaving}
         onStay={() => {
           if (leavingRef.current) return;

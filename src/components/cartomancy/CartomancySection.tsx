@@ -166,12 +166,12 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const pendingLeaveRef = useRef<(() => void) | null>(null);
   /**
    * The sheet's "Save and leave" is running, and the member's first answer
-   * is final: until the save has answered — the insert, then the ad and the
-   * rate prompt it still awaits — the sheet spins with both its actions
-   * held, and Stay does nothing (TarotSection's guard). Stay used to close
-   * the sheet while the step still ran once the row landed, and "Leave
-   * without saving" came back after the insert, so a tap on it took a second
-   * step. The ref is the guard, the state its face.
+   * is final: until its insert has answered the sheet spins with both its
+   * actions held, and Stay does nothing (TarotSection's guard). Stay used to
+   * close the sheet while the step still ran once the row landed. The answer
+   * is held for the insert only: the step is taken as the row lands, and
+   * what the row earns (afterSave) runs after it. The ref is the guard, the
+   * state its face.
    */
   const [leaving, setLeaving] = useState(false);
   const leavingRef = useRef(false);
@@ -398,21 +398,27 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
    * The sheet's "Save and leave": the way out once the row is written; a
    * failed save stays (its toast says so). A section that has gone by then
    * (left another way while the row was written) takes no second step.
-   * Nothing else on the sheet answers until the save has (leavingRef).
+   * Nothing else on the sheet answers until the insert has (leavingRef).
+   * What the row earns — the ad check and the rate prompt (afterSave) —
+   * comes after the step, and nothing waits for it (TarotSection's
+   * saveAndLeave): the sheet used to spin through it, the table already
+   * saved, for as long as a stalled network held it.
    */
   const saveAndLeave = async () => {
     if (leavingRef.current) return;
     leavingRef.current = true;
     setLeaving(true);
     const leave = takeLeave();
+    let outcome = { saved: false, written: false };
     try {
-      const saved = await handleSaveReading();
-      setConfirmLeave(false);
-      if (saved && mountedRef.current) leave();
+      outcome = await saveReading();
     } finally {
       leavingRef.current = false;
       setLeaving(false);
     }
+    setConfirmLeave(false);
+    if (outcome.saved && mountedRef.current) leave();
+    if (outcome.written) void afterSave();
   };
 
   const handleDraw = () => {
@@ -587,15 +593,16 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   /**
    * Save the table on screen — once. A table already saved, or whose save is
    * on its way, is a no-op: both are checked in refs, which a second tap
-   * reads before `isSaved` has rendered. Resolves true once the table on
-   * screen is saved (now or before), false when it is not, so "Save and
-   * leave" (LeaveReadingSheet) leaves only a saved table.
+   * reads before `isSaved` has rendered. Answers as soon as the insert has:
+   * `saved` once the table on screen is saved (now or before), so "Save and
+   * leave" (LeaveReadingSheet) leaves only a saved table; `written` when this
+   * call wrote a row, which earns what afterSave runs.
    */
-  const handleSaveReading = async (): Promise<boolean> => {
+  const saveReading = async (): Promise<{ saved: boolean; written: boolean }> => {
     const readingId = readingIdRef.current;
-    if (!user || drawnCards.length === 0 || !readingId) return false;
-    if (isSaved || savedIdRef.current) return true;
-    if (savingRef.current === readingId) return false;
+    if (!user || drawnCards.length === 0 || !readingId) return { saved: false, written: false };
+    if (isSaved || savedIdRef.current) return { saved: true, written: false };
+    if (savingRef.current === readingId) return { saved: false, written: false };
     savingRef.current = readingId;
     setSaving(true);
     let res: Awaited<ReturnType<typeof tarotReadings.insertReturningId>>;
@@ -620,7 +627,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     }
     if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
-      return false;
+      return { saved: false, written: false };
     }
     // The row belongs to the table it was saved from. A reader who dealt
     // another table while the insert ran has that one on screen: it is not
@@ -631,6 +638,15 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       setIsSaved(true);
     }
     toast(t('readings.toasts.readingSaved'), 'success');
+    return { saved: onScreen, written: true };
+  };
+
+  /**
+   * What a newly saved row earns: the XP, the ad check, the rate prompt.
+   * The bookmark waits for it; "Save and leave" takes its step first.
+   */
+  const afterSave = async () => {
+    if (!user) return;
     // awardXP reports 'reading_saved' to the achievements itself.
     awardXP(user.id, 'reading_saved').then(() => refreshProfile());
     await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
@@ -639,7 +655,11 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       await ratePromptService.recordPromptShown(user.id);
       openRatePrompt();
     }
-    return onScreen;
+  };
+
+  /** The reveal's bookmark: the save, then what it earns, in turn — as it always was. */
+  const handleSaveReading = async () => {
+    if ((await saveReading()).written) await afterSave();
   };
 
   const handleGetAIInterpretation = async () => {
@@ -895,7 +915,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
       <LeaveReadingSheet
         open={confirmLeave && view === 'reveal'}
         inLibrary={aiInLibrary}
-        // The whole of "Save and leave", not only its insert (`saving`).
+        // From the tap on "Save and leave" until its insert has answered.
         saving={saving || leaving}
         onStay={() => {
           if (leavingRef.current) return;

@@ -314,12 +314,19 @@ export function ToastContainer() {
   // The stack itself is one column; errors sit nearest the bottom edge.
   // (Neither region is ever display:none: a live region has to be in the
   // accessibility tree before its content changes, or nothing is announced.)
+  //
+  // z-70: above every layer a toast can arrive over — each Sheet at 50 + 2 ×
+  // its order, the trial reminder at z-60. At z-50 the stack sat under all
+  // of them, and under the leave sheet, drawn on <body> after it at any
+  // order: "Reading saved" landed beneath the sheet's scrim. The stack takes
+  // no tap but on a toast (pointer-events-none), and measurePlacement already
+  // puts it above an open sheet's panel, or at the top of the screen.
   const polite = toasts.filter(t => t.type !== 'error');
   const errors = toasts.filter(t => t.type === 'error');
   return (
     <div
       ref={stackRef}
-      className="fixed left-4 right-4 z-50 flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm"
+      className="fixed left-4 right-4 z-[70] flex flex-col pointer-events-none md:left-auto md:right-6 md:max-w-sm"
       style={
         placement.edge === 'top'
           ? { top: `calc(env(safe-area-inset-top, 0px) + ${GAP_PX}px)` }

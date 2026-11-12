@@ -26,8 +26,10 @@ vi.mock('../../../services/billing', () => ({
 }));
 vi.mock('../PaywallSheet', () => ({ PaywallSheet: () => null }));
 
+import i18n from '../../../i18n/config';
 import { androidBack, type AndroidBackShell } from '../../../App';
 import { TrialReminderModal } from '../TrialReminderModal';
+import { LeaveReadingSheet } from '../../readings/tarot/TarotRevealView';
 
 /** Node 25 ships its own (file-less, broken) storage over jsdom's; give the code a real one. */
 function memoryStorage(): Storage {
@@ -83,5 +85,52 @@ describe('Android Back closes the trial reminder first', () => {
 
     act(() => androidBack(shell));
     expect(shell.goHome).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * The reminder appears only on a free surface, but a dialog can open while it
+ * is up: a link opened from outside the app asks before it leaves a reading
+ * with a bought AI interpretation that is not saved. The question opened
+ * beneath the reminder (z-60, above every sheet) with its focus trap on top,
+ * and the first Android Back answered Stay to a question the member could not
+ * see. The reminder yields now: another dialog taking the top closes it.
+ */
+describe('the trial reminder yields to a question about the member’s reading', () => {
+  const reminderUp = () => screen.queryByRole('dialog', { name: i18n.t('app:premium.trialReminder.noTrial.title') }) !== null;
+  const question = () => screen.queryByRole('dialog', { name: i18n.t('app:readings.revealView.leaveConfirm.title') });
+  /** The reminder beside a reveal's leave sheet, as App mounts them; `asking` is the reveal asking (a link from outside). */
+  const screenWith = (asking: boolean, onStay: () => void) => (
+    <>
+      <LeaveReadingSheet open={asking} inLibrary saving={false} onStay={onStay} onSaveAndLeave={() => {}} onLeave={() => {}} />
+      <TrialReminderModal />
+    </>
+  );
+
+  it('the leave sheet opens over the reminder: the reminder closes, and Android Back answers the question on screen', () => {
+    const onStay = vi.fn();
+    const { rerender } = render(screenWith(false, onStay));
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(reminderUp()).toBe(true);
+    // Up on its own, it stays up: a trap not yet on duty has lost nothing.
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(reminderUp()).toBe(true);
+
+    rerender(screenWith(true, onStay));
+    expect(question()).not.toBeNull();
+    expect(reminderUp()).toBe(false);
+    expect(document.querySelector('[data-back-closes]')).toBeNull();
+
+    // Back reaches the question the member can see: Stay, and nothing else.
+    const shell = shellOn('/readings');
+    act(() => androidBack(shell));
+    expect(onStay).toHaveBeenCalledTimes(1);
+    expect(shell.goHome).not.toHaveBeenCalled();
+    expect(shell.navigateBack).not.toHaveBeenCalled();
+    expect(shell.exitApp).not.toHaveBeenCalled();
   });
 });

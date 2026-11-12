@@ -67,7 +67,8 @@ function sessionNumber(): number {
  *
  * It waits for a free surface: if a sheet or dialog is open when the timer
  * lands, it checks again every few seconds and shows only once nothing else
- * is. And it waits for the second session, so a failed first action is never
+ * is; a dialog that opens while it is up takes its place, and it closes. And
+ * it waits for the second session, so a failed first action is never
  * followed by two upsells in a row.
  */
 export function TrialReminderModal() {
@@ -82,6 +83,25 @@ export function TrialReminderModal() {
   // name (the headline) rather than "Close, button"; Tab then reaches the
   // close button, the CTA and "Not now" in turn, and nothing behind.
   const { isTop } = useFocusTrap(panelRef, open && !showPaywall, { initialFocus: panelRef });
+
+  // An upsell never sits over a question about the member's reading. The
+  // reminder waits for a free surface to appear, but a dialog can still open
+  // while it is up: a link opened from outside the app asks before it leaves
+  // an unsaved reading (LeaveReadingSheet). The question opened beneath the
+  // reminder's scrim with its trap on top, and the first Android Back
+  // answered Stay to a question the member could not see. The reminder
+  // yields now: once it has held the top of the trap stack, losing it closes
+  // it. Not yet holding it is no reason to go (the trap arms after the first
+  // render), and neither is its own paywall.
+  const heldTopRef = useRef(false);
+  useEffect(() => {
+    if (!open || showPaywall) {
+      heldTopRef.current = false;
+      return;
+    }
+    if (isTop) heldTopRef.current = true;
+    else if (heldTopRef.current) setOpen(false);
+  }, [open, showPaywall, isTop]);
 
   // The timer keys on primitives, not on the profile object: the profile is
   // re-read during a session (balance, XP, streak), and every new object

@@ -143,6 +143,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   // before the destructive button activates. Added 2026-04-24 after QA
   // flagged that the existing 2-step flow still allowed one-tap delete.
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  // Left by Back, by Settings closing or by Cancel, the page forgets what was
+  // typed: it used to come back with DELETE in the box and the button armed.
+  useEffect(() => {
+    if (activeSheet !== 'deleteConfirm') setDeleteConfirmText('');
+  }, [activeSheet]);
   const [cardBacks, setCardBacks] = useState<CardBackOption[]>([]);
   const [loadingCardBacks, setLoadingCardBacks] = useState(false);
   const [savingCardBack, setSavingCardBack] = useState(false);
@@ -155,10 +160,17 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [readingScale, setReadingScaleState] = useState<ReadingScaleId>(() => getReadingScale());
   const [versionTapCount, setVersionTapCount] = useState(0);
 
+  // The paywall and the subscription sheet close with Settings. Settings can
+  // close under them — a link opened from outside the app closes the shell's
+  // overlay (openDeepLink) — and the Sheet unmounts its children without
+  // their onClose: the flag stayed set, and the paywall slid up by itself
+  // the next time Settings opened.
   useEffect(() => {
     if (!open) {
       setActiveSheet('main');
       setAssetsLoaded(false);
+      setShowPaywall(false);
+      setShowSubscription(false);
     }
   }, [open]);
 

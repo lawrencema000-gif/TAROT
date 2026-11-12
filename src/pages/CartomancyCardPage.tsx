@@ -51,7 +51,7 @@ function CartomancyCardPageBody() {
     window.scrollTo({ top: 0 });
     setPageMeta(
       t('cartomancy.seo.cardTitle', { defaultValue: '{{name}} Meaning in Cartomancy — Playing Card Reading', name: card.name }),
-      t('cartomancy.seo.cardDesc', { defaultValue: '{{name}} in playing-card reading: {{keywords}}. Upright and reversed, love, career, advice and timing.', name: card.name, keywords: card.keywords.join(', ') }),
+      t('cartomancy.seo.cardDesc', { defaultValue: '{{name}} in playing-card reading: {{keywords}}. Upright and reversed, love, career, advice and timing.', name: card.name, keywords: card.keywords.join(t('cardMeaning.listSeparator', { defaultValue: ', ' })) }),
     );
     removeJsonLd();
     const url = `${ORIGIN}/cartomancy/cards/${source.slug}`;

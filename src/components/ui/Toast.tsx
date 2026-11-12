@@ -314,6 +314,11 @@ export function ToastContainer() {
   // The stack itself is one column; errors sit nearest the bottom edge.
   // (Neither region is ever display:none: a live region has to be in the
   // accessibility tree before its content changes, or nothing is announced.)
+  //
+  // The stack stays at z-50, under the sheets. It measures its place when a
+  // toast comes or goes, on resize and when the body's class changes — not
+  // when a sheet finishes sliding up — so above the sheets, a toast already
+  // up when one opened sat over that sheet's bottom buttons (p11 review).
   const polite = toasts.filter(t => t.type !== 'error');
   const errors = toasts.filter(t => t.type === 'error');
   return (

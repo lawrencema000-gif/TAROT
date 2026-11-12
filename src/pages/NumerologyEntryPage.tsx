@@ -25,10 +25,23 @@ export function NumerologyEntryPage() {
   const navigate = useNavigate();
   const source = slug ? getNumerologyEntry(slug) : null;
   const { overlay, ready } = useLearnOverlay('numerology');
+  const numberLabel = (n: string, lng?: string) => t('learn.numerology.numberLabel', { lng, defaultValue: 'Number {{number}}', number: n });
+  // The tab title and description in the reader's language: the title names
+  // the number as the page does, the description is the localized entry's
+  // once its overlay is in. Until then the entry is English, and so is all of
+  // the head (`lng`), never a translated title over an English description.
+  // The prerendered head the crawlers read (scripts/prerender-meta.mjs) and
+  // the JSON-LD stay English.
+  const head = source && ready ? localizeNumerologyEntry(source, overlay) : source;
+  const lng = ready ? undefined : 'en';
+  const metaTitle = head
+    ? t('learn.numerology.seo.entryTitle', { lng, name: numberLabel(head.number, lng), defaultValue: '{{name}} — Life Path Meaning' })
+    : '';
+  const metaDescription = head?.shortDescription;
 
   useEffect(() => {
     if (!source) return;
-    setPageMeta(`Number ${source.number} — Life Path Meaning`, source.shortDescription);
+    setPageMeta(metaTitle, metaDescription);
     removeJsonLd();
     const url = `https://tarotlife.app/numerology/${source.slug}`;
     addJsonLd({
@@ -61,7 +74,11 @@ export function NumerologyEntryPage() {
         { '@type': 'ListItem', position: 3, name: `Number ${source.number}`, item: url },
       ],
     });
-    window.scrollTo(0, 0);
+  }, [source, metaTitle, metaDescription]);
+
+  // To the top for a new entry, not when the head is rewritten in another language.
+  useEffect(() => {
+    if (source) window.scrollTo(0, 0);
   }, [source]);
 
   if (!source) {
@@ -76,7 +93,6 @@ export function NumerologyEntryPage() {
 
   const entry = localizeNumerologyEntry(source, overlay);
   const sep = t('learn.listSeparator', { defaultValue: ', ' });
-  const numberLabel = (n: string) => t('learn.numerology.numberLabel', { defaultValue: 'Number {{number}}', number: n });
 
   const sections: LearnEntrySection[] = [
     { title: t('learn.sections.personality', { defaultValue: 'Personality' }), body: entry.personality },

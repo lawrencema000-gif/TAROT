@@ -46,9 +46,13 @@ export function SpreadsPage() {
   const [category, setCategory] = useState<SpreadCategory | 'all'>('all');
 
   useEffect(() => {
+    // The tab title and description in the reader's language; they were
+    // English in all four. The JSON-LD stays English.
     setPageMeta(
-      'Tarot Spreads — Complete Library',
-      'Comprehensive tarot spread library: Celtic Cross, three-card, love, career, lunar cycles, shadow work, and more. Position-by-position meanings.',
+      t('spreads.metaTitle', { defaultValue: 'Tarot Spreads — Complete Library' }),
+      t('spreads.metaDescription', {
+        defaultValue: 'Comprehensive tarot spread library: Celtic Cross, three-card, love, career, lunar cycles, shadow work, and more. Position-by-position meanings.',
+      }),
     );
     removeJsonLd();
     addJsonLd({
@@ -77,7 +81,7 @@ export function SpreadsPage() {
         { '@type': 'ListItem', position: 2, name: 'Tarot Spreads', item: 'https://tarotlife.app/spreads' },
       ],
     });
-  }, []);
+  }, [t]);
 
   const sections = useMemo(
     () =>

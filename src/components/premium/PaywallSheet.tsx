@@ -415,9 +415,11 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
   // The last outcome of the CTA or Restore, shown inside the sheet as well
-  // as toasted: a paywall opened over another sheet sits above the toast
-  // stack, so a toast alone can go unseen (R5 B-3 — a 500 from
-  // create-checkout-session left the CTA silent for seven seconds).
+  // as toasted. A paywall opened over another sheet used to sit above the
+  // toast stack, so a toast alone could go unseen (R5 B-3 — a 500 from
+  // create-checkout-session left the CTA silent for seven seconds); toasts
+  // now sit above every sheet (Toast.tsx), and the notice stays where the
+  // member is looking.
   const [actionNotice, setActionNotice] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
   const [displayPlans, setDisplayPlans] = useState<DisplayPlan[]>([]);
   const [hasRealProducts, setHasRealProducts] = useState(false);

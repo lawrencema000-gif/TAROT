@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, act, cleanup, waitFor } from '@testing-library/react';
+import { render, act, cleanup, waitFor, fireEvent, screen, within } from '@testing-library/react';
+import { MemoryRouter, useNavigate } from 'react-router-dom';
 import type { ReactElement } from 'react';
 
 /*
@@ -18,8 +19,11 @@ vi.mock('../lib/supabase', () => {
   return { supabase: inert(), isSupabaseConfigured: true };
 });
 
-import { androidBack, type AndroidBackShell } from '../App';
+import { androidBack, openDeepLink, type AndroidBackShell, type DeepLinkShell } from '../App';
 import { Sheet } from '../components/ui/Sheet';
+import { useLeaveGuard } from '../context/leaveGuard';
+import { BottomNav } from '../components/layout/BottomNav';
+import i18n from '../i18n/config';
 
 function shellOn(pathname: string, over: Partial<AndroidBackShell> = {}): AndroidBackShell {
   return {
@@ -121,5 +125,272 @@ describe('Android Back closes the sheet on top first (p9 RQB-3)', () => {
     const home = shellOn('/');
     back(home);
     expect(home.exitApp).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * A page that would lose something by being left (a reveal with a bought,
+ * unsaved AI interpretation) holds Back's step and asks first (leaveGuard);
+ * TarotLeaveConfirm and CartomancyLeaveConfirm drive the real sheet. Here,
+ * the order: what is on top of the page still closes first.
+ */
+
+/** A page holding the shell's ways out while `holds`; `held` receives the step. */
+function HoldingPage({ holds, held }: { holds: boolean; held: (leave: () => void) => void }) {
+  useLeaveGuard((leave) => {
+    if (!holds) return false;
+    held(leave);
+    return true;
+  });
+  return null;
+}
+
+describe('Android Back asks a page that would lose something before it leaves it', () => {
+  it('the sheet on top, then the overlay, close first; then the page holds the step until it says go', async () => {
+    const held = vi.fn();
+    const closeSheet = vi.fn();
+    const overlay = shellOn('/readings', { activeOverlay: 'saved', activeTab: 'readings' });
+    const { rerender } = render(
+      <>
+        <HoldingPage holds held={held} />
+        <Sheet open onClose={closeSheet} title="The Star">
+          <p>A card</p>
+        </Sheet>
+      </>,
+    );
+    back(overlay);
+    expect(closeSheet).toHaveBeenCalledTimes(1);
+    expect(overlay.closeOverlay).not.toHaveBeenCalled();
+    expect(held).not.toHaveBeenCalled();
+
+    rerender(
+      <>
+        <HoldingPage holds held={held} />
+        <Sheet open={false} onClose={closeSheet} title="The Star">
+          <p>A card</p>
+        </Sheet>
+      </>,
+    );
+    await waitFor(() => expect(document.body.classList.contains('sheet-open')).toBe(false));
+    back(overlay);
+    expect(overlay.closeOverlay).toHaveBeenCalledTimes(1);
+    expect(held).not.toHaveBeenCalled();
+
+    const page = shellOn('/readings', { activeTab: 'readings' });
+    back(page);
+    expect(held).toHaveBeenCalledTimes(1);
+    expect(page.goHome).not.toHaveBeenCalled();
+    // The page says go: the step it holds is Back's own, from the Readings tab home.
+    act(() => held.mock.calls[0][0]());
+    expect(page.goHome).toHaveBeenCalledTimes(1);
+    expect(page.navigateBack).not.toHaveBeenCalled();
+    expect(page.exitApp).not.toHaveBeenCalled();
+  });
+
+  it('a page that does not hold lets Back go at once, and a page that has gone holds nothing', () => {
+    const held = vi.fn();
+    const { rerender, unmount } = render(<HoldingPage holds={false} held={held} />);
+    const free = shellOn('/cartomancy/reading', { activeTab: 'readings' });
+    back(free);
+    expect(free.navigateBack).toHaveBeenCalledTimes(1);
+    expect(held).not.toHaveBeenCalled();
+
+    // The page's latest answer is the one Back hears.
+    rerender(<HoldingPage holds held={held} />);
+    const asked = shellOn('/cartomancy/reading', { activeTab: 'readings' });
+    back(asked);
+    expect(held).toHaveBeenCalledTimes(1);
+    expect(asked.navigateBack).not.toHaveBeenCalled();
+
+    unmount();
+    const gone = shellOn('/cartomancy/reading', { activeTab: 'readings' });
+    back(gone);
+    expect(gone.navigateBack).toHaveBeenCalledTimes(1);
+    expect(held).toHaveBeenCalledTimes(1);
+  });
+});
+
+/*
+ * The bottom bar's More menu is on top of the page too. Back used to leave
+ * the page under the open menu; with a page that holds its ways out, the
+ * leave sheet opened beneath the menu. Back closes the menu first now.
+ */
+describe('Android Back closes the bottom bar’s More menu first', () => {
+  const moreMenuOpen = () => document.querySelector('[data-back-closes]') !== null;
+  const openMore = () => fireEvent.click(screen.getByRole('tab', { name: 'More' }));
+
+  it('Back closes the open menu; only the next Back leaves, and a page that holds is asked', () => {
+    const held = vi.fn();
+    render(
+      <MemoryRouter initialEntries={['/readings']}>
+        <HoldingPage holds held={held} />
+        <BottomNav activeTab="readings" onTabChange={() => {}} />
+      </MemoryRouter>,
+    );
+    openMore();
+    expect(moreMenuOpen()).toBe(true);
+    const shell = shellOn('/readings', { activeTab: 'readings' });
+    back(shell);
+    expect(moreMenuOpen()).toBe(false);
+    expect(held).not.toHaveBeenCalled();
+    expect(shell.goHome).not.toHaveBeenCalled();
+
+    back(shell);
+    expect(held).toHaveBeenCalledTimes(1);
+  });
+
+  it('Escape closes the menu (the keyboard’s Back)', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <BottomNav activeTab="home" onTabChange={() => {}} />
+      </MemoryRouter>,
+    );
+    openMore();
+    expect(moreMenuOpen()).toBe(true);
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    expect(moreMenuOpen()).toBe(false);
+  });
+
+  /*
+   * The menu answered every Escape, whatever was over it. The trial reminder
+   * cannot see the menu (it waits only for a sheet or a dialog), and a rate
+   * prompt or a level-up opens over it as a sheet: one Escape, or one Android
+   * Back, closed the sheet and the menu together. The menu holds a focus trap
+   * now, as every modal surface does, and answers Escape only when on top.
+   */
+  const pressEscape = () =>
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+  /** The bar, and a sheet that may open over its menu (a rate prompt), as App mounts them. */
+  const barUnder = (sheetOpen: boolean, closeSheet: () => void) => (
+    <MemoryRouter initialEntries={['/']}>
+      <BottomNav activeTab="home" onTabChange={() => {}} />
+      <Sheet open={sheetOpen} onClose={closeSheet} title="Enjoying Arcana?">
+        <button type="button">Rate</button>
+      </Sheet>
+    </MemoryRouter>
+  );
+
+  it.each(['Escape', 'Android Back'])(
+    'a sheet over the open menu: one %s closes only the sheet, the next closes the menu, and focus goes back to More',
+    async (way) => {
+      const shell = shellOn('/');
+      const press = () => (way === 'Escape' ? pressEscape() : back(shell));
+      const closeSheet = vi.fn();
+      const { rerender } = render(barUnder(false, closeSheet));
+      // Opened from the More button (a key press, or a tap that focuses it).
+      const more = screen.getByRole('tab', { name: 'More' });
+      more.focus();
+      fireEvent.click(more);
+      expect(moreMenuOpen()).toBe(true);
+
+      // A rate prompt opens over the menu.
+      rerender(barUnder(true, closeSheet));
+      await screen.findByRole('dialog', { name: 'Enjoying Arcana?' });
+      press();
+      expect(closeSheet).toHaveBeenCalledTimes(1);
+      expect(moreMenuOpen()).toBe(true);
+
+      // The prompt has closed: the next press is the menu's.
+      rerender(barUnder(false, closeSheet));
+      press();
+      expect(moreMenuOpen()).toBe(false);
+      expect(closeSheet).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(more);
+      expect(shell.exitApp).not.toHaveBeenCalled();
+    },
+  );
+
+  it('a new page closes the menu, however it came (a link from outside, a leave sheet’s Leave)', () => {
+    function Elsewhere() {
+      const navigate = useNavigate();
+      return <button type="button" onClick={() => navigate('/reading/abc')}>go elsewhere</button>;
+    }
+    render(
+      <MemoryRouter initialEntries={['/readings']}>
+        <Elsewhere />
+        <BottomNav activeTab="readings" onTabChange={() => {}} />
+      </MemoryRouter>,
+    );
+    openMore();
+    expect(moreMenuOpen()).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'go elsewhere' }));
+    expect(moreMenuOpen()).toBe(false);
+  });
+
+  it('the open menu holds focus: it moves in when the menu opens, and back to More when it closes', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <BottomNav activeTab="home" onTabChange={() => {}} />
+      </MemoryRouter>,
+    );
+    const more = screen.getByRole('tab', { name: 'More' });
+    more.focus();
+    fireEvent.click(more);
+    const menu = document.querySelector<HTMLElement>('[data-back-closes]')!;
+    const close = within(menu).getByRole('button', { name: i18n.t('common:actions.close') });
+    expect(document.activeElement).toBe(close);
+
+    fireEvent.click(close);
+    expect(moreMenuOpen()).toBe(false);
+    expect(document.activeElement).toBe(more);
+  });
+});
+
+/*
+ * A link opened from outside the app (Capacitor's appUrlOpen) leaves the
+ * page, so a page that would lose something asks first. The shell's overlay
+ * closes before it asks: the question used to open under the Search, Saved or
+ * Settings sheet, unseen, and the first Android Back answered Stay to it.
+ */
+describe('a link opened from outside the app closes the shell’s overlay, then asks the page', () => {
+  /** App's hands for a link; `log` records the order things happen in. */
+  function linkShell(log: string[] = []): DeepLinkShell {
+    return {
+      closeOverlay: vi.fn(() => {
+        log.push('overlay closed');
+      }),
+      navigate: vi.fn(),
+      setActiveTab: vi.fn(),
+    };
+  }
+
+  it('the overlay closes before a page that holds is asked; its "go" takes the link', () => {
+    const log: string[] = [];
+    const held = vi.fn();
+    held.mockImplementation(() => {
+      log.push('page asked');
+    });
+    render(<HoldingPage holds held={held} />);
+    const shell = linkShell(log);
+    act(() => openDeepLink('https://tarotlife.app/reading/abc123', shell));
+    expect(log).toEqual(['overlay closed', 'page asked']);
+    expect(shell.navigate).not.toHaveBeenCalled();
+
+    act(() => held.mock.calls[0][0]());
+    expect(shell.navigate).toHaveBeenCalledWith('/reading/abc123');
+    expect(shell.setActiveTab).not.toHaveBeenCalled();
+  });
+
+  it('a page that does not hold: the overlay closes and the link goes at once; a link the app does not route touches nothing', () => {
+    render(<HoldingPage holds={false} held={vi.fn()} />);
+    const horoscope = linkShell();
+    act(() => openDeepLink('https://tarotlife.app/horoscope/leo', horoscope));
+    expect(horoscope.closeOverlay).toHaveBeenCalledTimes(1);
+    expect(horoscope.setActiveTab).toHaveBeenCalledWith('horoscope');
+
+    const card = linkShell();
+    act(() => openDeepLink('https://tarotlife.app/card/the-star', card));
+    expect(card.navigate).toHaveBeenCalledWith('/tarot-meanings/the-star');
+
+    const other = linkShell();
+    act(() => openDeepLink('https://example.com/reading/abc123', other));
+    act(() => openDeepLink('https://tarotlife.app/unknown/abc123', other));
+    expect(other.closeOverlay).not.toHaveBeenCalled();
+    expect(other.navigate).not.toHaveBeenCalled();
+    expect(other.setActiveTab).not.toHaveBeenCalled();
   });
 });

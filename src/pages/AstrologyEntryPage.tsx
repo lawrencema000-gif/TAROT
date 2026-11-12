@@ -48,14 +48,31 @@ export function AstrologyEntryPage() {
   const { t } = useT('app');
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  // `source` is the English entry: it drives the SEO head (the shells are
+  // `source` is the English entry: it drives the JSON-LD (the SEO shells are
   // English-only) and is what the overlay is applied to for display.
   const source = slug ? getAstroEntry(slug) : null;
   const { overlay, ready } = useLearnOverlay('astrology');
+  // The tab title and description in the reader's language, as the tarot
+  // card pages have them: the localized entry once its overlay is in. Until
+  // then the entry is English, and so is all of the head (`lng`): the
+  // reader's kind beside the English name read "Aries — 星座". They were
+  // English in every language. The head the crawlers read is prerendered
+  // (scripts/prerender-meta.mjs) and stays English, as does the JSON-LD.
+  const head = source && ready ? localizeAstroEntry(source, overlay) : source;
+  const lng = ready ? undefined : 'en';
+  const metaTitle = head
+    ? t('learn.astrology.seo.entryTitle', {
+        lng,
+        name: head.name,
+        kind: t(`learn.astrology.kinds.${head.category}`, { lng, defaultValue: KIND_LABEL[head.category] }),
+        defaultValue: '{{name}} — {{kind}}',
+      })
+    : '';
+  const metaDescription = head?.shortDescription;
 
   useEffect(() => {
     if (!source) return;
-    setPageMeta(`${source.name} — ${KIND_LABEL[source.category]}`, source.shortDescription);
+    setPageMeta(metaTitle, metaDescription);
     removeJsonLd();
     const url = `https://tarotlife.app/astrology/${source.slug}`;
     addJsonLd({
@@ -90,7 +107,12 @@ export function AstrologyEntryPage() {
         { '@type': 'ListItem', position: 3, name: source.name, item: url },
       ],
     });
-    window.scrollTo(0, 0);
+  }, [source, metaTitle, metaDescription]);
+
+  // To the top for a new entry, not when the head above is rewritten as the
+  // translation lands or the language changes.
+  useEffect(() => {
+    if (source) window.scrollTo(0, 0);
   }, [source]);
 
   // Zodiac Scholar counts the distinct sign pages a member has read. The

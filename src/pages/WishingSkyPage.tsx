@@ -50,12 +50,14 @@ export function WishingSkyPage() {
   const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
   const [reporting, setReporting] = useState(false);
 
+  // The tab title and description in the reader's language (the title is the
+  // page's own name, its eyebrow); they were English in all four.
   useEffect(() => {
     setPageMeta(
-      'The Wishing Sky',
-      'A shared sky where every wish is a star. Make a wish, and see it light up beside everyone else’s.',
+      t('wishingSky.eyebrow', { defaultValue: 'The Wishing Sky' }),
+      t('wishingSky.metaDescription', { defaultValue: 'A shared sky where every wish is a star. Make a wish, and see it light up beside everyone else’s.' }),
     );
-  }, []);
+  }, [t]);
 
   const load = useCallback(async () => {
     setLoading(true);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { leaveOrAsk } from '../../context/leaveGuard';
 import { Bookmark, Layers, Star } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { TarotCardIcon, PlayingCardIcon } from '../ui/NavIcons';
@@ -202,7 +203,7 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
 
   const openLibrary = () => {
     onClose();
-    navigate('/readings', { state: { tab: 'library' } });
+    leaveOrAsk(() => navigate('/readings', { state: { tab: 'library' } }));
   };
 
   return (

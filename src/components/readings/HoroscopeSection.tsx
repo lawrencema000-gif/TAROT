@@ -405,11 +405,16 @@ function SunSignHoroscope({ onShowPaywall }: HoroscopeSectionProps) {
           <div className="pt-4 border-t border-mystic-700 space-y-4">
             <div>
               <h4 className="heading-display-md text-mystic-100 mb-3">{t('horoscope.luckyFocus')}</h4>
-              {/* A third of the card each: the colour and the vibe are labels,
-                  so a long katakana colour (オブシディアン) breaks between
-                  phrases, not inside the word (QU1 R-f; index.css .keep-phrases). */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 bg-mystic-800/30 rounded-control">
+              {/* The colour on a row of its own, the number and the vibe side
+                  by side under it. A third of the card left a colour 68px of
+                  text at 390px (58px at 360px), and a katakana colour is one
+                  word at 15px a letter: アイボリー (75px) broke as アイボ/リー,
+                  オブシディアン is 105px. The row gives it 276px (246px at
+                  360px), room for every colour in every language. Colour and
+                  vibe stay labels (keep-phrases), so a colour that ever has to
+                  wrap breaks between phrases (QU1 R-f; index.css .keep-phrases). */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.color')}</p>
                   <p className="keep-phrases text-ui text-mystic-200 font-medium">{horoscope.luckyColor}</p>
                 </div>

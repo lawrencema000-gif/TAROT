@@ -11471,7 +11471,9 @@
     "lede": "十二宮、十四主星、四化。旧暦の生年月日と生まれた時辰から配置します。",
     "noTimeNote": "出生時刻がない場合は正午（午時）として計算します。星の配置の型はそのままですが、命宮の位置がずれることがあります。",
     "lifePalaceIn": "命宮：{{branch}}",
-    "lunarDate": "旧暦 {{date}}"
+    "lunarDate": "旧暦 {{date}}",
+    "metaTitle": "紫微斗数の命盤",
+    "metaDescription": "あなたの紫微斗数の命盤を出します。十二宮、十四主星、四化を、正確な旧暦から算出します。"
   },
   "mansions": {
     "title": "二十八宿",
@@ -11493,7 +11495,9 @@
     "nothingFavoured": "暦にはこの日の宜（吉）の記載がありません。何かを始めるより、控えめに過ごす日です。",
     "sukuyo": "日本の宿曜道は数え方が異なり、日々めぐる周期ではなく旧暦の生まれ月と日から数えます。それによるあなたの宿は<gold>{{mansion}}</gold>です。どちらも正統な読み方です。少し異なる問いに答えるものなので、どちらかを選んでしまわずに、分けてお見せしています。",
     "sukuyoEyebrow": "宿曜 · 日本の読み方",
-    "seasonElement": "{{season}}・{{element}}"
+    "seasonElement": "{{season}}・{{element}}",
+    "metaTitle": "二十八宿 — 月がめぐる宿",
+    "metaDescription": "月が通る空を中国の伝統で分けた二十八宿。今日を司る宿と、あなたが生まれた日の宿。"
   },
   "dates": {
     "title": "吉日を選ぶ",
@@ -11517,7 +11521,9 @@
       "inauspiciousGeneral": "{{mansion}}宿は凶宿——全般に凶とされ、この件について個別の記載はありません",
       "yearClash": "この日はあなたの年支と衝突します（沖太歲）"
     },
-    "exportFailed": "カレンダーファイルを保存できませんでした。もう一度お試しください。"
+    "exportFailed": "カレンダーファイルを保存できませんでした。もう一度お試しください。",
+    "metaTitle": "吉日選び — 択日",
+    "metaDescription": "結婚、引っ越し、開業、旅行によい日を、二十八宿とあなた自身の柱から見つけます。"
   },
   "celestial": {
     "needBirthDate": {
@@ -11990,7 +11996,9 @@
       "knight": "ナイト",
       "page": "ペイジ",
       "queen": "クイーン"
-    }
+    },
+    "metaTitle": "鏡 — あなたのリーディングのパターン",
+    "metaDescription": "あなたのタロットリーディングの集計：よく出るカード、スートのバランス、逆位置の割合、連続日数。"
   },
   "spreadDetail": {
     "notFound": "スプレッドが見つかりません",
@@ -12012,7 +12020,9 @@
     "quoted": "「{{text}}」",
     "related": "関連するスプレッド",
     "signUpToRead": "登録してこのスプレッドで占う",
-    "whenToUse": "使いどき"
+    "whenToUse": "使いどき",
+    "metaTitle": "{{name}} — タロットスプレッドの位置ごとの意味",
+    "metaDescription": "{{description}}{{n}}枚の配置を、位置ごとに読み解きます。"
   },
   "chartSuite": {
     "eyebrow": "チャートライブラリ",
@@ -12275,7 +12285,8 @@
     "echoCount_one": "応え{{count}}件",
     "echoCount_other": "応え{{count}}件",
     "wishCount_one": "願い{{count}}件",
-    "wishCount_other": "願い{{count}}件"
+    "wishCount_other": "願い{{count}}件",
+    "metaDescription": "すべての願いが星になる、みんなの空。願いごとをして、ほかのみんなの願いのそばで光るのを見てみましょう。"
   },
   "spreadBuilder": {
     "signInPrompt": "カスタムスプレッドはアカウントに保存されます。",
@@ -12808,7 +12819,9 @@
         "description": "内面のワーク、統合、そしてハイヤーセルフの導き。",
         "title": "スピリチュアルとシャドウ"
       }
-    }
+    },
+    "metaTitle": "タロットスプレッド — 完全ライブラリ",
+    "metaDescription": "タロットスプレッドの総合ライブラリ：ケルト十字、3枚引き、恋愛、仕事、月のサイクル、シャドウワークなど。位置ごとの意味つき。"
   },
   "share": {
     "youAnd": "あなたと{{name}}",
@@ -13103,7 +13116,10 @@
         "aspect": "アスペクト"
       },
       "notFound": "項目が見つかりません",
-      "backToHub": "占星術の全項目"
+      "backToHub": "占星術の全項目",
+      "seo": {
+        "entryTitle": "{{name}} — {{kind}}"
+      }
     },
     "numerology": {
       "title": "数秘術",
@@ -13131,7 +13147,12 @@
       "lifePathEyebrow": "ライフパス数",
       "lifePathMasterEyebrow": "ライフパス数（マスターナンバー）",
       "notFound": "数字が見つかりません",
-      "backToHub": "すべての数字"
+      "backToHub": "すべての数字",
+      "seo": {
+        "entryTitle": "{{name}} — ライフパス数の意味",
+        "hubTitle": "数秘術 — ライフパス数を解説",
+        "hubDesc": "数秘術の完全ガイド：9つの基本数と3つのマスターナンバー（11、22、33）。ピタゴラス式の伝統、ライフパス数の意味、タロットとの対応。"
+      }
     },
     "glossary": {
       "title": "用語集",
@@ -13153,7 +13174,12 @@
         "matches_other": "{{count}}件"
       },
       "notFound": "用語が見つかりません",
-      "backToHub": "すべての用語"
+      "backToHub": "すべての用語",
+      "seo": {
+        "entryTitle": "{{term}} — 用語の意味",
+        "hubTitle": "用語集 — タロット・占星術・数秘術の用語",
+        "hubDesc": "タロット、占星術、数秘術、スピリチュアリティ、占いにわたる{{n}}語を、定義とともに収録。"
+      }
     },
     "crystals": {
       "title": "クリスタル",
@@ -13191,7 +13217,12 @@
       "kind": "クリスタル",
       "mohs": "モース硬度 {{value}}",
       "notFound": "クリスタルが見つかりません",
-      "backToHub": "すべてのクリスタル"
+      "backToHub": "すべてのクリスタル",
+      "seo": {
+        "entryTitle": "{{name}} — 意味、性質、使い方",
+        "hubTitle": "クリスタルの意味 — {{n}}種類の石を解説",
+        "hubDesc": "クリスタルの総合ガイド：{{n}}種類の石を、スピリチュアルな性質、チャクラとの対応、モース硬度、タロットとのつながりとともに。"
+      }
     },
     "enums": {
       "elements": {
@@ -13234,5 +13265,17 @@
   "authPage": {
     "metaTitle": "ログイン",
     "metaDescription": "Arcanaにログイン——タロット、占星術、内省のジャーナリングを毎日の習慣に。リチュアルを続けましょう。"
+  },
+  "unsubscribe": {
+    "metaTitle": "配信停止",
+    "metaDescription": "Arcanaのニュースレターの配信停止を確認します。",
+    "processing": "リクエストを処理しています…",
+    "doneTitle": "配信を停止しました",
+    "doneBody": "<email>{{email}}</email> には、今後Arcanaからのメールは届きません。",
+    "mistake": "間違えて停止した場合は、いつでも登録し直せます。",
+    "alreadyTitle": "すでに配信停止済みです",
+    "alreadyBody": "今後メールをお送りすることはありません。",
+    "invalidTitle": "リンクを確認できませんでした",
+    "invalidBody": "この配信停止リンクは無効か、有効期限が切れているようです。心当たりのないメールが届き続ける場合は、そのうちの1通に返信してください。こちらで個別に対応します。"
   }
 }

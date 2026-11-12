@@ -21,7 +21,8 @@ vi.mock('../../../dal', () => ({ journalEntries: { listForUser: (...a: unknown[]
 
 import i18n from '../../../i18n/config';
 import { recentSearchesKey } from '../../../services/search';
-import { SearchSheet } from '../SearchSheet';
+import { SearchSheet } from '../SearchSheet';
+import { useLeaveGuard } from '../../../context/leaveGuard';
 
 /** Node 25 ships its own (file-less, broken) localStorage over jsdom's; give the code a real one. */
 function memoryStorage(): Storage {
@@ -238,5 +239,48 @@ describe('SearchSheet', () => {
     expect(screen.getByText(hint)).toBeInTheDocument();
     type('pisces');
     expect(await screen.findByRole('heading', { name: signs }, WAIT)).toBeInTheDocument();
+  });
+});
+
+/*
+ * A result or a quick link leaves the page on screen. A reading on it with a
+ * bought AI interpretation it has not saved holds the step and asks first
+ * (leaveGuard), as the bottom bar does; the search used to leave it at once.
+ */
+describe('SearchSheet: leaving a page that would lose something', () => {
+  beforeEach(() => {
+    cleanup();
+    vi.stubGlobal('localStorage', memoryStorage());
+    listForUser.mockReset();
+    listForUser.mockResolvedValue({ ok: true, data: [] });
+  });
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('a quick link is held until the page says go, then opens its screen', async () => {
+    await inLanguage('en');
+    const held: Array<() => void> = [];
+    function Holding() {
+      useLeaveGuard((leave) => {
+        held.push(leave);
+        return true;
+      });
+      return null;
+    }
+    const onClose = vi.fn();
+    render(
+      <MemoryRouter initialEntries={['/readings']}>
+        <Where />
+        <Holding />
+        <SearchSheet open onClose={onClose} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Journal prompts' }));
+    expect(onClose).toHaveBeenCalled();
+    expect(held).toHaveLength(1);
+    expect(screen.getByTestId('where').textContent).toBe('/readings');
+    act(() => held[0]());
+    expect(screen.getByTestId('where')).toHaveTextContent('/journal');
   });
 });

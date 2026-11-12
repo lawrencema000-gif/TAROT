@@ -28,9 +28,14 @@ export function GlossaryPage() {
   const { overlay, ready } = useLearnOverlay('glossary');
 
   useEffect(() => {
+    // The tab title and description in the reader's language; they were
+    // English in all four. The JSON-LD stays English.
     setPageMeta(
-      'Glossary — Tarot, Astrology, Numerology Terms',
-      `${glossaryEntries.length} terms with definitions across tarot, astrology, numerology, spirituality, and divination.`,
+      t('learn.glossary.seo.hubTitle', { defaultValue: 'Glossary — Tarot, Astrology, Numerology Terms' }),
+      t('learn.glossary.seo.hubDesc', {
+        defaultValue: '{{n}} terms with definitions across tarot, astrology, numerology, spirituality, and divination.',
+        n: glossaryEntries.length,
+      }),
     );
     removeJsonLd();
     addJsonLd({
@@ -59,7 +64,7 @@ export function GlossaryPage() {
         { '@type': 'ListItem', position: 2, name: 'Glossary', item: 'https://tarotlife.app/glossary' },
       ],
     });
-  }, []);
+  }, [t]);
 
   // Search matches the term and short definition in the language on screen
   // AND in English, so a Japanese reader who types "querent" still finds 相談者.

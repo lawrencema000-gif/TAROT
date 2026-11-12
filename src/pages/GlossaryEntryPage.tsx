@@ -25,10 +25,19 @@ export function GlossaryEntryPage() {
   const navigate = useNavigate();
   const source = slug ? getGlossaryEntry(slug) : null;
   const { overlay, ready } = useLearnOverlay('glossary');
+  // The tab title and description in the reader's language: the localized
+  // entry once its overlay is in. Until then the entry is English, and so is
+  // all of the head (`lng`), never its English term in the reader's frame.
+  // The prerendered head the crawlers read (scripts/prerender-meta.mjs) and
+  // the JSON-LD stay English.
+  const head = source && ready ? localizeGlossaryEntry(source, overlay) : source;
+  const lng = ready ? undefined : 'en';
+  const metaTitle = head ? t('learn.glossary.seo.entryTitle', { lng, term: head.term, defaultValue: '{{term}} — Definition' }) : '';
+  const metaDescription = head?.shortDefinition;
 
   useEffect(() => {
     if (!source) return;
-    setPageMeta(`${source.term} — Definition`, source.shortDefinition);
+    setPageMeta(metaTitle, metaDescription);
     removeJsonLd();
     const url = `https://tarotlife.app/glossary/${source.slug}`;
     addJsonLd({
@@ -54,7 +63,11 @@ export function GlossaryEntryPage() {
         { '@type': 'ListItem', position: 3, name: source.term, item: url },
       ],
     });
-    window.scrollTo(0, 0);
+  }, [source, metaTitle, metaDescription]);
+
+  // To the top for a new entry, not when the head is rewritten in another language.
+  useEffect(() => {
+    if (source) window.scrollTo(0, 0);
   }, [source]);
 
   if (!source) {

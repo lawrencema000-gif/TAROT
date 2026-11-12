@@ -95,5 +95,9 @@
   },
   "progress": {
     "step": "Step {{n}} of {{total}}"
+  },
+  "meta": {
+    "title": "Sign up — Free 3-day trial",
+    "description": "Create your free Arcana account. Daily tarot readings, personalized horoscopes, journaling, and a 3-day free trial of Premium."
   }
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterAll, beforeEach } from 'vitest';
 import { render, screen, act, waitFor, fireEvent, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
 /*
  * The header ☆ sheet lists what the member saved, from the Library's
@@ -19,7 +19,8 @@ vi.mock('../../../dal', () => ({
 }));
 
 import i18n from '../../../i18n/config';
-import { SavedSheet } from '../SavedSheet';
+import { SavedSheet } from '../SavedSheet';
+import { useLeaveGuard } from '../../../context/leaveGuard';
 
 const READING = {
   id: 'r1',
@@ -203,5 +204,43 @@ describe('SavedSheet', () => {
     );
     await screen.findByRole('button', { name: /^Open .+ from Oct 7$/ });
     expect(screen.getAllByRole('dialog').length).toBe(1);
+  });
+});
+
+/*
+ * The Library link leaves the page under the sheet (it is shown off
+ * /readings, e.g. over the playing-card reveal). A reading there with a
+ * bought AI interpretation it has not saved holds the step and asks first
+ * (leaveGuard).
+ */
+describe('SavedSheet: the Library link and a page that would lose something', () => {
+  it('waits until the page says go, then opens the Library', async () => {
+    await act(async () => { await i18n.changeLanguage('en'); });
+    listSaved.mockResolvedValue({ ok: true, data: [READING] });
+    listRawForUser.mockResolvedValue({ ok: true, data: [] });
+    const held: Array<() => void> = [];
+    function Holding() {
+      useLeaveGuard((leave) => {
+        held.push(leave);
+        return true;
+      });
+      return null;
+    }
+    function Where() {
+      const { pathname } = useLocation();
+      return <output data-testid="where">{pathname}</output>;
+    }
+    render(
+      <MemoryRouter initialEntries={['/cartomancy/reading']}>
+        <Where />
+        <Holding />
+        <SavedSheet open onClose={() => {}} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Open your Library' }));
+    expect(held).toHaveLength(1);
+    expect(screen.getByTestId('where').textContent).toBe('/cartomancy/reading');
+    act(() => held[0]());
+    expect(screen.getByTestId('where').textContent).toBe('/readings');
   });
 });

@@ -76,12 +76,15 @@ export function MansionsPage() {
   const [touched, setTouched] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
+  // The tab title and description in the reader's language; they were English in all four.
   useEffect(() => {
     setPageMeta(
-      'Lunar Mansions — 二十八宿',
-      'The Chinese division of the sky the Moon passes through: today’s governing mansion, and the mansion of the day you were born.',
+      t('mansions.metaTitle', { defaultValue: 'Lunar Mansions — 二十八宿' }),
+      t('mansions.metaDescription', {
+        defaultValue: 'The Chinese division of the sky the Moon passes through: today’s governing mansion, and the mansion of the day you were born.',
+      }),
     );
-  }, []);
+  }, [t]);
 
   // Auto-cast once the profile has resolved, unless the user has typed a date.
   useEffect(() => {

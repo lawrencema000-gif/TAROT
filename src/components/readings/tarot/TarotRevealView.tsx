@@ -17,6 +17,7 @@
  * All state and handlers come from TarotSection; this is presentation.
  */
 import { useEffect, useRef, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { useReducedMotion } from 'framer-motion';
 import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Info, Loader2 } from 'lucide-react';
 import { Button, Sheet, TarotFace } from '../../ui';
@@ -119,22 +120,35 @@ export interface LeaveReadingSheetProps {
    * sheet says where the text is, or that it would go.
    */
   inLibrary: boolean;
-  /** The save is on its way: "Save and leave" spins and ignores taps. */
+  /**
+   * The insert of "Save and leave" is on its way: "Save and leave" spins,
+   * and neither action takes a tap. The insert only — the ad and the rate
+   * prompt the row earns run after the member's step, and the sheet does
+   * not wait for them.
+   */
   saving: boolean;
-  /** Stay on the reading (the sheet's close, Escape, the scrim). */
+  /**
+   * Stay on the reading (the sheet's close, Escape or Android Back, the
+   * scrim). The section does nothing with it while the insert of "Save and
+   * leave" runs.
+   */
   onStay: () => void;
+  /** Save, then go the way the member asked: home, the tab they tapped, Android Back's step. */
   onSaveAndLeave: () => void;
+  /** Go that way without saving. */
   onLeave: () => void;
 }
 
 /**
- * Asked before "Start a new reading" or Back leaves an unsaved reveal whose
- * AI interpretation was bought (QU1 R-c): one tap used to throw it away.
- * Shared by the reveals that sell one; the section decides when to ask.
+ * Asked before a way out leaves an unsaved reveal whose AI interpretation
+ * was bought (QU1 R-c): one tap used to throw it away. "Start a new
+ * reading" and Back ask, and so do a tab on the bottom bar and Android Back
+ * (leaveGuard). Shared by the reveals that sell one; the section decides
+ * when to ask.
  */
 export function LeaveReadingSheet({ open, inLibrary, saving, onStay, onSaveAndLeave, onLeave }: LeaveReadingSheetProps) {
   const { t } = useT('app');
-  return (
+  const sheet = (
     <Sheet open={open} onClose={onStay} title={t('readings.revealView.leaveConfirm.title', { defaultValue: 'Leave without saving?' })}>
       <div className="space-y-5">
         <p className="text-ui text-mystic-300 leading-relaxed">
@@ -157,6 +171,14 @@ export function LeaveReadingSheet({ open, inLibrary, saving, onStay, onSaveAndLe
       </div>
     </Sheet>
   );
+  // Portalled to <body>, as EarnMoonstonesSheet is. The reveal sits in the
+  // shell's <main>, a stacking context of its own (z-10), and the sheet drawn
+  // in it sat under whatever the shell had open — the Search, Saved or
+  // Settings sheet, the More menu — when a way out asked from there (a link
+  // opened from outside the app): a question the member could not see, which
+  // the first Android Back answered with Stay. On <body>, its own z (50 + 2 ×
+  // its order) and its place last in the document put it above them.
+  return typeof document === 'undefined' ? sheet : createPortal(sheet, document.body);
 }
 
 /** Rows of three, for a spread that brought no layout. */

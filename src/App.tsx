@@ -16,6 +16,8 @@ import { syncDailyReminder, syncStreakNudge } from './services/localNotification
 import { GlobalAchievementCelebration } from './components/achievements/GlobalAchievementCelebration';
 import { FeatureFlagProvider, useFeatureFlag, useFeatureFlags } from './context/FeatureFlagContext';
 import { useUI, isTabRoot } from './context/UIContext';
+import { leaveOrAsk } from './context/leaveGuard';
+import type { Tab } from './types';
 import { useGamification } from './context/GamificationContext';
 import { usePostCheckout } from './hooks/usePostCheckout';
 import { UpdateAvailableBanner } from './components/overlays/UpdateAvailableBanner';
@@ -307,10 +309,16 @@ export interface AndroidBackShell {
  * opened from the Saved sheet went with the list instead of back to it, and
  * a sheet opened on a page stayed up while Back left the page, or the app,
  * under it. The body holds `sheet-open` while any sheet is up.
+ *
+ * The last three steps leave the page, and a page that would lose something
+ * by it asks first (leaveOrAsk): a reading with a bought AI interpretation
+ * it has not saved. Back used to leave it without a word; the step now
+ * waits for the answer — taken on "Leave" or "Save and leave", dropped on
+ * "Stay".
  */
 // eslint-disable-next-line react-refresh/only-export-components -- exported for its unit test (src/__tests__/androidBack.test.tsx)
 export function androidBack(shell: AndroidBackShell): void {
-  if (document.body.classList.contains('sheet-open')) {
+  if (document.body.classList.contains('sheet-open') || document.querySelector('[data-back-closes]')) {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     return;
   }
@@ -318,18 +326,62 @@ export function androidBack(shell: AndroidBackShell): void {
     shell.closeOverlay();
     return;
   }
-  // Deep pages (/people/:id, /pick-a-card, /reports/*…) resolve to
-  // activeTab='home', so without the isTabRoot check a single back press
-  // from any of them exited the app outright.
-  if (!isTabRoot(shell.pathname)) {
-    shell.navigateBack();
-    return;
-  }
-  if (shell.activeTab !== 'home') {
-    shell.goHome();
-    return;
-  }
-  shell.exitApp();
+  leaveOrAsk(() => {
+    // Deep pages (/people/:id, /pick-a-card, /reports/*…) resolve to
+    // activeTab='home', so without the isTabRoot check a single back press
+    // from any of them exited the app outright.
+    if (!isTabRoot(shell.pathname)) {
+      shell.navigateBack();
+      return;
+    }
+    if (shell.activeTab !== 'home') {
+      shell.goHome();
+      return;
+    }
+    shell.exitApp();
+  });
+}
+
+/** What a link opened from outside the app acts on: the shell's overlay, and the way to the page it names. */
+export interface DeepLinkShell {
+  closeOverlay: () => void;
+  navigate: (to: string) => void;
+  setActiveTab: (tab: Tab) => void;
+}
+
+/**
+ * A shared content URL opened from outside the app (Capacitor's
+ * appUrlOpen), routed to the ACTUAL target with its id or token —
+ * previously the id was discarded and recipients landed on a generic tab
+ * instead of the shared reading or card.
+ *
+ * The link leaves the page on screen, and a page that would lose something
+ * by it asks first, as the app's own ways out do (leaveOrAsk). The shell's
+ * overlay (Search, Saved, Settings) closes before it asks, as a Search
+ * result or the Saved sheet's Library link does: the link leaves it anyway,
+ * and the question used to open under it, unseen, where the first Android
+ * Back answered Stay — the link was dropped and the overlay stayed.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- exported for its unit test (src/__tests__/androidBack.test.tsx)
+export function openDeepLink(url: string, shell: DeepLinkShell): void {
+  const route = parseDeepLink(url);
+  if (!route || route.type === 'unknown') return;
+  shell.closeOverlay();
+  leaveOrAsk(() => {
+    switch (route.type) {
+      case 'reading':
+        if (route.id) shell.navigate(`/reading/${route.id}`);
+        else shell.setActiveTab('readings');
+        break;
+      case 'card':
+        if (route.id) shell.navigate(`/tarot-meanings/${route.id}`);
+        else shell.setActiveTab('readings');
+        break;
+      case 'horoscope':
+        shell.setActiveTab('horoscope');
+        break;
+    }
+  });
 }
 
 function AppContent() {
@@ -494,30 +546,15 @@ function AppContent() {
     setShowOAuthCancel(false);
   }, [isProcessingOAuth]);
 
-  // Deep link routing for shared content URLs. Route to the ACTUAL target
-  // (with its id/token) — previously the id was discarded and recipients
-  // landed on a generic tab instead of the shared reading/card.
+  // Deep link routing for shared content URLs: the shell's overlay closes,
+  // then a page that would lose something asks (openDeepLink).
   useEffect(() => {
     if (!isNative()) return;
     const listener = CapApp.addListener('appUrlOpen', ({ url }) => {
-      const route = parseDeepLink(url);
-      if (!route || route.type === 'unknown') return;
-      switch (route.type) {
-        case 'reading':
-          if (route.id) navigate(`/reading/${route.id}`);
-          else setActiveTab('readings');
-          break;
-        case 'card':
-          if (route.id) navigate(`/tarot-meanings/${route.id}`);
-          else setActiveTab('readings');
-          break;
-        case 'horoscope':
-          setActiveTab('horoscope');
-          break;
-      }
+      openDeepLink(url, { closeOverlay, navigate, setActiveTab });
     });
     return () => { listener.then(l => l.remove()).catch(() => {}); };
-  }, [setActiveTab, navigate]);
+  }, [closeOverlay, setActiveTab, navigate]);
 
   // Android hardware back button: the sheet on top → the overlay → back out
   // of deep pages → go home → exit app (androidBack).

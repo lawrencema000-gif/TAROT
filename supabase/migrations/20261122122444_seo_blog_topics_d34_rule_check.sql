@@ -2,7 +2,7 @@
 -- SEO blog topics — D34 rule check of the 90 topics added on 2026-11-22
 -- ============================================================================
 -- 19 briefs amended by Claude under the owner's delegation of 2026-11-17, in
--- the PR that adds this file (fix/blog-topics-d34-rules).
+-- PR #23 (fix/blog-topics-d34-rules).
 --
 -- The owner's decision D34 (plan/answers.md) sets the rules every blog topic
 -- follows: (1) a live category; (2) one topic per keyword; (3) house-style

@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
 import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
 import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
+import { draftTopic } from "./topic-draft.ts";
 import { marked } from "npm:marked@14.1.3";
 
 /**
@@ -525,11 +526,44 @@ Deno.serve(handler<RunBody>({
         .limit(1)
         .maybeSingle();
       if (error) throw new AppError("TOPIC_FETCH_FAILED", error.message, 500);
-      if (!data) throw new AppError("QUEUE_EMPTY", "No unused topics in queue — add more", 400);
-      topic = data as Topic;
+      if (data) {
+        topic = data as Topic;
+      } else {
+        // The curated queue is empty: draft one topic (Claude first) so the
+        // blog keeps publishing. It ran dry silently twice before, the
+        // second time for two months (2026-09-21 to 2026-11-22).
+        const { data: rows } = await ctx.supabase.from("seo_blog_topics").select("keyword");
+        const drafted = await draftTopic((rows ?? []).map((r) => String(r.keyword)));
+        if (!drafted) {
+          throw new AppError("QUEUE_EMPTY", "No unused topics in queue and drafting one failed — add more", 400);
+        }
+        if (body?.dryRun) {
+          topic = { id: "draft (not saved: dry run)", ...drafted };
+        } else {
+          const { data: saved, error: saveErr } = await ctx.supabase
+            .from("seo_blog_topics")
+            .insert({ ...drafted, priority: 100 })
+            .select("id, category, topic, brief, keyword, related_keywords")
+            .single();
+          if (saveErr || !saved) {
+            throw new AppError("TOPIC_DRAFT_SAVE_FAILED", saveErr?.message ?? "drafted topic not saved", 500);
+          }
+          topic = saved as Topic;
+        }
+        ctx.log.warn("daily_seo.topic_drafted", { keyword: drafted.keyword, category: drafted.category });
+      }
     }
 
     ctx.log.info("daily_seo.topic_picked", { topicId: topic.id, keyword: topic.keyword });
+
+    // Say so in the logs while there is still time to add curated topics.
+    const { count: unused } = await ctx.supabase
+      .from("seo_blog_topics")
+      .select("id", { count: "exact", head: true })
+      .is("used_at", null);
+    if (typeof unused === "number" && unused <= 7) {
+      ctx.log.warn("daily_seo.queue_low", { unused, note: "add curated topics; an empty queue drafts its own" });
+    }
 
     // 2. Generate the article: Claude first, then OpenAI, then Gemini.
     const article = await generateArticle(topic);

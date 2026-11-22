@@ -9,7 +9,7 @@
  * Every text chain asks Claude first:
  *   - callAIText / callAIJson in ai-providers.ts (companion chat, dream
  *     interpreter, journal coach, mood letter, person reading, quick reading,
- *     soulmate portrait text, celestial travel reading);
+ *     celestial travel reading, the blog's empty-queue topic drafter);
  *   - the chains that generate-reading, bazi-interpret, bazi-interpret-test
  *     and daily-seo-blog-generator run themselves.
  * When Claude fails for ANY reason (out of credit, spend cap, rate limit,
@@ -23,7 +23,8 @@
  * the account is empty. A topped-up account is used again within that window.
  *
  * Not covered, because Claude has no such API: image generation (OpenAI
- * gpt-image) and embeddings (Gemini), both in ai-providers.ts. Two other
+ * gpt-image; the soulmate portrait is an image plus a template caption, so
+ * it has no text call) and embeddings (Gemini), both in ai-providers.ts. Two other
  * AI calls are measurements rather than generated content and stay as they
  * are: community-moderate (OpenAI's free moderation endpoint) and the GEO
  * probe daily-geo-mentions (it measures what ChatGPT and Gemini say).

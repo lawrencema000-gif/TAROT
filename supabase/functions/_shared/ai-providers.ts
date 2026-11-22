@@ -1,5 +1,10 @@
 /**
- * Shared AI provider helper — OpenAI primary, Gemini fallback.
+ * Shared AI provider helper — Claude first, then OpenAI, then Gemini.
+ *
+ * Since 2026-11-22 every text call asks Claude (the owner's own Anthropic
+ * key, see ./anthropic.ts) first and falls through to the OpenAI → Gemini
+ * chain below whenever Claude fails or the key runs out of credit. The
+ * OpenAI and Gemini code paths are unchanged.
  *
  * Why: Gemini Flash has been intermittently returning 503 "model
  * overloaded" errors in 2026. Every edge function that called Gemini
@@ -51,6 +56,7 @@
  */
 
 import { AppError } from "./handler.ts";
+import { callClaude, claudeKeyConfigured } from "./anthropic.ts";
 
 // ─── Model ids ───────────────────────────────────────────────────────────
 
@@ -85,9 +91,10 @@ export const EMBEDDING_DIMENSIONS = 768;
 /**
  * Cache tag for prompt caches. Bumped from "openai-gpt-5-or-gemini-2.5-flash"
  * on 2026-10-02 (locale instruction moved into system prompts, Gemini chain
- * refreshed) so no pre-change entry is served.
+ * refreshed), and again on 2026-11-22 when Claude became the first provider,
+ * so members get Claude-written content instead of cached OpenAI replies.
  */
-export const AI_CHAIN_TAG = "openai-gpt5-family-or-gemini-3.8-flash-v2";
+export const AI_CHAIN_TAG = "claude-opus-5-5-first-then-openai-or-gemini-v3";
 
 // ─── Reasoning-model handling ────────────────────────────────────────────
 // Reasoning models (gpt-5 family, o-series) have different API constraints
@@ -312,15 +319,31 @@ async function runChain(
 ): Promise<string> {
   const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
-  if (!openaiKey && !geminiKey) {
+  if (!claudeKeyConfigured() && !openaiKey && !geminiKey) {
     throw new AppError(
       "AI_NOT_CONFIGURED",
-      "No AI provider configured (OPENAI_API_KEY or GEMINI_API_KEY)",
+      "No AI provider configured (ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY)",
       503,
     );
   }
 
   let lastErr = "no attempt yet";
+
+  // Claude first, on the owner's key. Any failure (including the key running
+  // out of credit) falls through to OpenAI, then Gemini. `temperature` is not
+  // sent: this Claude model rejects it.
+  const claude = await callClaude({ system, messages: history, maxOutputTokens: maxTokens, json: jsonMode });
+  if (claude.ok) {
+    if (!jsonMode) return claude.text;
+    try {
+      JSON.parse(extractJsonObject(claude.text));
+      return claude.text;
+    } catch {
+      lastErr = `claude ${claude.model}: reply was not valid JSON`;
+    }
+  } else {
+    lastErr = claude.reason;
+  }
 
   if (openaiKey) {
     for (const model of openAIModels()) {

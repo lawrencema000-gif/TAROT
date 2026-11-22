@@ -9,6 +9,7 @@ import {
   openAIModels,
   reasoningEffortFor,
 } from "../_shared/ai-providers.ts";
+import { callClaude } from "../_shared/anthropic.ts";
 import { localeInstruction } from "../_shared/locale.ts";
 import { cardHeadLine, cardNamesRule, cardPromptLines, fallbackReadingText } from "./reading-text.ts";
 
@@ -416,13 +417,33 @@ async function callGemini(system: string, prompt: string, model: string): Promis
 }
 
 /**
- * Provider chain — OpenAI primary, Gemini fallback. Tries each OpenAI
- * model in order, then each Gemini model. Returns the first successful
- * result. Throws only when ALL providers fail; the caller already wraps
- * this in a try/catch that falls back to local content.
+ * Provider chain — Claude first (the owner's key, _shared/anthropic.ts), then
+ * each OpenAI model in order, then each Gemini model. Returns the first
+ * successful result. Throws only when ALL providers fail; the caller already
+ * wraps this in a try/catch that falls back to local content.
  */
 async function callAiWithFallback(system: string, prompt: string): Promise<AiCallResult> {
   let lastErr = "no provider attempted";
+  // Same visible budget as the OpenAI path (about 1,000 tokens of prose);
+  // callClaude pads it for thinking. Any Claude failure falls through.
+  const claude = await callClaude({
+    system,
+    messages: [{ role: "user", content: prompt }],
+    maxOutputTokens: 1024,
+    timeoutMs: 60_000,
+  });
+  if (claude.ok) {
+    return {
+      text: claude.text,
+      usage: {
+        promptTokenCount: claude.inputTokens,
+        candidatesTokenCount: claude.outputTokens,
+        totalTokenCount: claude.inputTokens + claude.outputTokens,
+      },
+      model: claude.model,
+    };
+  }
+  lastErr = claude.reason;
   if (Deno.env.get("OPENAI_API_KEY")) {
     for (const m of openAIModels()) {
       try {

@@ -17,7 +17,21 @@
 --
 -- The generator now also drafts a topic itself when the queue is empty, so
 -- the blog no longer goes silent when a refill is late.
+--
+-- Also here:
+--   - 'cartomancy' joins the allowed categories (the check constraint listed
+--     13 and refused it);
+--   - broken internal links in published posts are repointed. The article
+--     prompt used to list seven "/more/..." paths the app never had; 121 of
+--     133 posts carried 434 such links, all landing on "Page not found". The
+--     prompt now lists real pages and the generator rewrites unknown ones.
 -- ============================================================================
+
+ALTER TABLE public.seo_blog_topics DROP CONSTRAINT IF EXISTS seo_blog_topics_category_check;
+ALTER TABLE public.seo_blog_topics ADD CONSTRAINT seo_blog_topics_category_check CHECK (category = ANY (ARRAY[
+  'tarot-card', 'tarot-spread', 'cartomancy', 'zodiac', 'horoscope', 'dream', 'mbti', 'human-design',
+  'bazi', 'feng-shui', 'lunar', 'numerology', 'crystals', 'general'
+]::text[]));
 
 INSERT INTO public.seo_blog_topics (category, topic, brief, keyword, related_keywords, priority) VALUES
 
@@ -130,3 +144,17 @@ INSERT INTO public.seo_blog_topics (category, topic, brief, keyword, related_key
 ('general', 'Reversed Tarot Cards: How to Read Them', 'Whether to read reversals, and four ways to read them when you do: blocked energy, internalised energy, delay and excess. How to stay consistent within one reading.', 'reversed tarot cards meaning', ARRAY['tarot reversals', 'should i read reversed tarot cards', 'upside down tarot card meaning'], 145),
 ('general', 'Questions to Ask Tarot (and Ones to Avoid)', 'How to phrase a tarot question so the answer is usable: open questions, your own agency, a clear timeframe. Good questions for love, career and growth, and the kinds to avoid.', 'questions to ask tarot', ARRAY['good tarot questions', 'how to ask tarot a question', 'tarot questions about love'], 140),
 ('general', 'Tarot Court Cards Explained', 'Pages, Knights, Queens and Kings demystified: people, personalities or situations? The rank and suit system, and how to decide what a court card means in a reading.', 'tarot court cards', ARRAY['court cards as people', 'tarot court cards meaning', 'pages knights queens kings tarot'], 135);
+
+-- ─── Repoint the broken internal links in published posts ───────────────────
+-- /more/quick and /more/soulmate have real pages; the dream interpreter, BaZi,
+-- Human Design, Feng Shui and partner compatibility live in the Readings
+-- Systems tab, which has no URL of its own, so they point at /readings. Any
+-- other /more/ link (none were found) also goes to /readings.
+UPDATE public.blog_posts
+SET content = regexp_replace(
+      replace(replace(content,
+        'href="/more/quick"', 'href="/ai/quick"'),
+        'href="/more/soulmate"', 'href="/soulmate-score"'),
+      'href="/more/[^"]*"', 'href="/readings"', 'g'),
+    updated_at = now()
+WHERE content LIKE '%href="/more/%';

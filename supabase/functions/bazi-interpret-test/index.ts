@@ -4,7 +4,8 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
-import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
+import { GEMINI_MODELS, extractJsonObject, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
+import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
 
 // Same chain as production bazi-interpret (single source of truth in
 // _shared/ai-providers.ts) so the smoke test exercises the real models.
@@ -102,7 +103,7 @@ Deno.serve(handler<unknown>({
   run: async (ctx) => {
     const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
     const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
-    if (!openaiKey && !geminiKey) {
+    if (!claudeKeyConfigured() && !openaiKey && !geminiKey) {
       throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured", 503);
     }
 
@@ -111,8 +112,23 @@ Deno.serve(handler<unknown>({
     let modelUsed = "";
     let lastErr = "";
 
-    // OpenAI primary
-    if (openaiKey) {
+    // Claude first (the owner's key), exactly as production bazi-interpret.
+    const claude = await callClaude({
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: TEST_INPUT_PROMPT }],
+      maxOutputTokens: 4500,
+      json: true,
+      timeoutMs: 105_000,
+    });
+    if (claude.ok) {
+      text = extractJsonObject(claude.text);
+      modelUsed = `anthropic/${claude.model}`;
+    } else {
+      lastErr = claude.reason;
+    }
+
+    // OpenAI next
+    if (!text && openaiKey) {
       outer1: for (const model of OPENAI_MODELS) {
         for (let attempt = 0; attempt < 3; attempt++) {
           const res = await fetch("https://api.openai.com/v1/chat/completions", {

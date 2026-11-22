@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
 import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
+import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
 import { marked } from "npm:marked@14.1.3";
 
 /**
@@ -69,6 +70,8 @@ interface GeneratedArticleRaw {
 
 interface GeneratedArticle extends Omit<GeneratedArticleRaw, "content_markdown"> {
   contentHtml: string;
+  /** provider/model that wrote the article, e.g. "anthropic/claude-opus-5-5" */
+  servedBy: string;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -201,6 +204,25 @@ async function callGemini(prompt: string, model: string, apiKey: string): Promis
   return text;
 }
 
+/**
+ * Claude first (the owner's key, _shared/anthropic.ts). An article is ~1,500
+ * words plus FAQs; this is a once-a-day job, so it gets medium effort and a
+ * long timeout. Returns { ok: false, reason } on any failure so the
+ * OpenAI → Gemini chain below takes over.
+ */
+async function claudeArticle(
+  prompt: string,
+): Promise<{ ok: true; text: string; servedBy: string } | { ok: false; reason: string }> {
+  const r = await callClaude({
+    system: ARTICLE_SYSTEM,
+    messages: [{ role: "user", content: prompt }],
+    maxOutputTokens: 5000,
+    effort: "medium",
+    timeoutMs: 120_000,
+  });
+  return r.ok ? { ok: true, text: r.text, servedBy: `anthropic/${r.model}` } : { ok: false, reason: r.reason };
+}
+
 async function generateArticle(topic: Topic): Promise<GeneratedArticle> {
   const userPrompt = `Topic: ${topic.topic}
 Category: ${topic.category}
@@ -210,20 +232,29 @@ Related keywords (use as H2 themes): ${topic.related_keywords.join(", ")}
 Brief from the editor:
 ${topic.brief}
 
-Write the article now. Reply with the JSON object only — no markdown, no preamble.`;
+Write the article now. Reply with the document only, in exactly the delimited format above (TITLE / SLUG / EXCERPT / TAGS lines, then ---CONTENT---, ---FAQS---, ---END---): no JSON, no code fences, no preamble.`;
 
   const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
-  if (!openaiKey && !geminiKey) {
-    throw new AppError("AI_NOT_CONFIGURED", "Neither OPENAI_API_KEY nor GEMINI_API_KEY set", 503);
+  if (!claudeKeyConfigured() && !openaiKey && !geminiKey) {
+    throw new AppError("AI_NOT_CONFIGURED", "No AI provider key set (ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY)", 503);
   }
 
   let completion = "";
+  let servedBy = "";
   let lastErr = "no provider attempted";
-  if (openaiKey) {
+  const first = await claudeArticle(userPrompt);
+  if (first.ok) {
+    completion = first.text;
+    servedBy = first.servedBy;
+  } else {
+    lastErr = first.reason;
+  }
+  if (!completion && openaiKey) {
     for (const m of OPENAI_MODELS) {
       try {
         completion = await callOpenAI(userPrompt, m, openaiKey);
+        servedBy = `openai/${m}`;
         break;
       } catch (e) {
         lastErr = String(e).slice(0, 300);
@@ -234,6 +265,7 @@ Write the article now. Reply with the JSON object only — no markdown, no pream
     for (const m of GEMINI_MODELS) {
       try {
         completion = await callGemini(userPrompt, m, geminiKey);
+        servedBy = `gemini/${m}`;
         break;
       } catch (e) {
         lastErr = String(e).slice(0, 300);
@@ -278,11 +310,20 @@ A: …
 All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONTENT---. Reply with the document only.`;
 
     let retryCompletion = "";
+    let retryServedBy = "";
     let retryErr = "no provider attempted on retry";
-    if (openaiKey) {
+    const retryFirst = await claudeArticle(retryPrompt);
+    if (retryFirst.ok) {
+      retryCompletion = retryFirst.text;
+      retryServedBy = retryFirst.servedBy;
+    } else {
+      retryErr = retryFirst.reason;
+    }
+    if (!retryCompletion && openaiKey) {
       for (const m of OPENAI_MODELS) {
         try {
           retryCompletion = await callOpenAI(retryPrompt, m, openaiKey);
+          retryServedBy = `openai/${m}`;
           break;
         } catch (e) {
           retryErr = String(e).slice(0, 300);
@@ -293,6 +334,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
       for (const m of GEMINI_MODELS) {
         try {
           retryCompletion = await callGemini(retryPrompt, m, geminiKey);
+          retryServedBy = `gemini/${m}`;
           break;
         } catch (e) {
           retryErr = String(e).slice(0, 300);
@@ -307,6 +349,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
       if (retryParsed.title && retryParsed.slug && retryParsed.excerpt && retryParsed.content_markdown) {
         parsed = retryParsed;
         completion = retryCompletion;
+        servedBy = retryServedBy;
         console.warn(`[article-gen] retry succeeded`);
       } else {
         console.warn(`[article-gen] retry still missing fields: ${JSON.stringify({ title: !!retryParsed.title, slug: !!retryParsed.slug, excerpt: !!retryParsed.excerpt, content: !!retryParsed.content_markdown })}`);
@@ -332,6 +375,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
     contentHtml: wrappedHtml,
     faqs: parsed.faqs.slice(0, 6),
     tags: parsed.tags.slice(0, 5),
+    servedBy,
   };
 }
 
@@ -441,6 +485,10 @@ interface RunBody {
   // Optional: explicitly pick a topic (debug/manual fire). Otherwise
   // pulls the next unused topic from the queue.
   topicId?: string;
+  // Optional: write the article and return it WITHOUT publishing — no cover
+  // image, no blog_posts row, the topic stays unused, no IndexNow ping. For
+  // checking the AI chain (which provider answered) on production.
+  dryRun?: boolean;
 }
 
 Deno.serve(handler<RunBody>({
@@ -483,13 +531,31 @@ Deno.serve(handler<RunBody>({
 
     ctx.log.info("daily_seo.topic_picked", { topicId: topic.id, keyword: topic.keyword });
 
-    // 2. Generate article via OpenAI primary (gpt-5) → Gemini fallback.
+    // 2. Generate the article: Claude first, then OpenAI, then Gemini.
     const article = await generateArticle(topic);
     ctx.log.info("daily_seo.article_generated", {
       slug: article.slug,
       titleLen: article.title.length,
       contentLen: article.contentHtml?.length ?? 0,
+      servedBy: article.servedBy,
     });
+
+    if (body?.dryRun) {
+      // Nothing is written: no cover, no post, the topic stays in the queue.
+      return {
+        dryRun: true,
+        servedBy: article.servedBy,
+        topic: { id: topic.id, keyword: topic.keyword },
+        article: {
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          contentLen: article.contentHtml.length,
+          faqs_count: article.faqs?.length ?? 0,
+          tags: article.tags,
+        },
+      };
+    }
 
     // 3. Generate cover image via Imagen (non-fatal on failure).
     // Re-read the key here — it's declared inside generateArticle() above

@@ -41,6 +41,21 @@ import type { Logger } from "./log.ts";
  * tokens so we can reprice historically if pricing changes.
  */
 export const COST_PER_1K_TOKENS: Record<string, { input: number; output: number }> = {
+  // Anthropic text: Claude is the first provider since 2026-11-22 (owner's
+  // key; see _shared/anthropic.ts). Prices from the Anthropic model table
+  // cached 2026-11-03, USD per 1M → cents per 1K ("divide by 10"):
+  //   claude-opus-5-5 $4 / $20     claude-opus-5 and claude-opus-4-8 $5 / $25
+  //   claude-sonnet-5-5 and claude-sonnet-5 $2 / $10
+  //   claude-haiku-5-5 $0.10 / $0.50     claude-fable-5-2 $8 / $40
+  // The other ids are what Anthropic's server-side refusal fallback can serve
+  // a call with (the response names the model that answered).
+  "claude-opus-5-5":   { input: 0.40,  output: 2.00 },
+  "claude-opus-5":     { input: 0.50,  output: 2.50 },
+  "claude-opus-4-8":   { input: 0.50,  output: 2.50 },
+  "claude-sonnet-5-5": { input: 0.20,  output: 1.00 },
+  "claude-sonnet-5":   { input: 0.20,  output: 1.00 },
+  "claude-haiku-5-5":  { input: 0.01,  output: 0.05 },
+  "claude-fable-5-2":  { input: 0.80,  output: 4.00 },
   // OpenAI text
   "gpt-5":            { input: 0.125,  output: 1.00 },
   "gpt-5-mini":       { input: 0.025,  output: 0.20 },

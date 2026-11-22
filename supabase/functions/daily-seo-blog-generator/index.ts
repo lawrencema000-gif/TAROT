@@ -3,6 +3,7 @@ import { handler, AppError } from "../_shared/handler.ts";
 import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
 import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
 import { draftTopic } from "./topic-draft.ts";
+import { APP_LINKS, fixInternalLinks } from "./internal-links.ts";
 import { marked } from "npm:marked@14.1.3";
 
 /**
@@ -92,17 +93,8 @@ STRUCTURE every article exactly as follows:
 
 LENGTH: 1000–1500 words total.
 
-INTERNAL LINKS: include 1–3 inline links to relevant Arcana features. Use these URLs:
-- /readings (tarot readings)
-- /horoscope (daily horoscope + natal chart)
-- /more/dream (dream interpreter)
-- /more/human-design (HD chart)
-- /more/bazi (Bazi)
-- /more/feng-shui (Feng Shui)
-- /more/partner (partner compatibility)
-- /more/soulmate (soulmate score)
-- /more/quick (quick AI reading)
-- /quizzes (personality quizzes)
+INTERNAL LINKS: include 1–3 inline links to relevant Arcana features. Use ONLY these URLs, exactly as written:
+${APP_LINKS.map(([path, what]) => `- ${path} (${what})`).join("\n")}
 
 FORMAT YOUR RESPONSE EXACTLY AS THIS PLAIN-TEXT STRUCTURE.
 Do NOT wrap it in JSON, markdown code blocks, or any other container.
@@ -366,8 +358,10 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
   }
 
   // Convert markdown body to HTML, then wrap in the blog-post article shell.
-  const innerHtml = await marked.parse(parsed.content_markdown, { gfm: true, breaks: false });
-  const wrappedHtml = `<article class="blog-post">\n${innerHtml}\n</article>`;
+  // Any internal link to a page the app does not have becomes /readings.
+  const linked = fixInternalLinks(await marked.parse(parsed.content_markdown, { gfm: true, breaks: false }));
+  if (linked.rewritten.length) console.warn(`[article-gen] rewrote unknown internal links: ${linked.rewritten.join(", ")}`);
+  const wrappedHtml = `<article class="blog-post">\n${linked.html}\n</article>`;
 
   return {
     title: parsed.title.slice(0, 100),

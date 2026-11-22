@@ -610,6 +610,9 @@ export async function report(input: ReportInput): Promise<Result<void>> {
     details: input.details ?? null,
   });
   if (error) {
+    // One report per member per post or comment (20261122122502_community_reports_one_per_member):
+    // a second report is the first one, already filed.
+    if (error.code === '23505') return { ok: true, data: undefined };
     captureException('dal.community.report', error, { reason: input.reason });
     return { ok: false, error: error.message };
   }

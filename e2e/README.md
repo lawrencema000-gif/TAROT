@@ -22,7 +22,7 @@ Every spec runs in two projects (`playwright.config.ts`):
 - `chromium-desktop`: Desktop Chrome, 1280px wide.
 
 Without the QA account the signed-in specs skip (they never fail for a missing
-password): 11 passed and 7 skipped for `critical-paths.spec.ts`; 18 passed with it.
+password): 10 passed and 8 skipped for `critical-paths.spec.ts`; 18 passed with it.
 
 ## Run locally
 

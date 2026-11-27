@@ -1,6 +1,23 @@
-# Minimal Supabase CLI config for the TAROT project.
-# Only the email template + auth redirect sections are declared here so
-# `supabase config push` updates ONLY those settings.
+# Supabase CLI config for the TAROT project (ulzlthhkqjuohzjangcq).
+#
+# This file does not mirror the hosted project's Auth settings. `supabase
+# config push` diffs the remote against the CLI's whole [auth] model, filling
+# every field this file leaves out with the CLI's defaults; run it only
+# interactively, read the whole printed diff, and answer no unless every line
+# is intended. Never with --yes. It was never limited to the sections below.
+#
+# Auth settings held in the hosted project, not in this file:
+#   - Leaked-password protection (HaveIBeenPwned): to be switched ON (p12
+#     health-status-17, WP-P0-15; owner-list job 6) after the web build that
+#     names the refusal is live, set with the dashboard switch or
+#     PATCH /v1/projects/ulzlthhkqjuohzjangcq/config/auth {"password_hibp_enabled": true}.
+#     CLI 2.77 has no config.toml key for it. Update this line with the date
+#     it went on.
+#   - Multi-factor sign-in: not offered (D11 A, 2026-11-17); the advisor's
+#     auth_insufficient_mfa_options warning is accepted.
+#   - Email confirmation at sign-up: off (mailer_autoconfirm = true; D11 A,
+#     instant sign-up kept).
+#   - Sign-in providers: email, Google, Apple.
 
 project_id = "ulzlthhkqjuohzjangcq"
 

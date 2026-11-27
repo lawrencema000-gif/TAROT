@@ -265,7 +265,8 @@ export interface CrisisLines {
 export const CRISIS_LINES: Record<CrisisLocale, CrisisLines> = {
   en: {
     phone: { title: "988 Suicide & Crisis Lifeline", number: "988", body: "Call or text 988 · 24/7 · US" },
-    text: { title: "Crisis Text Line", number: "741741", body: "Text HOME to 741741 · US/UK/CA/IE" },
+    // 741741 is Crisis Text Line's US short code only (crisistextline.org/where-we-are): Canada texts 686868, the UK 85258, Ireland 50808. Lines per country are D02 (WP-P0-16).
+    text: { title: "Crisis Text Line", number: "741741", body: "Text HOME to 741741 · 24/7 · US" },
     footer: "Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.",
   },
   ja: {
@@ -287,3 +288,14 @@ export const CRISIS_LINES: Record<CrisisLocale, CrisisLines> = {
 
 /** Lines for anywhere else (the banner's "International helplines" row). */
 export const INTERNATIONAL_HELPLINES = "findahelpline.com";
+
+/**
+ * community-moderate's `crisisResources`: the English banner's lines, taken
+ * from CRISIS_LINES.en so the function no longer keeps a wording of its own,
+ * which drifted from the locale file and was never tested (social-ai-05).
+ */
+export const CRISIS_RESOURCES = {
+  us: { name: CRISIS_LINES.en.phone.title, number: CRISIS_LINES.en.phone.number },
+  textLine: { name: CRISIS_LINES.en.text.title, instructions: CRISIS_LINES.en.text.body },
+  international: `https://${INTERNATIONAL_HELPLINES}`,
+};

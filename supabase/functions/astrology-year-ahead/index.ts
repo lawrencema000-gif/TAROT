@@ -11,9 +11,12 @@
  *     Pluto) against the user's natal personal planets (Sun, Moon, Mercury,
  *     Venus, Mars, Ascendant if available). Fast-moving transits are not
  *     useful at a year-ahead horizon.
- *   - Walks the next 365 days day-by-day, records first entry into each
- *     (transitPlanet, natalPlanet, aspectType) combination, plus the
- *     estimated exit (when orb exceeds maxOrb again).
+ *   - Covers 12 consecutive months (./months.ts, p12 charts-06): the
+ *     reader's month when the request names it (`from`), else the UTC month.
+ *     Walks those months day by day (from today when the first month has
+ *     begun), records first entry into each (transitPlanet, natalPlanet,
+ *     aspectType) combination, plus the estimated exit (when orb exceeds
+ *     maxOrb again, or the last day of the last month).
  *   - Each event gets an interpretation from a small lookup keyed on
  *     (transitPlanet, aspectType). Concrete enough to feel personal, soft
  *     enough to not over-promise.
@@ -28,6 +31,7 @@ import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { findYearAheadUnlock, type UnlockDb } from "./unlock.ts";
+import { lastNoonUtc, monthsFrom, startMonthFor, utcMonthIso, walkDays } from "./months.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -62,6 +66,8 @@ const RequestSchema = z.object({
    * unlock's `reference`). Optional: a page from before p9 R06 sends `{}`.
    */
   year: z.number().int().optional(),
+  /** The reader's own month ('YYYY-MM'). The report starts there when it is within a month of the UTC month (months.ts startMonthFor); otherwise, and for older pages that send none, at the UTC month. A string, not a regex: a bad value falls back, it never fails the request. */
+  from: z.string().max(7).optional(),
 });
 type Request = z.infer<typeof RequestSchema>;
 
@@ -89,6 +95,8 @@ interface YearAheadResponse {
   monthsCovered: number;
   months: MonthBriefing[];
   summary: string;
+  /** The months served, first and last ('YYYY-MM'). */
+  range: { from: string; to: string };
 }
 
 function normDeg(d: number): number {
@@ -113,10 +121,6 @@ function orbForAspect(tLon: number, nLon: number, angle: number): number {
 
 function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
-}
-
-function monthIso(d: Date): string {
-  return d.toISOString().slice(0, 7);
 }
 
 function monthLabel(iso: string): string {
@@ -255,16 +259,20 @@ Deno.serve(handler<Request, YearAheadResponse>({
     if (ascLon !== null) natalTargets.push({ planet: "Ascendant", lon: ascLon });
     if (mcLon  !== null) natalTargets.push({ planet: "MC", lon: mcLon });
 
-    // Walk 365 days, record first entry into each (transit, natal, aspect)
+    // The twelve months served (./months.ts): one list for the walk, the
+    // briefings and the range, so what is sold is what is computed.
+    const months = monthsFrom(startMonthFor(body.from, now));
+
+    // Walk the listed months day by day (from today when the first month has
+    // begun), record first entry into each (transit, natal, aspect)
     // combination. Track exit date by continuing to walk until orb >maxOrb.
+    // The walk starts no later than the first month's last day: a reader west
+    // of UTC on the last evening of their month asks for that month.
     type EventKey = string;
     const activeEvents = new Map<EventKey, YearAheadEvent>();
     const finalized: YearAheadEvent[] = [];
 
-    for (let d = 0; d <= 365; d++) {
-      const date = new Date(now);
-      date.setUTCDate(date.getUTCDate() + d);
-      date.setUTCHours(12, 0, 0, 0);
+    for (const date of walkDays(months, new Date(Math.min(now.getTime(), lastNoonUtc(months[0]).getTime())))) {
 
       for (const tb of TRANSIT_BODIES) {
         const tLon = planetLon(tb.body, date);
@@ -278,7 +286,7 @@ Deno.serve(handler<Request, YearAheadResponse>({
                 const base = {
                   startDate: isoDate(date),
                   endDate: isoDate(date),
-                  monthIso: monthIso(date),
+                  monthIso: utcMonthIso(date),
                   transitPlanet: tb.name,
                   natalPlanet: np.planet,
                   aspectType: asp.type,
@@ -314,20 +322,17 @@ Deno.serve(handler<Request, YearAheadResponse>({
       byMonth.set(ev.monthIso, bucket);
     }
 
-    // Build 12 sorted monthly briefings including empty months.
-    const months: MonthBriefing[] = [];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now);
-      d.setUTCMonth(d.getUTCMonth() + i);
-      const iso = monthIso(d);
+    // One briefing per listed month, in order, empty months included.
+    // monthLabel stays English: installed Android builds still print it.
+    const briefings: MonthBriefing[] = months.map((iso) => {
       const evs = (byMonth.get(iso) ?? []).sort((a, b) => a.startDate.localeCompare(b.startDate));
-      months.push({
+      return {
         monthIso: iso,
         monthLabel: monthLabel(iso),
         events: evs.slice(0, 4), // cap per month so the report stays scannable
         theme: themeForMonth(evs),
-      });
-    }
+      };
+    });
 
     const hardCount = finalized.filter((e) => e.intensity === "hard").length;
     const softCount = finalized.filter((e) => e.intensity === "soft").length;
@@ -346,9 +351,10 @@ Deno.serve(handler<Request, YearAheadResponse>({
 
     return {
       generatedAt: new Date().toISOString(),
-      monthsCovered: 12,
-      months,
+      monthsCovered: briefings.length,
+      months: briefings,
       summary,
+      range: { from: months[0], to: months[months.length - 1] },
     };
   },
 }));

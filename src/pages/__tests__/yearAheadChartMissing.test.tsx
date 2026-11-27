@@ -72,6 +72,7 @@ vi.mock('../../data/interpretations/localize', () => ({ withOverlay: (x: unknown
 
 import i18n from '../../i18n/config';
 import { YearAheadReportPage } from '../YearAheadReportPage';
+import { localMonthIso } from '../../lib/yearAheadMonths';
 
 const NATAL = {
   planets: [
@@ -192,7 +193,8 @@ describe('Year Ahead: no chart, no charge (p9 QS R-3)', () => {
     // What was paid for is delivered, from the chart that now exists.
     expect(await screen.findByText('あなたの一年のかたち')).toBeInTheDocument();
     expect(yearAheadCalls()).toHaveLength(1);
-    expect(yearAheadCalls()[0][1]).toEqual({ body: { year: YEAR } });
+    // The unlock's year, and the month the report starts with (p12 charts-06).
+    expect(yearAheadCalls()[0][1]).toEqual({ body: { year: YEAR, from: localMonthIso() } });
     expect(screen.queryByText(/再入力/)).toBeNull();
   });
 

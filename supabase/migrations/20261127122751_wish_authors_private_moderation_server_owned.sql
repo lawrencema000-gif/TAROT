@@ -185,7 +185,7 @@ REVOKE ALL ON public.wish_sky, public.wish_sky_links FROM PUBLIC, anon, authenti
 GRANT SELECT ON public.wish_sky, public.wish_sky_links TO authenticated;
 -- Interim: signed-out callers keep today's reach, minus the account ids.
 -- D01 was answered "members only" (A); the next migration,
--- <timestamp>_wish_sky_members_only.sql (WS-25 option a), revokes this grant.
+-- 20261127123700_wish_sky_members_only.sql (WS-25 option a), revokes this grant.
 GRANT SELECT ON public.wish_sky, public.wish_sky_links TO anon;
 
 -- 6. Admin review (no admin UI for wishes exists yet). Publishing resets

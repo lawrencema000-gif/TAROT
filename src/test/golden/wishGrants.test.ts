@@ -217,8 +217,8 @@ describe('the Wishing Sky: grants', () => {
     for (const v of VIEWS) expect([v, held(v, 'authenticated')]).toEqual([v, ['SELECT']]);
   });
 
-  it('signed-out callers read the sky views (the interim before D01)', () => {
-    for (const v of VIEWS) expect([v, held(v, 'anon')]).toEqual([v, ['SELECT']]);
+  it('signed-out callers cannot read the sky views (D01 = A, members only; WS-25 a)', () => {
+    for (const v of VIEWS) expect([v, held(v, 'anon')]).toEqual([v, []]);
   });
 
   it('ratchet: nobody holds UPDATE on community_posts (20261003000014 §3)', () => {

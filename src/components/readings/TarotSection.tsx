@@ -44,7 +44,8 @@ import { newReadingId } from './tarot/readingId';
 import { localDateStr } from '../../utils/localDate';
 // The free tier's 3-a-day count belongs to the account (shared with the
 // playing-card section), so signing out and back in does not reset it.
-import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
+import { getDailyReadingCount, incrementDailyReadingCount, raiseDailyReadingCount, decideFreeDeal } from '../../services/offline';
+import { claimFreeReading, usedToday, type FreeReadingClaim } from '../../dal/freeReadings';
 
 /*
  * The reading flow: home → focus → shuffle → select → reveal.
@@ -293,7 +294,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
-  const [dailyReadingCount, setDailyReadingCount] = useState(0);
+  const [dailyCount, setDailyCount] = useState<{ date: string; used: number }>({ date: '', used: 0 });
   const [canWatchAd, setCanWatchAd] = useState(false);
   const { tryConsume: tryConsumeAi, refund: refundAi, EarnSheet: AiEarnSheet } = useMoonstoneSpend('tarot-ai-interpret');
 
@@ -310,6 +311,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const rewardedRef = useRef(false);
   /** The section is on screen: a "Save and leave" that lands after it has gone takes no step. */
   const mountedRef = useRef(false);
+  /** A free deal's server claim is out: a second tap on Reveal does nothing. */
+  const claimingRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -324,17 +327,27 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     }
   }, []);
 
-  // Re-read on an account switch: the count is per account.
+  // Re-read on an account switch or a Premium change: the count is per account.
+  // A signed-in free member's count is the server's, across devices (D08 A),
+  // or this device's when that is higher (readings dealt offline).
   const userId = user?.id ?? null;
+  const isPremium = !!profile?.isPremium;
   useEffect(() => {
     let alive = true;
-    getDailyReadingCount(userId).then((n) => {
-      if (alive) setDailyReadingCount(n);
-    });
+    const today = localDateStr();
+    (async () => {
+      const device = await getDailyReadingCount(userId, today);
+      let server = 0;
+      if (userId && !isPremium) {
+        const res = await usedToday(today);
+        if (res.ok) server = res.data;
+      }
+      if (alive) setDailyCount({ date: today, used: Math.max(device, server) });
+    })();
     return () => {
       alive = false;
     };
-  }, [userId]);
+  }, [userId, isPremium]);
 
   useEffect(
     () => () => {
@@ -343,7 +356,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     [],
   );
 
-  const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
+  // A count from yesterday no longer blocks today.
+  const isAtDailyLimit = !profile?.isPremium && dailyCount.date === localDateStr() && dailyCount.used >= FREE_TIER.dailyReadings;
 
   const getCardImage = (card: TarotCard): string | undefined => {
     const bundledPath = getBundledCardPath(card.id);
@@ -745,7 +759,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
    * not make a spread free. XP and achievements wait for the last card to
    * turn (see the effect on `allRevealed`).
    */
-  const handleRevealSelected = () => {
+  const handleRevealSelected = async () => {
     const spread = getSpreadMeta(currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
     if (tarotCards.length === 0) return;
@@ -758,6 +772,34 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     if (selectedCards.length !== spread.count) {
       toast(t('readings.toasts.cardsNotFound'), 'error');
       return;
+    }
+
+    // A free reading is claimed on the server before it is dealt (D08 A); the
+    // device's count decides only when the server cannot answer.
+    let dealtOnAdGrant = false;
+    let serverUsed: number | null = null;
+    if (!profile?.isPremium) {
+      if (claimingRef.current) return;
+      claimingRef.current = true;
+      const today = localDateStr();
+      let claim: FreeReadingClaim | null = null;
+      try {
+        claim = user ? await claimFreeReading(today) : null;
+      } finally {
+        claimingRef.current = false;
+      }
+      if (!mountedRef.current) return;
+      const deviceUsed = await getDailyReadingCount(user?.id, today);
+      if (claim && claim.status !== 'unavailable') serverUsed = claim.used;
+      const verdict = decideFreeDeal({ claim, deviceUsed, limit: FREE_TIER.dailyReadings, hasAdGrant: !!hasTemporaryAccess['extra_reading'] });
+      if (verdict === 'refuse') {
+        if (user && serverUsed !== null) await raiseDailyReadingCount(user.id, serverUsed, today);
+        setDailyCount({ date: today, used: Math.max(deviceUsed, serverUsed ?? 0) });
+        if (isNative() && canWatchAd) setAdRequest({ feature: 'extra_reading', spreadId: null });
+        else onShowPaywall(t('readings.paywall.unlimited'));
+        return;
+      }
+      dealtOnAdGrant = verdict === 'deal-on-ad-grant';
     }
 
     const reversedChance = 0.35;
@@ -773,7 +815,8 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     (async () => {
       await incrementDailyReadingCount(user?.id);
-      setDailyReadingCount(await getDailyReadingCount(user?.id));
+      if (user && serverUsed !== null) await raiseDailyReadingCount(user.id, serverUsed);
+      setDailyCount({ date: localDateStr(), used: await getDailyReadingCount(user?.id) });
 
       if (!profile?.isPremium) {
         if (!spread.free && hasTemporaryAccess[currentSpread]) {
@@ -784,7 +827,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           }
         }
 
-        if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
+        if (dealtOnAdGrant) {
           await rewardedAdsService.consumeTemporaryAccess('extra_reading');
           setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
         }

@@ -63,6 +63,7 @@ vi.mock('framer-motion', () => {
 
 import i18n from '../../i18n/config';
 import { JournalPage } from '../JournalPage';
+import { journalCrisisReply } from '../../../supabase/functions/ai-journal-coach/reply';
 import '@testing-library/jest-dom/vitest';
 
 /** Node 25 ships its own (file-less, broken) localStorage over jsdom's; give the code a real one. */
@@ -178,5 +179,77 @@ describe('in Japanese', () => {
     expect(screen.queryByRole('dialog', { name: 'あなたはひとりではありません' })).not.toBeInTheDocument();
     expect(within(editor).getByText(coachReply.observation as string)).toBeInTheDocument();
     expect(within(editor).getByText((coachReply.prompts as string[])[0])).toBeInTheDocument();
+  });
+});
+
+/*
+ * social-ai-18: after the banner was closed, the coach's crisis reply sat in
+ * the reflective-prompts card, the helplines filed under "Sit with these"
+ * with a "Hide these prompts" link and no number to tap. It now has its own
+ * card: a heading, the member's lines one tap away, and "I'm okay for now".
+ */
+describe('the crisis reply gets its own card (social-ai-18)', () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('the crisis reply gets its own card', async () => {
+    const reply = journalCrisisReply('en');
+    coachReply = { ...reply };
+    const editor = await askCoach({ thoughts: 'Your thoughts', ask: 'Ask the journal coach' });
+    const banner = await screen.findByRole('dialog', { name: 'You are not alone' });
+    fireEvent.click(within(banner).getByRole('button', { name: 'I’m okay for now' }));
+    expect(screen.queryByRole('dialog', { name: 'You are not alone' })).not.toBeInTheDocument();
+
+    const card = within(editor).getByRole('region', { name: 'You are not alone' });
+    expect(within(card).getByText(reply.observation)).toBeInTheDocument();
+    expect(reply.prompts).toHaveLength(3);
+    for (const p of reply.prompts) expect(within(card).getByText(p)).toBeInTheDocument();
+    expect(within(card).getByText(
+      'Crisis Text Line: Text HOME to 741741 · 24/7 · US. Somewhere else? findahelpline.com lists free, confidential lines in your country.',
+    )).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Call/ })).toHaveAttribute('href', 'tel:988');
+    expect(within(card).getByRole('link', { name: /Text/ })).toHaveAttribute('href', 'sms:741741?body=HOME');
+    expect(within(card).getByRole('link', { name: /International helplines/ })).toHaveAttribute('href', 'https://findahelpline.com');
+    expect(within(editor).queryByText('Sit with these')).not.toBeInTheDocument();
+    expect(within(editor).queryByText('Hide these prompts')).not.toBeInTheDocument();
+
+    fireEvent.click(within(card).getByRole('button', { name: 'I’m okay for now' }));
+    expect(within(editor).queryByRole('region', { name: 'You are not alone' })).not.toBeInTheDocument();
+    expect(within(editor).getByRole('button', { name: 'Ask the journal coach' })).toBeInTheDocument();
+  });
+
+  it('an ordinary reply keeps its prompts card', async () => {
+    coachReply = { observation: 'There is a tiredness under this.', prompts: ['What would rest look like this week?'] };
+    const editor = await askCoach({ thoughts: 'Your thoughts', ask: 'Ask the journal coach' });
+    expect(await within(editor).findByText('There is a tiredness under this.')).toBeInTheDocument();
+    expect(within(editor).getByText('Sit with these')).toBeInTheDocument();
+    expect(within(editor).getByText('Hide these prompts')).toBeInTheDocument();
+    expect(within(editor).queryByRole('region', { name: 'You are not alone' })).not.toBeInTheDocument();
+  });
+});
+
+describe('the crisis card in Korean (social-ai-18, social-ai-19)', () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage('ko');
+  });
+  afterAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('shows the Korean lines, each one tap away', async () => {
+    const reply = journalCrisisReply('ko');
+    coachReply = { ...reply };
+    const editor = await askCoach({ thoughts: '당신의 생각', ask: '저널 코치에게 물어보기' });
+    const banner = await screen.findByRole('dialog', { name: '당신은 혼자가 아닙니다' });
+    fireEvent.click(within(banner).getByRole('button', { name: '지금은 괜찮아요' }));
+
+    const card = within(editor).getByRole('region', { name: '당신은 혼자가 아닙니다' });
+    expect(within(card).getAllByRole('link', { name: '전화하기' }).map((a) => a.getAttribute('href')))
+      .toEqual(['tel:109', 'tel:1577-0199']);
+    expect(within(card).getByText(
+      '정신건강위기상담전화에도 연락할 수 있어요. 1577-0199 · 24시간. 해외에 있다면 findahelpline.com에서 그 나라의 무료 상담전화를 찾을 수 있어요.',
+    )).toBeInTheDocument();
+    expect(within(editor).queryByText('이 질문들과 함께 머물기')).not.toBeInTheDocument();
   });
 });

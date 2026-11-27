@@ -2,10 +2,13 @@ import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { readFileSync } from 'node:fs';
+// @ts-expect-error — a plain .mjs build script, no types (heroGuard.test.ts imports scripts/seo-body.mjs the same way)
+import { resolveBuildSha } from './scripts/build-sha.mjs';
 import { CJK_FONTS, CJK_FONT_CSS_BASE, CJK_FONT_CSS_SUFFIX } from './src/i18n/cjkFonts';
 
 // Emits dist/version.json at build time. Served with no-store via netlify.toml.
-function versionJsonPlugin(): Plugin {
+// sha is the commit the build was made from (scripts/build-sha.mjs).
+function versionJsonPlugin(sha: string): Plugin {
   const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
   return {
     name: 'emit-version-json',
@@ -15,7 +18,7 @@ function versionJsonPlugin(): Plugin {
         type: 'asset',
         fileName: 'version.json',
         source: JSON.stringify({
-          sha: process.env.VITE_BUILD_SHA ?? 'local',
+          sha,
           builtAt: new Date().toISOString(),
           version: pkg.version,
         }),
@@ -29,7 +32,7 @@ function versionJsonPlugin(): Plugin {
 // the plugin returns no-op so builds don't fail. The auth token is created
 // from Sentry → Settings → Account → Auth Tokens with `project:releases`
 // + `org:read` scopes.
-function sentrySourceMaps(): Plugin | null {
+function sentrySourceMaps(sha: string): Plugin | null {
   const token = process.env.SENTRY_AUTH_TOKEN;
   const org = process.env.SENTRY_ORG;
   const project = process.env.SENTRY_PROJECT;
@@ -38,7 +41,9 @@ function sentrySourceMaps(): Plugin | null {
     org,
     project,
     authToken: token,
-    release: { name: process.env.VITE_BUILD_SHA ?? undefined },
+    // The name src/main.tsx gives the release, so uploaded source maps and
+    // events meet in one release.
+    release: { name: sha === 'local' ? undefined : `arcana@${sha}` },
     sourcemaps: { assets: 'dist/**', filesToDeleteAfterUpload: 'dist/**/*.map' },
     silent: false,
   }) as unknown as Plugin;
@@ -183,10 +188,16 @@ function localePreloadPlugin(): Plugin {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig((): UserConfig => {
-  const sentryPlugin = sentrySourceMaps();
+export default defineConfig(({ command }): UserConfig => {
+  // One commit for version.json, the Sentry release (src/main.tsx) and the
+  // web-vitals release (src/utils/webVitals.ts), which read VITE_BUILD_SHA.
+  // Vite reads process.env into import.meta.env after this function runs.
+  const buildSha: string = resolveBuildSha();
+  if (buildSha !== 'local') process.env.VITE_BUILD_SHA = buildSha;
+  if (command === 'build') console.log(`[build-sha] ${buildSha}`);
+  const sentryPlugin = sentrySourceMaps(buildSha);
   const config: UserConfig = {
-    plugins: [routeNamespacePlugin(), react(), versionJsonPlugin(), localePreloadPlugin(), ...(sentryPlugin ? [sentryPlugin] : [])],
+    plugins: [routeNamespacePlugin(), react(), versionJsonPlugin(buildSha), localePreloadPlugin(), ...(sentryPlugin ? [sentryPlugin] : [])],
     optimizeDeps: {
       exclude: ['lucide-react'],
     },

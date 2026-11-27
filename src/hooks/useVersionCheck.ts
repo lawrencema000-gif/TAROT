@@ -11,10 +11,23 @@
 //
 //   When we ship a critical fix (security, billing, broken AI), we need
 //   a way to nudge Android users to update. This hook compares the
-//   bundled `version.json.sha` (compiled into the app at build time) to
-//   the live `tarotlife.app/version.json.sha`. If they differ AND a
-//   minimum-version policy says the bundled is too old, we surface a
-//   one-time prompt.
+//   bundled `version.json.version` (package.json's version, compiled into
+//   the app at build time) with the live `tarotlife.app/version.json.version`.
+//   When the live release is newer AND the bundle is at least 14 days old,
+//   it asks for the one-time prompt.
+//
+//   The release version, not the commit sha: version.json names the commit
+//   of every web deploy (scripts/build-sha.mjs), and most web deploys put
+//   nothing new on Google Play. Comparing shas would tell every install,
+//   14 days after each web deploy, to update to a Play build that does not
+//   exist (health-status-23). package.json's version changes only with an
+//   Android release (src/test/golden/appVersion.test.ts ties it to
+//   versionName), so deploy a version bump to the web only once that
+//   release is on Play.
+//
+//   Installed apps can read the live file only once /version.json answers
+//   their https://localhost origin with Access-Control-Allow-Origin, which
+//   WP-P5-04 adds when the new Android build reaches 100%.
 //
 // Web behaviour: no-op. Web users always get the latest bundle.
 
@@ -32,7 +45,7 @@ interface VersionInfo {
 }
 
 interface UpdateState {
-  /** Live SHA differs from the embedded bundle SHA. */
+  /** The live release version is newer than the bundled one. */
   isStale: boolean;
   /** Bundle is older than MIN_AGE_TO_PROMPT_MS — actively show the prompt. */
   shouldPrompt: boolean;
@@ -48,6 +61,24 @@ const INITIAL: UpdateState = {
   liveBuiltAt: null,
   bundledBuiltAt: null,
 };
+
+/** "1.3.0" → [1, 3, 0]; anything else → null. */
+export function parseReleaseVersion(value: unknown): [number, number, number] | null {
+  if (typeof value !== 'string') return null;
+  const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(value.trim());
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+}
+
+/** True when `live` is a newer release than `bundled`, compared as numbers (1.10.0 > 1.9.0). A missing or malformed version is never newer. */
+export function isNewerRelease(bundled: unknown, live: unknown): boolean {
+  const b = parseReleaseVersion(bundled);
+  const l = parseReleaseVersion(live);
+  if (!b || !l) return false;
+  for (let i = 0; i < 3; i++) {
+    if (l[i] !== b[i]) return l[i] > b[i];
+  }
+  return false;
+}
 
 async function fetchLiveVersion(): Promise<VersionInfo | null> {
   try {
@@ -95,7 +126,7 @@ export function useVersionCheck(): UpdateState {
       if (cancelled) return;
       if (!bundled || !live) return;
 
-      const isStale = !!(bundled.sha && live.sha && bundled.sha !== live.sha);
+      const isStale = isNewerRelease(bundled.version, live.version);
       let shouldPrompt = false;
       if (isStale && bundled.builtAt) {
         const age = Date.now() - new Date(bundled.builtAt).getTime();

@@ -21,7 +21,7 @@ const MISSING_RPC = (name: string) => ({ code: 'PGRST202', message: `Could not f
 interface Call { name: string; op: string; columns?: string; returning?: string; payload?: unknown; args?: unknown; filters: Array<[string, string, unknown]> }
 const calls: Call[] = [];
 
-const server = { migrated: false, blocksReadable: true };
+const server = { migrated: false, blocksReadable: true, reportError: null as null | { code: string; message: string } };
 let deletedRows: Array<{ id: string }> = [];
 let blocked: string[] = [];
 
@@ -66,6 +66,8 @@ function respond(c: Call): { data: unknown; error: unknown } {
       return { data: blocked.map((b) => ({ id: `blk-${b}`, blocked_id: b, created_at: at(1) })), error: null };
     case 'community_reactions':
       return { data: [], error: null };
+    case 'community_reports':
+      return { data: null, error: server.reportError };
     case 'rpc:community_block_author':
     case 'rpc:community_unblock':
       return server.migrated ? { data: true, error: null } : { data: null, error: MISSING_RPC(c.name.slice(4)) };
@@ -108,6 +110,7 @@ vi.mock('../lib/supabase', () => ({
 vi.mock('../utils/telemetry', () => ({ captureException: vi.fn() }));
 
 const dal = await import('./community');
+const { captureException } = await import('../utils/telemetry');
 
 const names = () => calls.map((c) => (c.op === 'select' || c.op === 'rpc' ? c.name : `${c.op}:${c.name}`));
 
@@ -116,8 +119,10 @@ beforeEach(() => {
   dal.__resetCommunityServerProbe();
   server.migrated = false;
   server.blocksReadable = true;
+  server.reportError = null;
   deletedRows = [];
   blocked = [];
+  vi.mocked(captureException).mockClear();
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -267,5 +272,39 @@ describe('deleting your own post or comment', () => {
     deletedRows = [{ id: 'k3' }];
     expect(await dal.deleteComment('k3')).toEqual({ ok: true, data: undefined });
     expect(calls.at(-1)).toMatchObject({ name: 'community_comments', op: 'delete', returning: 'id' });
+  });
+});
+
+/*
+ * One report per member per post or comment (WP-P0-01): unique indexes on
+ * (reporter_id, post_id) and (reporter_id, comment_id) refuse a second one, so
+ * a single member can no longer hide a post alone by reporting it five times.
+ * The refusal (23505) is the first report, already filed: the member hears
+ * "Report submitted" and nothing goes to Sentry.
+ */
+describe('reporting: one report per member', () => {
+  const payload = { reporter_id: ME, post_id: 'C1', comment_id: null, reason: 'spam', details: null };
+
+  it('a second report of the same post (23505 from the unique index) reads as filed, and is not an error', async () => {
+    server.reportError = { code: '23505', message: 'duplicate key value violates unique constraint "community_reports_one_per_post"' };
+    const res = await dal.report({ reporterId: ME, postId: 'C1', reason: 'spam' });
+    expect(res).toEqual({ ok: true, data: undefined });
+    expect(captureException).not.toHaveBeenCalled();
+    expect(calls).toContainEqual(expect.objectContaining({ name: 'community_reports', op: 'insert', payload }));
+  });
+
+  it('any other refusal is still a failure, and is reported', async () => {
+    server.reportError = { code: '42501', message: 'new row violates row-level security policy' };
+    const res = await dal.report({ reporterId: ME, postId: 'C1', reason: 'spam' });
+    expect(res.ok).toBe(false);
+    expect(captureException).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(captureException).mock.calls[0][0]).toBe('dal.community.report');
+  });
+
+  it('a first report lands', async () => {
+    const res = await dal.report({ reporterId: ME, postId: 'C1', reason: 'spam' });
+    expect(res).toEqual({ ok: true, data: undefined });
+    expect(captureException).not.toHaveBeenCalled();
+    expect(calls).toContainEqual(expect.objectContaining({ name: 'community_reports', op: 'insert', payload }));
   });
 });

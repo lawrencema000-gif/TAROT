@@ -48,28 +48,6 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
 
   if (!open) return null;
 
-  // English reads the server's resources first; other locales lead with
-  // their own national lines and fall back to the server where they have none.
-  const serverLeads = Boolean(resources) && getLocale() === 'en';
-  const pick = (key: string, serverValue: string | undefined, fallback: string) =>
-    serverLeads && serverValue ? serverValue : (t(key, { defaultValue: serverValue ?? fallback }) as string);
-
-  const phoneNumber = pick('crisis.phone.number', resources?.us.number, '988');
-  const phoneTitle = pick('crisis.phone.title', resources?.us.name, '988 Suicide & Crisis Lifeline');
-  const phoneBody = pick(
-    'crisis.phone.body',
-    resources?.us.number ? `Call or text ${resources.us.number} · 24/7 · US` : undefined,
-    `Call or text ${phoneNumber} · 24/7 · US`,
-  );
-  const textTitle = pick('crisis.text.title', resources?.textLine.name, 'Crisis Text Line');
-  const textBody = pick('crisis.text.body', resources?.textLine.instructions, 'Text HOME to 741741 · US/UK/CA/IE');
-  const textScheme = t('crisis.text.scheme', { defaultValue: 'sms' }) as string;
-  const textNumber = t('crisis.text.number', { defaultValue: '741741' }) as string;
-  const textKeyword = t('crisis.text.keyword', { defaultValue: 'HOME' }) as string;
-  const internationalUrl = resources?.international && /^https:\/\//.test(resources.international)
-    ? resources.international
-    : 'https://findahelpline.com';
-  const internationalHost = internationalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const titleId = 'crisis-banner-title';
 
   // Portalled to <body>: the page's own stacking context (its entrance
@@ -112,52 +90,7 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
-            <Phone className="w-4 h-4 text-gold flex-shrink-0" aria-hidden />
-            <div className="flex-1 min-w-0">
-              <p className="text-ui text-mystic-100 font-medium">{phoneTitle}</p>
-              <p className="text-meta text-mystic-400">{phoneBody}</p>
-            </div>
-            <a
-              href={`tel:${phoneNumber}`}
-              className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-gold/15 text-gold rounded-control text-meta font-medium hover:bg-gold/25 transition-colors"
-            >
-              {t('crisis.phone.cta', { defaultValue: 'Call' })}
-            </a>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
-            {textScheme === 'sms'
-              ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" aria-hidden />
-              : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" aria-hidden />}
-            <div className="flex-1 min-w-0">
-              <p className="text-ui text-mystic-100 font-medium">{textTitle}</p>
-              <p className="text-meta text-mystic-400">{textBody}</p>
-            </div>
-            <a
-              href={`${textScheme}:${textNumber}${textKeyword ? `?body=${textKeyword}` : ''}`}
-              className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue-ink rounded-control text-meta font-medium hover:bg-cosmic-blue/25 transition-colors"
-            >
-              {t('crisis.text.cta', { defaultValue: 'Text' })}
-            </a>
-          </div>
-
-          <a
-            href={internationalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control hover:border-mystic-700 transition-colors"
-          >
-            <Globe className="w-4 h-4 text-cosmic-violet-ink flex-shrink-0" aria-hidden />
-            <div className="flex-1 min-w-0">
-              <p className="text-ui text-mystic-100 font-medium">
-                {t('crisis.international.title', { defaultValue: 'International helplines' })}
-              </p>
-              <p className="text-meta text-mystic-400 truncate">{internationalHost}</p>
-            </div>
-          </a>
-        </div>
+        <CrisisLineRows resources={resources} />
 
         <p className="text-meta text-mystic-400 leading-relaxed mt-4">
           {t('crisis.footer', {
@@ -176,5 +109,89 @@ export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * The helplines, row by row: the phone line, the second line (a text line in
+ * English, a second phone line in ja/ko/zh) and findahelpline. The banner shows
+ * them, and so does the journal coach's crisis card after the banner is closed
+ * (social-ai-18). English reads the server's resources first (Community); the
+ * Text link's number and keyword always come from the locale file, so a server
+ * line must carry the locale's number (CrisisBanner.test.tsx pins it).
+ */
+export function CrisisLineRows({ resources }: { resources?: ModerationResult['crisisResources'] }) {
+  const { t } = useT('app');
+
+  // English reads the server's resources first; other locales lead with
+  // their own national lines and fall back to the server where they have none.
+  const serverLeads = Boolean(resources) && getLocale() === 'en';
+  const pick = (key: string, serverValue: string | undefined, fallback: string) =>
+    serverLeads && serverValue ? serverValue : (t(key, { defaultValue: serverValue ?? fallback }) as string);
+
+  const phoneNumber = pick('crisis.phone.number', resources?.us.number, '988');
+  const phoneTitle = pick('crisis.phone.title', resources?.us.name, '988 Suicide & Crisis Lifeline');
+  const phoneBody = pick(
+    'crisis.phone.body',
+    resources?.us.number ? `Call or text ${resources.us.number} · 24/7 · US` : undefined,
+    `Call or text ${phoneNumber} · 24/7 · US`,
+  );
+  const textTitle = pick('crisis.text.title', resources?.textLine.name, 'Crisis Text Line');
+  const textBody = pick('crisis.text.body', resources?.textLine.instructions, 'Text HOME to 741741 · 24/7 · US');
+  const textScheme = t('crisis.text.scheme', { defaultValue: 'sms' }) as string;
+  const textNumber = t('crisis.text.number', { defaultValue: '741741' }) as string;
+  const textKeyword = t('crisis.text.keyword', { defaultValue: 'HOME' }) as string;
+  const internationalUrl = resources?.international && /^https:\/\//.test(resources.international)
+    ? resources.international
+    : 'https://findahelpline.com';
+  const internationalHost = internationalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
+        <Phone className="w-4 h-4 text-gold flex-shrink-0" aria-hidden />
+        <div className="flex-1 min-w-0">
+          <p className="text-ui text-mystic-100 font-medium">{phoneTitle}</p>
+          <p className="text-meta text-mystic-400">{phoneBody}</p>
+        </div>
+        <a
+          href={`tel:${phoneNumber}`}
+          className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-gold/15 text-gold rounded-control text-meta font-medium hover:bg-gold/25 transition-colors"
+        >
+          {t('crisis.phone.cta', { defaultValue: 'Call' })}
+        </a>
+      </div>
+
+      <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
+        {textScheme === 'sms'
+          ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" aria-hidden />
+          : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" aria-hidden />}
+        <div className="flex-1 min-w-0">
+          <p className="text-ui text-mystic-100 font-medium">{textTitle}</p>
+          <p className="text-meta text-mystic-400">{textBody}</p>
+        </div>
+        <a
+          href={`${textScheme}:${textNumber}${textKeyword ? `?body=${textKeyword}` : ''}`}
+          className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue-ink rounded-control text-meta font-medium hover:bg-cosmic-blue/25 transition-colors"
+        >
+          {t('crisis.text.cta', { defaultValue: 'Text' })}
+        </a>
+      </div>
+
+      <a
+        href={internationalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control hover:border-mystic-700 transition-colors"
+      >
+        <Globe className="w-4 h-4 text-cosmic-violet-ink flex-shrink-0" aria-hidden />
+        <div className="flex-1 min-w-0">
+          <p className="text-ui text-mystic-100 font-medium">
+            {t('crisis.international.title', { defaultValue: 'International helplines' })}
+          </p>
+          <p className="text-meta text-mystic-400 truncate">{internationalHost}</p>
+        </div>
+      </a>
+    </div>
   );
 }

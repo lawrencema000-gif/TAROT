@@ -64,7 +64,7 @@ const WORDS: Record<CrisisLocale, Words> = {
   ko: {
     notAlone: "적어 주신 내용은 가볍지 않아요. 혼자 감당하지 않아도 돼요.",
     call: (l) => `${l.phone.title}에 지금 전화해 보시겠어요? ${l.phone.body}`,
-    also: (l) => `${l.text.title}에도 연락할 수 있어요. ${l.text.body}`,
+    also: (l) => `${l.text.title}에도 연락할 수 있어요. ${l.text.body}.`,
     elsewhere: `해외에 있다면 ${INTERNATIONAL_HELPLINES}에서 그 나라의 무료 상담전화를 찾을 수 있어요.`,
     person: "지금 연락할 수 있는, 당신을 아끼는 사람이 있나요?",
     gap: " ",

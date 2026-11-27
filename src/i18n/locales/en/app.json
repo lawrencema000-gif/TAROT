@@ -10753,7 +10753,7 @@
   },
   "yearAhead": {
     "title": "Year Ahead",
-    "cardTitle": "{{year}} — 12 monthly briefings",
+    "cardTitle": "{{from}} – {{to}} · 12 monthly briefings",
     "cardSub": "A month-by-month map of the biggest transits to your natal chart.",
     "needsBirthData": "Add your full birth data first",
     "needsBirthDataBody": "Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.",
@@ -10779,7 +10779,10 @@
     "earnNow": "Watch an ad, earn {{n}} Moonstones",
     "eventCount": "{{n}} transits",
     "retry": "Reload the forecast",
-    "arcTitle": "The shape of your year"
+    "arcTitle": "The shape of your year",
+    "span": "{{from}} – {{to}}",
+    "accessUntilOffer": "Unlocking opens it until {{date}}.",
+    "accessUntil": "Your unlock opens it until {{date}}."
   },
   "natalReport": {
     "title": "Full Natal Chart",

@@ -35,6 +35,17 @@ import type { Logger } from "./log.ts";
  *   gpt-image-2, gpt-image-2.5-flare   text in $5.00 / image out $30.00
  *   (for image rows "input" is the text prompt, "output" the image tokens)
  *
+ * Added from the pricing page read 2026-11-14 (standard tier), for OpenAI's
+ * named replacements of the models it shuts down (WP-P5-07, owner decision
+ * D38; deprecations page of the same day):
+ *   gpt-6.1-terra     $1.00 / $5.00      (gpt-5-mini → gpt-6.1-terra, 2026-12-11)
+ *   gpt-6.1-sol       $2.00 / $10.00     (gpt-5 → gpt-6.1-sol, 2026-12-11)
+ *   gpt-6-luna        $0.10 / $0.50      (gpt-4o-mini → gpt-6-luna, 2027-01-14)
+ *   gpt-image-2.6-flare, gpt-image-2.6-sunburst   text in $5.00 / image out $30.00
+ *                                        (gpt-image-2 → either, 2027-02-10)
+ * gpt-5, gpt-5-mini and the gpt-5.6 pair stay: historic rows and the chain
+ * before D38's pair is live.
+ *
  * Retired ids (gemini-2.0-flash, gemini-1.5-flash) are gone from the table:
  * nothing can call them any more, and historic rows keep their recorded
  * cost. An unknown model → cost 0 + a warning log; the ledger still records
@@ -61,10 +72,15 @@ export const COST_PER_1K_TOKENS: Record<string, { input: number; output: number 
   "gpt-5-mini":       { input: 0.025,  output: 0.20 },
   "gpt-5.6-terra":    { input: 0.20,   output: 1.20 },
   "gpt-5.6-sol":      { input: 0.40,   output: 2.00 },
+  "gpt-6.1-terra":    { input: 0.10,   output: 0.50 },
+  "gpt-6.1-sol":      { input: 0.20,   output: 1.00 },
+  "gpt-6-luna":       { input: 0.01,   output: 0.05 },   // gpt-4o-mini's named replacement
   "gpt-4o-mini":      { input: 0.015,  output: 0.06 },
   // OpenAI images (text-in / image-out tokens)
   "gpt-image-2":           { input: 0.50, output: 3.00 },
   "gpt-image-2.5-flare":   { input: 0.50, output: 3.00 },
+  "gpt-image-2.6-flare":    { input: 0.50, output: 3.00 },
+  "gpt-image-2.6-sunburst": { input: 0.50, output: 3.00 },
   // Gemini text
   "gemini-3.8-flash": { input: 0.075,  output: 0.375 },
   "gemini-3.5-flash": { input: 0.15,   output: 0.90 },
@@ -72,21 +88,37 @@ export const COST_PER_1K_TOKENS: Record<string, { input: number; output: number 
   "gemini-2.5-pro":   { input: 0.125,  output: 1.00 },
 };
 
+/** 2027-01-01T00:00Z — gemini-3.8-flash's price doubles (comment above). */
+export const GEMINI_38_FLASH_PRICE_RISE_UTC = Date.UTC(2027, 0, 1);
+
+/** Prices that change on a known date: from `from` on, `rates` replace the table's entry. */
+const DATED_COST_PER_1K_TOKENS: Record<string, { from: number; rates: { input: number; output: number } }> = {
+  "gemini-3.8-flash": { from: GEMINI_38_FLASH_PRICE_RISE_UTC, rates: { input: 0.15, output: 0.75 } },
+};
+
+function ratesFor(id: string, now: number): { input: number; output: number } | undefined {
+  const dated = DATED_COST_PER_1K_TOKENS[id];
+  if (dated && now >= dated.from) return dated.rates;
+  return COST_PER_1K_TOKENS[id];
+}
+
 /**
  * Returns the estimated cost in cents for a given call. Uses 4-decimal
  * precision to match the ledger column (`numeric(10,4)`).
  *
  * Unknown models return 0 without throwing — callers still record the row so
  * we at least have the token counts + model string for later reprice. A
- * date-suffixed id ("gpt-5-2025-08-07") is priced as its base id.
+ * date-suffixed id ("gpt-5-2025-08-07") is priced as its base id. `now`
+ * (default: the time of the call) picks a dated price.
  */
 export function estimateCost(
   model: string,
   promptTokens: number,
   completionTokens: number,
+  now: number = Date.now(),
 ): number {
-  const rates = COST_PER_1K_TOKENS[model]
-    ?? COST_PER_1K_TOKENS[model.replace(/-\d{4}-\d{2}-\d{2}$/, "")];
+  const rates = ratesFor(model, now)
+    ?? ratesFor(model.replace(/-\d{4}-\d{2}-\d{2}$/, ""), now);
   if (!rates) return 0;
   const input = (promptTokens / 1000) * rates.input;
   const output = (completionTokens / 1000) * rates.output;

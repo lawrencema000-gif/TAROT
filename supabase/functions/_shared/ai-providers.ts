@@ -33,16 +33,30 @@
  * GET /v1beta/models with the project keys → scratchpad p7-B5-models.json)
  * and proven with one real call each (p7-B5-probes.jsonl):
  *   gpt-5, gpt-5-mini        listed and answering; OpenAI shuts both down on
- *                            2026-12-11 (deprecations page: gpt-5 → gpt-5.6-sol,
- *                            gpt-5-mini → gpt-5.6-terra). Kept as the primary
- *                            tier until then: $1.25/$10 per 1M vs terra $2/$12
- *                            and sol $4/$20 — the swap is a price decision for
- *                            the owner, so the successor is the third rung
- *                            today and becomes the primary automatically at
- *                            the sunset date (see openAIModels()).
+ *                            2026-12-11. OpenAI's deprecations page (read
+ *                            2026-11-14) names gpt-5 → gpt-6.1-sol and
+ *                            gpt-5-mini → gpt-6.1-terra; per 1M tokens in/out
+ *                            gpt-5 $1.25/$10, gpt-6.1-sol $2/$10, gpt-6.1-terra
+ *                            $1/$5 (gpt-5.6-sol $4/$20, gpt-5.6-terra $2/$12).
+ *                            gpt-5 stays first until the sunset; from then the
+ *                            OPENAI_POST_SUNSET_MODELS pair leads (owner
+ *                            decision D38, see openAIModels()).
  *   gpt-5.6-terra, gpt-5.6-sol  listed; answered json-mode with
  *                            reasoning_effort "none" (they return 400 for
- *                            "minimal" — see reasoningEffortFor()).
+ *                            "minimal" — see reasoningEffortFor()). Not
+ *                            deprecated.
+ *   gpt-6.1-terra, gpt-6.1-sol  OpenAI's named replacements. GPT-6 migration
+ *                            guide (read 2026-11-15): gpt-6.1-sol and
+ *                            gpt-6-astra do not support reasoning effort
+ *                            "none", so they get "low" (with more completion
+ *                            headroom, completionBudgetFor()); gpt-6.1-terra,
+ *                            gpt-6-sol and gpt-6-luna take "none". No
+ *                            reasoning model is sent `temperature`. Key probe
+ *                            for this project: WP-P5-07 step 6 (a temporary
+ *                            ai-model-probe function, never committed; result
+ *                            in SP/p5-07/probe-<date>.json).
+ *   gpt-4o-mini              shuts down 2027-01-14 → gpt-6-luna
+ *                            (daily-geo-mentions only, WP-P5-13).
  *   gemini-3.8-flash         listed, "New Stable", answered in 3.5 s;
  *   gemini-3.5-flash         listed, answered in 17 s;
  *   gemini-2.5-flash         listed (access-limited legacy, still answers).
@@ -50,7 +64,12 @@
  *   imagen-3.0-generate-002  NOT in the live lists (retired) → removed.
  *   gpt-image-2, gpt-image-2.5-flare  listed; both returned a JPEG with
  *                            output_format + output_compression (gpt-image-1
- *                            shuts down 2026-10-23).
+ *                            shut down 2026-10-23). gpt-image-2 shuts down
+ *                            2027-02-10 → gpt-image-2.6-flare or -sunburst
+ *                            (text in $5 / image out $30 per 1M, like every
+ *                            gpt-image-2.x). D38 images C: gpt-image-2.6-flare
+ *                            first, once the key probe shows it returning a
+ *                            JPEG; gpt-image-2.5-flare stays second.
  *   gemini-embedding-001     listed; returned exactly 768 floats with
  *                            outputDimensionality 768 (pgvector is vector(768)).
  */
@@ -64,15 +83,28 @@ import { callClaude, claudeKeyConfigured } from "./anthropic.ts";
 export const OPENAI_GPT5_SUNSET_UTC = Date.UTC(2026, 11, 11);
 
 /**
+ * The OpenAI chain from the sunset on, first model first (owner decision D38).
+ * Since 2026-11-22 OpenAI is the FALLBACK behind Claude (runChain), so this
+ * pair only answers when Claude fails.
+ *   B (planned since 2026-10-02): gpt-5.6-terra, gpt-5.6-sol.
+ *   A (OpenAI's named replacements): gpt-6.1-terra, gpt-6.1-sol — D38's
+ *     answer (answers.md), shipped only once the key probe passes for both;
+ *     if it fails, the release reverts to B until owner-list job 11 is done.
+ * The first id is also the third rung before the sunset, so a gpt-5 outage
+ * degrades to the successor rather than to Gemini.
+ */
+export const OPENAI_POST_SUNSET_MODELS: readonly string[] = ["gpt-6.1-terra", "gpt-6.1-sol"];
+
+/**
  * OpenAI chain, quality-first. gpt-5 primary, gpt-5-mini covers rate limits,
- * and the official successor sits third so the Dec-11 shutdown degrades to
- * "one fast 404 then the successor" rather than to Gemini-only. After the
- * sunset the successors lead and nothing is wasted on dead ids.
+ * and the successor sits third so the Dec-11 shutdown degrades to "one fast
+ * 404 then the successor" rather than to Gemini-only. After the sunset the
+ * successors lead and nothing is wasted on dead ids.
  */
 export function openAIModels(now: number = Date.now()): string[] {
   return now >= OPENAI_GPT5_SUNSET_UTC
-    ? ["gpt-5.6-terra", "gpt-5.6-sol"]
-    : ["gpt-5", "gpt-5-mini", "gpt-5.6-terra"];
+    ? [...OPENAI_POST_SUNSET_MODELS]
+    : ["gpt-5", "gpt-5-mini", OPENAI_POST_SUNSET_MODELS[0]];
 }
 
 /** Snapshot at isolate start — fine for callers that just iterate once. */
@@ -81,8 +113,12 @@ export const OPENAI_MODELS: string[] = openAIModels();
 /** Gemini chain: current stable Flash first, then the two older Flash ids that still answer. */
 export const GEMINI_MODELS: string[] = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
 
-/** Image chain — OpenAI only; the Imagen fallback id was retired and no Imagen id is listed for this key. */
-export const OPENAI_IMAGE_MODELS: string[] = ["gpt-image-2", "gpt-image-2.5-flare"];
+/**
+ * Image chain — OpenAI only; the Imagen fallback id was retired and no Imagen id is listed for this key.
+ * D38 images C: gpt-image-2.6-flare (a named replacement of gpt-image-2, which shuts down
+ * 2027-02-10) first, gpt-image-2.5-flare second — once the key probe shows 2.6-flare returning a JPEG.
+ */
+export const OPENAI_IMAGE_MODELS: string[] = ["gpt-image-2.6-flare", "gpt-image-2.5-flare"];
 
 export const GEMINI_EMBEDDING_MODEL = "gemini-embedding-001";
 /** The pgvector column is vector(768); every embedder must be asked for exactly this. */
@@ -93,12 +129,14 @@ export const EMBEDDING_DIMENSIONS = 768;
  * on 2026-10-02 (locale instruction moved into system prompts, Gemini chain
  * refreshed), and again on 2026-11-22 when Claude became the first provider,
  * so members get Claude-written content instead of cached OpenAI replies.
+ * Not changed for the 2026-12-11 model switch: no prompt changes, and a
+ * cached reply stays valid. Bump it only when prompts change.
  */
 export const AI_CHAIN_TAG = "claude-opus-5-5-first-then-openai-or-gemini-v3";
 
 // ─── Reasoning-model handling ────────────────────────────────────────────
-// Reasoning models (gpt-5 family, o-series) have different API constraints
-// than chat-completion models (gpt-4o):
+// Reasoning models (gpt-5 and gpt-6 families, o-series) have different API
+// constraints than chat-completion models (gpt-4o):
 //   - They don't support `temperature` other than the default (1).
 //   - Their reasoning tokens count against `max_completion_tokens` BEFORE
 //     any visible output is produced. With a tight budget the model
@@ -108,17 +146,24 @@ export const AI_CHAIN_TAG = "claude-opus-5-5-first-then-openai-or-gemini-v3";
 //     chain-of-thought, we need the prose / structured output, and the
 //     lowest setting keeps latency down.
 export function isReasoningModel(model: string): boolean {
-  return model.startsWith("gpt-5") || /^o[1-9]/.test(model);
+  return /^gpt-[56]/.test(model) || /^o[1-9]/.test(model);
 }
 
+export type ReasoningEffort = "minimal" | "low" | "none";
+
 /**
- * The lowest reasoning effort each family accepts. gpt-5 / gpt-5-mini /
- * gpt-5-nano (optionally date-suffixed) take "minimal"; gpt-5.1 and later,
- * including gpt-5.6-sol/terra/luna, reject "minimal" (400 unsupported_value,
- * proven 2026-10-02) and take "none".
+ * The lowest reasoning effort each model accepts:
+ *   gpt-5 / gpt-5-mini / gpt-5-nano (date-suffixed or not)     "minimal"
+ *   gpt-6.1-sol, gpt-6-astra (no "none": GPT-6 migration guide) "low"
+ *   gpt-5.1 and later, gpt-5.6-*, gpt-6.1-terra, gpt-6-sol,
+ *   gpt-6-luna                                                  "none"
+ *   (gpt-5.6 rejects "minimal" with 400 unsupported_value, proven 2026-10-02)
  */
-export function reasoningEffortFor(model: string): "minimal" | "none" {
-  return /^gpt-5(-mini|-nano)?(-\d{4}-\d{2}-\d{2})?$/.test(model) ? "minimal" : "none";
+export function reasoningEffortFor(model: string): ReasoningEffort {
+  const base = model.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+  if (/^gpt-5(-mini|-nano)?$/.test(base)) return "minimal";
+  if (base === "gpt-6.1-sol" || base === "gpt-6-astra") return "low";
+  return "none";
 }
 
 /**
@@ -179,6 +224,41 @@ interface CallFailure {
 }
 
 // ─── OpenAI ──────────────────────────────────────────────────────────────
+
+/**
+ * Reasoning tokens come out of max_completion_tokens before any visible text.
+ * Even at the lowest effort we roughly double the headroom so the visible
+ * JSON / prose isn't truncated; a model that must think at "low" gets more.
+ * 4o-class models don't need the padding.
+ */
+export function completionBudgetFor(model: string, maxTokens: number): number {
+  if (!isReasoningModel(model)) return maxTokens;
+  return reasoningEffortFor(model) === "low" ? Math.max(maxTokens * 3, 3000) : Math.max(maxTokens * 2, 1500);
+}
+
+/** The Chat Completions body runChain sends for `model` (the key probe sends the same). */
+export function openAIRequestBody(
+  model: string,
+  system: string,
+  history: ChatMessage[],
+  temperature: number,
+  maxTokens: number,
+  jsonMode: boolean,
+): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system },
+      ...history.map((m) => ({ role: m.role, content: m.content })),
+    ],
+    max_completion_tokens: completionBudgetFor(model, maxTokens),
+    ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+  };
+  if (isReasoningModel(model)) body.reasoning_effort = reasoningEffortFor(model);
+  else body.temperature = temperature;
+  return body;
+}
+
 async function openAIChat(
   model: string,
   apiKey: string,
@@ -188,26 +268,7 @@ async function openAIChat(
   maxTokens: number,
   jsonMode: boolean,
 ): Promise<CallResult | CallFailure> {
-  const reasoning = isReasoningModel(model);
-  // Reasoning models eat output budget for thinking tokens. Even at the
-  // lowest effort we roughly double the headroom so the visible JSON /
-  // prose output isn't truncated. 4o-class models don't need the padding.
-  const completionBudget = reasoning ? Math.max(maxTokens * 2, 1500) : maxTokens;
-
-  const body: Record<string, unknown> = {
-    model,
-    messages: [
-      { role: "system", content: system },
-      ...history.map((m) => ({ role: m.role, content: m.content })),
-    ],
-    max_completion_tokens: completionBudget,
-    ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-  };
-  if (reasoning) {
-    body.reasoning_effort = reasoningEffortFor(model);
-  } else {
-    body.temperature = temperature;
-  }
+  const body = openAIRequestBody(model, system, history, temperature, maxTokens, jsonMode);
 
   // AbortController timeout — without it a hung OpenAI request never
   // resolves, so the Gemini fallback in runChain never engages on a

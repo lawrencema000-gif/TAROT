@@ -57,9 +57,9 @@ const ai = (await import(/* @vite-ignore */ PROVIDERS)) as Providers;
 const usage = (await import(/* @vite-ignore */ USAGE)) as Usage;
 
 /** D38 (answers.md): readings A, the OpenAI fallback behind Claude from 2026-12-11. */
-const EXPECTED_POST_SUNSET = ['gpt-5.6-terra', 'gpt-5.6-sol'];
-/** D38 images C: kept as today's list until the key probe shows gpt-image-2.6-flare returning a JPEG. */
-const EXPECTED_IMAGE_MODELS = ['gpt-image-2', 'gpt-image-2.5-flare'];
+const EXPECTED_POST_SUNSET = ['gpt-6.1-terra', 'gpt-6.1-sol'];
+/** D38 images C: gpt-image-2.6-flare first, gpt-image-2.5-flare second (gpt-image-2 shuts down 2027-02-10). */
+const EXPECTED_IMAGE_MODELS = ['gpt-image-2.6-flare', 'gpt-image-2.5-flare'];
 
 describe('openAIModels around the gpt-5 sunset (2026-12-11T00:00Z)', () => {
   const before = ai.openAIModels(Date.UTC(2026, 11, 10, 23, 59, 59));

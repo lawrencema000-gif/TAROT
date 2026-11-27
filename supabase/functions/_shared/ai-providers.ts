@@ -88,11 +88,12 @@ export const OPENAI_GPT5_SUNSET_UTC = Date.UTC(2026, 11, 11);
  * pair only answers when Claude fails.
  *   B (planned since 2026-10-02): gpt-5.6-terra, gpt-5.6-sol.
  *   A (OpenAI's named replacements): gpt-6.1-terra, gpt-6.1-sol — D38's
- *     answer, applied only once the key probe passes for both.
+ *     answer (answers.md), shipped only once the key probe passes for both;
+ *     if it fails, the release reverts to B until owner-list job 11 is done.
  * The first id is also the third rung before the sunset, so a gpt-5 outage
  * degrades to the successor rather than to Gemini.
  */
-export const OPENAI_POST_SUNSET_MODELS: readonly string[] = ["gpt-5.6-terra", "gpt-5.6-sol"];
+export const OPENAI_POST_SUNSET_MODELS: readonly string[] = ["gpt-6.1-terra", "gpt-6.1-sol"];
 
 /**
  * OpenAI chain, quality-first. gpt-5 primary, gpt-5-mini covers rate limits,
@@ -112,8 +113,12 @@ export const OPENAI_MODELS: string[] = openAIModels();
 /** Gemini chain: current stable Flash first, then the two older Flash ids that still answer. */
 export const GEMINI_MODELS: string[] = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
 
-/** Image chain — OpenAI only; the Imagen fallback id was retired and no Imagen id is listed for this key. */
-export const OPENAI_IMAGE_MODELS: string[] = ["gpt-image-2", "gpt-image-2.5-flare"];
+/**
+ * Image chain — OpenAI only; the Imagen fallback id was retired and no Imagen id is listed for this key.
+ * D38 images C: gpt-image-2.6-flare (a named replacement of gpt-image-2, which shuts down
+ * 2027-02-10) first, gpt-image-2.5-flare second — once the key probe shows 2.6-flare returning a JPEG.
+ */
+export const OPENAI_IMAGE_MODELS: string[] = ["gpt-image-2.6-flare", "gpt-image-2.5-flare"];
 
 export const GEMINI_EMBEDDING_MODEL = "gemini-embedding-001";
 /** The pgvector column is vector(768); every embedder must be asked for exactly this. */

@@ -5380,6 +5380,8 @@
       "memberFallback": "회원",
       "status": "상태",
       "statusActive": "활성",
+      "statusTrial": "무료 체험 중",
+      "statusPaymentIssue": "결제 문제가 있어요",
       "billing": "결제 수단",
       "yourBenefits": "플랜에 포함된 것",
       "syncStatus": "내 구독 새로고침",
@@ -5388,22 +5390,27 @@
         "verified": "구독이 확인됐어요.",
         "active": "바뀐 것이 없어요 — 구독은 표시된 그대로예요.",
         "verifyFailed": "스토어에서 구독을 확인하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
-        "portalFailed": "결제 포털을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요."
+        "portalFailed": "결제 포털을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+        "noCardSubscription": "이 계정에는 여기서 관리할 카드 구독이 없어요. 앱 스토어에서 구독했다면 그곳에서 관리하세요."
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "카드 (Stripe 결제)"
+        "stripe": "카드 (Stripe 결제)",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "계정에 포함"
       },
       "manage": {
-        "android": "Google Play에서 관리",
-        "ios": "App Store에서 관리",
-        "web": "구독 관리"
+        "portal": "구독 관리",
+        "googlePlay": "Google Play에서 관리",
+        "appStore": "App Store에서 관리"
       },
       "storeNote": {
-        "android": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
-        "ios": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
-        "web": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요."
+        "stripe": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "stripeInApp": "이 구독은 웹사이트에서 카드로 결제해서 앱에서는 바꿀 수 없어요. 해지하거나 변경하려면 브라우저에서 tarotlife.app에 로그인하세요.",
+        "stripeLifetime": "카드로 한 번 결제했어요. 갱신하거나 해지할 것이 없어요.",
+        "googlePlay": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "appStore": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "included": "프리미엄이 계정에 포함되어 있어서 결제, 갱신, 해지할 것이 없어요."
       },
       "plan": "내 플랜",
       "renewal": {

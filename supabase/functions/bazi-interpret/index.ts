@@ -7,6 +7,7 @@ import {
   openAIModels,
   reasoningEffortFor,
 } from "../_shared/ai-providers.ts";
+import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
 import { localeInstruction } from "../_shared/locale.ts";
 
 /**
@@ -390,8 +391,8 @@ function isReadingComplete(parsed: ReadingShape): boolean {
 }
 
 async function callAI(system: string, prompt: string): Promise<ReadingShape> {
-  // Provider chain: OpenAI primary (better narrative quality), Gemini
-  // fallback. With per-call AbortController at 90s and 1 retry per model,
+  // Provider chain: Claude first (owner's key), then OpenAI (better narrative
+  // quality than Gemini), then Gemini. With per-call AbortController at 90s and 1 retry per model,
   // worst-case wall-clock is ~360s (4 attempts × 90s) — but that's only
   // hit when EVERY attempt times out. Typical fast-fail on 429/transient
   // settles in 100-180s. Supabase wall-clock cap is 150s, so the chain
@@ -400,7 +401,33 @@ async function callAI(system: string, prompt: string): Promise<ReadingShape> {
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
   let lastErr = "no providers configured";
 
-  // ── OpenAI primary ── 1 retry per model (2 attempts each) instead of 3
+  // ── Claude first (the owner's key, _shared/anthropic.ts) ── one call; any
+  // failure, an unparseable reply or an incomplete reading falls through to
+  // OpenAI. A full reading took Claude 80 s when measured on 2026-11-22
+  // (3,040 words, 6,387 output tokens with thinking), so the deadline is
+  // 105 s. The usual failures (no credit, spend cap, overload) come back in
+  // a second or two and leave the whole budget to OpenAI; only a Claude call
+  // that hangs to the deadline leaves OpenAI short of time.
+  const claude = await callClaude({
+    system,
+    messages: [{ role: "user", content: prompt }],
+    maxOutputTokens: 4500, // a reading is ~3,000-4,000 words of JSON
+    json: true,
+    timeoutMs: 105_000,
+  });
+  if (claude.ok) {
+    try {
+      const parsed = JSON.parse(extractJsonObject(claude.text)) as ReadingShape;
+      if (isReadingComplete(parsed)) return fillMissingSections(parsed);
+      lastErr = `claude ${claude.model} returned an incomplete reading (sections missing)`;
+    } catch (e) {
+      lastErr = `claude ${claude.model} returned invalid JSON: ${String(e).slice(0, 200)}`;
+    }
+  } else {
+    lastErr = claude.reason;
+  }
+
+  // ── OpenAI next ── 1 retry per model (2 attempts each) instead of 3
   if (openaiKey) {
     for (const model of openAIModels()) {
       for (let attempt = 0; attempt < 2; attempt++) {
@@ -496,9 +523,9 @@ Deno.serve(handler<BaziInput>({
       }
     }
 
-    // Cache miss → call AI provider chain (OpenAI primary, Gemini fallback)
-    if (!Deno.env.get("OPENAI_API_KEY") && !Deno.env.get("GEMINI_API_KEY")) {
-      throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured (OPENAI_API_KEY + GEMINI_API_KEY)", 503);
+    // Cache miss → call AI provider chain (Claude first, then OpenAI, then Gemini)
+    if (!claudeKeyConfigured() && !Deno.env.get("OPENAI_API_KEY") && !Deno.env.get("GEMINI_API_KEY")) {
+      throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured (ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY)", 503);
     }
 
     ctx.log.info("bazi_interpret.generating", { userId: ctx.userId, year, locale: body.locale ?? "en" });

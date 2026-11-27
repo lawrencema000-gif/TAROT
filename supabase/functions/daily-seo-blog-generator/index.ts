@@ -1,6 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
 import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
+import { callClaude, claudeKeyConfigured } from "../_shared/anthropic.ts";
+import { draftTopic } from "./topic-draft.ts";
+import { APP_LINKS, fixInternalLinks } from "./internal-links.ts";
 import { marked } from "npm:marked@14.1.3";
 
 /**
@@ -69,6 +72,8 @@ interface GeneratedArticleRaw {
 
 interface GeneratedArticle extends Omit<GeneratedArticleRaw, "content_markdown"> {
   contentHtml: string;
+  /** provider/model that wrote the article, e.g. "anthropic/claude-opus-5-5" */
+  servedBy: string;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -77,7 +82,13 @@ interface GeneratedArticle extends Omit<GeneratedArticleRaw, "content_markdown">
 
 const ARTICLE_SYSTEM = `You are a senior SEO content writer for Arcana, a mystical-but-modern tarot, astrology, dream, and self-knowledge app. Your job is to write SEO-optimised articles that rank in Google AND get cited by AI engines (ChatGPT, Perplexity, Gemini) when users ask about the topic.
 
-VOICE: poetic precision over florid mysticism. Each sentence earns its place. Treat the reader as a smart adult who appreciates clarity. Never hedge with "some say" / "it is believed" — speak with grounded authority.
+VOICE: poetic precision over florid mysticism. Each sentence earns its place. Treat the reader as a smart adult who appreciates clarity. Never hedge with "some say" / "it is believed" — speak with grounded authority about what the tradition holds ("in tarot, the Ace of Pentacles stands for…"): authority about a tradition, never a promise about the reader's life.
+
+CONTENT RULES (the owner's decision D34; they override everything else here):
+- No health, money or legal promises. No advice on illness, diagnosis or treatment, pregnancy or fertility, mental-health conditions, self-harm, investments, gambling or legal questions. Dreams are read as symbols, never as symptoms. Where a topic touches distress (worry, grief, nightmares, sleeplessness), add one plain sentence that lasting or troubling symptoms are worth raising with a doctor.
+- Tradition, not prophecy: never claim a reading predicts events with certainty, and never promise money, health or relationship results.
+- Never mention suicide or self-harm, including card nicknames that do.
+- No competitor apps or brands and no real living people.
 
 STRUCTURE every article exactly as follows:
 - H1: the topic, including the primary keyword naturally
@@ -88,17 +99,8 @@ STRUCTURE every article exactly as follows:
 
 LENGTH: 1000–1500 words total.
 
-INTERNAL LINKS: include 1–3 inline links to relevant Arcana features. Use these URLs:
-- /readings (tarot readings)
-- /horoscope (daily horoscope + natal chart)
-- /more/dream (dream interpreter)
-- /more/human-design (HD chart)
-- /more/bazi (Bazi)
-- /more/feng-shui (Feng Shui)
-- /more/partner (partner compatibility)
-- /more/soulmate (soulmate score)
-- /more/quick (quick AI reading)
-- /quizzes (personality quizzes)
+INTERNAL LINKS: include 1–3 inline links to relevant Arcana features. Use ONLY these URLs, exactly as written:
+${APP_LINKS.map(([path, what]) => `- ${path} (${what})`).join("\n")}
 
 FORMAT YOUR RESPONSE EXACTLY AS THIS PLAIN-TEXT STRUCTURE.
 Do NOT wrap it in JSON, markdown code blocks, or any other container.
@@ -201,6 +203,25 @@ async function callGemini(prompt: string, model: string, apiKey: string): Promis
   return text;
 }
 
+/**
+ * Claude first (the owner's key, _shared/anthropic.ts). An article is ~1,500
+ * words plus FAQs; this is a once-a-day job, so it gets medium effort and a
+ * long timeout. Returns { ok: false, reason } on any failure so the
+ * OpenAI → Gemini chain below takes over.
+ */
+async function claudeArticle(
+  prompt: string,
+): Promise<{ ok: true; text: string; servedBy: string } | { ok: false; reason: string }> {
+  const r = await callClaude({
+    system: ARTICLE_SYSTEM,
+    messages: [{ role: "user", content: prompt }],
+    maxOutputTokens: 5000,
+    effort: "medium",
+    timeoutMs: 120_000,
+  });
+  return r.ok ? { ok: true, text: r.text, servedBy: `anthropic/${r.model}` } : { ok: false, reason: r.reason };
+}
+
 async function generateArticle(topic: Topic): Promise<GeneratedArticle> {
   const userPrompt = `Topic: ${topic.topic}
 Category: ${topic.category}
@@ -210,20 +231,29 @@ Related keywords (use as H2 themes): ${topic.related_keywords.join(", ")}
 Brief from the editor:
 ${topic.brief}
 
-Write the article now. Reply with the JSON object only — no markdown, no preamble.`;
+Write the article now. Reply with the document only, in exactly the delimited format above (TITLE / SLUG / EXCERPT / TAGS lines, then ---CONTENT---, ---FAQS---, ---END---): no JSON, no code fences, no preamble.`;
 
   const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
-  if (!openaiKey && !geminiKey) {
-    throw new AppError("AI_NOT_CONFIGURED", "Neither OPENAI_API_KEY nor GEMINI_API_KEY set", 503);
+  if (!claudeKeyConfigured() && !openaiKey && !geminiKey) {
+    throw new AppError("AI_NOT_CONFIGURED", "No AI provider key set (ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY)", 503);
   }
 
   let completion = "";
+  let servedBy = "";
   let lastErr = "no provider attempted";
-  if (openaiKey) {
+  const first = await claudeArticle(userPrompt);
+  if (first.ok) {
+    completion = first.text;
+    servedBy = first.servedBy;
+  } else {
+    lastErr = first.reason;
+  }
+  if (!completion && openaiKey) {
     for (const m of OPENAI_MODELS) {
       try {
         completion = await callOpenAI(userPrompt, m, openaiKey);
+        servedBy = `openai/${m}`;
         break;
       } catch (e) {
         lastErr = String(e).slice(0, 300);
@@ -234,6 +264,7 @@ Write the article now. Reply with the JSON object only — no markdown, no pream
     for (const m of GEMINI_MODELS) {
       try {
         completion = await callGemini(userPrompt, m, geminiKey);
+        servedBy = `gemini/${m}`;
         break;
       } catch (e) {
         lastErr = String(e).slice(0, 300);
@@ -278,11 +309,20 @@ A: …
 All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONTENT---. Reply with the document only.`;
 
     let retryCompletion = "";
+    let retryServedBy = "";
     let retryErr = "no provider attempted on retry";
-    if (openaiKey) {
+    const retryFirst = await claudeArticle(retryPrompt);
+    if (retryFirst.ok) {
+      retryCompletion = retryFirst.text;
+      retryServedBy = retryFirst.servedBy;
+    } else {
+      retryErr = retryFirst.reason;
+    }
+    if (!retryCompletion && openaiKey) {
       for (const m of OPENAI_MODELS) {
         try {
           retryCompletion = await callOpenAI(retryPrompt, m, openaiKey);
+          retryServedBy = `openai/${m}`;
           break;
         } catch (e) {
           retryErr = String(e).slice(0, 300);
@@ -293,6 +333,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
       for (const m of GEMINI_MODELS) {
         try {
           retryCompletion = await callGemini(retryPrompt, m, geminiKey);
+          retryServedBy = `gemini/${m}`;
           break;
         } catch (e) {
           retryErr = String(e).slice(0, 300);
@@ -307,6 +348,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
       if (retryParsed.title && retryParsed.slug && retryParsed.excerpt && retryParsed.content_markdown) {
         parsed = retryParsed;
         completion = retryCompletion;
+        servedBy = retryServedBy;
         console.warn(`[article-gen] retry succeeded`);
       } else {
         console.warn(`[article-gen] retry still missing fields: ${JSON.stringify({ title: !!retryParsed.title, slug: !!retryParsed.slug, excerpt: !!retryParsed.excerpt, content: !!retryParsed.content_markdown })}`);
@@ -322,8 +364,10 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
   }
 
   // Convert markdown body to HTML, then wrap in the blog-post article shell.
-  const innerHtml = await marked.parse(parsed.content_markdown, { gfm: true, breaks: false });
-  const wrappedHtml = `<article class="blog-post">\n${innerHtml}\n</article>`;
+  // Any internal link to a page the app does not have becomes /readings.
+  const linked = fixInternalLinks(await marked.parse(parsed.content_markdown, { gfm: true, breaks: false }));
+  if (linked.rewritten.length) console.warn(`[article-gen] rewrote unknown internal links: ${linked.rewritten.join(", ")}`);
+  const wrappedHtml = `<article class="blog-post">\n${linked.html}\n</article>`;
 
   return {
     title: parsed.title.slice(0, 100),
@@ -332,6 +376,7 @@ All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONT
     contentHtml: wrappedHtml,
     faqs: parsed.faqs.slice(0, 6),
     tags: parsed.tags.slice(0, 5),
+    servedBy,
   };
 }
 
@@ -441,6 +486,10 @@ interface RunBody {
   // Optional: explicitly pick a topic (debug/manual fire). Otherwise
   // pulls the next unused topic from the queue.
   topicId?: string;
+  // Optional: write the article and return it WITHOUT publishing — no cover
+  // image, no blog_posts row, the topic stays unused, no IndexNow ping. For
+  // checking the AI chain (which provider answered) on production.
+  dryRun?: boolean;
 }
 
 Deno.serve(handler<RunBody>({
@@ -477,19 +526,70 @@ Deno.serve(handler<RunBody>({
         .limit(1)
         .maybeSingle();
       if (error) throw new AppError("TOPIC_FETCH_FAILED", error.message, 500);
-      if (!data) throw new AppError("QUEUE_EMPTY", "No unused topics in queue — add more", 400);
-      topic = data as Topic;
+      if (data) {
+        topic = data as Topic;
+      } else {
+        // The curated queue is empty: draft one topic (Claude first) so the
+        // blog keeps publishing. It ran dry silently twice before, the
+        // second time for two months (2026-09-21 to 2026-11-22).
+        const { data: rows } = await ctx.supabase.from("seo_blog_topics").select("keyword");
+        const drafted = await draftTopic((rows ?? []).map((r) => String(r.keyword)));
+        if (!drafted) {
+          throw new AppError("QUEUE_EMPTY", "No unused topics in queue and drafting one failed — add more", 400);
+        }
+        if (body?.dryRun) {
+          topic = { id: "draft (not saved: dry run)", ...drafted };
+        } else {
+          const { data: saved, error: saveErr } = await ctx.supabase
+            .from("seo_blog_topics")
+            .insert({ ...drafted, priority: 100 })
+            .select("id, category, topic, brief, keyword, related_keywords")
+            .single();
+          if (saveErr || !saved) {
+            throw new AppError("TOPIC_DRAFT_SAVE_FAILED", saveErr?.message ?? "drafted topic not saved", 500);
+          }
+          topic = saved as Topic;
+        }
+        ctx.log.warn("daily_seo.topic_drafted", { keyword: drafted.keyword, category: drafted.category });
+      }
     }
 
     ctx.log.info("daily_seo.topic_picked", { topicId: topic.id, keyword: topic.keyword });
 
-    // 2. Generate article via OpenAI primary (gpt-5) → Gemini fallback.
+    // Say so in the logs while there is still time to add curated topics.
+    const { count: unused } = await ctx.supabase
+      .from("seo_blog_topics")
+      .select("id", { count: "exact", head: true })
+      .is("used_at", null);
+    if (typeof unused === "number" && unused <= 7) {
+      ctx.log.warn("daily_seo.queue_low", { unused, note: "add curated topics; an empty queue drafts its own" });
+    }
+
+    // 2. Generate the article: Claude first, then OpenAI, then Gemini.
     const article = await generateArticle(topic);
     ctx.log.info("daily_seo.article_generated", {
       slug: article.slug,
       titleLen: article.title.length,
       contentLen: article.contentHtml?.length ?? 0,
+      servedBy: article.servedBy,
     });
+
+    if (body?.dryRun) {
+      // Nothing is written: no cover, no post, the topic stays in the queue.
+      return {
+        dryRun: true,
+        servedBy: article.servedBy,
+        topic: { id: topic.id, keyword: topic.keyword },
+        article: {
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          contentLen: article.contentHtml.length,
+          faqs_count: article.faqs?.length ?? 0,
+          tags: article.tags,
+        },
+      };
+    }
 
     // 3. Generate cover image via Imagen (non-fatal on failure).
     // Re-read the key here — it's declared inside generateArticle() above

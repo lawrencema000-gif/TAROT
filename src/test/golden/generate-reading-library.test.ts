@@ -131,6 +131,8 @@ const h = vi.hoisted(() => {
 vi.mock('jsr:@supabase/functions-js/edge-runtime.d.ts', () => ({}));
 vi.mock('npm:zod@3.24.1', async () => await import('zod'));
 vi.mock('npm:@supabase/supabase-js@2.57.4', () => ({ createClient: () => h.client }));
+// Claude is asked first only with ANTHROPIC_API_KEY set; this env leaves it out.
+vi.mock('npm:@anthropic-ai/sdk@1.12.0', async () => ({ default: (await import('./fakeAnthropicSdk')).FakeAnthropic }));
 
 const AI_TEXT = '1) 概要\n新しい始まりが近づいています。\n\n2) 結び\n軽やかに一歩を。';
 const openAi = vi.fn(async () => new Response(

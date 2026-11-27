@@ -47,13 +47,13 @@ export function bareRef(locale: SupportedLocale, c: Pick<RefCard, 'name' | 'majo
 /** The reference with its orientation: "the Three of Swords (reversed)". */
 export function cardRef(locale: SupportedLocale, c: RefCard, orientation = true): string {
   const base = bareRef(locale, c);
-  return orientation && c.reversed ? fill(phrase(locale, 'ref.reversed'), { card: base }) : base;
+  return orientation && c.reversed ? fill(template(locale, 'ref.reversed'), { card: base }) : base;
 }
 
 /** The reference with its element, the orientation in the same parentheses: "the Knight of Wands (Fire, reversed)". */
 export function refWithElement(locale: SupportedLocale, c: RefCard): string {
   const key: PhraseKey = c.reversed ? 'ref.elementReversed' : 'ref.element';
-  return fill(phrase(locale, key), { card: bareRef(locale, c), element: c.element ?? '' });
+  return fill(template(locale, key), { card: bareRef(locale, c), element: c.element ?? '' });
 }
 
 /** English possessive of a reference: "the Two of Cups’", "The Tower’s". Other languages take the reference as is. */
@@ -99,9 +99,33 @@ export function finish(locale: SupportedLocale, s: string): string {
   return s;
 }
 
+/*
+ * summary.json writes a Korean particle as a slash pair after its slot
+ * ("{{card}}은/는", "{{card}}으로/로"), not as the app's two-form marker
+ * ("은(는)"): koParticles.test.ts holds every ko JSON value with a marker to
+ * the app.json keys it covers. The pair becomes the marker here, in the
+ * template only, before the slots are filled; `finish` then resolves it.
+ */
+const KO_PAIRS: Array<[string, string]> = [
+  ['이에요/예요', '(이)에요'],
+  ['으로/로', '(으)로'],
+  ['이나/나', '(이)나'],
+  ['은/는', '은(는)'],
+  ['이/가', '이(가)'],
+  ['을/를', '을(를)'],
+  ['과/와', '과(와)'],
+];
+
+/** The template for `key`, with ko slash pairs turned into two-form markers. */
+export function template(locale: SupportedLocale, key: PhraseKey): string {
+  const raw = phrase(locale, key);
+  if (locale !== 'ko') return raw;
+  return KO_PAIRS.reduce((s, [pair, marker]) => s.split(pair).join(marker), raw);
+}
+
 /** Fill a template and finish the sentence. */
 export function say(locale: SupportedLocale, key: PhraseKey, vars: Record<string, string | number> = {}): string {
-  return finish(locale, fill(phrase(locale, key), vars));
+  return finish(locale, fill(template(locale, key), vars));
 }
 
 /**

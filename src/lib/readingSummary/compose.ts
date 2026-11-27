@@ -20,6 +20,7 @@ import {
   possessiveRef,
   refWithElement,
   say,
+  template,
 } from './format';
 import { phrase } from './loadPhrases';
 import type { PhraseKey } from './phrases.en';
@@ -202,7 +203,7 @@ function composeSpread(
         count: countWord(locale, courts.length),
         list: listJoin(
           locale,
-          courts.map((i) => fill(phrase(locale, 'conn.courtItem'), { card: ref(i), position: L(i) })),
+          courts.map((i) => fill(template(locale, 'conn.courtItem'), { card: ref(i), position: L(i) })),
         ),
       }),
     );

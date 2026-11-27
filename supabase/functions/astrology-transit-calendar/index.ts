@@ -152,14 +152,9 @@ Deno.serve(
         }
       }
 
-      events.sort((a, b) => {
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const parseShort = (s: string) => {
-          const [m, day] = s.split(" ");
-          return months.indexOf(m) * 100 + parseInt(day);
-        };
-        return parseShort(a.date) - parseShort(b.date);
-      });
+      // No sort: the day loop above pushes events in date order. A sort on the
+      // "Mon D" label (month number * 100 + day, no year) put every January row
+      // above the December ones once the window crossed New Year (gap-3-12).
 
       ctx.log.info("astrology_transit_calendar.generated", {
         days,

@@ -10731,7 +10731,7 @@
   },
   "yearAhead": {
     "title": "다가올 해",
-    "cardTitle": "{{year}} — 월간 브리핑 12개",
+    "cardTitle": "{{from}}~{{to}} · 월간 브리핑 12개",
     "cardSub": "출생 차트에 대한 주요 트랜싯을 월별로 정리한 지도.",
     "needsBirthData": "먼저 전체 출생 정보 추가",
     "needsBirthDataBody": "연간 예보는 출생 차트로의 트랜싯 계산을 위해 생년월일, 시간, 장소가 필요합니다. 프로필 → 프로필 편집에서 추가하세요.",
@@ -10757,7 +10757,10 @@
     "earnNow": "광고 보고 문스톤 {{n}}개 받기",
     "eventCount": "트랜짓 {{n}}개",
     "retry": "예보 다시 불러오기",
-    "arcTitle": "당신의 한 해가 그리는 흐름"
+    "arcTitle": "당신의 한 해가 그리는 흐름",
+    "span": "{{from}}~{{to}}",
+    "accessUntilOffer": "잠금 해제하면 {{date}}까지 볼 수 있어요.",
+    "accessUntil": "{{date}}까지 볼 수 있어요."
   },
   "natalReport": {
     "title": "전체 출생 차트",

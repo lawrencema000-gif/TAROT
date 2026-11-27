@@ -14,6 +14,7 @@ import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { useCanOfferAd } from '../components/moonstones/useAdCreditsLeft';
 import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
+import { localMonthIso, monthsFrom, formatMonthShort, formatMonthLong, formatDayLong } from '../lib/yearAheadMonths';
 
 /**
  * Year-Ahead Forecast — 300 Moonstones or Premium subscription.
@@ -58,6 +59,8 @@ interface YearAheadData {
   monthsCovered: number;
   months: MonthBriefing[];
   summary: string;
+  /** The months served, first and last ('YYYY-MM'); absent from servers before p12 charts-06. */
+  range?: { from: string; to: string };
 }
 
 const INTENSITY_COLORS: Record<'soft' | 'neutral' | 'hard', string> = {
@@ -115,18 +118,26 @@ export function YearAheadReportPage() {
     void fetchChart();
   };
   const currentYear = new Date().getFullYear();
+  // The reader's month when the page opened: the first of the twelve the
+  // server computes for this request (months.ts), so the card, the preview
+  // and the report name the same months (p12 charts-06).
+  const startMonth = useMemo(() => localMonthIso(), []);
+  const offerMonths = useMemo(() => monthsFrom(startMonth), [startMonth]);
+  const locale = getLocale();
+  const spanText = (from: string, to: string) =>
+    t('yearAhead.span', { defaultValue: '{{from}} – {{to}}', from: formatMonthShort(from, locale), to: formatMonthShort(to, locale) });
+  const cardTitle = t('yearAhead.cardTitle', {
+    defaultValue: '{{from}} – {{to}} · 12 monthly briefings',
+    from: formatMonthShort(offerMonths[0], locale),
+    to: formatMonthShort(offerMonths[offerMonths.length - 1], locale),
+  });
+  /** Part A: the unlock is keyed on the calendar year, so it opens the report until 31 December of it. */
+  const termEnd = formatDayLong(new Date(currentYear, 11, 31), locale);
   // Rewarded ads only exist inside the native shell (R5 M-9).
   const adNative = isNative();
   // ...and an ad is offered only while one can still earn today: after the
   // sixth credited ad the server pays nothing until tomorrow (AD_DAILY_CAP).
   const adAvailable = useCanOfferAd();
-
-  // The twelve months the forecast covers (the unlock reference is the
-  // calendar year), named in the user's locale for the paywall's preview.
-  const monthNames = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(getLocale(), { month: 'long' });
-    return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(currentYear, i, 15)));
-  }, [currentYear]);
 
   const checkUnlock = useCallback(async () => {
     if (!user) {
@@ -159,9 +170,10 @@ export function YearAheadReportPage() {
     setError(null);
     // The year this page unlocked (the unlock's reference): the function
     // checks that year's row, so a reader who bought it in an earlier year
-    // as well is served, not refused (p9 R06).
+    // as well is served, not refused (p9 R06); and the month the report
+    // starts with, the first of the months the card named (p12 charts-06).
     const { data: resp, error: err } = await supabase.functions.invoke('astrology-year-ahead', {
-      body: { year: currentYear },
+      body: { year: currentYear, from: startMonth },
     });
     setLoadingData(false);
     if (err) {
@@ -181,7 +193,7 @@ export function YearAheadReportPage() {
       return;
     }
     setData(payload);
-  }, [currentYear]);
+  }, [currentYear, startMonth]);
 
   // The forecast is asked for once, beside a chart the server can read: not
   // while the chart is being read or cast, and not again by itself after a
@@ -328,7 +340,7 @@ export function YearAheadReportPage() {
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
-            {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
+            {cardTitle}
           </h2>
           <SectionDivider width="w-32" className="mx-auto mb-3" />
           {/* Centred under the title: breaks between phrases (keep-phrases), not 「トランジ/ット」. */}
@@ -430,6 +442,12 @@ export function YearAheadReportPage() {
               )}
             </div>
           ))}
+          {/* The term the Moonstone unlock buys (Premium has none). */}
+          {moonstonesEnabled && (
+            <p className="mt-3 text-meta text-mystic-400 text-center">
+              {t('yearAhead.accessUntilOffer', { defaultValue: 'Unlocking opens it until {{date}}.', date: termEnd })}
+            </p>
+          )}
         </Card>
 
         {/* PaywallSheet, not SubscriptionSheet. SubscriptionSheet is the
@@ -451,17 +469,17 @@ export function YearAheadReportPage() {
               className="pointer-events-none select-none w-full max-w-[280px] max-h-44 overflow-hidden [mask-image:linear-gradient(to_bottom,black_35%,transparent)]"
             >
               <p className="heading-display-md text-mystic-100 text-center mb-2">
-                {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
+                {cardTitle}
               </p>
               <ul className="space-y-1.5">
                 <li className="flex items-center gap-2.5 text-ui text-mystic-200">
                   <Star className="w-3.5 h-3.5 text-gold shrink-0" />
                   {t('yearAhead.overall', { defaultValue: 'Overall arc' })}
                 </li>
-                {monthNames.map((month) => (
-                  <li key={month} className="flex items-center gap-2.5 text-ui text-mystic-300">
+                {offerMonths.map((iso) => (
+                  <li key={iso} className="flex items-center gap-2.5 text-ui text-mystic-300">
                     <TrendingUp className="w-3.5 h-3.5 text-mystic-500 shrink-0" />
-                    {month}
+                    {formatMonthLong(iso, locale)}
                   </li>
                 ))}
               </ul>
@@ -523,8 +541,8 @@ export function YearAheadReportPage() {
   if (!data) return null;
 
   // The year's narrative opens the report on paper: first paragraph as the
-  // summary, the rest as the body. The year itself is the eyebrow — a
-  // number, so it stays in Inter rather than the display serif.
+  // summary, the rest as the body. The months it covers are the eyebrow
+  // (the server's range; from its first and last month on an older server).
   const paragraphs = data.summary.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const arcSummary = paragraphs[0] ?? data.summary;
   const arcRest = paragraphs.slice(1).join('\n\n');
@@ -539,13 +557,22 @@ export function YearAheadReportPage() {
       <ResultSheet
         headingLevel="h2"
         glyph={<Calendar strokeWidth={1.5} />}
-        eyebrow={String(currentYear)}
+        eyebrow={spanText(
+          data.range?.from ?? data.months[0]?.monthIso ?? offerMonths[0],
+          data.range?.to ?? data.months[data.months.length - 1]?.monthIso ?? offerMonths[offerMonths.length - 1],
+        )}
         title={t('yearAhead.arcTitle', { defaultValue: 'The shape of your year' })}
         summary={arcSummary}
         summaryHeading={t('yearAhead.overall', { defaultValue: 'Overall arc' })}
       >
         {arcRest ? <ReadingProse text={arcRest} lede={false} /> : undefined}
       </ResultSheet>
+      {/* The term of the unlock (Premium has none). */}
+      {!profile?.isPremium && (
+        <p className="text-meta text-mystic-400">
+          {t('yearAhead.accessUntil', { defaultValue: 'Your unlock opens it until {{date}}.', date: termEnd })}
+        </p>
+      )}
 
       {/* Twelve months used to be twelve identical cards, which is roughly
           six screens of scroll before the second half of the year. Each
@@ -560,7 +587,8 @@ export function YearAheadReportPage() {
             // a content decision wearing a refactor's clothes.
             defaultOpen
             icon={<TrendingUp />}
-            label={month.monthLabel}
+            // The reader's language, not the server's English monthLabel.
+            label={formatMonthLong(month.monthIso, locale)}
             description={month.theme}
             meta={
               month.events.length > 0

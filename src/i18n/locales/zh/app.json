@@ -10731,7 +10731,7 @@
   },
   "yearAhead": {
     "title": "全年展望",
-    "cardTitle": "{{year}} — 12个月简报",
+    "cardTitle": "{{from}}至{{to}} · 12个月简报",
     "cardSub": "逐月梳理与你本命盘相关的关键行运。",
     "needsBirthData": "请先添加完整出生信息",
     "needsBirthDataBody": "全年预测需要出生日期、时间与地点来计算与你本命盘的行运。前往“个人资料 → 编辑资料”添加。",
@@ -10757,7 +10757,10 @@
     "earnNow": "看广告，赚 {{n}} 月光石",
     "eventCount": "{{n}} 次行运",
     "retry": "重新加载预报",
-    "arcTitle": "你这一年的轮廓"
+    "arcTitle": "你这一年的轮廓",
+    "span": "{{from}}至{{to}}",
+    "accessUntilOffer": "解锁后可阅读至{{date}}。",
+    "accessUntil": "你的解锁有效期至{{date}}。"
   },
   "natalReport": {
     "title": "完整本命盘",

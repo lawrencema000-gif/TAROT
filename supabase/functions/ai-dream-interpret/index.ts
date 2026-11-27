@@ -1,6 +1,5 @@
 import { AppError, handler } from "../_shared/handler.ts";
-import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
-import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
+import { callAIJson } from "../_shared/ai-providers.ts";
 import { waiveForCrisis } from "../_shared/crisis-reply.ts";
 import { buildSystem, dreamCrisis, dreamCrisisReading, readDream, type DreamReading, type ModelDream } from "./reply.ts";
 import { z } from "npm:zod@3.24.1";
@@ -25,8 +24,11 @@ import { z } from "npm:zod@3.24.1";
  * the shared multilingual detector before anything else, or by the model,
  * which answers it with {"crisis": true} — gets the app's reading in the
  * member's language with their own helplines (./reply.ts), never "988 in the
- * US" from the prompt. That reading is not charged (the charge is given back)
- * and is not cached.
+ * US" from the prompt. That reading is not charged (the charge is given back).
+ *
+ * Privacy (p12 premium-13, D05): no dream reading is cached for other
+ * members. The only server copy is the member's own retry copy, which the
+ * shared handler keeps for two days (spend-replay) so Try again can return it.
  */
 
 const RequestSchema = z.object({
@@ -41,12 +43,6 @@ const RequestSchema = z.object({
 type Req = z.infer<typeof RequestSchema>;
 
 type Resp = DreamReading;
-
-// Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-// v3: the prompt no longer carries a US crisis line, and the key is the
-// dream, not the prompt — a cached v2 reading (one the model wrote with 988
-// in its integration practice, say) is not served again.
-const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-dream-v3`;
 
 // The system prompt (SYSTEM) and the crisis reading: ./reply.ts.
 
@@ -97,34 +93,19 @@ Deno.serve(handler<Req, Resp>({
 
     // A dream told with self-harm or suicide in it (the shared multilingual
     // detector): the app's reading with the member's own helplines, before
-    // the cache and the model, and not charged.
+    // the model, and not charged.
     if (dreamCrisis(body.dreamText)) {
       await waiveForCrisis(ctx, "ai-dream-interpret", "detector");
       return dreamCrisisReading(locale);
     }
 
-    // Build a deterministic cache key from the inputs that affect the
-    // response. Locale + dream text are the only shape-affecting bits;
-    // zodiacSign / mbti are tonal so we hash them in too. Same dream from
-    // the same archetype gets the same cached interpretation.
-    const ctxKey = [
-      locale ?? "en",
-      body.userContext?.zodiacSign ?? "",
-      body.userContext?.mbtiType ?? "",
-    ].join("|");
-    const key = await aiCacheKey("ai-dream-interpret", CACHE_MODEL_TAG, body.dreamText.trim(), ctxKey);
-    const cached = await aiCacheGet<Resp>(ctx, key);
-    if (cached) return cached;
-
     const answer = await callAI(body.dreamText, body.userContext);
     // The model read a crisis the detector did not: the same reading,
-    // uncharged and never cached.
+    // uncharged.
     if (answer.kind === "crisis") {
       await waiveForCrisis(ctx, "ai-dream-interpret", "model");
       return dreamCrisisReading(locale);
     }
-    const fresh = answer.dream;
-    await aiCacheStore(ctx, { cacheKey: key, model: CACHE_MODEL_TAG, fnName: "ai-dream-interpret", response: fresh });
-    return fresh;
+    return answer.dream;
   },
 }));

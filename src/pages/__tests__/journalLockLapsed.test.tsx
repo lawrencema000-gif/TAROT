@@ -19,8 +19,9 @@ const USER = { id: '00000000-0000-4000-8000-0000000000d7', email: 'qa@example.co
 let premium = false;
 
 let entries: Record<string, unknown>[] = [];
-const updateById = vi.fn(async (_id: string, _input: Record<string, unknown>) => ({ ok: true, data: undefined }));
-const deleteById = vi.fn(async (_id: string, _userId: string) => ({ ok: true, data: undefined }));
+type Res = Promise<{ ok: true; data: undefined }>;
+const updateById = vi.fn<(id: string, input: Record<string, unknown>) => Res>(async () => ({ ok: true, data: undefined }));
+const deleteById = vi.fn<(id: string, userId: string) => Res>(async () => ({ ok: true, data: undefined }));
 
 vi.mock('../../lib/supabase', () => ({ supabase: { functions: { invoke: async () => ({ data: null, error: null }) } } }));
 vi.mock('../../utils/telemetry', () => ({ captureException: () => {} }));

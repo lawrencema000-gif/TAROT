@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { providerForStore } from "../_shared/billing-provider.ts";
 
 /**
  * RevenueCat webhook handler.
@@ -232,13 +233,24 @@ Deno.serve(
           subStatus = "active";
         }
 
+        // The ledger row names where the subscription is really billed
+        // (Play, App Store, Stripe through RevenueCat, a RevenueCat promo);
+        // it used to say "google" for all of them (p12 premium-12). A store
+        // with no ledger provider gets no row; the entitlement above stays.
+        const ledgerProvider = providerForStore(body.event.store);
+        if (!ledgerProvider) {
+          ctx.log.warn("revenuecat_webhook.ledger_store_unmapped", { store: body.event.store, eventType });
+        }
+
         const isUpgradeEvent = ["INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION"].includes(eventType);
 
-        if (isUpgradeEvent) {
+        if (!ledgerProvider) {
+          // no ledger write
+        } else if (isUpgradeEvent) {
           const { error: subError } = await ctx.supabase.from("subscriptions").upsert(
             {
               user_id: userId,
-              provider: "google",
+              provider: ledgerProvider,
               product_id: productId,
               status: subStatus,
               period,
@@ -247,6 +259,9 @@ Deno.serve(
               expires_at: body.event.expiration_at_ms
                 ? new Date(body.event.expiration_at_ms).toISOString()
                 : null,
+              // Purchase, renewal and uncancel all mean auto-renew is on: a
+              // row cancelled once must not keep saying "Ends" afterwards.
+              cancelled_at: null,
               updated_at: new Date().toISOString(),
             },
             { onConflict: "transaction_id" },
@@ -255,7 +270,9 @@ Deno.serve(
             ctx.log.error("revenuecat_webhook.subscription_upsert_failed", { err: subError, userId });
           }
         } else {
-          const { error: subError } = await ctx.supabase
+          // Update exactly this subscription's row (the upsert stores
+          // original_transaction_id as transaction_id), whatever its store.
+          let q = ctx.supabase
             .from("subscriptions")
             .update({
               status: subStatus,
@@ -267,9 +284,11 @@ Deno.serve(
                 : undefined,
               updated_at: new Date().toISOString(),
             })
-            .eq("user_id", userId)
-            .eq("provider", "google")
-            .in("status", ["active", "trial", "grace_period", "cancelled"]);
+            .eq("user_id", userId);
+          q = body.event.original_transaction_id
+            ? q.eq("transaction_id", body.event.original_transaction_id)
+            : q.eq("provider", ledgerProvider).in("status", ["active", "trial", "grace_period", "cancelled"]);
+          const { error: subError } = await q;
           if (subError) {
             ctx.log.error("revenuecat_webhook.subscription_update_failed", { err: subError, userId });
           }

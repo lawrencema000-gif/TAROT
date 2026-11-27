@@ -356,3 +356,34 @@ describe('what the app itself sends never trips the shortcut', () => {
     expect(quickCrisis(`I arranged these archetypal objects on a plinth: ${layout}. What is the reading? (Symbolic meanings drawn from: ${meanings})`)).toBe(false);
   });
 });
+
+describe('crisis replies read correctly (social-ai-05, social-ai-19)', () => {
+  it('English: the text line is labelled US only', () => {
+    expect(journalCrisisReply('en').prompts[1]).toBe(
+      'Crisis Text Line: Text HOME to 741741 · 24/7 · US. Somewhere else? findahelpline.com lists free, confidential lines in your country.',
+    );
+    expect(crisisText('en')).toContain('Crisis Text Line: Text HOME to 741741 · 24/7 · US.');
+    for (const text of [
+      crisisText('en'),
+      crisisLetter('en').letter,
+      dreamCrisisReading('en').coreTheme,
+      journalCrisisReply('en').prompts.join(' '),
+    ]) {
+      expect(text).not.toMatch(/US\/UK|UK\/CA|CA\/IE/);
+    }
+  });
+
+  it('Korean: the second line ends its sentence before the next one starts', () => {
+    expect(journalCrisisReply('ko').prompts[1]).toBe(
+      '정신건강위기상담전화에도 연락할 수 있어요. 1577-0199 · 24시간. 해외에 있다면 findahelpline.com에서 그 나라의 무료 상담전화를 찾을 수 있어요.',
+    );
+    for (const text of [
+      crisisText('ko'),
+      crisisLetter('ko').letter,
+      dreamCrisisReading('ko').coreTheme,
+      journalCrisisReply('ko').prompts.join(' '),
+    ]) {
+      expect(text).not.toContain('시간 해외');
+    }
+  });
+});

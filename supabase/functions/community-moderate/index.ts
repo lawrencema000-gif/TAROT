@@ -32,7 +32,7 @@
 
 import { handler, AppError } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
-import { detectCrisis } from "../_shared/crisis.ts";
+import { CRISIS_RESOURCES, detectCrisis } from "../_shared/crisis.ts";
 
 const RequestSchema = z.object({
   content: z.string().min(1).max(5000),
@@ -173,15 +173,6 @@ function classifyFromOpenAI(outcome: ModerationOutcome): {
   }
   return { verdict: "allow", categories: flagged, screened: true };
 }
-
-const CRISIS_RESOURCES = {
-  us: { name: "988 Suicide & Crisis Lifeline", number: "988" },
-  textLine: {
-    name: "Crisis Text Line",
-    instructions: "Text HOME to 741741 (US/UK/CA/IE)",
-  },
-  international: "https://findahelpline.com",
-};
 
 Deno.serve(handler<Request, ModerationResponse>({
   fn: "community-moderate",

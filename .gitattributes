@@ -1,0 +1,4 @@
+# Node scripts may start with a shebang; with CRLF the vitest/vite transform
+# fails on them ("Invalid or unexpected token"), so Windows checkouts broke
+# src/test/golden/buildSha.test.ts. Keep them LF everywhere.
+*.mjs text eol=lf

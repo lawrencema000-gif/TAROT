@@ -27,7 +27,6 @@ export const WISH_THEMES: { key: WishTheme; label: string; hue: number }[] = [
 
 export interface Wish {
   id: string;
-  userId: string;
   text: string;
   theme: WishTheme;
   starX: number;
@@ -38,11 +37,16 @@ export interface Wish {
   grantedAt: string | null;
   echoCount: number;
   createdAt: string;
+  /** The viewer's own wish (wish_sky.is_mine). The account id never reaches the client. */
+  isMine: boolean;
+  /** The viewer has echoed it (wish_sky.echoed_by_me). */
+  echoedByMe: boolean;
 }
 
-export interface WishEcho {
-  wishId: string;
-  userId: string;
+/** An echo line between two stars, as the server draws it (wish_sky_links). */
+export interface WishLinkPair {
+  fromWishId: string;
+  toWishId: string;
 }
 
 export interface WishOffer {
@@ -109,7 +113,6 @@ export function assignStarPosition(seed: number): { x: number; y: number } {
 function mapWish(r: Record<string, unknown>): Wish {
   return {
     id: r.id as string,
-    userId: r.user_id as string,
     text: r.text as string,
     theme: (r.theme as WishTheme) ?? 'other',
     starX: Number(r.star_x),
@@ -120,17 +123,29 @@ function mapWish(r: Record<string, unknown>): Wish {
     grantedAt: (r.granted_at as string) ?? null,
     echoCount: Number(r.echo_count ?? 0),
     createdAt: r.created_at as string,
+    isMine: r.is_mine === true,
+    echoedByMe: r.echoed_by_me === true,
   };
 }
 
-const WISH_COLUMNS =
-  'id, user_id, text, theme, star_x, star_y, star_seed, open_to_help, wisher_label, granted_at, echo_count, created_at';
+/** What the sky reads from the wish_sky view: no account id, only whether it is yours. */
+export const SKY_COLUMNS =
+  'id, text, theme, star_x, star_y, star_seed, open_to_help, wisher_label, granted_at, echo_count, created_at, is_mine, echoed_by_me';
+/** What makeWish reads back from the base table: the caller's own row, no account id. */
+export const MADE_WISH_COLUMNS =
+  'id, text, theme, star_x, star_y, star_seed, open_to_help, wisher_label, granted_at, echo_count, created_at';
 
-/** The sky. Newest first; the map itself does not care about order. */
+/**
+ * The sky. Newest first; the map itself does not care about order.
+ *
+ * Read through the owner-run view wish_sky (migration
+ * 20261127122751_wish_authors_private_moderation_server_owned): members read
+ * only their own rows of the wishes table, and no author id leaves the database.
+ */
 export async function listSky(limit = 2000): Promise<Result<Wish[]>> {
   const { data, error } = await supabase
-    .from('wishes')
-    .select(WISH_COLUMNS)
+    .from('wish_sky')
+    .select(SKY_COLUMNS)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) {
@@ -174,25 +189,29 @@ export async function makeWish(userId: string, input: NewWish): Promise<Result<W
       star_y: y,
       star_seed: seed,
     })
-    .select(WISH_COLUMNS)
+    .select(MADE_WISH_COLUMNS)
     .single();
 
   if (error) {
     captureException('dal.wishes.makeWish', error);
     return { ok: false, error: 'wishingSky.errors.lightStar' };
   }
-  return { ok: true, data: mapWish(data as Record<string, unknown>) };
+  return {
+    ok: true,
+    data: mapWish({ ...(data as Record<string, unknown>), is_mine: true, echoed_by_me: false }),
+  };
 }
 
-export async function listEchoes(): Promise<Result<WishEcho[]>> {
-  const { data, error } = await supabase.from('wish_echoes').select('wish_id, user_id');
+/** The echo lines of the viewer's sky, drawn by the server as wish-id pairs. */
+export async function listLinks(): Promise<Result<WishLinkPair[]>> {
+  const { data, error } = await supabase.from('wish_sky_links').select('from_wish_id, to_wish_id');
   if (error) {
-    captureException('dal.wishes.listEchoes', error);
+    captureException('dal.wishes.listLinks', error);
     return { ok: false, error: 'wishingSky.errors.loadLinks' };
   }
   return {
     ok: true,
-    data: (data ?? []).map((r) => ({ wishId: r.wish_id as string, userId: r.user_id as string })),
+    data: (data ?? []).map((r) => ({ fromWishId: r.from_wish_id as string, toWishId: r.to_wish_id as string })),
   };
 }
 
@@ -285,24 +304,24 @@ export async function report(wishId: string, userId: string, reason?: string): P
  * The bright lines.
  *
  * An echo connects two PEOPLE, so it is drawn between the echoer's own most
- * recent star and the star they echoed. Someone who has not wished yet still
- * adds to the count — they just have no star to draw from, which is a quiet
- * reason to make one.
+ * recent star and the star they echoed. The pairs come from the server
+ * (wish_sky_links) and carry wish ids only: which star is the echoer's newest
+ * is decided there, so no account id reaches the client. Someone who has not
+ * wished yet still adds to the count; they just have no star to draw from.
+ *
+ * Here the pairs are matched to the loaded stars: a pair with an end that is
+ * not loaded, or a star linked to itself, draws nothing, and two people
+ * echoing each other is one line.
  */
-export function buildLinks(
-  wishes: Wish[], echoes: WishEcho[],
+export function resolveLinks(
+  wishes: Wish[], pairs: WishLinkPair[],
 ): { from: Wish; to: Wish }[] {
   const byId = new Map(wishes.map((w) => [w.id, w]));
-  const latestByUser = new Map<string, Wish>();
-  for (const w of wishes) {
-    const cur = latestByUser.get(w.userId);
-    if (!cur || w.createdAt > cur.createdAt) latestByUser.set(w.userId, w);
-  }
   const out: { from: Wish; to: Wish }[] = [];
   const seen = new Set<string>();
-  for (const e of echoes) {
-    const to = byId.get(e.wishId);
-    const from = latestByUser.get(e.userId);
+  for (const p of pairs) {
+    const from = byId.get(p.fromWishId);
+    const to = byId.get(p.toWishId);
     if (!to || !from || from.id === to.id) continue;
     const key = from.id < to.id ? `${from.id}:${to.id}` : `${to.id}:${from.id}`;
     if (seen.has(key)) continue;

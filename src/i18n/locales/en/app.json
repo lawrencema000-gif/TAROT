@@ -103,6 +103,10 @@
     "resetSuccessHint": "Returning you to the app…",
     "resetSuccessRecoveryHint": "Signing you out — please sign in again with your new password.",
     "resetLinkExpiredHint": "Reset links are one-shot. If yours expired, request another from the sign-in page.",
+    "verifyingLink": "Verifying your link…",
+    "resetLinkInvalidTitle": "This reset link has expired or was already used",
+    "resetLinkInvalidBody": "Reset links work once. Ask for a new one and we’ll email it to you.",
+    "requestNewLink": "Send a new link",
     "createAccount": "Create account",
     "verifySentTo": "We sent a verification link to {{email}}. Please check your inbox.",
     "checkSpam": "Check your spam folder if you don’t see it.",
@@ -547,6 +551,9 @@
       "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.",
       "shared": "Shared",
       "imageSaved": "Image saved to your downloads",
+      "imageSavedLinkCopied": "Image saved · link copied",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied",
       "aiTooManyCards": "AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.",
       "aiFallback": "The AI reader is unavailable right now. No Moonstones were charged.",
       "aiFallbackCharged": "The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored."
@@ -4582,6 +4589,17 @@
       "promptAgree": "How much do you agree?",
       "promptChoose": "Choose the answer that fits you best.",
       "progress": "Quiz progress"
+    },
+    "flow": {
+      "start": "Start the quiz",
+      "whatYouGet": "What you’ll get",
+      "previous": "Previous question",
+      "leave": {
+        "title": "Leave this quiz?",
+        "body": "You’ve answered {{answered}} of {{total}} questions. If you leave now, your answers won’t be kept.",
+        "stay": "Keep going",
+        "leave": "Leave the quiz"
+      }
     },
     "list": {
       "categories": {
@@ -10488,6 +10506,7 @@
     "gateCheckFailed": "Couldn’t check your balance — try again.",
     "costLinePortrait": "Painting the portrait uses <gold>{{n}} Moonstones</gold>",
     "alreadyClaimedToday": "Already claimed today",
+    "costLineResend": "Your last try may already be paid for — asking again won’t use Moonstones twice",
     "costLineConversationDay": "A conversation uses <gold>{{n}} Moonstones</gold>, every reply for 24 hours included"
   },
   "askOracle": {
@@ -10527,6 +10546,9 @@
     "emptyState":"Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
     "placeholder": "Ask the companion…",
     "thinking": "thinking…",
+    "replyLost": "Your companion’s reply didn’t arrive. Send it again — this conversation won’t use Moonstones twice.",
+    "unanswered": "The reply to this message didn’t arrive.",
+    "sendAgain": "Send again",
     "sendFailed": "Couldn’t reach your companion — check your connection and send again.",
     "sendRejected": "This message couldn’t be sent. Start a new conversation and send it again.",
     "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
@@ -10818,6 +10840,7 @@
     },
     "computing": "Computing your chart…",
     "progressedAge": "Age {{n}}",
+    "returnMoment": "Return moment: {{when}}",
     "synastryPrompt": "Partner birth data",
     "partnerNamePlaceholder": "Partner name (optional)",
     "synastryCta": "Overlay partner chart",
@@ -11270,6 +11293,7 @@
     "redraw": "New card",
     "newCardConfirmTitle": "Draw a new card?",
     "newCardConfirmBody": "Your conversation about {{card}} will close, and you can’t come back to it.",
+    "newCardConfirmBodyPending": "Your last try at reading {{card}} may already be paid for. A new card starts a new conversation, which uses {{n}} Moonstones.",
     "newCardConfirmBodyPaid": "Your conversation about {{card}} will close, and you can’t come back to it. Reading a new card starts a new conversation, which uses {{n}} Moonstones.",
     "newCardConfirmAction": "Draw a new card",
     "newCardConfirmKeep": "Keep this conversation",
@@ -11280,6 +11304,7 @@
     "reversed": "Reversed",
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
+    "replyLost": "The oracle’s answer didn’t arrive. Ask again — reading this card won’t use Moonstones twice.",
     "aiFailed": "Couldn’t reach the oracle — check your connection and ask again.",
     "sendRejected": "This question couldn’t be sent. Draw a new card to start a new conversation.",
     "thinking": "The oracle is thinking…",
@@ -11301,6 +11326,12 @@
     "tapPrompt": "Tap a planet, house, or aspect line.",
     "planetLabel": "Planet",
     "transitLabel": "Transit",
+    "overlayKind": {
+      "transit": "Transit",
+      "progressed": "Progressed",
+      "solarReturn": "Solar return",
+      "partner": "Partner"
+    },
     "houseLabel": "House {{n}}",
     "aspectLabel": "Aspect",
     "wheelAria": "Natal chart wheel",
@@ -11333,6 +11364,7 @@
     "aspectsAll": "All ({{n}})",
     "aspectsTight": "Tight orbs ({{n}})",
     "noTightAspects": "No aspects within tight orbs. Switch to all to see every connection.",
+    "noAspectLines": "No aspect lines on this chart.",
     "aspectGridAria": "Aspect grid",
     "gridTapPrompt": "Tap a cell to read the aspect",
     "modalities": {
@@ -12088,7 +12120,7 @@
     "toasts": {
       "signInToSave": "Sign in to save this spread.",
       "nameRequired": "Give your spread a name before saving.",
-      "positionRequired": "Add at least one position with both a name and a meaning.",
+      "positionRequired": "Add at least one position with a name.",
       "saveFailed": "Couldn’t save your spread — check your connection and try again.",
       "saved": "Spread saved — it’s listed under Your saved spreads.",
       "deleteFailed": "Couldn’t delete that spread — check your connection and try again.",
@@ -12109,8 +12141,11 @@
     "positionCount_one": "{{count}} position",
     "positionCount_other": "{{count}} positions",
     "positionMeaningPlaceholder": "What this position represents…",
-    "positionNamePlaceholder": "Position name (e.g. The challenge)",
+    "positionNamePlaceholder": "Position name",
     "positions": "Positions",
+    "positionNameMissing": "Give position {{n}} a name, or remove it.",
+    "positionMeaningMissing": "Say what position {{n}} represents, or remove it.",
+    "positionsHint": "Each position needs a name, like “The challenge”. What it represents is optional.",
     "removePosition": "Remove position {{n}}",
     "save": "Save spread",
     "savedTitle": "Your saved spreads",

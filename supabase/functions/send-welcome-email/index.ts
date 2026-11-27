@@ -2,16 +2,21 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 
 /**
- * Welcome email sender.
+ * Welcome email sender: a webhook, not a public endpoint.
  *
- * Typically invoked by the DB trigger (on_auth_user_created → pg_notify),
- * but also callable directly by an admin for retries. We use auth:"optional"
- * so a signed-in user can re-trigger their own email; the run body enforces
- * that `user_id` must match the authenticated user (if one is present).
+ * Only a caller holding CRON_SECRET (header X-Webhook-Secret, or as Bearer)
+ * gets past the handler: the database (pg_net with the Vault cron_secret,
+ * as the hourly send-newsletter-course job does) or an operator. It used to
+ * run with auth "optional", which let anyone signed out make the app email
+ * any member id, learn from 404 versus 200 whether an id exists, and read
+ * back the member's email and name when the Resend key was missing
+ * (health-status-06). verify_jwt stays false in supabase/config.toml: the
+ * secret is the gate, and the database sends no JWT. No client calls this
+ * function.
  *
- * Unauthenticated callers (i.e. the internal trigger-driven listener using
- * the service key) are allowed; they can pass any user_id because RLS is
- * bypassed by the service role anyway.
+ * The welcome trigger (20260130214743) has never reached it: its URL and
+ * key come from app.settings that are unset. WP-P5-03 replaces the per-id
+ * send with an outbox drain on a cron through this same webhook path.
  */
 
 interface WelcomeEmailPayload {
@@ -159,23 +164,13 @@ const generateWelcomeEmailHtml = (name: string) => `
 Deno.serve(
   handler<WelcomeEmailPayload>({
     fn: "send-welcome-email",
-    auth: "optional",
-    rateLimit: { max: 3, windowMs: 60 * 60_000 },
+    auth: "webhook",
+    webhookSecretEnv: "CRON_SECRET",
     run: async (ctx, body) => {
       const userId = body.user_id;
 
       if (!userId) {
         throw new AppError("MISSING_USER_ID", "user_id is required", 400);
-      }
-
-      // If the caller is authenticated, they can only send to themselves.
-      // Service-role / trigger callers (no Bearer token) pass through.
-      if (ctx.userId && ctx.userId !== userId) {
-        throw new AppError(
-          "FORBIDDEN_CROSS_USER",
-          "You can only request a welcome email for your own account",
-          403,
-        );
       }
 
       const { data: authUser, error: authErr } = await ctx.supabase.auth.admin.getUserById(userId);
@@ -202,13 +197,9 @@ Deno.serve(
 
       if (!RESEND_API_KEY) {
         ctx.log.warn("send_welcome_email.resend_key_missing", { targetUserId: userId });
+        // Never hand a member's email or name back to the caller.
         return new Response(
-          JSON.stringify({
-            success: true,
-            message: "Email queued (API key not configured)",
-            email,
-            name: displayName,
-          }),
+          JSON.stringify({ success: true, skipped: true }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }

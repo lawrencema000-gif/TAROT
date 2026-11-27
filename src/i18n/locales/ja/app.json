@@ -10731,7 +10731,7 @@
   },
   "yearAhead": {
     "title": "一年の見通し",
-    "cardTitle": "{{year}} — 月次ブリーフ12本",
+    "cardTitle": "{{from}}〜{{to}}・月次ブリーフ12本",
     "cardSub": "あなたのネイタルチャートへの主要トランジットを月ごとに地図化。",
     "needsBirthData": "まずは出生データを入力",
     "needsBirthDataBody": "一年の見通しには、出生の日時・場所が必要です。プロフィール → プロフィール編集 で追加してください。",
@@ -10757,7 +10757,10 @@
     "earnNow": "広告を見て、ムーンストーン{{n}}個を貯める",
     "eventCount": "{{n}}件のトランジット",
     "retry": "予報を再読み込み",
-    "arcTitle": "あなたの一年のかたち"
+    "arcTitle": "あなたの一年のかたち",
+    "span": "{{from}}〜{{to}}",
+    "accessUntilOffer": "解放すると{{date}}まで読めます。",
+    "accessUntil": "{{date}}まで読めます。"
   },
   "natalReport": {
     "title": "完全なネイタルチャート",

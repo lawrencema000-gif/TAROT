@@ -718,9 +718,9 @@ export const crystalEntries: CrystalEntry[] = [
     element: 'Fire',
     color: 'Brassy gold metallic, often in cubic crystals',
     shortDescription:
-      'Iron sulphide of striking metallic lustre, called fools gold, used as a stone of will, action, and material manifestation.',
+      'Iron sulphide of striking metallic lustre, called fool’s gold, used as a stone of will, action, and material manifestation.',
     longDescription:
-      'Pyrite is iron disulphide, FeS2, often forming perfect cubic or octahedral crystals. The name comes from the Greek pyr, fire, because it sparks when struck against steel. It was used as a fire starter long before flint. Spanish miners called it fools gold because of its colour, though it is denser and harder than real gold. Metaphysically it is treated as a stone of action, will, and material confidence. Robert Simmons describes it as a positive masculine stone that supports doing rather than dreaming. It is a primary abundance stone in the modern toolkit, often paired with citrine and green aventurine.',
+      'Pyrite is iron disulphide, FeS2, often forming perfect cubic or octahedral crystals. The name comes from the Greek pyr, fire, because it sparks when struck against steel. Struck against flint, it made fire long before steel strikers existed. Prospectors nicknamed it fool’s gold because of its colour, though it is far lighter than real gold (about 5 g/cm³ against 19.3) and much harder. Metaphysically it is treated as a stone of action, will, and material confidence. Robert Simmons describes it as a positive masculine stone that supports doing rather than dreaming. It is a primary abundance stone in the modern toolkit, often paired with citrine and green aventurine.',
     keywords: ['action', 'will', 'manifestation', 'wealth', 'shielding'],
     metaphysicalProperties:
       'Held to charge the solar plexus, defeat lethargy, and reflect negativity back to its source. Considered a stone of focused practical effort and of energetic protection during the day.',
@@ -749,8 +749,8 @@ export const crystalEntries: CrystalEntry[] = [
       'Pyrite aligns with the Magician, the wielder of focused will, and with the Eight of Pentacles, the apprentice doing the work. It supports any card asking for action over reflection.',
     faqs: [
       {
-        q: 'Why is pyrite called fools gold?',
-        a: 'Spanish miners and gold rush prospectors mistook it for gold. It is denser than fakes but lighter and harder than gold itself.',
+        q: 'Why is pyrite called fool’s gold?',
+        a: 'Gold rush prospectors mistook it for gold. It is much lighter than gold, about a quarter of its density, and much harder.',
       },
       {
         q: 'Can pyrite get wet?',
@@ -887,7 +887,7 @@ export const crystalEntries: CrystalEntry[] = [
   },
   {
     slug: 'tigers-eye',
-    name: 'Tigers Eye',
+    name: 'Tiger’s Eye',
     category: 'abundance',
     hardness: 7,
     zodiac: ['Capricorn', 'Leo'],
@@ -897,7 +897,7 @@ export const crystalEntries: CrystalEntry[] = [
     shortDescription:
       'A pseudomorph of quartz after crocidolite asbestos, prized for chatoyancy and used as a stone of courageous practical action.',
     longDescription:
-      'Tigers eye is a metamorphic stone formed when quartz replaces fibrous crocidolite, preserving the parallel fibre orientation that produces its characteristic chatoyant cats eye effect. The original asbestos has been replaced and is no longer a hazard in finished pieces, though raw crocidolite should be handled with care. Tigers eye is mainly mined in South Africa. Related stones include hawks eye, the blue grey form, and pietersite, a brecciated tigers eye. In tradition it is a stone of practical courage, balancing solar plexus drive with earth chakra steadiness, and is widely used for confidence in money matters.',
+      'Tiger’s eye is a metamorphic stone formed when quartz replaces fibrous crocidolite, preserving the parallel fibre orientation that produces its characteristic chatoyant cat’s-eye effect. The original asbestos has been replaced and is no longer a hazard in finished pieces, though raw crocidolite should be handled with care. Tiger’s eye is mainly mined in South Africa. Related stones include hawk’s eye, the blue grey form, and pietersite, a brecciated tiger’s eye. In tradition it is a stone of practical courage, balancing solar plexus drive with earth chakra steadiness, and is widely used for confidence in money matters.',
     keywords: ['courage', 'practical action', 'discernment', 'will', 'protection'],
     metaphysicalProperties:
       'Held to balance polarities, to bring scattered intention into focus, and to support clear discernment in financial decisions. Considered a stone that watches like a tiger before acting.',
@@ -923,15 +923,15 @@ export const crystalEntries: CrystalEntry[] = [
     ],
     pairsWith: ['citrine', 'pyrite', 'hematite', 'green-aventurine', 'clear-quartz'],
     tarotConnection:
-      'Tigers eye aligns with the Chariot, controlled willpower in motion, and with the King of Pentacles, mastered material mastery. It is also a stone for the Strength card, particularly the courage of measured action.',
+      'Tiger’s eye aligns with the Chariot, controlled willpower in motion, and with the King of Pentacles, mastered material mastery. It is also a stone for the Strength card, particularly the courage of measured action.',
     faqs: [
       {
-        q: 'Is tigers eye dangerous because of asbestos?',
-        a: 'Polished tigers eye is safe. The crocidolite has been replaced by quartz. Avoid breathing dust from raw crocidolite or cutting unpolished material without protection.',
+        q: 'Is tiger’s eye dangerous because of asbestos?',
+        a: 'Polished tiger’s eye is safe. The crocidolite has been replaced by quartz. Avoid breathing dust from raw crocidolite or cutting unpolished material without protection.',
       },
       {
-        q: 'What is hawks eye?',
-        a: 'The blue grey unoxidised parent of tigers eye, before iron oxidation turns it golden.',
+        q: 'What is hawk’s eye?',
+        a: 'The blue grey unoxidised parent of tiger’s eye, before iron oxidation turns it golden.',
       },
       {
         q: 'Can it get wet?',
@@ -939,7 +939,7 @@ export const crystalEntries: CrystalEntry[] = [
       },
       {
         q: 'Why does mine seem to move when I tilt it?',
-        a: 'That is chatoyancy, the cats eye effect. The parallel fibres reflect a moving band of light.',
+        a: 'That is chatoyancy, the cat’s-eye effect. The parallel fibres reflect a moving band of light.',
       },
     ],
     relatedEntries: ['citrine', 'pyrite', 'hematite'],
@@ -960,7 +960,7 @@ export const crystalEntries: CrystalEntry[] = [
     shortDescription:
       'The master stone of the mineral kingdom, used for amplification, clarity, and programmable intention.',
     longDescription:
-      'Clear quartz is silicon dioxide, SiO2, the most abundant mineral on the earth crust. It is piezoelectric and pyroelectric, and the basis of modern timekeeping in the quartz watch. Pure clear specimens are often called rock crystal. Across cultures it has been used for divination, scrying, and as a focus for healers. Robert Simmons calls it the universal crystal because of its capacity to amplify, store, and direct intention. In modern practice it is the foundation stone, used to amplify any other crystal and to hold programmed intentions. Subtypes include Lemurian, Herkimer diamond, phantom, included, and Tibetan quartz, each with refined uses.',
+      'Clear quartz is silicon dioxide, SiO2, the second most abundant mineral in the earth’s crust, after the feldspars. It is piezoelectric (though not pyroelectric), and the basis of modern timekeeping in the quartz watch. Pure clear specimens are often called rock crystal. Across cultures it has been used for divination, scrying, and as a focus for healers. Robert Simmons calls it the universal crystal because of its capacity to amplify, store, and direct intention. In modern practice it is the foundation stone, used to amplify any other crystal and to hold programmed intentions. Subtypes include Lemurian, Herkimer diamond, phantom, included, and Tibetan quartz, each with refined uses.',
     keywords: ['amplification', 'clarity', 'programming', 'master stone', 'energy'],
     metaphysicalProperties:
       'Held to amplify thought, intention, and the energy of nearby stones. Considered a programmable stone, accepting and holding a clear directive set with attention.',
@@ -1259,7 +1259,7 @@ export const crystalEntries: CrystalEntry[] = [
     shortDescription:
       'A purple variety of quartz, the most widely used healing and spiritual stone in Western tradition.',
     longDescription:
-      'Amethyst is the violet variety of quartz, coloured by iron and natural irradiation. The name comes from the Greek a methystos, not drunken, because Greeks believed it prevented intoxication and carved wine cups from it. It has been used since ancient times by Egyptian, Greek, Roman, and Christian cultures, set in bishops rings as a symbol of sober integrity. In modern metaphysical practice amethyst is the most widely sold healing crystal, used for sleep, calm, sobriety, and spiritual opening. It is considered the bridge between earthly clarity and higher awareness. Famous sources include Brazil, Uruguay, and Zambia.',
+      'Amethyst is the violet variety of quartz, coloured by iron and natural irradiation. The name comes from the Greek a methystos, not drunken, because Greeks believed it prevented intoxication and carved wine cups from it. It has been used since ancient times by Egyptian, Greek, Roman, and Christian cultures, set in bishops’ rings as a symbol of sober integrity. In modern metaphysical practice amethyst is the most widely sold healing crystal, used for sleep, calm, sobriety, and spiritual opening. It is considered the bridge between earthly clarity and higher awareness. Famous sources include Brazil, Uruguay, and Zambia.',
     keywords: ['calm', 'spiritual protection', 'sobriety', 'sleep', 'higher awareness'],
     metaphysicalProperties:
       'Held to soothe the nervous system, support the third eye, and create a buffer between the user and chaotic external energy. Considered a stone of spiritual sobriety and of sustainable practice.',
@@ -1676,7 +1676,7 @@ export const crystalEntries: CrystalEntry[] = [
     shortDescription:
       'A hydrated silica mineraloid prized for play of colour, traditionally a stone of imagination and emotional truth.',
     longDescription:
-      'Opal is hydrated silica, SiO2 nH2O, an amorphous mineraloid, not a true crystal. Precious opal contains ordered spheres of silica that diffract light to produce play of colour. Australian black, white, and crystal opals dominate the market, with Ethiopian Welo material and Mexican fire opal also prominent. Roman writers called it the queen of gems for its rainbow within. In medieval Europe superstitions briefly turned against opal, partly because it was rumoured unlucky for those not born in October, a superstition with no real tradition behind it. Metaphysically opal is the stone of amplified emotion, imagination, and the mirroring of the inner state. Robert Simmons calls it a stone that intensifies what one already is.',
+      'Opal is hydrated silica, SiO2 nH2O, an amorphous mineraloid, not a true crystal. Precious opal contains ordered spheres of silica that diffract light to produce play of colour. Australian black, white, and crystal opals dominate the market, with Ethiopian Welo material and Mexican fire opal also prominent. Roman writers called it the queen of gems for its rainbow within. Medieval Europe prized opal as a lucky stone. Its unlucky reputation dates from Walter Scott’s novel Anne of Geierstein (1829), and the later rumour that it is unlucky for anyone not born in October has no real tradition behind it. Metaphysically opal is the stone of amplified emotion, imagination, and the mirroring of the inner state. Robert Simmons calls it a stone that intensifies what one already is.',
     keywords: ['imagination', 'emotional amplification', 'creativity', 'inner mirror', 'play'],
     metaphysicalProperties:
       'Held to amplify whatever is felt, both desired and undesired. Considered a stone of honest emotion and creative inspiration that asks for self awareness.',
@@ -1786,7 +1786,7 @@ export const crystalEntries: CrystalEntry[] = [
     slug: 'angelite',
     name: 'Angelite',
     category: 'spirituality',
-    hardness: 4,
+    hardness: 3.5,
     zodiac: ['Aquarius'],
     chakras: ['Throat', 'Crown'],
     element: 'Air',
@@ -1794,7 +1794,7 @@ export const crystalEntries: CrystalEntry[] = [
     shortDescription:
       'A trade name for compressed pale blue anhydrite, used as a stone of angelic communication and gentle peace.',
     longDescription:
-      'Angelite is anhydrite, anhydrous calcium sulphate, in its pale blue compressed form, mainly from Peru. It is the same mineral family as gypsum but without water. Mohs hardness is around 3.5, soft enough to scratch with a fingernail edge. Anhydrite slowly absorbs water and converts to gypsum, which is one reason angelite must be kept dry. The trade name angelite emerged in the 1980s and the stone has been adopted as the modern stone of angelic and spirit guide communication. It is gentler than lapis or labradorite, more about quiet peace than dramatic vision.',
+      'Angelite is anhydrite, anhydrous calcium sulphate, in its pale blue compressed form, mainly from Peru. It is the same mineral family as gypsum but without water. Mohs hardness is around 3.5: a steel blade will scratch it, though a fingernail will not. Anhydrite slowly absorbs water and converts to gypsum, which is one reason angelite must be kept dry. The trade name angelite emerged in the 1980s and the stone has been adopted as the modern stone of angelic and spirit guide communication. It is gentler than lapis or labradorite, more about quiet peace than dramatic vision.',
     keywords: ['angels', 'peace', 'gentle communication', 'forgiveness', 'serenity'],
     metaphysicalProperties:
       'Held to open soft communication with guides, ease anxiety, and hold a quiet protected field. Considered a stone of acceptance and benevolent connection.',

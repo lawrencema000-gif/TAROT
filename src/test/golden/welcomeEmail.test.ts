@@ -7,11 +7,13 @@
  * which is not ours (and /privacy is no page anywhere), and it was sent from
  * an address on that domain, which Resend cannot verify for us, so the send
  * was refused. The function starts a server when it is imported, so this
- * reads its source.
+ * reads its source for the sender; the email itself is built by the pure
+ * content.ts (WP-P5-03), with the member's unsubscribe token in its link.
  */
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { buildWelcomeEmail } from '../../../supabase/functions/send-welcome-email/content';
 
 const REPO = join(__dirname, '..', '..', '..');
 const read = (path: string) => readFileSync(join(REPO, path), 'utf8');
@@ -25,7 +27,13 @@ function constant(src: string, name: string): string | undefined {
 }
 
 const site = constant(WELCOME, 'SITE_URL');
-const links = [...WELCOME.matchAll(/href="([^"]*)"/g)].map((m) => m[1].replace('${SITE_URL}', site ? JSON.parse(site) : ''));
+const EMAIL = buildWelcomeEmail({
+  displayName: 'Luna',
+  unsubscribeUrl: 'https://tarotlife.app/unsubscribe?token=3f1c2a9e-8b7d-4c6e-9f0a-1b2c3d4e5f60',
+  year: 2026,
+  siteUrl: site ? JSON.parse(site) : '',
+});
+const links = [...EMAIL.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]);
 
 describe('the welcome email', () => {
   it('links only into tarotlife.app', () => {
@@ -49,5 +57,13 @@ describe('the welcome email', () => {
     expect(constant(WELCOME, 'REPLY_TO')).toBe(constant(NEWSLETTER, 'REPLY_TO'));
     expect(WELCOME).toMatch(/\bfrom: FROM_EMAIL,/);
     expect(WELCOME).toMatch(/\breply_to: REPLY_TO,/);
+  });
+});
+
+describe('the landing course mail (WP-P5-03)', () => {
+  it('logs no address, and advertises no one-click POST its page cannot take', () => {
+    expect(NEWSLETTER).not.toContain('email: row.email');
+    expect(NEWSLETTER).not.toContain('List-Unsubscribe-Post');
+    expect(NEWSLETTER).toContain('"List-Unsubscribe"');
   });
 });

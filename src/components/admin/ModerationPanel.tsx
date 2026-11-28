@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, AlertTriangle, RefreshCw, CheckCircle2, Clock, Flag, EyeOff, Users } from 'lucide-react';
-import { Button, Badge, Tag, toast } from '../ui';
+import { Button, Badge, Tag, toast, dismissToasts } from '../ui';
 import { supabase } from '../../lib/supabase';
 import { useT } from '../../i18n/useT';
 import { getLocale } from '../../i18n/config';
@@ -435,7 +435,7 @@ export function ModerationPanel() {
                             {t('admin.moderation.memberReports.restore', { defaultValue: 'Restore' })}
                           </Button>
                         )}
-                        <Button variant="destructive" size="sm" onClick={() => setRemoveTarget(item)} disabled={busy}>
+                        <Button variant="destructive" size="sm" onClick={() => { dismissToasts(); setRemoveTarget(item); }} disabled={busy}>
                           {t('admin.moderation.memberReports.remove', { defaultValue: 'Remove' })}
                         </Button>
                       </div>

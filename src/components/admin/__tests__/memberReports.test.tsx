@@ -180,6 +180,19 @@ describe('Member reports in Admin → Moderation (WP-P0-20)', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Remove this for everyone?' })).toBeNull());
   });
 
+  it('opening Remove clears earlier toasts, so they cannot cover the confirm on a phone', async () => {
+    await openPanel();
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    h.queue = [HIDDEN_POST];
+    fireEvent.click(within(rows()[0]).getByRole('button', { name: 'Dismiss' }));
+    await waitFor(() => expect(screen.getByText('Reports dismissed')).toBeInTheDocument());
+    await waitFor(() => expect(rows()).toHaveLength(1));
+
+    fireEvent.click(within(rows()[0]).getByRole('button', { name: 'Remove' }));
+    await screen.findByRole('dialog', { name: 'Remove this for everyone?' });
+    await waitFor(() => expect(screen.queryByText('Reports dismissed')).toBeNull());
+  });
+
   it('a failed decision keeps the row and says so', async () => {
     await openPanel();
     await waitFor(() => expect(rows()).toHaveLength(2));

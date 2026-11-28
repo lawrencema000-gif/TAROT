@@ -8,10 +8,10 @@ import { StrictMode, createElement, forwardRef, useState, type ReactNode } from 
  * `{ entryId }` (p10 d3-ko-13), but the Journal never read it: from another
  * screen it landed on the newest twenty entries, the one tapped neither
  * open nor on screen when it was older; on the Journal itself the tap only
- * closed the sheet. The entry opens now, as a tap in the list opens it (a
- * locked one still asks for Premium) — from the entries the page holds, or
- * read by id — and the request is spent, so a reload or Back lands on the
- * list.
+ * closed the sheet. The entry opens now, as a tap in the list opens it —
+ * a locked one included, since a member's own entries always open — from
+ * the entries the page holds, or read by id — and the request is spent, so
+ * a reload or Back lands on the list.
  */
 
 const USER = { id: '00000000-0000-4000-8000-0000000000da', email: 'qa@example.com' };
@@ -224,12 +224,14 @@ describe('a journal result in the header search opens the entry', { timeout: 20_
     expect(getById).not.toHaveBeenCalled();
   });
 
-  it('a locked entry asks for Premium, as a tap in the list does; a Premium member reads it', async () => {
+  it('a locked entry opens for its author, Premium or not', async () => {
     entries = entries.map((e) => (e.id === 'e30' ? { ...e, is_locked: true } : e));
     mount('/');
     await openFromSearch('lighthouse', 'The lighthouse');
-    expect(await screen.findByText(i18n.t('app:journal.toast.unlockPremiumLock'), {}, WAIT)).toBeInTheDocument();
-    expect(editor()).toBeNull();
+    const lapsed = await screen.findByRole('dialog', { name: i18n.t('app:journal.editSheet.editEntry') }, WAIT);
+    expect(within(lapsed).getByDisplayValue('Walked to the lighthouse at dawn and wrote this down.')).toBeInTheDocument();
+    // The literal English: WP-P0-08 deletes the key this toast was read from.
+    expect(screen.queryByText('Unlock premium to view locked entries')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(/^\/journal$/));
     cleanup();
 

@@ -11548,7 +11548,7 @@
       "favours": "{{mansion}}宿는 {{activity}}에 좋다고 해요",
       "frameSupport": "그날이 당신의 일주와 같은 三合(삼합)으로 묶여요 — 조용히 힘이 되어 주는 날이에요",
       "inauspiciousGeneral": "{{mansion}}宿는 凶宿(흉수)예요 — 대체로 불리한 날이고, 이 일에 관해 따로 기록된 것은 없어요",
-      "yearClash": "그날이 당신의 띠와 충해요(沖{{animal}})"
+      "yearClash": "그날이 당신의 연지와 충해요(沖太歲)"
     },
     "exportFailed": "캘린더 파일을 저장하지 못했어요. 다시 시도해 주세요.",
     "metaTitle": "길일 고르기 — 택일(擇日)",

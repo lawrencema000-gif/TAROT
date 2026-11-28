@@ -11548,7 +11548,7 @@
       "favours": "{{mansion}}宿宜{{activity}}",
       "frameSupport": "当日与你的日柱同属一个三合局——默默给你支持",
       "inauspiciousGeneral": "{{mansion}}宿为凶宿——总体不利，但对这件事没有具体记载",
-      "yearClash": "当日冲你的生肖（冲{{animal}}）"
+      "yearClash": "当日与你的年支相冲（冲太岁）"
     },
     "exportFailed": "无法保存日历文件，请重试。",
     "metaTitle": "择日——挑选吉日",

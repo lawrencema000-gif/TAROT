@@ -16,6 +16,11 @@ import { join } from 'node:path';
  * Rows 23 and 24 of the map (`fengshui.annualUntil`,
  * `fengshui.directions.Center`) ship in WP-P2-14's own PR (it is dated and
  * runs ahead of P2), so they are checked only once they exist.
+ *
+ * Row 26 (`dates.reasons.yearClash` with an {{animal}} slot) ships in
+ * WP-P2-16's own PR, together with the reader that passes `animal`;
+ * until then the key keeps its main-branch text and the animal check
+ * waits for the slot.
  */
 
 const ROOT = process.cwd();
@@ -65,7 +70,7 @@ const P2_KEYS = [
   'fengshui.annualUntil', // 23 (WP-P2-14)
   'fengshui.directions.Center', // 24 (WP-P2-14)
   'iching.changingLines', // 25
-  'dates.reasons.yearClash', // 26
+  'dates.reasons.yearClash', // 26 ({{animal}} slot carried by WP-P2-16)
 ] as const;
 
 /** Carried by WP-P2-14's PR, not this package's. */
@@ -96,7 +101,6 @@ describe('P2 key map (WP-P2-00)', () => {
     expect(app.en['chartWheel.houseSystem.equal']).toBe('Houses: Equal (from the Ascendant)');
     expect(app.en['home.cosmicScore.smallerInfluences_one']).toBe('{{count}} smaller influence');
     expect(app.en['home.cosmicScore.smallerInfluences_other']).toBe('{{count}} smaller influences');
-    expect(app.en['dates.reasons.yearClash']).toBe('The day clashes with your birth-year animal (沖{{animal}})');
   });
 
   it('the Horoscope Premium card no longer sells transit notes', () => {
@@ -113,7 +117,8 @@ describe('P2 key map (WP-P2-00)', () => {
     }
   });
 
-  it('the birth-animal clash names the animal, not 太歲', () => {
+  // Row 26 is carried by WP-P2-16: this applies once en has the {{animal}} slot.
+  it.skipIf(!app.en['dates.reasons.yearClash']?.includes('{{animal}}'))('the birth-animal clash names the animal, not 太歲', () => {
     for (const loc of LOCS) {
       const v = app[loc]['dates.reasons.yearClash'];
       expect(v).toContain('{{animal}}');

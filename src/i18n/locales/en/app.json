@@ -11544,7 +11544,7 @@
       "favours": "{{mansion}} favours {{activity}}",
       "frameSupport": "The day shares a 三合 frame with your day pillar — quietly supportive",
       "inauspiciousGeneral": "{{mansion}} is a 凶宿 — generally unfavourable, with nothing specific recorded for this",
-      "yearClash": "The day clashes with your birth-year animal (沖{{animal}})"
+      "yearClash": "The day clashes with your year branch (沖太歲)"
     },
     "exportFailed": "Couldn’t save the calendar file. Try again.",
     "metaTitle": "Auspicious Dates — 擇日",

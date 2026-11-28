@@ -11548,7 +11548,7 @@
       "favours": "{{mansion}}宿は{{activity}}に吉とされます",
       "frameSupport": "この日はあなたの日柱と三合の組をなします——静かな後押しになる日です",
       "inauspiciousGeneral": "{{mansion}}宿は凶宿——全般に凶とされ、この件について個別の記載はありません",
-      "yearClash": "この日はあなたの生まれ年の十二支と衝突します（沖{{animal}}）"
+      "yearClash": "この日はあなたの年支と衝突します（沖太歲）"
     },
     "exportFailed": "カレンダーファイルを保存できませんでした。もう一度お試しください。",
     "metaTitle": "吉日選び — 択日",

@@ -13,8 +13,11 @@
   2. community_reported_queue(): admin-only. Every post and comment with a
      pending report, grouped, self-harm first. No reporter id, no author id.
   3. community_resolve_reports(kind, id, action): admin-only.
-       dismiss  pending reports -> dismissed; the item is untouched
+       dismiss  pending reports -> dismissed; the item stays as it is
        restore  pending reports -> dismissed; the item is shown again
+     On dismiss and restore a post's reported_count goes back to 0, so it
+     counts open reports only, as a comment does: it takes five new reports,
+     not one, to hide it again after a moderator's decision.
        remove   pending reports -> actioned; the item is blocked and hidden
      Returns the number of reports it changed.
 */
@@ -164,9 +167,16 @@ BEGIN
 
   IF p_action = 'restore' THEN
     IF p_kind = 'post' THEN
-      UPDATE public.community_posts SET is_hidden = false WHERE id = p_id;
+      -- Every pending report is closed above, so the post's count restarts at
+      -- 0 (open reports only, as comments count): one later report cannot
+      -- undo the moderator's decision.
+      UPDATE public.community_posts SET is_hidden = false, reported_count = 0 WHERE id = p_id;
     ELSE
       UPDATE public.community_comments SET is_hidden = false WHERE id = p_id;
+    END IF;
+  ELSIF p_action = 'dismiss' THEN
+    IF p_kind = 'post' THEN
+      UPDATE public.community_posts SET reported_count = 0 WHERE id = p_id;
     END IF;
   ELSIF p_action = 'remove' THEN
     IF p_kind = 'post' THEN

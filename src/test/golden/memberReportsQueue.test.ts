@@ -206,6 +206,11 @@ describe('community_resolve_reports(kind, id, action)', () => {
     expect(src).toMatch(/p_action\s*=\s*'remove'[\s\S]*?SET\s+moderation_status\s*=\s*'blocked'[\s\S]*?is_hidden\s*=\s*true/i);
   });
 
+  it('restarts a post’s reported_count at 0 on restore and dismiss, so one later report cannot re-hide it', () => {
+    expect(src).toMatch(/p_action\s*=\s*'restore'\s+THEN\s+IF\s+p_kind\s*=\s*'post'\s+THEN[\s\S]*?UPDATE\s+public\.community_posts\s+SET\s+is_hidden\s*=\s*false\s*,\s*reported_count\s*=\s*0\s+WHERE\s+id\s*=\s*p_id/i);
+    expect(src).toMatch(/p_action\s*=\s*'dismiss'\s+THEN\s+IF\s+p_kind\s*=\s*'post'\s+THEN\s+UPDATE\s+public\.community_posts\s+SET\s+reported_count\s*=\s*0\s+WHERE\s+id\s*=\s*p_id/i);
+  });
+
   it('returns how many reports it changed', () => {
     expect(src).toMatch(/GET\s+DIAGNOSTICS\s+v_rows\s*=\s*ROW_COUNT/i);
     expect(src).toMatch(/RETURN\s+v_rows\s*;/i);

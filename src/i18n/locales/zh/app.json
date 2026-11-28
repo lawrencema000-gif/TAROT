@@ -103,6 +103,10 @@
     "resetSuccessHint": "正在返回应用…",
     "resetSuccessRecoveryHint": "正在退出登录，请使用新密码重新登录。",
     "resetLinkExpiredHint": "重置链接仅一次性有效。如已失效，请从登录页重新申请。",
+    "verifyingLink": "正在验证链接…",
+    "resetLinkInvalidTitle": "此重置链接已过期或已被使用",
+    "resetLinkInvalidBody": "重置链接只能使用一次。申请新的链接后，我们会通过邮件发送给你。",
+    "requestNewLink": "发送新链接",
     "createAccount": "创建账号",
     "verifySentTo": "已向 {{email}} 发送验证链接，请查收邮件。",
     "checkSpam": "如果没有看到邮件，请检查垃圾邮件文件夹。",
@@ -339,6 +343,9 @@
       "aiLimit": "今日 AI 解读次数已达上限，明天再来。",
       "shared": "已分享",
       "imageSaved": "图片已保存到你的下载文件夹",
+      "imageSavedLinkCopied": "图片已保存，链接已复制",
+      "copyLink": "复制链接",
+      "linkCopied": "链接已复制",
       "aiTooManyCards": "AI 解读只适用于不超过 {{n}} 张牌的牌阵。你的月光石没有被扣除。",
       "aiFallback": "AI 解读暂时不可用，没有扣除任何月光石。",
       "aiFallbackCharged": "AI 解读暂时不可用，你的月光石也未能自动退还。请联系客服为你恢复。"
@@ -4377,6 +4384,17 @@
       "promptAgree": "你有多同意？",
       "promptChoose": "选择最符合你的答案。",
       "progress": "测试进度"
+    },
+    "flow": {
+      "start": "开始测试",
+      "whatYouGet": "你将了解",
+      "previous": "上一题",
+      "leave": {
+        "title": "要退出这个测试吗？",
+        "body": "你已回答 {{total}} 道题中的 {{answered}} 道。现在退出，答案将不会保存。",
+        "stay": "继续作答",
+        "leave": "退出测试"
+      }
     },
     "list": {
       "categories": {
@@ -10499,6 +10517,7 @@
     "gateCheckFailed": "无法查询你的余额——请重试。",
     "costLinePortrait": "绘制这幅画像消耗 <gold>{{n}} 月光石</gold>",
     "alreadyClaimedToday": "今天已领取",
+    "costLineResend": "上一次可能已经扣费——再问一次不会重复消耗月光石",
     "costLineConversationDay": "每段对话消耗 <gold>{{n}} 月光石</gold>，24 小时内的所有回复均包含在内"
   },
   "companion": {
@@ -10512,6 +10531,9 @@
     "emptyState":"就从任何问题开始吧——压在你心口的一个疑问，一个想被读懂的梦，一个想理解的名字。",
     "placeholder": "向灵伴发问…",
     "thinking": "思考中……",
+    "replyLost": "灵伴的回复没有送达。请重新发送——这段对话不会重复消耗月光石。",
+    "unanswered": "这条消息的回复没有送达。",
+    "sendAgain": "重新发送",
     "sendFailed": "无法连接灵伴，请检查网络连接后重新发送。",
     "sendRejected": "这条消息无法发送，请开始新对话后重新发送。",
     "dailyLimitReached": "今日消息已达上限——明天再来",
@@ -10803,6 +10825,7 @@
     },
     "computing": "正在计算你的星盘…",
     "progressedAge": "{{n}}岁",
+    "returnMoment": "回归时刻：{{when}}",
     "synastryPrompt": "对方的出生信息",
     "partnerNamePlaceholder": "对方姓名（可选）",
     "synastryCta": "叠加对方星盘",
@@ -11255,6 +11278,7 @@
     "redraw": "新牌",
     "newCardConfirmTitle": "要抽一张新牌吗？",
     "newCardConfirmBody": "关于{{card}}的这段对话将会结束，之后无法再回到这里。",
+    "newCardConfirmBodyPending": "上一次解读{{card}}可能已经扣费。新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmBodyPaid": "关于{{card}}的这段对话将会结束，之后无法再回到这里。解读新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmAction": "抽一张新牌",
     "newCardConfirmKeep": "继续这段对话",
@@ -11265,6 +11289,7 @@
     "reversed": "逆位",
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
+    "replyLost": "神谕的回答没有送达。请再问一次——这张牌不会重复消耗月光石。",
     "aiFailed": "无法连接神谕，请检查网络连接后再问一次。",
     "sendRejected": "这个问题无法发送，请抽一张新牌，开始新的对话。",
     "thinking": "神谕正在思考…",
@@ -11286,6 +11311,12 @@
     "tapPrompt": "点按行星、宫位或相位线。",
     "planetLabel": "行星",
     "transitLabel": "行运",
+    "overlayKind": {
+      "transit": "行运",
+      "progressed": "推运",
+      "solarReturn": "太阳回归",
+      "partner": "对方"
+    },
     "houseLabel": "第{{n}}宫",
     "aspectLabel": "相位",
     "wheelAria": "本命星盘轮",
@@ -11318,6 +11349,7 @@
     "aspectsAll": "全部（{{n}}）",
     "aspectsTight": "紧密相位（{{n}}）",
     "noTightAspects": "没有容许度紧密的相位。切换到「全部」可查看所有连接。",
+    "noAspectLines": "此星盘没有相位线。",
     "aspectGridAria": "相位矩阵",
     "gridTapPrompt": "点按格子阅读相位",
     "modalities": {
@@ -12304,7 +12336,7 @@
     "toasts": {
       "signInToSave": "请登录后保存此牌阵。",
       "nameRequired": "保存前请为牌阵命名。",
-      "positionRequired": "请至少添加一个位置，并填写名称和含义。",
+      "positionRequired": "请至少添加一个带名称的位置。",
       "saveFailed": "无法保存你的牌阵，请检查网络连接后重试。",
       "saved": "牌阵已保存，可在「你保存的牌阵」中找到。",
       "deleteFailed": "无法删除该牌阵，请检查网络连接后重试。",
@@ -12325,8 +12357,11 @@
     "positionCount_one": "{{count}} 个位置",
     "positionCount_other": "{{count}} 个位置",
     "positionMeaningPlaceholder": "这个位置代表什么…",
-    "positionNamePlaceholder": "位置名称（例如：挑战）",
+    "positionNamePlaceholder": "位置名称",
     "positions": "位置",
+    "positionNameMissing": "请为位置 {{n}} 命名，或将其移除。",
+    "positionMeaningMissing": "请写下位置 {{n}} 代表什么，或将其移除。",
+    "positionsHint": "每个位置都需要名称（例如：挑战），它代表什么可以不填。",
     "removePosition": "移除位置 {{n}}",
     "save": "保存牌阵",
     "savedTitle": "你保存的牌阵",

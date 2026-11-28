@@ -70,7 +70,11 @@
       "counts": "{{flowing}} flowing · {{demanding}} demanding",
       "why": "Why this number",
       "influence": "{{transiting}} {{type}} your {{natal}}",
-      "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate."
+      "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate.",
+      "baseline": "Neutral start",
+      "smallerInfluences_one": "{{count}} smaller influence",
+      "smallerInfluences_other": "{{count}} smaller influences",
+      "countsOfAll": "{{flowing}} flowing · {{demanding}} demanding, of {{total}} influences"
     },
     "highlightSaved": "Saved to your highlights",
     "highlightSaveFailed": "Couldn’t save this card to your highlights — check your connection and try again.",
@@ -103,6 +107,10 @@
     "resetSuccessHint": "Returning you to the app…",
     "resetSuccessRecoveryHint": "Signing you out — please sign in again with your new password.",
     "resetLinkExpiredHint": "Reset links are one-shot. If yours expired, request another from the sign-in page.",
+    "verifyingLink": "Verifying your link…",
+    "resetLinkInvalidTitle": "This reset link has expired or was already used",
+    "resetLinkInvalidBody": "Reset links work once. Ask for a new one and we’ll email it to you.",
+    "requestNewLink": "Send a new link",
     "createAccount": "Create account",
     "verifySentTo": "We sent a verification link to {{email}}. Please check your inbox.",
     "checkSpam": "Check your spam folder if you don’t see it.",
@@ -548,6 +556,9 @@
       "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.",
       "shared": "Shared",
       "imageSaved": "Image saved to your downloads",
+      "imageSavedLinkCopied": "Image saved · link copied",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied",
       "aiTooManyCards": "AI interpretations read spreads of up to {{n}} cards. Your Moonstones weren’t charged.",
       "aiFallback": "The AI reader is unavailable right now. No Moonstones were charged.",
       "aiFallbackCharged": "The AI reader is unavailable right now, and your Moonstones couldn’t be returned automatically. Contact support to have them restored."
@@ -4584,6 +4595,17 @@
       "promptChoose": "Choose the answer that fits you best.",
       "progress": "Quiz progress"
     },
+    "flow": {
+      "start": "Start the quiz",
+      "whatYouGet": "What you’ll get",
+      "previous": "Previous question",
+      "leave": {
+        "title": "Leave this quiz?",
+        "body": "You’ve answered {{answered}} of {{total}} questions. If you leave now, your answers won’t be kept.",
+        "stay": "Keep going",
+        "leave": "Leave the quiz"
+      }
+    },
     "list": {
       "categories": {
         "label": "Quiz categories",
@@ -4648,7 +4670,7 @@
     "journalButton": "Open the journal",
     "birthChartCard": {
       "title": "Birth chart analysis",
-      "subtitle": "Personalized transit notes",
+      "subtitle": "Your full chart, forecasts and the Explore tab",
       "upgrade": "Unlock my birth chart"
     },
     "paywallFeatures": {
@@ -4686,6 +4708,7 @@
       "shadowSide": "Shadow side",
       "houseLabel": "House {{num}}",
       "aspectMeta": "{{type}} • Orb: {{orb}}° • {{motion}}",
+      "aspectMetaNoMotion": "{{type}} • Orb: {{orb}}°",
       "applying": "Applying",
       "separating": "Separating",
       "elements": {
@@ -4844,6 +4867,7 @@
       "title": "Cosmic profile",
       "sun": "Sun",
       "animal": "Animal",
+      "animalYearNote": "Your animal year begins at Lunar New Year.",
       "lifePath": "Life path",
       "expression": "Expression",
       "soulUrge": "Soul urge",
@@ -5590,6 +5614,8 @@
       "memberFallback": "Member",
       "status": "Status",
       "statusActive": "Active",
+      "statusTrial": "Free trial",
+      "statusPaymentIssue": "Payment problem",
       "billing": "Billing",
       "yourBenefits": "Included in your plan",
       "syncStatus": "Refresh my subscription",
@@ -5597,22 +5623,27 @@
         "verified": "Your subscription is confirmed.",
         "active": "Nothing to update — your subscription is as shown.",
         "verifyFailed": "Couldn’t confirm your subscription with the store — check your connection and try again.",
-        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again."
+        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again.",
+        "noCardSubscription": "There’s no card subscription on this account to manage here. If you subscribed in an app store, manage it there."
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "Card, through Stripe"
+        "stripe": "Card, through Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "Included with your account"
       },
       "manage": {
-        "android": "Manage on Google Play",
-        "ios": "Manage in the App Store",
-        "web": "Manage subscription"
+        "portal": "Manage subscription",
+        "googlePlay": "Manage on Google Play",
+        "appStore": "Manage in the App Store"
       },
       "storeNote": {
-        "android": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
-        "ios": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
-        "web": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here."
+        "stripe": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here.",
+        "stripeInApp": "You pay by card on our website, so this subscription can’t be changed in the app. To cancel or change it, sign in at tarotlife.app in a browser.",
+        "stripeLifetime": "Paid once by card. There is nothing to renew or cancel.",
+        "googlePlay": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
+        "appStore": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
+        "included": "Premium comes with your account, so there is nothing to bill, renew or cancel."
       },
       "plan": "Your plan",
       "renewal": {
@@ -6949,6 +6980,7 @@
     "cautions": "Cautions",
     "transformsInto": "Transforms into",
     "transformNote": "The changing lines show the energy moving toward this second hexagram — read as “where this situation is heading”.",
+    "changingLines": "Changing lines: {{lines}}",
     "journalPrompt": "Journal prompt",
     "backToStart": "Cast again",
     "castAgain": "Cast again",
@@ -7010,6 +7042,8 @@
     "bodygraphLabel": "Your bodygraph",
     "centersDefined": "centres defined",
     "channelsDefined": "channels",
+    "bodygraphSummary_one": "{{centers}} / 9 centres defined · {{count}} channel",
+    "bodygraphSummary_other": "{{centers}} / 9 centres defined · {{count}} channels",
     "channelsHeading": "Your defined channels",
     "channelsNote": "Each channel connects two centres and defines a consistent life-force flow between them. These are fixed parts of who you are — always available to you.",
     "activationsLabel": "All 26 activations",
@@ -7048,6 +7082,9 @@
     "intro": "Bazi — \"eight characters\" — is the traditional Chinese reading of your birth moment as four pillars: year, month, day, and hour. Each pillar carries one of the five elements (wood, fire, earth, metal, water) and a yin or yang polarity. Together they show your Day Master — the axis of your nature — and where the elements of your life run rich or run thin.",
     "birthDate": "Birth date",
     "birthTime": "Birth time (optional)",
+    "birthPlace": "Birth place (sets the time zone)",
+    "zoneUsed": "Your birth time is read in {{zone}}.",
+    "lateZiNote": "Born between 23:00 and 23:59: this is the Zi (子) hour that opens the next day, so your hour pillar is {{hour}}. Your day pillar stays on your calendar date.",
     "calculate": "Cast the four pillars",
     "calcFailed": "Couldn’t cast your four pillars — check your birth details and try again.",
     "needBirthDate": "Birth date is required",
@@ -10188,6 +10225,10 @@
     "elementalLabel": "Elemental blend",
     "compositeLabel": "Your relationship as a third entity",
     "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.",
+    "compositeIn": "Composite {{planet}} in {{sign}}",
+    "compositeAspect": "Composite {{p1}} {{type}} {{p2}}",
+    "compositeMethod": "Each planet here sits halfway between yours and theirs.",
+    "compositeNoMoon": "Without both birth times, the composite Moon is left out.",
     "share": "Share this match",
     "stillComputing": "Still computing the aspects…",
     "tryAgain": "Try again",
@@ -10492,6 +10533,7 @@
     "gateCheckFailed": "Couldn’t check your balance — try again.",
     "costLinePortrait": "Painting the portrait uses <gold>{{n}} Moonstones</gold>",
     "alreadyClaimedToday": "Already claimed today",
+    "costLineResend": "Your last try may already be paid for — asking again won’t use Moonstones twice",
     "costLineConversationDay": "A conversation uses <gold>{{n}} Moonstones</gold>, every reply for 24 hours included"
   },
   "askOracle": {
@@ -10531,6 +10573,9 @@
     "emptyState":"Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
     "placeholder": "Ask the companion…",
     "thinking": "thinking…",
+    "replyLost": "Your companion’s reply didn’t arrive. Send it again — this conversation won’t use Moonstones twice.",
+    "unanswered": "The reply to this message didn’t arrive.",
+    "sendAgain": "Send again",
     "sendFailed": "Couldn’t reach your companion — check your connection and send again.",
     "sendRejected": "This message couldn’t be sent. Start a new conversation and send it again.",
     "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
@@ -10822,6 +10867,7 @@
     },
     "computing": "Computing your chart…",
     "progressedAge": "Age {{n}}",
+    "returnMoment": "Return moment: {{when}}",
     "synastryPrompt": "Partner birth data",
     "partnerNamePlaceholder": "Partner name (optional)",
     "synastryCta": "Overlay partner chart",
@@ -11274,6 +11320,7 @@
     "redraw": "New card",
     "newCardConfirmTitle": "Draw a new card?",
     "newCardConfirmBody": "Your conversation about {{card}} will close, and you can’t come back to it.",
+    "newCardConfirmBodyPending": "Your last try at reading {{card}} may already be paid for. A new card starts a new conversation, which uses {{n}} Moonstones.",
     "newCardConfirmBodyPaid": "Your conversation about {{card}} will close, and you can’t come back to it. Reading a new card starts a new conversation, which uses {{n}} Moonstones.",
     "newCardConfirmAction": "Draw a new card",
     "newCardConfirmKeep": "Keep this conversation",
@@ -11284,6 +11331,7 @@
     "reversed": "Reversed",
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
+    "replyLost": "The oracle’s answer didn’t arrive. Ask again — reading this card won’t use Moonstones twice.",
     "aiFailed": "Couldn’t reach the oracle — check your connection and ask again.",
     "sendRejected": "This question couldn’t be sent. Draw a new card to start a new conversation.",
     "thinking": "The oracle is thinking…",
@@ -11305,6 +11353,12 @@
     "tapPrompt": "Tap a planet, house, or aspect line.",
     "planetLabel": "Planet",
     "transitLabel": "Transit",
+    "overlayKind": {
+      "transit": "Transit",
+      "progressed": "Progressed",
+      "solarReturn": "Solar return",
+      "partner": "Partner"
+    },
     "houseLabel": "House {{n}}",
     "aspectLabel": "Aspect",
     "wheelAria": "Natal chart wheel",
@@ -11337,6 +11391,10 @@
     "aspectsAll": "All ({{n}})",
     "aspectsTight": "Tight orbs ({{n}})",
     "noTightAspects": "No aspects within tight orbs. Switch to all to see every connection.",
+    "houseSystem": {
+      "equal": "Houses: Equal (from the Ascendant)"
+    },
+    "noAspectLines": "No aspect lines on this chart.",
     "aspectGridAria": "Aspect grid",
     "gridTapPrompt": "Tap a cell to read the aspect",
     "modalities": {
@@ -11456,6 +11514,13 @@
     "computing": "Comparing your charts…",
     "needsChart": "The score compares your birth chart with theirs, and yours isn’t set up yet. Add your birth place to cast it — nothing was spent.",
     "setUpChart": "Set up my chart"
+  },
+  "synastry": {
+    "zoneFromPlace": "Their birth time is read in {{zone}}.",
+    "noPlaceNote": "Without a birth place, their birth time is read in your time zone ({{zone}}).",
+    "placeZoneFailed": "We couldn’t find this place’s time zone. Pick it again, or clear it to use your own time zone.",
+    "clearPlace": "Clear place",
+    "zoneAssumedHint": "Their birth time was read in your time zone ({{zone}}). Add their birth place to read it where they were born."
   },
   "ziwei": {
     "title": "Zi Wei Dou Shu",
@@ -12092,7 +12157,7 @@
     "toasts": {
       "signInToSave": "Sign in to save this spread.",
       "nameRequired": "Give your spread a name before saving.",
-      "positionRequired": "Add at least one position with both a name and a meaning.",
+      "positionRequired": "Add at least one position with a name.",
       "saveFailed": "Couldn’t save your spread — check your connection and try again.",
       "saved": "Spread saved — it’s listed under Your saved spreads.",
       "deleteFailed": "Couldn’t delete that spread — check your connection and try again.",
@@ -12113,8 +12178,11 @@
     "positionCount_one": "{{count}} position",
     "positionCount_other": "{{count}} positions",
     "positionMeaningPlaceholder": "What this position represents…",
-    "positionNamePlaceholder": "Position name (e.g. The challenge)",
+    "positionNamePlaceholder": "Position name",
     "positions": "Positions",
+    "positionNameMissing": "Give position {{n}} a name, or remove it.",
+    "positionMeaningMissing": "Say what position {{n}} represents, or remove it.",
+    "positionsHint": "Each position needs a name, like “The challenge”. What it represents is optional.",
     "removePosition": "Remove position {{n}}",
     "save": "Save spread",
     "savedTitle": "Your saved spreads",

@@ -5697,6 +5697,8 @@
       "backToSettings": "Back to settings",
       "notificationsEnabled": "Notifications enabled",
       "notificationsDisabled": "Notifications disabled",
+      "newsletterOn": "Welcome email on",
+      "newsletterOff": "Welcome email off",
       "themeChanged": "Theme changed to {{name}}",
       "updateFailed": "Couldn’t change that setting — check your connection and try again."
     },
@@ -5721,6 +5723,8 @@
     "saveChanges": "Save changes",
     "dailyReminders": "Daily reminders",
     "getNotified": "Get notified for your daily ritual",
+    "newsletter": "Welcome email",
+    "newsletterMeta": "One email with tips for getting started",
     "noTransits": "No transits found for this period",
     "chartUnavailable": "No chart data yet — add your birth details to compute one.",
     "birthCity": "Birth city",

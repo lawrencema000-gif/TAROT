@@ -5507,6 +5507,8 @@
       "backToSettings": "設定に戻る",
       "notificationsEnabled": "通知を有効にしました",
       "notificationsDisabled": "通知を無効にしました",
+      "newsletterOn": "ウェルカムメールを有効にしました",
+      "newsletterOff": "ウェルカムメールを無効にしました",
       "themeChanged": "テーマを{{name}}に変更しました",
       "updateFailed": "設定を変更できませんでした。接続を確認して、もう一度お試しください。"
     },
@@ -5531,6 +5533,8 @@
     "saveChanges": "変更を保存",
     "dailyReminders": "毎日のリマインダー",
     "getNotified": "日々のリチュアルの通知を受け取る",
+    "newsletter": "ウェルカムメール",
+    "newsletterMeta": "使い始めのヒントをまとめた英語のメールを1通お届けします",
     "noTransits": "この期間のトランジットは見つかりません",
     "chartUnavailable": "チャートのデータはまだありません。出生情報を追加すると計算できます。",
     "birthCity": "出生地",

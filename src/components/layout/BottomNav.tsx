@@ -77,7 +77,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
     { id: 'wishing-sky', labelKey: 'nav.wishingSky', icon: Star, route: '/wishing-sky' },
     // The playing-card section sits under Readings too, but a reader who
     // comes for it should not have to find the tab inside the tab strip.
-    ...(cartomancyEnabled ? [{ id: 'cartomancy', labelKey: 'nav.cartomancy', icon: PlayingCardIcon, route: '/cartomancy', defaultLabel: 'Playing cards' } as RouteItem] : []),
+    ...(cartomancyEnabled ? [{ id: 'cartomancy', labelKey: 'nav.cartomancy', icon: PlayingCardIcon, route: '/cartomancy', defaultLabel: 'Cartomancy' } as RouteItem] : []),
     ...moreMenuTabs,
   ];
   if (companionEnabled) {

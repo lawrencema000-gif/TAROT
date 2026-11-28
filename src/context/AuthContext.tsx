@@ -79,7 +79,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-interface DbProfile {
+export interface DbProfile {
   id: string;
   email: string;
   display_name: string;
@@ -105,6 +105,13 @@ interface DbProfile {
   last_ritual_date?: string;
   mbti_type?: string;
   love_language?: string;
+  /** Saved from the Enneagram result (1–9) and its wing; NULL until then. */
+  enneagram_type?: number | null;
+  enneagram_wing?: number | null;
+  /** 'secure' | 'anxious' | 'avoidant' | 'fearful-avoidant': the Attachment result's Save and every Love Tree completion write it. */
+  attachment_style?: string | null;
+  /** Five trait scores; nothing writes it yet. */
+  big_five_scores?: unknown;
   level: number;
   xp?: number;
   seeker_rank?: string;
@@ -119,7 +126,28 @@ interface DbProfile {
   destined_place?: import('../types').DestinedPlace | null;
 }
 
-function mapDbToProfile(db: DbProfile): UserProfile {
+/** A whole number in [lo, hi] (a numeric string too), else undefined. */
+function wholeIn(v: unknown, lo: number, hi: number): number | undefined {
+  const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
+  return typeof n === 'number' && Number.isInteger(n) && n >= lo && n <= hi ? n : undefined;
+}
+const BIG_FIVE_TRAITS = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'] as const;
+/** The five scores when every one is a finite number, else undefined. */
+function bigFiveOf(v: unknown): UserProfile['bigFiveScores'] {
+  if (!v || typeof v !== 'object') return undefined;
+  const o = v as Record<string, unknown>;
+  if (!BIG_FIVE_TRAITS.every((k) => typeof o[k] === 'number' && Number.isFinite(o[k]))) return undefined;
+  return {
+    openness: o.openness as number,
+    conscientiousness: o.conscientiousness as number,
+    extraversion: o.extraversion as number,
+    agreeableness: o.agreeableness as number,
+    neuroticism: o.neuroticism as number,
+  };
+}
+
+// eslint-disable-next-line react-refresh/only-export-components -- exported for its unit test (src/context/__tests__/profileMapping.test.ts)
+export function mapDbToProfile(db: DbProfile): UserProfile {
   return {
     id: db.id,
     email: db.email,
@@ -152,6 +180,11 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     lastRitualDate: db.last_ritual_date ?? undefined,
     mbtiType: db.mbti_type,
     loveLanguage: db.love_language,
+    // Read only: none of the four is in PROFILE_WRITABLE_FIELDS (the result screens and Love Tree write the columns).
+    enneagramType: wholeIn(db.enneagram_type, 1, 9),
+    enneagramWing: wholeIn(db.enneagram_wing, 1, 9),
+    attachmentStyle: db.attachment_style || undefined,
+    bigFiveScores: bigFiveOf(db.big_five_scores),
     level: db.level || 1,
     xp: db.xp || 0,
     seekerRank: db.seeker_rank || 'Novice Seeker',

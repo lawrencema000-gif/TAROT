@@ -82,8 +82,9 @@ describe('OAuthOnboardingPage birth date (p9 Q05)', () => {
       fireEvent.click(screen.getByRole('button', { name: i18n.t('onboarding:oauth.finish') }));
     });
 
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
-    expect(updateProfile.mock.calls[0][0]).toMatchObject({ birthDate: '1991-03-08', goals: ['love'] });
+    // Each step saves its answer as it is given (gap-1-12); the Finish call
+    // is the last one and carries every answer.
+    await waitFor(() => expect(updateProfile.mock.calls.at(-1)?.[0]).toMatchObject({ birthDate: '1991-03-08', goals: ['love'] }));
     for (const [update] of updateProfile.mock.calls) expect(update.birthDate).not.toBe('2000-01-01');
     // 1991-03-08 is a Pisces (魚座), not the placeholder's Capricorn (山羊座).
     expect(screen.getByRole('heading', { name: '魚座' })).toBeInTheDocument();

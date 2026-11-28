@@ -205,8 +205,8 @@ export function SpreadBuilderPage() {
                   type="text"
                   value={p.name}
                   onChange={(e) => updatePosition(i, 'name', e.target.value)}
-                  placeholder={t('spreadBuilder.positionNamePlaceholder', { defaultValue: 'Position name (e.g. The challenge)' })}
-                  className="flex-1 px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-ui"
+                  placeholder={t('spreadBuilder.positionNamePlaceholder', { defaultValue: 'Position name' })}
+                  className="flex-1 min-w-0 px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-ui"
                   maxLength={60}
                 />
                 {positions.length > 1 && (

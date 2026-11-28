@@ -70,7 +70,11 @@
       "counts": "조화로운 {{flowing}} · 도전적인 {{demanding}}",
       "why": "이 숫자의 이유",
       "influence": "{{transiting}}이 당신의 {{natal}}에 {{type}}",
-      "footnote": "지금 이 순간의 실제 행성 위치를 당신의 출생 차트에 비추어 매긴 점수예요. 운명이 아니라 날씨를 말해요."
+      "footnote": "지금 이 순간의 실제 행성 위치를 당신의 출생 차트에 비추어 매긴 점수예요. 운명이 아니라 날씨를 말해요.",
+      "baseline": "중립 출발점",
+      "smallerInfluences_one": "작은 영향 {{count}}개 더",
+      "smallerInfluences_other": "작은 영향 {{count}}개 더",
+      "countsOfAll": "{{total}}개 중 조화로운 {{flowing}} · 도전적인 {{demanding}}"
     },
     "highlightSaved": "저장했어요",
     "highlightSaveFailed": "이 카드를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -103,6 +107,10 @@
     "resetSuccessHint": "앱으로 돌아가는 중…",
     "resetSuccessRecoveryHint": "로그아웃합니다. 새 비밀번호로 다시 로그인해 주세요.",
     "resetLinkExpiredHint": "재설정 링크는 일회성입니다. 만료된 경우 로그인 화면에서 다시 요청하세요.",
+    "verifyingLink": "링크를 확인하는 중…",
+    "resetLinkInvalidTitle": "이 재설정 링크는 만료되었거나 이미 사용되었어요",
+    "resetLinkInvalidBody": "재설정 링크는 한 번만 쓸 수 있어요. 새 링크를 요청하면 이메일로 보내 드려요.",
+    "requestNewLink": "새 링크 받기",
     "createAccount": "계정 만들기",
     "verifySentTo": "{{email}}로 인증 링크를 보냈어요. 메일함을 확인해 주세요.",
     "checkSpam": "메일이 보이지 않으면 스팸함도 확인해 주세요.",
@@ -339,6 +347,9 @@
       "aiLimit": "오늘의 AI 해석 한도에 도달했어요. 내일 다시 오세요.",
       "shared": "공유했어요",
       "imageSaved": "이미지를 다운로드 폴더에 저장했어요",
+      "imageSavedLinkCopied": "이미지를 저장하고 링크를 복사했어요",
+      "copyLink": "링크 복사",
+      "linkCopied": "링크를 복사했어요",
       "aiTooManyCards": "AI 해석은 {{n}}장 이하의 스프레드만 읽을 수 있어요. 문스톤은 차감되지 않았어요.",
       "aiFallback": "지금은 AI 리더를 이용할 수 없어요. 문스톤은 차감되지 않았어요.",
       "aiFallbackCharged": "지금은 AI 리더를 이용할 수 없고, 문스톤을 자동으로 돌려드리지 못했어요. 지원팀에 문의해 주시면 복구해 드릴게요."
@@ -4378,6 +4389,17 @@
       "promptChoose": "자신에게 가장 잘 맞는 답을 골라 주세요.",
       "progress": "퀴즈 진행도"
     },
+    "flow": {
+      "start": "퀴즈 시작하기",
+      "whatYouGet": "알 수 있는 것",
+      "previous": "이전 문항",
+      "leave": {
+        "title": "퀴즈를 그만둘까요?",
+        "body": "{{total}}문항 중 {{answered}}문항에 답했어요. 지금 나가면 답이 저장되지 않아요.",
+        "stay": "계속하기",
+        "leave": "그만두기"
+      }
+    },
     "list": {
       "categories": {
         "label": "퀴즈 카테고리",
@@ -4441,7 +4463,7 @@
     "journalButton": "저널 열기",
     "birthChartCard": {
       "title": "출생 차트 분석",
-      "subtitle": "개인 맞춤 트랜짓 노트",
+      "subtitle": "전체 차트, 예보, 탐색 탭",
       "upgrade": "내 출생 차트 열기"
     },
     "paywallFeatures": {
@@ -4479,6 +4501,7 @@
       "shadowSide": "그림자 면",
       "houseLabel": "{{num}}번째 하우스",
       "aspectMeta": "{{type}} • 오브: {{orb}}° • {{motion}}",
+      "aspectMetaNoMotion": "{{type}} • 오브: {{orb}}°",
       "applying": "접근 중",
       "separating": "분리 중",
       "elements": {
@@ -4627,6 +4650,7 @@
       "title": "코스믹 프로파일",
       "sun": "태양",
       "animal": "띠",
+      "animalYearNote": "띠는 음력 설날부터 바뀌어요.",
       "lifePath": "라이프 패스",
       "shareButton": "코스믹 프로파일 공유",
       "shareSubtitle": "태양 · 띠 · 라이프 패스",
@@ -5380,6 +5404,8 @@
       "memberFallback": "회원",
       "status": "상태",
       "statusActive": "활성",
+      "statusTrial": "무료 체험 중",
+      "statusPaymentIssue": "결제 문제가 있어요",
       "billing": "결제 수단",
       "yourBenefits": "플랜에 포함된 것",
       "syncStatus": "내 구독 새로고침",
@@ -5388,22 +5414,27 @@
         "verified": "구독이 확인됐어요.",
         "active": "바뀐 것이 없어요 — 구독은 표시된 그대로예요.",
         "verifyFailed": "스토어에서 구독을 확인하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
-        "portalFailed": "결제 포털을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요."
+        "portalFailed": "결제 포털을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+        "noCardSubscription": "이 계정에는 여기서 관리할 카드 구독이 없어요. 앱 스토어에서 구독했다면 그곳에서 관리하세요."
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "카드 (Stripe 결제)"
+        "stripe": "카드 (Stripe 결제)",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "계정에 포함"
       },
       "manage": {
-        "android": "Google Play에서 관리",
-        "ios": "App Store에서 관리",
-        "web": "구독 관리"
+        "portal": "구독 관리",
+        "googlePlay": "Google Play에서 관리",
+        "appStore": "App Store에서 관리"
       },
       "storeNote": {
-        "android": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
-        "ios": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
-        "web": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요."
+        "stripe": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "stripeInApp": "이 구독은 웹사이트에서 카드로 결제해서 앱에서는 바꿀 수 없어요. 해지하거나 변경하려면 브라우저에서 tarotlife.app에 로그인하세요.",
+        "stripeLifetime": "카드로 한 번 결제했어요. 갱신하거나 해지할 것이 없어요.",
+        "googlePlay": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "appStore": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "included": "프리미엄이 계정에 포함되어 있어서 결제, 갱신, 해지할 것이 없어요."
       },
       "plan": "내 플랜",
       "renewal": {
@@ -6755,6 +6786,7 @@
     "cautions": "주의",
     "transformsInto": "변해서 다음 괘로",
     "transformNote": "동효는 이 상황이 두 번째 괘를 향해 움직이고 있음을 보여 줘요 — ‘이 상황이 어디로 향하고 있는가’로 읽어 보세요.",
+    "changingLines": "동효: {{lines}}",
     "journalPrompt": "저널 질문",
     "backToStart": "다시 던지기",
     "castAgain": "다시 던지기",
@@ -7010,6 +7042,8 @@
     "bodygraphLabel": "당신의 바디그래프",
     "centersDefined": "센터 정의됨",
     "channelsDefined": "채널",
+    "bodygraphSummary_one": "정의된 센터 {{centers}} / 9 · 채널 {{count}}개",
+    "bodygraphSummary_other": "정의된 센터 {{centers}} / 9 · 채널 {{count}}개",
     "channelsHeading": "당신의 정의된 채널",
     "channelsNote": "각 채널은 두 센터를 이어 그 사이에 일정한 생명력의 흐름을 정의해요. 이것은 당신이라는 사람의 고정된 부분이며, 언제나 당신 곁에 있어요.",
     "activationsLabel": "26개 활성화 전체",
@@ -7048,6 +7082,9 @@
     "intro": "사주팔자(四柱八字) — ‘여덟 글자’ — 는 당신이 태어난 순간을 년·월·일·시 네 기둥으로 읽는 중국의 전통 명리예요. 각 기둥은 오행(목·화·토·금·수) 가운데 하나와 음양을 지녀요. 일간(日干)은 당신 본성의 축이고, 오행의 비율은 당신 삶에서 어떤 기운이 풍성하고 어떤 기운이 부족한지를 보여 줘요.",
     "birthDate": "생년월일",
     "birthTime": "출생 시간 (선택)",
+    "birthPlace": "출생지(시간대를 정해요)",
+    "zoneUsed": "출생 시간은 {{zone}} 기준으로 읽어요.",
+    "lateZiNote": "23:00~23:59에 태어나면 다음 날을 여는 자시에 해당해요(시주 {{hour}}). 일주는 태어난 날짜를 그대로 따라요.",
     "calculate": "사주 뽑기",
     "calcFailed": "네 기둥을 세우지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
     "needBirthDate": "생년월일이 필요합니다",
@@ -10188,6 +10225,10 @@
     "elementalLabel": "원소의 조합",
     "compositeLabel": "제3의 존재로서의 관계",
     "compositeIntro": "컴포짓 차트는 관계 그 자체를 두 사람 각각과는 별개의, 고유한 성격을 가진 존재로 다뤄요. 이 관찰은 그 관계라는 존재를 설명해요.",
+    "compositeIn": "컴포짓의 {{planet}}({{sign}})",
+    "compositeAspect": "컴포짓 {{p1}}–{{p2}} {{type}}",
+    "compositeMethod": "여기의 각 행성은 당신의 행성과 상대의 행성 사이 한가운데에 놓여요.",
+    "compositeNoMoon": "두 사람의 출생 시간이 모두 있어야 컴포짓의 달을 보여 줄 수 있어요.",
     "share": "이 궁합 공유",
     "stillComputing": "아직 각도를 계산하는 중…",
     "tryAgain": "다시 시도",
@@ -10494,6 +10535,7 @@
     "gateCheckFailed": "잔액을 확인하지 못했어요 — 다시 시도해 주세요.",
     "costLinePortrait": "초상을 그리면 <gold>문스톤 {{n}}개</gold>를 사용해요",
     "alreadyClaimedToday": "오늘은 이미 받았어요",
+    "costLineResend": "지난 시도가 이미 결제되었을 수 있어요 — 다시 물어봐도 문스톤이 두 번 사용되지 않아요",
     "costLineConversationDay": "대화 한 번에 <gold>문스톤 {{n}}개</gold>를 사용해요 — 24시간 동안의 모든 답변 포함"
   },
   "companion": {
@@ -10507,6 +10549,9 @@
     "emptyState":"무엇이든 물어 보세요 — 가슴에 품은 질문, 해석되길 바라는 꿈, 이해하고 싶은 이름.",
     "placeholder": "컴패니언에게 물어보세요…",
     "thinking": "생각 중…",
+    "replyLost": "컴패니언의 답장이 도착하지 않았어요. 다시 보내 주세요 — 이 대화로 문스톤이 두 번 사용되지 않아요.",
+    "unanswered": "이 메시지에 대한 답장이 도착하지 않았어요.",
+    "sendAgain": "다시 보내기",
     "sendFailed": "컴패니언에게 닿지 못했어요 — 연결을 확인하고 다시 보내 주세요.",
     "sendRejected": "이 메시지는 보낼 수 없었어요. 새 대화를 시작하고 다시 보내 주세요.",
     "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
@@ -10798,6 +10843,7 @@
     },
     "computing": "차트를 계산하는 중…",
     "progressedAge": "{{n}}세",
+    "returnMoment": "리턴 시점: {{when}}",
     "synastryPrompt": "파트너 출생 정보",
     "partnerNamePlaceholder": "파트너 이름(선택)",
     "synastryCta": "파트너 차트 오버레이",
@@ -11250,6 +11296,7 @@
     "redraw": "새 카드",
     "newCardConfirmTitle": "새 카드를 뽑을까요?",
     "newCardConfirmBody": "{{card}}에 대한 대화는 닫히고, 다시 돌아올 수 없어요.",
+    "newCardConfirmBodyPending": "{{card}}에 대한 지난 시도는 이미 결제되었을 수 있어요. 새 카드를 읽으면 새 대화가 시작되고 문스톤 {{n}}개를 사용해요.",
     "newCardConfirmBodyPaid": "{{card}}에 대한 대화는 닫히고, 다시 돌아올 수 없어요. 새 카드를 읽으면 새 대화가 시작되고 문스톤 {{n}}개를 사용해요.",
     "newCardConfirmAction": "새 카드 뽑기",
     "newCardConfirmKeep": "이 대화 계속하기",
@@ -11260,6 +11307,7 @@
     "reversed": "역방향",
     "composerPlaceholder": "이어 물어보기…",
     "seedMessage": "방금 {{card}}을(를) 뽑았어요. 지금 이것이 무엇을 가리키는지 함께 머물며 살펴보게 도와줘요.",
+    "replyLost": "오라클의 답이 도착하지 않았어요. 다시 물어봐 주세요 — 이 카드로 문스톤이 두 번 사용되지 않아요.",
     "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요.",
     "sendRejected": "이 질문은 보낼 수 없었어요. 새 카드를 뽑아 새 대화를 시작해 주세요.",
     "thinking": "오라클이 생각하는 중…",
@@ -11281,6 +11329,12 @@
     "tapPrompt": "행성, 하우스, 또는 각줄을 탭하세요.",
     "planetLabel": "행성",
     "transitLabel": "트랜짓",
+    "overlayKind": {
+      "transit": "트랜짓",
+      "progressed": "프로그레스드",
+      "solarReturn": "솔라 리턴",
+      "partner": "파트너"
+    },
     "houseLabel": "하우스 {{n}}",
     "aspectLabel": "각",
     "wheelAria": "출생 차트 휠",
@@ -11313,6 +11367,10 @@
     "aspectsAll": "전체 ({{n}})",
     "aspectsTight": "좁은 오브 ({{n}})",
     "noTightAspects": "좁은 오브 안에 드는 각도가 없어요. 전체로 바꾸면 모든 연결을 볼 수 있어요.",
+    "houseSystem": {
+      "equal": "하우스: 이퀄 하우스(어센던트 기준)"
+    },
+    "noAspectLines": "이 차트에는 각도 선이 없어요.",
     "aspectGridAria": "각도 표",
     "gridTapPrompt": "칸을 누르면 각도를 읽을 수 있어요",
     "modalities": {
@@ -11426,6 +11484,13 @@
     "computing": "두 차트를 비교하는 중…",
     "needsChart": "스코어는 당신의 출생 차트와 상대의 차트를 비교하는데, 아직 당신의 차트가 설정되지 않았어요. 출생지를 추가해 차트를 만드세요 — 아무것도 차감되지 않았어요.",
     "setUpChart": "내 차트 설정하기"
+  },
+  "synastry": {
+    "zoneFromPlace": "상대의 출생 시간은 {{zone}} 기준으로 읽어요.",
+    "noPlaceNote": "출생지가 없으면 상대의 출생 시간을 당신의 시간대({{zone}}) 기준으로 읽어요.",
+    "placeZoneFailed": "이 장소의 시간대를 찾지 못했어요. 다시 고르거나, 지우고 당신의 시간대를 사용해 주세요.",
+    "clearPlace": "출생지 지우기",
+    "zoneAssumedHint": "상대의 출생 시간을 당신의 시간대({{zone}}) 기준으로 읽었어요. 출생지를 더하면 태어난 곳의 시간으로 읽어요."
   },
   "askOracle": {
     "cardLabel": "뽑힌 카드",
@@ -12299,7 +12364,7 @@
     "toasts": {
       "signInToSave": "이 스프레드를 저장하려면 로그인하세요.",
       "nameRequired": "저장하기 전에 스프레드에 이름을 붙여 주세요.",
-      "positionRequired": "이름과 의미가 모두 있는 자리를 최소 하나 추가하세요.",
+      "positionRequired": "이름이 있는 자리를 최소 하나 추가하세요.",
       "saveFailed": "스프레드를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "saved": "스프레드를 저장했어요 — 저장한 스프레드 아래에 있어요.",
       "deleteFailed": "스프레드를 삭제하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -12320,8 +12385,11 @@
     "positionCount_one": "자리 {{count}}개",
     "positionCount_other": "자리 {{count}}개",
     "positionMeaningPlaceholder": "이 자리가 나타내는 것…",
-    "positionNamePlaceholder": "자리 이름 (예: 마주한 과제)",
+    "positionNamePlaceholder": "자리 이름",
     "positions": "카드 자리",
+    "positionNameMissing": "{{n}}번 자리에 이름을 붙이거나, 이 자리를 삭제해 주세요.",
+    "positionMeaningMissing": "{{n}}번 자리가 나타내는 것을 적거나, 이 자리를 삭제해 주세요.",
+    "positionsHint": "자리마다 이름이 필요해요 (예: 마주한 과제). 그 자리가 나타내는 것은 적지 않아도 돼요.",
     "removePosition": "{{n}}번 자리 삭제",
     "save": "스프레드 저장",
     "savedTitle": "저장한 스프레드",

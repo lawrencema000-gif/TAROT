@@ -70,7 +70,11 @@
       "counts": "{{flowing}} 项顺畅 · {{demanding}} 项考验",
       "why": "为什么是这个分数",
       "influence": "行运{{transiting}}与你的{{natal}}成{{type}}",
-      "footnote": "根据此刻真实的行星位置与你的出生星盘对照评分。它描述的是天气，不是命运。"
+      "footnote": "根据此刻真实的行星位置与你的出生星盘对照评分。它描述的是天气，不是命运。",
+      "baseline": "中性起点",
+      "smallerInfluences_one": "另有 {{count}} 项较小的影响",
+      "smallerInfluences_other": "另有 {{count}} 项较小的影响",
+      "countsOfAll": "共 {{total}} 项：{{flowing}} 项顺畅 · {{demanding}} 项考验"
     },
     "highlightSaved": "已加入你的收藏",
     "highlightSaveFailed": "无法将这张牌加入你的收藏，请检查网络连接后重试。",
@@ -103,6 +107,10 @@
     "resetSuccessHint": "正在返回应用…",
     "resetSuccessRecoveryHint": "正在退出登录，请使用新密码重新登录。",
     "resetLinkExpiredHint": "重置链接仅一次性有效。如已失效，请从登录页重新申请。",
+    "verifyingLink": "正在验证链接…",
+    "resetLinkInvalidTitle": "此重置链接已过期或已被使用",
+    "resetLinkInvalidBody": "重置链接只能使用一次。申请新的链接后，我们会通过邮件发送给你。",
+    "requestNewLink": "发送新链接",
     "createAccount": "创建账号",
     "verifySentTo": "已向 {{email}} 发送验证链接，请查收邮件。",
     "checkSpam": "如果没有看到邮件，请检查垃圾邮件文件夹。",
@@ -339,6 +347,9 @@
       "aiLimit": "今日 AI 解读次数已达上限，明天再来。",
       "shared": "已分享",
       "imageSaved": "图片已保存到你的下载文件夹",
+      "imageSavedLinkCopied": "图片已保存，链接已复制",
+      "copyLink": "复制链接",
+      "linkCopied": "链接已复制",
       "aiTooManyCards": "AI 解读只适用于不超过 {{n}} 张牌的牌阵。你的月光石没有被扣除。",
       "aiFallback": "AI 解读暂时不可用，没有扣除任何月光石。",
       "aiFallbackCharged": "AI 解读暂时不可用，你的月光石也未能自动退还。请联系客服为你恢复。"
@@ -4378,6 +4389,17 @@
       "promptChoose": "选择最符合你的答案。",
       "progress": "测试进度"
     },
+    "flow": {
+      "start": "开始测试",
+      "whatYouGet": "你将了解",
+      "previous": "上一题",
+      "leave": {
+        "title": "要退出这个测试吗？",
+        "body": "你已回答 {{total}} 道题中的 {{answered}} 道。现在退出，答案将不会保存。",
+        "stay": "继续作答",
+        "leave": "退出测试"
+      }
+    },
     "list": {
       "categories": {
         "label": "测试类别",
@@ -4441,7 +4463,7 @@
     "journalButton": "打开日记",
     "birthChartCard": {
       "title": "出生星盘分析",
-      "subtitle": "个性化行运笔记",
+      "subtitle": "完整星盘、预报与探索分页",
       "upgrade": "解锁我的出生星盘"
     },
     "paywallFeatures": {
@@ -4479,6 +4501,7 @@
       "shadowSide": "阴影面",
       "houseLabel": "第{{num}}宫",
       "aspectMeta": "{{type}} • 容许度：{{orb}}° • {{motion}}",
+      "aspectMetaNoMotion": "{{type}} • 容许度：{{orb}}°",
       "applying": "入相位",
       "separating": "出相位",
       "elements": {
@@ -4627,6 +4650,7 @@
       "title": "宇宙档案",
       "sun": "太阳",
       "animal": "生肖",
+      "animalYearNote": "生肖年从农历新年开始。",
       "lifePath": "生命数字",
       "shareButton": "分享宇宙档案",
       "shareSubtitle": "太阳 · 生肖 · 生命数字",
@@ -5380,6 +5404,8 @@
       "memberFallback": "会员",
       "status": "状态",
       "statusActive": "已激活",
+      "statusTrial": "免费试用中",
+      "statusPaymentIssue": "付款出现问题",
       "billing": "付款方式",
       "yourBenefits": "你的方案包含",
       "syncStatus": "刷新我的订阅",
@@ -5388,22 +5414,27 @@
         "verified": "你的订阅已确认。",
         "active": "无需更新，你的订阅状态如显示。",
         "verifyFailed": "无法向商店确认你的订阅，请检查网络连接后重试。",
-        "portalFailed": "无法打开账单门户。请检查网络连接后重试。"
+        "portalFailed": "无法打开账单门户。请检查网络连接后重试。",
+        "noCardSubscription": "此账户没有可在这里管理的银行卡订阅。如果你是在应用商店订阅的，请在那里管理。"
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "银行卡，通过 Stripe"
+        "stripe": "银行卡，通过 Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "已包含在你的账户中"
       },
       "manage": {
-        "android": "在 Google Play 管理",
-        "ios": "在 App Store 管理",
-        "web": "管理订阅"
+        "portal": "管理订阅",
+        "googlePlay": "在 Google Play 管理",
+        "appStore": "在 App Store 管理"
       },
       "storeNote": {
-        "android": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
-        "ios": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
-        "web": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。"
+        "stripe": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。",
+        "stripeInApp": "此订阅通过我们的网站以银行卡支付，无法在应用内更改。如需取消或更改，请在浏览器中登录 tarotlife.app。",
+        "stripeLifetime": "已用银行卡一次性付清，无需续订或取消。",
+        "googlePlay": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
+        "appStore": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
+        "included": "高级版已包含在你的账户中，无需付费、续订或取消。"
       },
       "plan": "你的方案",
       "renewal": {
@@ -6755,6 +6786,7 @@
     "cautions": "当心",
     "transformsInto": "变为下一卦",
     "transformNote": "变爻显示此情境正朝着第二卦的方向流动——可读作“此局正往何处去”。",
+    "changingLines": "变爻：{{lines}}",
     "journalPrompt": "书写提示",
     "backToStart": "再掷一次",
     "castAgain": "再掷一次",
@@ -7010,6 +7042,8 @@
     "bodygraphLabel": "你的人体图",
     "centersDefined": "个能量中心已定义",
     "channelsDefined": "条通道",
+    "bodygraphSummary_one": "{{centers}} / 9 个能量中心已定义 · {{count}} 条通道",
+    "bodygraphSummary_other": "{{centers}} / 9 个能量中心已定义 · {{count}} 条通道",
     "channelsHeading": "你已定义的通道",
     "channelsNote": "每条通道连接两个能量中心，并在它们之间形成稳定的生命力流动。这些是你固定不变的部分——始终为你所用。",
     "activationsLabel": "全部 26 个激活",
@@ -7048,6 +7082,9 @@
     "intro": "八字——\"八个字\"——是中国传统命理，把你的出生时刻读为四根柱：年柱、月柱、日柱、时柱。每根柱都带有五行（木火土金水）之一与阴阳极性。日干（日柱的天干）是你本性的中轴，五行的多寡显示你生命的哪些元素丰沛、哪些元素稀薄。",
     "birthDate": "出生日期",
     "birthTime": "出生时间（可选）",
+    "birthPlace": "出生地（用于确定时区）",
+    "zoneUsed": "出生时间按{{zone}}读取。",
+    "lateZiNote": "23:00至23:59出生属于开启次日的子时，因此时柱为{{hour}}；日柱仍按出生当天的日期。",
     "calculate": "起四柱",
     "calcFailed": "无法排出你的四柱，请检查出生信息后重试。",
     "needBirthDate": "请填写出生日期",
@@ -10188,6 +10225,10 @@
     "elementalLabel": "元素融合",
     "compositeLabel": "你们的关系作为第三个存在",
     "compositeIntro": "组合盘把关系本身视为拥有独立性格的存在——与你们任何一人都不同。这些观察描述的是这段关系这个整体。",
+    "compositeIn": "组合盘{{planet}}落{{sign}}",
+    "compositeAspect": "组合盘{{p1}}与{{p2}}成{{type}}",
+    "compositeMethod": "这里的每颗行星都位于你与对方行星的正中点。",
+    "compositeNoMoon": "缺少双方的出生时间，组合盘的月亮未列出。",
     "share": "分享这份配对",
     "stillComputing": "仍在计算相位…",
     "tryAgain": "重试",
@@ -10494,6 +10535,7 @@
     "gateCheckFailed": "无法查询你的余额——请重试。",
     "costLinePortrait": "绘制这幅画像消耗 <gold>{{n}} 月光石</gold>",
     "alreadyClaimedToday": "今天已领取",
+    "costLineResend": "上一次可能已经扣费——再问一次不会重复消耗月光石",
     "costLineConversationDay": "每段对话消耗 <gold>{{n}} 月光石</gold>，24 小时内的所有回复均包含在内"
   },
   "companion": {
@@ -10507,6 +10549,9 @@
     "emptyState":"就从任何问题开始吧——压在你心口的一个疑问，一个想被读懂的梦，一个想理解的名字。",
     "placeholder": "向灵伴发问…",
     "thinking": "思考中……",
+    "replyLost": "灵伴的回复没有送达。请重新发送——这段对话不会重复消耗月光石。",
+    "unanswered": "这条消息的回复没有送达。",
+    "sendAgain": "重新发送",
     "sendFailed": "无法连接灵伴，请检查网络连接后重新发送。",
     "sendRejected": "这条消息无法发送，请开始新对话后重新发送。",
     "dailyLimitReached": "今日消息已达上限——明天再来",
@@ -10798,6 +10843,7 @@
     },
     "computing": "正在计算你的星盘…",
     "progressedAge": "{{n}}岁",
+    "returnMoment": "回归时刻：{{when}}",
     "synastryPrompt": "对方的出生信息",
     "partnerNamePlaceholder": "对方姓名（可选）",
     "synastryCta": "叠加对方星盘",
@@ -11250,6 +11296,7 @@
     "redraw": "新牌",
     "newCardConfirmTitle": "要抽一张新牌吗？",
     "newCardConfirmBody": "关于{{card}}的这段对话将会结束，之后无法再回到这里。",
+    "newCardConfirmBodyPending": "上一次解读{{card}}可能已经扣费。新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmBodyPaid": "关于{{card}}的这段对话将会结束，之后无法再回到这里。解读新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmAction": "抽一张新牌",
     "newCardConfirmKeep": "继续这段对话",
@@ -11260,6 +11307,7 @@
     "reversed": "逆位",
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
+    "replyLost": "神谕的回答没有送达。请再问一次——这张牌不会重复消耗月光石。",
     "aiFailed": "无法连接神谕，请检查网络连接后再问一次。",
     "sendRejected": "这个问题无法发送，请抽一张新牌，开始新的对话。",
     "thinking": "神谕正在思考…",
@@ -11281,6 +11329,12 @@
     "tapPrompt": "点按行星、宫位或相位线。",
     "planetLabel": "行星",
     "transitLabel": "行运",
+    "overlayKind": {
+      "transit": "行运",
+      "progressed": "推运",
+      "solarReturn": "太阳回归",
+      "partner": "对方"
+    },
     "houseLabel": "第{{n}}宫",
     "aspectLabel": "相位",
     "wheelAria": "本命星盘轮",
@@ -11313,6 +11367,10 @@
     "aspectsAll": "全部（{{n}}）",
     "aspectsTight": "紧密相位（{{n}}）",
     "noTightAspects": "没有容许度紧密的相位。切换到「全部」可查看所有连接。",
+    "houseSystem": {
+      "equal": "宫位制：等宫制（从上升点起算）"
+    },
+    "noAspectLines": "此星盘没有相位线。",
     "aspectGridAria": "相位矩阵",
     "gridTapPrompt": "点按格子阅读相位",
     "modalities": {
@@ -11426,6 +11484,13 @@
     "computing": "正在比对你们的星盘…",
     "needsChart": "这个分数会把你的出生星盘与对方的进行比对，而你的星盘还没有建立。添加你的出生地点来排出星盘——这次没有产生任何花费。",
     "setUpChart": "建立我的星盘"
+  },
+  "synastry": {
+    "zoneFromPlace": "对方的出生时间按{{zone}}读取。",
+    "noPlaceNote": "如果没有出生地，对方的出生时间将按你的时区（{{zone}}）读取。",
+    "placeZoneFailed": "无法确定此地点的时区。请重新选择，或清除后使用你的时区。",
+    "clearPlace": "清除出生地",
+    "zoneAssumedHint": "对方的出生时间是按你的时区（{{zone}}）读取的。添加出生地后，将按其出生地的时间读取。"
   },
   "askOracle": {
     "cardLabel": "抽到的牌",
@@ -12299,7 +12364,7 @@
     "toasts": {
       "signInToSave": "请登录后保存此牌阵。",
       "nameRequired": "保存前请为牌阵命名。",
-      "positionRequired": "请至少添加一个位置，并填写名称和含义。",
+      "positionRequired": "请至少添加一个带名称的位置。",
       "saveFailed": "无法保存你的牌阵，请检查网络连接后重试。",
       "saved": "牌阵已保存，可在「你保存的牌阵」中找到。",
       "deleteFailed": "无法删除该牌阵，请检查网络连接后重试。",
@@ -12320,8 +12385,11 @@
     "positionCount_one": "{{count}} 个位置",
     "positionCount_other": "{{count}} 个位置",
     "positionMeaningPlaceholder": "这个位置代表什么…",
-    "positionNamePlaceholder": "位置名称（例如：挑战）",
+    "positionNamePlaceholder": "位置名称",
     "positions": "位置",
+    "positionNameMissing": "请为位置 {{n}} 命名，或将其移除。",
+    "positionMeaningMissing": "请写下位置 {{n}} 代表什么，或将其移除。",
+    "positionsHint": "每个位置都需要名称（例如：挑战），它代表什么可以不填。",
     "removePosition": "移除位置 {{n}}",
     "save": "保存牌阵",
     "savedTitle": "你保存的牌阵",

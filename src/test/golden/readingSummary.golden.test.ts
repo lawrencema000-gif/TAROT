@@ -103,6 +103,8 @@ function timed<T>(label: string, f: () => T): T {
 const F1: Array<[number, boolean]> = [
   [37, false], [26, false], [18, false], [52, true], [17, false], [41, false], [33, true], [48, false], [40, false], [45, false],
 ];
+/** F1 with card 7 ("Your attitude", the Knight of Wands) upright: its advice sits inside the third short sentence. */
+const F1_UPRIGHT_7: Array<[number, boolean]> = F1.map(([id], i) => [id, i === 6 ? false : F1[i][1]]);
 const F4: Array<[number, boolean]> = [[16, false], [52, true], [17, false]];
 const F5: Array<[number, boolean]> = [[59, false], [44, false], [3, false], [27, true]];
 const F5_LABELS = ['What I fear', 'What I want', 'What helps', 'Where it goes'];
@@ -110,6 +112,7 @@ const F6: Array<[number, boolean]> = [[37, false], [19, false], [17, false]];
 
 const fixtures = {
   F1: (lng: SupportedLocale) => summarizeTarot(input('celtic-cross', F1, lng)),
+  F1u: (lng: SupportedLocale) => summarizeTarot(input('celtic-cross', F1_UPRIGHT_7, lng)),
   F2: (lng: SupportedLocale) => summarizeSingle({ deck: 'tarot', id: 0, reversed: false, locale: lng }),
   F3: (lng: SupportedLocale) => summarizeSingle({ deck: 'tarot', id: 52, reversed: true, locale: lng }),
   F4: (lng: SupportedLocale) => summarizeTarot(input('three-card', F4, lng)),
@@ -134,6 +137,14 @@ describe('F1–F8 in English (the prototype’s golden text)', () => {
     expect(s.short).toEqual(GOLDEN_EN.celtic.short);
     expect(s.parts).toEqual(GOLDEN_EN.celtic.parts);
     expect(s.parts.map((p) => p.lines.length)).toEqual([13, 8, 5, 1, 2]);
+    expect(s.quotesAffirmationOf).toBe(6);
+  });
+
+  it('F1 with card 7 upright keeps the advice lowercase inside the sentence', () => {
+    const s = fixtures.F1u('en');
+    expect(s.short[2]).toBe(
+      'Your attitude is the card you can change: the Knight of Wands advises, in its own words: “I act boldly and learn as I go.”',
+    );
     expect(s.quotesAffirmationOf).toBe(6);
   });
 
@@ -223,6 +234,12 @@ describe('F1–F8 in ja, ko and zh', () => {
       }
     });
   }
+
+  it('F1 with card 7 upright: the embedded advice in ja, ko and zh', () => {
+    expect(fixtures.F1u('ja').short[2]).toMatchInlineSnapshot(`"変えられるカードは「あなたの態度」です：ワンドのナイトは自分の言葉でこう助言します：「私は大胆に動き、進みながら学びます。」"`);
+    expect(fixtures.F1u('ko').short[2]).toMatchInlineSnapshot(`"바꿀 수 있는 카드는 ‘당신의 태도’예요: 완드 기사는 이렇게 조언해요: “대담하게 행동하고, 나아가며 배운다.”"`);
+    expect(fixtures.F1u('zh').short[2]).toMatchInlineSnapshot(`"你能改变的那张牌是“你的态度”：权杖骑士用它自己的话建议：“我大胆行动，边走边学。”"`);
+  });
 
   // Pinned after the implementer read each one; a fresh review agent checks them before they ship.
   it('F1 ja', () => {

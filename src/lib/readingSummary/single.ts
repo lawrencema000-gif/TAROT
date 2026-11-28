@@ -10,7 +10,7 @@ import i18n, { CARTO_CORPUS_NS, type SupportedLocale } from '../../i18n/config';
 import { localizePlayingCard } from '../../i18n/localizePlayingCard';
 import { sentencesOf } from '../../components/readings/tarot/readingText';
 import type { PlayingCard } from '../../types/cartomancy';
-import { cardRef, bareRef, embedded, lowerFirst, say } from './format';
+import { cardRef, bareRef, embedded, fill, lowerFirst, say, template } from './format';
 import { phrase } from './loadPhrases';
 import type { PhraseKey } from './phrases.en';
 import { firstQuestion, tarotFacts, type TarotFacts } from './tarot';
@@ -18,10 +18,13 @@ import type { ReadingSummary, SingleInput, SummaryPart } from './types';
 
 /** The card's advice in its own words: the affirmation, upright or through its upright words when reversed. */
 export function adviceSentence(locale: SupportedLocale, c: TarotFacts, inside = false): string {
-  const s = say(locale, c.reversed ? 'advice.reversed' : 'advice.upright', {
-    card: bareRef(locale, c),
-    affirmation: c.affirmation,
-  });
+  const key: PhraseKey = c.reversed ? 'advice.reversed' : 'advice.upright';
+  const vars = { card: bareRef(locale, c), affirmation: c.affirmation };
+  // Set inside another English sentence, the advice is not capitalized: a
+  // Minor keeps "the Knight of Wands advises", a Major keeps its own capital
+  // ("The Moon advises"), and the reversed template's "For" is lowered.
+  if (inside && locale === 'en') return embedded(locale, fill(template(locale, key), vars));
+  const s = say(locale, key, vars);
   return inside ? embedded(locale, s) : s;
 }
 

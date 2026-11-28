@@ -861,7 +861,7 @@ function Composer({
   onNameSaved: () => void;
 }) {
   const { t } = useT('app');
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [content, setContent] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<CommunityTopic>(
     mode === 'whispering-well' ? 'whispering-well' : topic,
@@ -915,7 +915,8 @@ function Composer({
     setSubmitting(false);
     if (moderation.publishedId) {
       // Reward participation (fire-and-forget; XP must never block posting).
-      void awardXP(user.id, 'community_post');
+      // Re-read the profile afterwards so a level crossed here is celebrated.
+      void awardXP(user.id, 'community_post').then(() => refreshProfile()).catch(() => {});
       // With the helplines open, the banner is the only message.
       if (crisis) {
         // The banner is already open.
@@ -1033,7 +1034,7 @@ interface PostDetailProps {
 
 function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCrisisDetected, onNameSaved }: PostDetailProps) {
   const { t } = useT('app');
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -1102,7 +1103,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
 
     setSubmitting(false);
     if (moderation.publishedId) {
-      void awardXP(user.id, 'community_comment');
+      void awardXP(user.id, 'community_comment').then(() => refreshProfile()).catch(() => {});
       setNewComment('');
       // Re-read from the server so we render exactly what RLS exposes
       // (a 'flagged' comment is author-visible only).

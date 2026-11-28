@@ -55,6 +55,9 @@ export function FoolsJourneyPage() {
 
   const currentLevel = profile.level || 1;
   const journey = getCurrentJourney(currentLevel);
+  // The journey has 22 steps; the label and the "you are here" row read the
+  // clamped step, so the page never says "Level 23 of 22" (gap-1-13).
+  const journeyLevel = journey.current.level;
   const current = local(journey.current);
   const next = journey.next ? local(journey.next) : null;
 
@@ -70,7 +73,7 @@ export function FoolsJourneyPage() {
           <>
             <span className="block">{current.theme}</span>
             <span className="block text-meta text-mystic-500 mt-2 tabular-nums">
-              {t('foolsJourney.levelOf', { defaultValue: 'Level {{level}} of 22', level: currentLevel })}
+              {t('foolsJourney.levelOf', { defaultValue: 'Level {{level}} of 22', level: journeyLevel })}
             </span>
           </>
         }
@@ -88,8 +91,8 @@ export function FoolsJourneyPage() {
         {FOOLS_JOURNEY.map((raw) => {
           const level = local(raw);
           const card = fullDeck.find((c) => c.id === level.cardId);
-          const isUnlocked = level.level <= currentLevel;
-          const isCurrent = level.level === currentLevel;
+          const isUnlocked = level.level <= journeyLevel;
+          const isCurrent = level.level === journeyLevel;
           return (
             <li
               key={level.level}
@@ -117,8 +120,8 @@ export function FoolsJourneyPage() {
                   {isCurrent && <Tag tone="gold">{t('foolsJourney.youAreHere', { defaultValue: 'You are here' })}</Tag>}
                   {isUnlocked && !isCurrent && <CheckCircle2 className="w-3 h-3 text-gold/70" aria-hidden />}
                 </div>
-                <h2 className={`text-ui font-medium truncate ${isUnlocked ? 'text-mystic-100' : 'text-mystic-500'}`}>{level.title}</h2>
-                <p className="text-meta text-mystic-400 truncate">{level.cardLabel} · {level.theme}</p>
+                <h2 className={`text-ui font-medium line-clamp-2 ${isUnlocked ? 'text-mystic-100' : 'text-mystic-500'}`}>{level.title}</h2>
+                <p className="text-meta text-mystic-400 line-clamp-2">{level.cardLabel} · {level.theme}</p>
               </div>
             </li>
           );

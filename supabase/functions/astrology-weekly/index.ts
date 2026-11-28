@@ -17,6 +17,8 @@ import {
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
+import { readingDayFor, weekStartOf, cacheTypeFor } from "../_shared/readingDay.ts";
+import { isFreshFor, stampedRow } from "../_shared/horoscope-cache.ts";
 
 type Planet = "Sun" | "Moon" | "Mercury" | "Venus" | "Mars" | "Jupiter" | "Saturn" | "Uranus" | "Neptune" | "Pluto";
 type AspectType = "conjunction" | "opposition" | "trine" | "square" | "sextile";
@@ -28,6 +30,8 @@ const SIGN_ELEMENTS: Record<string, string> = {
 };
 
 interface WeeklyRequest {
+  date?: string;
+  timezone?: string;
   locale?: string;
 }
 
@@ -64,19 +68,6 @@ interface WeekDayEvent {
   advice: string;
 }
 
-function getWeekStart(now: Date): Date {
-  const d = new Date(now);
-  const dayOfWeek = d.getUTCDay();
-  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  d.setUTCDate(d.getUTCDate() - diff);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
-
-function formatDate(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
-
 const bodyMap: [Planet, Astronomy.Body | "Sun" | "Moon"][] = [
   ["Sun", "Sun"],
   ["Moon", "Moon"],
@@ -104,38 +95,37 @@ Deno.serve(
       const locale: Locale = normalizeLocale(body.locale);
 
       const now = new Date();
-      const weekStart = getWeekStart(now);
+      // The member's week: the Monday-to-Sunday around the member's own date
+      // (home-astro-02), not the UTC week.
+      const { day, source, rejected } = await readingDayFor(body, now, async () => {
+        const { data } = await ctx.supabase.from("profiles").select("timezone").eq("id", ctx.userId!).maybeSingle();
+        return (data?.timezone as string | null | undefined) ?? null;
+      });
+      if (rejected) ctx.log.warn("astrology_weekly.date_rejected", { rejected, source });
+      const weekKey = weekStartOf(day);
+      const weekStart = new Date(`${weekKey}T00:00:00Z`);
       const weekEnd = new Date(weekStart);
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
-      const weekKey = formatDate(weekStart);
 
       // A locale's revision is bumped when its generated text changes, so a
       // week cached before the change is not served until Monday (ko r2:
       // the particles agree with the names, p9 QT2; zh r2: full-width
       // punctuation, p10 d3-ko-08).
-      const revision = CACHE_REVISION[locale];
-      const cacheType = (locale === "en" ? "weekly" : `weekly:${locale}`) + (revision ? `:r${revision}` : "");
-      const { data: cached } = await ctx.supabase
-        .from("astrology_horoscope_cache")
-        .select("content_json")
-        .eq("user_id", ctx.userId!)
-        .eq("date", weekKey)
-        .eq("type", cacheType)
-        .maybeSingle();
-
-      if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
-        ctx.log.info("astrology_weekly.cache_hit", { locale, weekKey });
-        return new Response(JSON.stringify(cached.content_json), {
-          status: 200,
-          headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
-        });
-      }
-
-      const { data: chartRow } = await ctx.supabase
-        .from("astrology_natal_charts")
-        .select("natal_json, big_three_json")
-        .eq("user_id", ctx.userId!)
-        .maybeSingle();
+      const cacheType = cacheTypeFor("weekly", locale, CACHE_REVISION[locale]);
+      const [{ data: cached, error: cacheError }, { data: chartRow }] = await Promise.all([
+        ctx.supabase
+          .from("astrology_horoscope_cache")
+          .select("content_json, chart_computed_at, generated_at")
+          .eq("user_id", ctx.userId!)
+          .eq("date", weekKey)
+          .eq("type", cacheType)
+          .maybeSingle(),
+        ctx.supabase
+          .from("astrology_natal_charts")
+          .select("natal_json, big_three_json, computed_at")
+          .eq("user_id", ctx.userId!)
+          .maybeSingle(),
+      ]);
 
       if (!chartRow?.natal_json) {
         throw new AppError(
@@ -143,6 +133,20 @@ Deno.serve(
           "No natal chart found. Please compute your chart first.",
           404,
         );
+      }
+
+      // Served only while it was built from the member's chart (gap-1-04).
+      if (
+        !cacheError &&
+        cached?.content_json &&
+        Object.keys(cached.content_json).length > 0 &&
+        isFreshFor(cached, chartRow)
+      ) {
+        ctx.log.info("astrology_weekly.cache_hit", { locale, weekKey, source });
+        return new Response(JSON.stringify(cached.content_json), {
+          status: 200,
+          headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
+        });
       }
 
       const natalPlanets: NatalPlanet[] = (chartRow.natal_json.planets || []).map(
@@ -232,18 +236,17 @@ Deno.serve(
         bestDays,
       };
 
-      await ctx.supabase.from("astrology_horoscope_cache").upsert(
-        {
-          user_id: ctx.userId!,
-          date: weekKey,
-          type: cacheType,
-          content_json: content,
-          generated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,date,type" },
-      );
+      const { error: writeError } = await ctx.supabase
+        .from("astrology_horoscope_cache")
+        .upsert(
+          stampedRow(ctx.userId!, weekKey, cacheType, content, chartRow.computed_at, now),
+          { onConflict: "user_id,date,type" },
+        );
+      if (writeError) {
+        ctx.log.warn("astrology_weekly.cache_write_failed", { code: writeError.code, type: cacheType, date: weekKey });
+      }
 
-      ctx.log.info("astrology_weekly.generated", { locale, weekKey, sunSign });
+      ctx.log.info("astrology_weekly.generated", { locale, weekKey, source, sunSign });
 
       return new Response(JSON.stringify(content), {
         status: 200,

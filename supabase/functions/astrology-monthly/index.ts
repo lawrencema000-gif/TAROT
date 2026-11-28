@@ -20,6 +20,8 @@ import {
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
+import { readingDayFor, monthStartOf, cacheTypeFor } from "../_shared/readingDay.ts";
+import { isFreshFor, stampedRow } from "../_shared/horoscope-cache.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -40,6 +42,8 @@ const MONTH_NAMES = [
 ];
 
 interface MonthlyRequest {
+  date?: string;
+  timezone?: string;
   locale?: string;
 }
 
@@ -128,37 +132,36 @@ Deno.serve(
       const locale: Locale = normalizeLocale(body.locale);
 
       const now = new Date();
-      const year = now.getUTCFullYear();
-      const month = now.getUTCMonth();
-      const monthKey = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+      // The member's month: the month of the member's own date
+      // (home-astro-02), not the UTC month.
+      const { day, source, rejected } = await readingDayFor(body, now, async () => {
+        const { data } = await ctx.supabase.from("profiles").select("timezone").eq("id", ctx.userId!).maybeSingle();
+        return (data?.timezone as string | null | undefined) ?? null;
+      });
+      if (rejected) ctx.log.warn("astrology_monthly.date_rejected", { rejected, source });
+      const year = Number(day.slice(0, 4));
+      const month = Number(day.slice(5, 7)) - 1;
+      const monthKey = monthStartOf(day);
 
       // A locale's revision is bumped when its generated text changes, so a
       // month cached before the change is not served until the 1st (ko r2:
       // the particles agree with the names, p9 QT2; ja and zh r2: full-width
       // punctuation, p10 d2-ja-05, d3-ko-08).
-      const revision = CACHE_REVISION[locale];
-      const cacheType = (locale === "en" ? "monthly" : `monthly:${locale}`) + (revision ? `:r${revision}` : "");
-      const { data: cached } = await ctx.supabase
-        .from("astrology_horoscope_cache")
-        .select("content_json")
-        .eq("user_id", ctx.userId!)
-        .eq("date", monthKey)
-        .eq("type", cacheType)
-        .maybeSingle();
-
-      if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
-        ctx.log.info("astrology_monthly.cache_hit", { locale, monthKey });
-        return new Response(JSON.stringify(cached.content_json), {
-          status: 200,
-          headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
-        });
-      }
-
-      const { data: chartRow } = await ctx.supabase
-        .from("astrology_natal_charts")
-        .select("natal_json, big_three_json")
-        .eq("user_id", ctx.userId!)
-        .maybeSingle();
+      const cacheType = cacheTypeFor("monthly", locale, CACHE_REVISION[locale]);
+      const [{ data: cached, error: cacheError }, { data: chartRow }] = await Promise.all([
+        ctx.supabase
+          .from("astrology_horoscope_cache")
+          .select("content_json, chart_computed_at, generated_at")
+          .eq("user_id", ctx.userId!)
+          .eq("date", monthKey)
+          .eq("type", cacheType)
+          .maybeSingle(),
+        ctx.supabase
+          .from("astrology_natal_charts")
+          .select("natal_json, big_three_json, computed_at")
+          .eq("user_id", ctx.userId!)
+          .maybeSingle(),
+      ]);
 
       if (!chartRow?.natal_json) {
         throw new AppError(
@@ -166,6 +169,20 @@ Deno.serve(
           "No natal chart found. Please compute your chart first.",
           404,
         );
+      }
+
+      // Served only while it was built from the member's chart (gap-1-04).
+      if (
+        !cacheError &&
+        cached?.content_json &&
+        Object.keys(cached.content_json).length > 0 &&
+        isFreshFor(cached, chartRow)
+      ) {
+        ctx.log.info("astrology_monthly.cache_hit", { locale, monthKey, source });
+        return new Response(JSON.stringify(cached.content_json), {
+          status: 200,
+          headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
+        });
       }
 
       const sunSign = chartRow.big_three_json?.sun?.sign || "Aries";
@@ -298,18 +315,17 @@ Deno.serve(
         outerPlanetTransits,
       };
 
-      await ctx.supabase.from("astrology_horoscope_cache").upsert(
-        {
-          user_id: ctx.userId!,
-          date: monthKey,
-          type: cacheType,
-          content_json: content,
-          generated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,date,type" },
-      );
+      const { error: writeError } = await ctx.supabase
+        .from("astrology_horoscope_cache")
+        .upsert(
+          stampedRow(ctx.userId!, monthKey, cacheType, content, chartRow.computed_at, now),
+          { onConflict: "user_id,date,type" },
+        );
+      if (writeError) {
+        ctx.log.warn("astrology_monthly.cache_write_failed", { code: writeError.code, type: cacheType, date: monthKey });
+      }
 
-      ctx.log.info("astrology_monthly.generated", { locale, monthKey, sunSign });
+      ctx.log.info("astrology_monthly.generated", { locale, monthKey, source, sunSign });
 
       return new Response(JSON.stringify(content), {
         status: 200,

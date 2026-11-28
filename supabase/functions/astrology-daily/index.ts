@@ -17,6 +17,8 @@ import {
 } from "../_shared/astrology-content.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
+import { readingDayFor, cacheTypeFor } from "../_shared/readingDay.ts";
+import { isFreshFor, stampedRow } from "../_shared/horoscope-cache.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -178,34 +180,54 @@ function pick<T>(arr: T[], rng: () => number): T {
   return arr[Math.floor(rng() * arr.length)];
 }
 
+/** What changes during the day: the Moon's sign and natal house, and the active transits, at `now`. */
+function liveSky(locale: Locale, natalChart: { planets?: NatalPlanet[]; houses?: number[] }, now: Date) {
+  const natalPlanets: NatalPlanet[] = (natalChart.planets || []).map((p) => ({
+    planet: p.planet,
+    longitude: p.longitude,
+    sign: p.sign,
+    house: p.house,
+  }));
+  const transitPlanets = getCurrentPlanets(now);
+  const moon = transitPlanets.find((p) => p.planet === "Moon")!;
+  const moonSign = lonToSign(moon.longitude).sign;
+  const houseCusps: number[] = natalChart.houses || [];
+  return {
+    moonSign,
+    moonSignLocalized: SIGN_NAMES[locale][moonSign] ?? moonSign,
+    moonHouse: houseCusps.length > 0 ? findHouse(moon.longitude, houseCusps) : null,
+    transitHighlights: findTransitHits(transitPlanets, natalPlanets).map((h) => ({
+      planet: h.planet,
+      aspect: h.aspect,
+      natalPlanet: h.natalPlanet,
+      brief: buildAspectBrief(locale, h.planet, h.aspect, h.natalPlanet),
+    })),
+  };
+}
+
+function json(body: unknown): Response {
+  // Per member and partly live: nothing between the app and here may keep a copy.
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" },
+  });
+}
+
 Deno.serve(
   handler<DailyRequest>({
     fn: "astrology-daily",
     auth: "required",
     rateLimit: { max: 60, windowMs: 60_000 },
     run: async (ctx, body) => {
-      const requestDate = body.date;
-      const timezone = body.timezone;
+      const now = new Date();
       const locale: Locale = normalizeLocale(body.locale);
-
-      let today: string;
-      if (requestDate) {
-        today = requestDate;
-      } else if (timezone) {
-        try {
-          const formatter = new Intl.DateTimeFormat("en-CA", {
-            timeZone: timezone,
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          });
-          today = formatter.format(new Date());
-        } catch {
-          today = new Date().toISOString().split("T")[0];
-        }
-      } else {
-        today = new Date().toISOString().split("T")[0];
-      }
+      // The member's day (home-astro-02): the app's date within a day of the
+      // UTC date, else the request's zone, the profile's zone, then UTC.
+      const { day: today, source, rejected } = await readingDayFor(body, now, async () => {
+        const { data } = await ctx.supabase.from("profiles").select("timezone").eq("id", ctx.userId!).maybeSingle();
+        return (data?.timezone as string | null | undefined) ?? null;
+      });
+      if (rejected) ctx.log.warn("astrology_daily.date_rejected", { rejected, source });
 
       // Include locale in the cache type key so switching language
       // re-generates cleanly; English keeps the bare "daily" key so existing
@@ -213,30 +235,22 @@ Deno.serve(
       // generated text changes, so a day cached before the change is not
       // served for the rest of that day (ja and zh r2: full-width
       // punctuation, p10 d2-ja-05, d3-ko-08).
-      const revision = CACHE_REVISION[locale];
-      const cacheType = (locale === "en" ? "daily" : `daily:${locale}`) + (revision ? `:r${revision}` : "");
+      const cacheType = cacheTypeFor("daily", locale, CACHE_REVISION[locale]);
 
-      const { data: cached } = await ctx.supabase
-        .from("astrology_horoscope_cache")
-        .select("content_json")
-        .eq("user_id", ctx.userId!)
-        .eq("date", today)
-        .eq("type", cacheType)
-        .maybeSingle();
-
-      if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
-        ctx.log.info("astrology_daily.cache_hit", { locale, date: today });
-        return new Response(JSON.stringify(cached.content_json), {
-          status: 200,
-          headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" },
-        });
-      }
-
-      const { data: chartRow } = await ctx.supabase
-        .from("astrology_natal_charts")
-        .select("natal_json, big_three_json")
-        .eq("user_id", ctx.userId!)
-        .maybeSingle();
+      const [{ data: cached, error: cacheError }, { data: chartRow }] = await Promise.all([
+        ctx.supabase
+          .from("astrology_horoscope_cache")
+          .select("content_json, chart_computed_at, generated_at")
+          .eq("user_id", ctx.userId!)
+          .eq("date", today)
+          .eq("type", cacheType)
+          .maybeSingle(),
+        ctx.supabase
+          .from("astrology_natal_charts")
+          .select("natal_json, big_three_json, computed_at")
+          .eq("user_id", ctx.userId!)
+          .maybeSingle(),
+      ]);
 
       if (!chartRow?.natal_json) {
         throw new AppError(
@@ -246,26 +260,22 @@ Deno.serve(
         );
       }
 
-      const natalChart = chartRow.natal_json;
+      // A row is served only while it was built from the member's chart
+      // (gap-1-04): after a recast the day is generated again.
+      if (
+        !cacheError &&
+        cached?.content_json &&
+        Object.keys(cached.content_json).length > 0 &&
+        isFreshFor(cached, chartRow)
+      ) {
+        // The day's text is kept; the Moon and the transits are read now
+        // (home-astro-14). A row written before a Moon ingress or house
+        // cusp no longer names the sign or house the Moon has left.
+        ctx.log.info("astrology_daily.cache_hit", { locale, date: today, source, live: true });
+        return json({ ...cached.content_json, ...liveSky(locale, chartRow.natal_json, now) });
+      }
+
       const bigThree = chartRow.big_three_json;
-      const natalPlanets: NatalPlanet[] = (natalChart.planets || []).map(
-        (p: { planet: string; longitude: number; sign: string; house: number | null }) => ({
-          planet: p.planet,
-          longitude: p.longitude,
-          sign: p.sign,
-          house: p.house,
-        }),
-      );
-
-      const now = new Date();
-      const transitPlanets = getCurrentPlanets(now);
-
-      const moonTransit = transitPlanets.find((p) => p.planet === "Moon")!;
-      const moonSign = lonToSign(moonTransit.longitude);
-      const houseCusps: number[] = natalChart.houses || [];
-      const moonHouse = houseCusps.length > 0 ? findHouse(moonTransit.longitude, houseCusps) : null;
-
-      const hits = findTransitHits(transitPlanets, natalPlanets);
 
       const sunSign = bigThree?.sun?.sign || "Aries";
       const element = (SIGN_ELEMENTS[sunSign] || "Fire") as LElement;
@@ -286,13 +296,6 @@ Deno.serve(
       const theme = pick(themesForEl, rng);
       const summary = pick(summariesForEl, rng);
 
-      const transitHighlights = hits.map((h) => ({
-        planet: h.planet,
-        aspect: h.aspect,
-        natalPlanet: h.natalPlanet,
-        brief: buildAspectBrief(locale, h.planet, h.aspect, h.natalPlanet),
-      }));
-
       const categories = {
         love: pick(categoriesForLoc.love[element], rng),
         career: pick(categoriesForLoc.career[element], rng),
@@ -306,14 +309,13 @@ Deno.serve(
       const ritual = pick(ritualsForEl, rng);
       const journalPrompt = pick(promptsForEl, rng);
 
+      // liveSky uses no RNG, so the picks above run in the same order as
+      // before and a date's text is unchanged.
       const content = {
         date: today,
         theme,
         summary,
-        moonSign: moonSign.sign,
-        moonSignLocalized: SIGN_NAMES[locale][moonSign.sign] ?? moonSign.sign,
-        moonHouse,
-        transitHighlights,
+        ...liveSky(locale, chartRow.natal_json, now),
         categories,
         doList,
         avoidList,
@@ -322,23 +324,19 @@ Deno.serve(
         journalPrompt,
       };
 
-      await ctx.supabase.from("astrology_horoscope_cache").upsert(
-        {
-          user_id: ctx.userId!,
-          date: today,
-          type: cacheType,
-          content_json: content,
-          generated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,date,type" },
-      );
+      const { error: writeError } = await ctx.supabase
+        .from("astrology_horoscope_cache")
+        .upsert(
+          stampedRow(ctx.userId!, today, cacheType, content, chartRow.computed_at, now),
+          { onConflict: "user_id,date,type" },
+        );
+      if (writeError) {
+        ctx.log.warn("astrology_daily.cache_write_failed", { code: writeError.code, type: cacheType, date: today });
+      }
 
-      ctx.log.info("astrology_daily.generated", { locale, date: today, sunSign });
+      ctx.log.info("astrology_daily.generated", { locale, date: today, source, sunSign });
 
-      return new Response(JSON.stringify(content), {
-        status: 200,
-        headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" },
-      });
+      return json(content);
     },
   }),
 );

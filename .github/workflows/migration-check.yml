@@ -26,16 +26,19 @@ on:
   # Nightly sanity run even if nothing changed, catches drift from dashboard edits.
   schedule:
     - cron: '0 6 * * *'
+  # Manual run, for the release check after a migration repair.
+  workflow_dispatch:
 
 jobs:
   drift:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.77.0
 
       - name: Link project
         env:
@@ -64,16 +67,26 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          # db diff compares the live schema to what the local migrations
-          # would produce. Empty diff = clean. Non-empty = drift.
-          supabase db diff --linked --schema public > /tmp/schema-diff.sql || true
+          # db diff builds a shadow database from supabase/migrations and
+          # compares the live schema with it. Empty diff = clean.
+          # If the shadow database cannot be built, the migrations no longer
+          # replay and the diff proves nothing: fail loudly (WP-F-04). Never
+          # swallow this error again.
+          if ! supabase db diff --linked --schema public > /tmp/schema-diff.sql; then
+            echo "::error::Could not build the shadow database from supabase/migrations: the migrations no longer replay. Fix the replay (see WP-F-04) before trusting this check."
+            exit 1
+          fi
           if [ -s /tmp/schema-diff.sql ]; then
-            echo "::warning::Schema drift detected between live DB and local migrations:"
             cat /tmp/schema-diff.sql
-            # Make this a warning, not a failure, because legitimate drift can
-            # occur between when a migration is committed and when deploy.yml
-            # applies it. The nightly cron run is what matters — if drift
-            # persists, open an issue.
+            if [ "${{ github.event_name }}" = "schedule" ]; then
+              # The nightly run is the one that must notice production-only
+              # changes: drift fails it, with the diff above in the log.
+              echo "::error::Schema drift between the live database and supabase/migrations (diff above)."
+              exit 1
+            fi
+            # On a pull request or push a migration may be merged but not yet
+            # pushed to production, so drift is a warning there.
+            echo "::warning::Schema drift detected between live DB and local migrations (diff above)."
           else
             echo "✓ No schema drift detected."
           fi

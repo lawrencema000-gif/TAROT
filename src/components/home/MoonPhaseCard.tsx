@@ -4,18 +4,17 @@ import { MoonPhaseGlyph } from '../icons/MoonPhaseGlyph';
 import { useT } from '../../i18n/useT';
 import { getMoonPhase } from '../../data/moonPhases';
 
-const SYNODIC_HALF = 29.53059 / 2;
-
 /**
  * Tonight's Moon, with its ritual.
  *
- * Phase math runs client-side from the synodic period, so there is no
+ * Phase math runs client-side from astronomy-engine, so there is no
  * network dependency. The glyph is drawn from the same numbers the card
  * prints, so the two can never disagree.
  */
 export function MoonPhaseCard() {
   const { t } = useT('app');
   const phase = useMemo(() => getMoonPhase(), []);
+  if (!phase) return null;
   const nextPhaseName = t(`moon.phase.${phase.nextPhase.key}.name`, { defaultValue: phase.nextPhase.key });
   const name = t(`moon.phase.${phase.key}.name`, { defaultValue: phase.name });
 
@@ -26,7 +25,7 @@ export function MoonPhaseCard() {
       <div className="flex items-center gap-4 mt-3">
         <MoonPhaseGlyph
           illumination={phase.illumination}
-          waxing={phase.ageDays < SYNODIC_HALF}
+          waxing={phase.waxing}
           size={56}
           className="text-gold shrink-0"
         />

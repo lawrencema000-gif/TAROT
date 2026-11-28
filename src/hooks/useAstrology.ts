@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import type { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
@@ -8,6 +9,7 @@ import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
 import { useContentOverlay } from '../i18n/contentOverlay';
 import { withOverlay, type Interpretations, type InterpModule } from '../data/interpretations/localize';
+import { localDateStr, localTimeZone } from '../utils/localDate';
 
 const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
 
@@ -349,8 +351,23 @@ export async function loadNatalChart(): Promise<ChartResponse | null> {
  */
 export async function recastNatalChart(params: NatalCastParams): Promise<ChartResponse> {
   const data = await callFn<ChartResponse>('astrology-compute-natal', { ...params });
+  // Every reading kept in memory was computed from the chart just replaced
+  // (gap-1-04): drop them all, keep the new chart, and tell the mounted
+  // Today / Week / Month views to load again.
+  cache = {};
   setCache('chart', data);
+  for (const fn of [...recastListeners]) {
+    try { fn(); } catch (e) { console.error('[astrology] recast listener failed:', e); }
+  }
   return data;
+}
+
+const recastListeners = new Set<() => void>();
+
+/** Run `fn` after every recastNatalChart; returns the unsubscribe. */
+export function onNatalChartRecast(fn: () => void): () => void {
+  recastListeners.add(fn);
+  return () => { recastListeners.delete(fn); };
 }
 
 export function useNatalChart() {
@@ -405,115 +422,87 @@ export function useNatalChart() {
   return { chart, loading, error, fetchChart, computeChart };
 }
 
-export function useDailyHoroscope() {
-  const cacheKey = 'daily';
-  const [content, setContent] = useState<DailyContent | null>(() => getCached<DailyContent>(cacheKey));
-  const [loading, setLoading] = useState(!getCached(cacheKey));
+/**
+ * The member's day, on the device's calendar — the day Home, the ritual and
+ * the journal count (home-astro-02). Re-read on every render and whenever
+ * the page becomes visible again, so a tab or app left open past midnight
+ * asks for the new day.
+ */
+function useMemberDay(): string {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') setTick((n) => n + 1);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+  return localDateStr();
+}
+
+/** What a horoscope request says about the member's day (see supabase/functions/_shared/readingDay.ts). */
+function readingDayBody(date: string): { date: string; timezone?: string; locale: string } {
+  const timezone = localTimeZone();
+  return { date, ...(timezone ? { timezone } : {}), locale: getLocale() };
+}
+
+/**
+ * A reading for the member's day (daily) or the week / month it is in.
+ * Cached per day in memory; only the newest request may write the state,
+ * so an answer for an earlier day — or one asked for before a recast — that
+ * lands late never replaces the new one.
+ */
+function useMemberDayReading<T>(
+  fn: 'astrology-daily' | 'astrology-weekly' | 'astrology-monthly',
+  kind: 'daily' | 'weekly' | 'monthly',
+  response: z.ZodType<unknown>,
+  errorKey: string,
+  errorFallback: string,
+) {
+  const today = useMemberDay();
+  const [content, setContent] = useState<T | null>(() => getCached<T>(`${kind}-${today}`));
+  const [loading, setLoading] = useState(() => !getCached(`${kind}-${today}`));
   const [error, setError] = useState<string | null>(null);
+  const latest = useRef(0);
 
-  const load = useCallback(async (date?: string) => {
-    const key = date ? `daily-${date}` : cacheKey;
-    const cached = getCached<DailyContent>(key);
-    if (cached) { setContent(cached); setLoading(false); return; }
-
+  const load = useCallback(async (date: string = localDateStr()) => {
+    const ticket = ++latest.current;
+    const key = `${kind}-${date}`;
+    const cached = getCached<T>(key);
+    if (cached) { setContent(cached); setError(null); setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
-      const { data } = await apiCall({
-        fn: 'astrology-daily',
-        body: { ...(date ? { date } : {}), locale: getLocale() },
-        response: DailyResponse,
-      });
-      // Schema-validated; cast covers the legacy types/astrology.ts shape
-      // that still uses readonly strings instead of the zod-inferred unions.
-      const content = data as unknown as DailyContent;
-      setContent(content);
-      setCache(key, content);
+      const { data } = await apiCall({ fn, body: readingDayBody(date), response });
+      // Schema-validated; the cast covers the legacy types/astrology.ts shapes.
+      if (ticket === latest.current) {
+        setCache(key, data);
+        setContent(data as unknown as T);
+      }
     } catch (e) {
-      setError(userMessage(e, 'dailyHoroscope', 'Couldn’t load today’s horoscope — check your connection and try again.'));
+      if (ticket === latest.current) setError(userMessage(e, errorKey, errorFallback));
     } finally {
-      setLoading(false);
+      if (ticket === latest.current) setLoading(false);
     }
-  }, []);
+  }, [fn, kind, response, errorKey, errorFallback]);
 
-  useEffect(() => {
-    if (getCached(cacheKey)) return;
-    load();
-  }, [load]);
+  useEffect(() => { void load(today); }, [today, load]);
+  // A recast replaced the chart these readings were built from (gap-1-04).
+  useEffect(() => onNatalChartRecast(() => { void load(); }), [load]);
 
   return { content, loading, error, refresh: load };
+}
+
+export function useDailyHoroscope() {
+  return useMemberDayReading<DailyContent>('astrology-daily', 'daily', DailyResponse, 'dailyHoroscope', 'Couldn’t load today’s horoscope — check your connection and try again.');
 }
 
 export function useWeeklyForecast() {
-  const cacheKey = 'weekly';
-  const [content, setContent] = useState<WeeklyContent | null>(() => getCached<WeeklyContent>(cacheKey));
-  const [loading, setLoading] = useState(!getCached(cacheKey));
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const cached = getCached<WeeklyContent>(cacheKey);
-    if (cached) { setContent(cached); setLoading(false); return; }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await apiCall({
-        fn: 'astrology-weekly',
-        body: { locale: getLocale() },
-        response: WeeklyResponse,
-      });
-      const content = data as unknown as WeeklyContent;
-      setContent(content);
-      setCache(cacheKey, content);
-    } catch (e) {
-      setError(userMessage(e, 'weeklyForecast', 'Couldn’t load this week’s forecast — check your connection and try again.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (getCached(cacheKey)) return;
-    load();
-  }, [load]);
-
-  return { content, loading, error, refresh: load };
+  return useMemberDayReading<WeeklyContent>('astrology-weekly', 'weekly', WeeklyResponse, 'weeklyForecast', 'Couldn’t load this week’s forecast — check your connection and try again.');
 }
 
 export function useMonthlyForecast() {
-  const cacheKey = 'monthly';
-  const [content, setContent] = useState<MonthlyContent | null>(() => getCached<MonthlyContent>(cacheKey));
-  const [loading, setLoading] = useState(!getCached(cacheKey));
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const cached = getCached<MonthlyContent>(cacheKey);
-    if (cached) { setContent(cached); setLoading(false); return; }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await apiCall({
-        fn: 'astrology-monthly',
-        body: { locale: getLocale() },
-        response: MonthlyResponse,
-      });
-      const content = data as unknown as MonthlyContent;
-      setContent(content);
-      setCache(cacheKey, content);
-    } catch (e) {
-      setError(userMessage(e, 'monthlyForecast', 'Couldn’t load this month’s forecast — check your connection and try again.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (getCached(cacheKey)) return;
-    load();
-  }, [load]);
-
-  return { content, loading, error, refresh: load };
+  return useMemberDayReading<MonthlyContent>('astrology-monthly', 'monthly', MonthlyResponse, 'monthlyForecast', 'Couldn’t load this month’s forecast — check your connection and try again.');
 }
 
 export function useTransitCalendar() {

@@ -12,7 +12,11 @@
  * The daily ritual is keyed by the local date end to end: HomePage writes
  * `localDateStr()` into daily_rituals.date, the ritual cache compares on it,
  * and the server's ritual_streak(p_today) takes it as the argument (and
- * checks it is within a day of the UTC date). A caller that still has to
+ * checks it is within a day of the UTC date). The daily, weekly and monthly
+ * horoscopes are keyed by the local date too. useAstrology sends
+ * `localDateStr()` and `localTimeZone()`, and the server
+ * (`supabase/functions/_shared/readingDay.ts`) accepts the date when it lies
+ * within a day of the UTC date. A caller that still has to
  * align with a server-side UTC `CURRENT_DATE` column — anything that is not
  * the ritual — should keep using toISOString so client and server agree.
  */
@@ -23,6 +27,19 @@ export function localDateStr(d: Date = new Date()): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+/**
+ * The device's IANA time zone — the zone localDateStr counts days in — or
+ * null where Intl cannot say. Sent with the horoscope requests beside the
+ * date, so the server can still tell the member's day if it refuses the date.
+ */
+export function localTimeZone(): string | null {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  } catch {
+    return null;
+  }
 }
 
 /**

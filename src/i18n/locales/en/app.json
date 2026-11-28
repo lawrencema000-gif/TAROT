@@ -5589,6 +5589,8 @@
       "memberFallback": "Member",
       "status": "Status",
       "statusActive": "Active",
+      "statusTrial": "Free trial",
+      "statusPaymentIssue": "Payment problem",
       "billing": "Billing",
       "yourBenefits": "Included in your plan",
       "syncStatus": "Refresh my subscription",
@@ -5596,22 +5598,27 @@
         "verified": "Your subscription is confirmed.",
         "active": "Nothing to update — your subscription is as shown.",
         "verifyFailed": "Couldn’t confirm your subscription with the store — check your connection and try again.",
-        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again."
+        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again.",
+        "noCardSubscription": "There’s no card subscription on this account to manage here. If you subscribed in an app store, manage it there."
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "Card, through Stripe"
+        "stripe": "Card, through Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "Included with your account"
       },
       "manage": {
-        "android": "Manage on Google Play",
-        "ios": "Manage in the App Store",
-        "web": "Manage subscription"
+        "portal": "Manage subscription",
+        "googlePlay": "Manage on Google Play",
+        "appStore": "Manage in the App Store"
       },
       "storeNote": {
-        "android": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
-        "ios": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
-        "web": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here."
+        "stripe": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here.",
+        "stripeInApp": "You pay by card on our website, so this subscription can’t be changed in the app. To cancel or change it, sign in at tarotlife.app in a browser.",
+        "stripeLifetime": "Paid once by card. There is nothing to renew or cancel.",
+        "googlePlay": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
+        "appStore": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
+        "included": "Premium comes with your account, so there is nothing to bill, renew or cancel."
       },
       "plan": "Your plan",
       "renewal": {

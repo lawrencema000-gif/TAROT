@@ -5380,6 +5380,8 @@
       "memberFallback": "会员",
       "status": "状态",
       "statusActive": "已激活",
+      "statusTrial": "免费试用中",
+      "statusPaymentIssue": "付款出现问题",
       "billing": "付款方式",
       "yourBenefits": "你的方案包含",
       "syncStatus": "刷新我的订阅",
@@ -5388,22 +5390,27 @@
         "verified": "你的订阅已确认。",
         "active": "无需更新，你的订阅状态如显示。",
         "verifyFailed": "无法向商店确认你的订阅，请检查网络连接后重试。",
-        "portalFailed": "无法打开账单门户。请检查网络连接后重试。"
+        "portalFailed": "无法打开账单门户。请检查网络连接后重试。",
+        "noCardSubscription": "此账户没有可在这里管理的银行卡订阅。如果你是在应用商店订阅的，请在那里管理。"
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "银行卡，通过 Stripe"
+        "stripe": "银行卡，通过 Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "已包含在你的账户中"
       },
       "manage": {
-        "android": "在 Google Play 管理",
-        "ios": "在 App Store 管理",
-        "web": "管理订阅"
+        "portal": "管理订阅",
+        "googlePlay": "在 Google Play 管理",
+        "appStore": "在 App Store 管理"
       },
       "storeNote": {
-        "android": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
-        "ios": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
-        "web": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。"
+        "stripe": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。",
+        "stripeInApp": "此订阅通过我们的网站以银行卡支付，无法在应用内更改。如需取消或更改，请在浏览器中登录 tarotlife.app。",
+        "stripeLifetime": "已用银行卡一次性付清，无需续订或取消。",
+        "googlePlay": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
+        "appStore": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
+        "included": "高级版已包含在你的账户中，无需付费、续订或取消。"
       },
       "plan": "你的方案",
       "renewal": {

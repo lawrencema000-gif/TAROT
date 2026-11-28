@@ -382,7 +382,7 @@ describe('the hubs, the Eastern almanac pages, the wishing sky, the spreads and 
         description: 'Comprehensive tarot spread library: Celtic Cross, three-card, love, career, lunar cycles, shadow work, and more. Position-by-position meanings.',
       },
       spreadDetail: {
-        title: 'Celtic Cross Tarot Spread — Position Meanings | Arcana',
+        title: 'Celtic Cross — Tarot Spread Position Meanings | Arcana',
         description: 'The deepest classic spread — ten cards mapping every angle of a single situation. 10-card layout with position-by-position interpretation.',
       },
       onboarding: {

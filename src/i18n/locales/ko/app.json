@@ -139,6 +139,7 @@
     "decan": "데칸",
     "hebrewLetter": "히브리 문자",
     "numerology": "수비학",
+    "courtRank": "코트 카드의 단계",
     "reinforcingCards": "강화하는 카드",
     "reinforcingIntro": "{{name}}이(가) 이 카드들과 함께 나오면 리딩의 에너지가 강해져요 — {{reason}}",
     "opposingCards": "대립하는 카드",
@@ -6110,6 +6111,9 @@
     },
     "profile": {
       "title": "프로필"
+    },
+    "compatInvite": {
+      "title": "궁합 리딩 초대"
     }
   },
   "dailyInsights": {
@@ -12947,6 +12951,7 @@
       "summaryLead": "{{name}}: {{sentence}}",
       "suitMajority": "{{total}}장 중 {{n}}장이 {{suit}}",
       "colorMajority": "{{total}}장 중 {{n}}장이 {{color}}",
+      "suitMinority": "가장 적은 {{suit}}는 소홀히 하고 있는 것을 보여 줘요.",
       "colorNames": {
         "red": "빨강",
         "black": "검정"
@@ -13010,8 +13015,16 @@
     "title": "트럼프 카드 점",
     "verdict": {
       "dependsOnPerson": "사람이나 시기에 달려 있어요",
-      "heartsSpades": "하트 {{hearts}}장, 스페이드 {{spades}}장",
+      "heartsSpades": "{{hearts}}, {{spades}}",
       "redCount": "{{total}}장 중 {{reds}}장이 빨강",
+      "strengthenedYes": "하트 9가 예를 강하게 해요",
+      "strengthenedNo": "스페이드 에이스가 아니요를 강하게 해요",
+      "suitReason": "{{suit}}: {{reason}}",
+      "line": "{{label}} ({{detail}})",
+      "hearts_one": "하트 {{count}}장",
+      "hearts_other": "하트 {{count}}장",
+      "spades_one": "스페이드 {{count}}장",
+      "spades_other": "스페이드 {{count}}장",
       "wishOnTable": "하트 9가 테이블 위에 있어요"
     }
   },
@@ -13063,6 +13076,7 @@
       "tarotConnection": "타로와의 연결",
       "metaphysicalProperties": "형이상학적 속성",
       "lifePath": "라이프 패스 계산법",
+      "lifePathExamples": "계산 예시",
       "personality": "성격",
       "origin": "유래",
       "usedInContext": "문맥 속 쓰임",
@@ -13149,6 +13163,12 @@
       "numberLabel": "숫자 {{number}}",
       "lifePathEyebrow": "라이프 패스 수",
       "lifePathMasterEyebrow": "라이프 패스 수 (마스터)",
+      "working": {
+        "method": "Arcana는 라이프 패스 수를 세 부분으로 나누어 구해요. 태어난 월, 일, 연도를 각각 따로 줄여요. 줄인다는 것은 한 자리가 남을 때까지 각 자릿수를 더하는 것이고, 연도는 먼저 네 자릿수를 더해요. 11이나 22가 된 부분은 그대로 둬요. 그다음 세 부분을 더하고, 그 합계도 같은 방식으로 줄이되 11, 22, 33은 그대로 둬요. 날짜의 모든 자릿수를 한꺼번에 더하는 수비학자도 있어요. 대개 같은 수가 나오지만, 마스터 넘버가 관련되면 결과가 달라질 수 있어요.",
+        "example": "{{date}}: 월 {{month}} · 일 {{day}} · 연도 {{year}} · 합계 {{total}}",
+        "kept": "{{n}}(그대로)",
+        "exampleWithEveryDigit": "{{example}} (모든 자릿수를 한꺼번에 더하면 {{chain}})"
+      },
       "notFound": "숫자를 찾을 수 없어요",
       "backToHub": "숫자 전체",
       "seo": {

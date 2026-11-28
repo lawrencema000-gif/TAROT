@@ -159,13 +159,28 @@ Deno.serve(handler<Req, Resp>({
     // Store-provider subs (google/apple/samsung) DO flow through RC, so
     // their expiry is correctly reflected in the device reading and the
     // downgrade should proceed for those.
-    const { data: offDeviceSub } = await ctx.supabase
+    //
+    // A member may hold several qualifying rows (a monthly, then a yearly
+    // Stripe subscription): `.maybeSingle()` answered an error for two rows,
+    // the error was ignored, and a payer was downgraded (p12 FWP-06). Take
+    // the newest row, and never downgrade on a failed read.
+    const { data: offDeviceRows, error: offDeviceErr } = await ctx.supabase
       .from("subscriptions")
       .select("provider, status")
       .eq("user_id", userId)
       .in("provider", ["stripe", "web", "promo"])
       .in("status", ["active", "trial", "grace_period"])
-      .maybeSingle();
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (offDeviceErr) {
+      ctx.log.error("reconcile_premium_from_device.off_device_lookup_failed", {
+        err: offDeviceErr,
+        userId,
+        debugContext: body.debugContext,
+      });
+      return { changed: false, isPremium: true, reason: "off_device_lookup_failed" };
+    }
+    const offDeviceSub = offDeviceRows?.[0];
     if (offDeviceSub) {
       ctx.log.info("reconcile_premium_from_device.off_device_sub_exempt", {
         userId,

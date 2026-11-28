@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Clock, Tag as TagIcon, User } from 'lucide-react';
 import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
@@ -49,6 +49,13 @@ export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const { post, loading, error } = useBlogPost(slug || '');
   const navigate = useNavigate();
+  const location = useLocation();
+  /** Opened from the list: Back is that list entry (its ?page= and place). A direct visit or a shared link goes to /blog. */
+  const fromList = (location.state as { fromBlogList?: unknown } | null)?.fromBlogList === true;
+  const backToNews = () => {
+    if (fromList) navigate(-1);
+    else navigate('/blog');
+  };
 
   useEffect(() => {
     if (post) {
@@ -78,7 +85,7 @@ export function BlogPostPage() {
       <div className="text-center py-12">
         <p className="text-mystic-400 mb-4">{t('blog.articleNotFound')}</p>
         <button
-          onClick={() => navigate('/blog')}
+          onClick={backToNews}
           className="text-gold hover:text-gold/80 text-sm transition-colors min-h-[44px] px-2"
         >
           {t('common:nav.backToNews')}
@@ -96,7 +103,7 @@ export function BlogPostPage() {
         <div className="space-y-4 mb-8">
           <PageHeader
             as="h1"
-            onBack={() => navigate('/blog')}
+            onBack={backToNews}
             backLabel={t('common:nav.backToNews') as string}
             title={post.title}
             subtitle={

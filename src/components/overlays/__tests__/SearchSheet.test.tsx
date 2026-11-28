@@ -199,6 +199,17 @@ describe('SearchSheet', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/cartomancy/cards/ace-of-hearts');
   });
 
+  it('finds a numbered card typed with its number: “7 of hearts” (gap-2-11)', async () => {
+    await inLanguage('en');
+    flags.cartomancy = true;
+    renderSheet();
+    type('7 of hearts');
+    const row = await resultRow('Seven of Hearts');
+    expect(screen.getByRole('heading', { name: 'Cartomancy cards' })).toBeInTheDocument();
+    expect(row).toBeInTheDocument();
+    expect(screen.queryByText(/Nothing matches/)).toBeNull();
+  });
+
   it('finds the member’s journal entries, and opens one in the journal', async () => {
     await inLanguage('en');
     listForUser.mockResolvedValue({

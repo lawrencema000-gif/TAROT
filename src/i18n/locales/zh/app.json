@@ -176,7 +176,7 @@
       "runes": "符文",
       "dice": "骰子",
       "celestial": "天体地图",
-      "cartomancy": "扑克牌",
+      "cartomancy": "扑克牌占卜",
       "systems": "更多体系"
     },
     "categories": {
@@ -4926,7 +4926,7 @@
       },
       "card-reader": {
         "name": "读牌人",
-        "description": "学完扑克牌指南中的全部十二课。"
+        "description": "学完扑克牌占卜指南中的全部十二课。"
       },
       "the-jokers-laugh": {
         "name": "鬼牌的笑声",
@@ -5209,7 +5209,7 @@
           "desc": "本命盘、职业原型与全年展望，无需月光石"
         },
         "everySpread": {
-          "desc": "塔罗与扑克牌，含凯尔特十字",
+          "desc": "塔罗与扑克牌占卜，含凯尔特十字",
           "label": "全部牌阵"
         }
       },
@@ -5276,7 +5276,7 @@
         },
         "unlimitedReadings": {
           "heading": "今天继续解读",
-          "outcome": "免费账号每天可进行三次解读，塔罗与扑克牌合计。高级版取消这一限制，并开启全部牌阵，无广告。",
+          "outcome": "免费账号每天可进行三次解读，塔罗与扑克牌占卜合计。高级版取消这一限制，并开启全部牌阵，无广告。",
           "cta": "取消每日限制"
         },
         "horoscopeChart": {
@@ -5370,7 +5370,7 @@
         "readingsPlain": "已保存的解读"
       },
       "restoring": "正在查询你的购买记录…",
-      "subheadingEverySpread": "全部塔罗与扑克牌牌阵、你的完整出生星盘、伴侣合盘以及星座运势各分页——无广告，也无需消耗月光石。"
+      "subheadingEverySpread": "全部塔罗与扑克牌占卜牌阵、你的完整出生星盘、伴侣合盘以及星座运势各分页——无广告，也无需消耗月光石。"
     },
     "gate": {},
     "subscription": {
@@ -6038,7 +6038,7 @@
         ]
       },
       "cartomancy-basics": {
-        "title": "扑克牌基础",
+        "title": "扑克牌占卜基础",
         "description": "解读一副普通扑克牌：花色、数字、红与黑",
         "readFull": "阅读全部十二课"
       }
@@ -11132,7 +11132,7 @@
     "errorGeneric": "未能生成解读。请重试。",
     "deckLabel": "牌组",
     "deckTarot": "塔罗",
-    "deckPlaying": "扑克牌",
+    "deckPlaying": "扑克牌占卜",
     "errorNoCharge": "你没有收到解读，因此没有扣除任何费用。",
     "tryAgain": "重试",
     "errorRetryFree": "如果你已被扣费，点击「重试」即可取回同一次解读，无需额外付费。",
@@ -12896,7 +12896,7 @@
       "noMatch": "没有符合的牌",
       "noMatchHint": "试试花色、点数，或像“金钱”这样的关键词。"
     },
-    "eyebrow": "扑克牌占卜",
+    "eyebrow": "用普通扑克牌解读",
     "focus": {
       "questionLabel": "你的问题",
       "questionPlaceholder": "你在想什么？（可选）",
@@ -13014,7 +13014,7 @@
         "title": "黑桃"
       }
     },
-    "title": "扑克牌",
+    "title": "扑克牌占卜",
     "verdict": {
       "dependsOnPerson": "取决于某个人，或取决于时间",
       "heartsSpades": "红心 {{hearts}} 张，黑桃 {{spades}} 张",

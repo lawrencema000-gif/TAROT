@@ -99,7 +99,7 @@ function CartomancyPageBody() {
 
   return (
     <Page spacing="lg">
-      <PageHeader eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })} title={t('cartomancy.title', { defaultValue: 'Playing cards' })} />
+      <PageHeader eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Reading with playing cards' })} title={t('cartomancy.title', { defaultValue: 'Cartomancy' })} />
 
       <section className="text-center space-y-5">
         <DeckFan back={profile?.card_back_url} size="lg" />

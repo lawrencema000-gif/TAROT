@@ -496,11 +496,10 @@ export function JournalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [today]);
 
+  // A member's own entries always open, locked or not, Premium or not: the
+  // lock is a label, not a passcode (D03 B), and an entry locked while
+  // Premium must still open, unlock and delete once Premium ends (WP-P0-07).
   const openEditEntry = (entry: JournalEntry) => {
-    if (entry.is_locked && !profile?.isPremium) {
-      toast(t('journal.toast.unlockPremiumLock'), 'error');
-      return;
-    }
     resetDraft();
     setEditingEntry(entry);
     setDraftDate(entry.date);
@@ -683,9 +682,10 @@ export function JournalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
 
-  // The entry asked for opens as a tap in the list opens it (a locked one
-  // still asks for Premium): from the entries the page holds, else read by
-  // id — the page holds the newest twenty, the search reads a hundred.
+  // The entry asked for opens as a tap in the list opens it — a locked one
+  // included, since a member's own entries always open: from the entries the
+  // page holds, else read by id — the page holds the newest twenty, the
+  // search reads a hundred.
   useEffect(() => {
     if (!entryToOpen || !user) return;
     const held = entries.find(e => e.id === entryToOpen) ?? weekEntries.find(e => e.id === entryToOpen);
@@ -1620,29 +1620,29 @@ export function JournalPage() {
               </Button>
             </div>
 
-            {profile?.isPremium && (
-              editingEntry?.is_locked ? (
-                <Button
-                  variant="outline"
-                  fullWidth
-                  onClick={() => saveEntry('unlock')}
-                  disabled={!content.trim() || saving}
-                >
-                  <Unlock className="w-4 h-4" aria-hidden />
-                  {t('journal.saveAndUnlock', { defaultValue: 'Save and unlock' })}
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  fullWidth
-                  onClick={() => saveEntry('lock')}
-                  disabled={!content.trim() || saving}
-                >
-                  <Lock className="w-4 h-4" aria-hidden />
-                  {t('journal.saveAndLock', { defaultValue: 'Save and lock' })}
-                </Button>
-              )
-            )}
+            {/* Every member can unlock their own locked entry; only Premium
+                locks one (WP-P0-07). */}
+            {editingEntry?.is_locked ? (
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveEntry('unlock')}
+                disabled={!content.trim() || saving}
+              >
+                <Unlock className="w-4 h-4" aria-hidden />
+                {t('journal.saveAndUnlock', { defaultValue: 'Save and unlock' })}
+              </Button>
+            ) : profile?.isPremium ? (
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveEntry('lock')}
+                disabled={!content.trim() || saving}
+              >
+                <Lock className="w-4 h-4" aria-hidden />
+                {t('journal.saveAndLock', { defaultValue: 'Save and lock' })}
+              </Button>
+            ) : null}
 
             {editingEntry && (
               <Button variant="ghost" fullWidth onClick={() => setPendingDelete(editingEntry)} className="text-coral [@media(hover:hover)]:hover:text-coral">

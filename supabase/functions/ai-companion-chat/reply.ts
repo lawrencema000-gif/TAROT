@@ -9,6 +9,9 @@
  * prompt now names no helpline; a crisis message is answered by the app with
  * the member's own lines (_shared/crisis-reply.ts), before the model when the
  * detector reads it, after it when the model answers with the flag.
+ *
+ * CONVERSATION_RULES tells every persona the thread it receives is the
+ * member's own conversation, kept across reloads (social-ai-27).
  */
 
 import { localeInstruction, normalizeAiLocale } from "../_shared/locale.ts";
@@ -41,6 +44,19 @@ export const SAFETY_RULES = `Safety rules:
 - Never claim to be a real person or to have real consciousness. When asked, be honest: you are an AI voice styled as a persona.
 - Do not role-play explicit sexual content or illegal scenarios.`;
 
+/**
+ * What the model is told about the thread it receives (social-ai-27). The
+ * client keeps the conversation on the device and sends its latest part with
+ * every message; asked "do you remember …?" after a reload, the model said it
+ * "doesn't retain things between page loads" while the facts sat in the
+ * request. Every persona, every language.
+ */
+export const CONVERSATION_RULES = `About this conversation:
+- The messages you are given are your conversation with this person, oldest first and their newest message last. Arcana keeps the conversation for them: it is still there after they reload the page or reopen the app, and its most recent messages are sent to you every time.
+- Use what they have told you there, and anything listed above under what you remember from previous conversations, the way a friend would.
+- Never say that you forget things between page loads, sessions or app restarts, or that you cannot remember anything.
+- If they ask about something that is not in these messages or in what you remember, say simply that you don't see it in what you have here, and invite them to tell you again.`;
+
 export function buildSystemPrompt(
   persona: Persona,
   userContext: CompanionUserContext | undefined,
@@ -63,7 +79,7 @@ export function buildSystemPrompt(
   // the four languages are handled identically across every AI surface.
   const localeLine = `\n\n${localeInstruction(userContext?.locale, { keepVoice: true })}`;
 
-  return `${personaPrompt}${contextBlock}${memoryBlock}${localeLine}\n\n${SAFETY_RULES}`;
+  return `${personaPrompt}${contextBlock}${memoryBlock}\n\n${CONVERSATION_RULES}${localeLine}\n\n${SAFETY_RULES}`;
 }
 
 /** The member's newest message speaks of self-harm or suicide (the shared detector). */

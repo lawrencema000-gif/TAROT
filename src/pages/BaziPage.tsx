@@ -13,8 +13,7 @@ import {
   computeBazi,
   deepenBazi,
   todaysLuckyColor,
-  ELEMENT_PRODUCES,
-  ELEMENT_CONTROLS,
+  elementGuidance,
   type BaziResult,
   type FiveElement,
 } from '../data/bazi';
@@ -240,8 +239,7 @@ export function BaziPage() {
 
     const { name, archetype, summary, strengths, challenges, thriving, struggling, affirmation } = tx.dayMaster(key);
 
-    const elementSupportNeeded = ELEMENT_PRODUCES[result.weakElement];
-    const elementToModerate = result.elementBalance[result.dominantElement] > 3 ? result.dominantElement : null;
+    const g = elementGuidance(result);
 
     const handleShare = async () => {
       try {
@@ -393,18 +391,16 @@ export function BaziPage() {
                 defaultValue:
                   'Your weakest element is {{el}} — this is where more support can nourish you. To build {{el}}, surround yourself with {{support}} (which produces {{el}}).',
                 el: t(`bazi.elements.${result.weakElement}`, { defaultValue: result.weakElement }),
-                support: t(`bazi.elements.${elementSupportNeeded}`, { defaultValue: elementSupportNeeded }),
+                support: t(`bazi.elements.${g.support}`, { defaultValue: g.support }),
               })}
             </p>
-            {elementToModerate && (
+            {g.excess && (
               <p>
                 {t('bazi.excessNote', {
                   defaultValue:
                     'You have a strong excess of {{el}}. Watch for its shadow expressions, and balance with {{control}} (which controls {{el}}).',
-                  el: t(`bazi.elements.${elementToModerate}`, { defaultValue: elementToModerate }),
-                  control: t(`bazi.elements.${ELEMENT_CONTROLS[elementToModerate]}`, {
-                    defaultValue: ELEMENT_CONTROLS[elementToModerate],
-                  }),
+                  el: t(`bazi.elements.${g.excess}`, { defaultValue: g.excess }),
+                  control: t(`bazi.elements.${g.control}`, { defaultValue: g.control! }),
                 })}
               </p>
             )}

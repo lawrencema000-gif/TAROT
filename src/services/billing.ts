@@ -19,6 +19,34 @@ const dlog = (...args: unknown[]) => {
 
 export type BillingProvider = 'google' | 'apple' | 'samsung' | 'web';
 
+/** What opening Stripe's customer portal came to; `code` is the function's error code, or NATIVE / NOT_AUTHENTICATED / HTTP_<status> / NO_URL / NETWORK. */
+export type PortalResult = { ok: true } | { ok: false; code: string };
+
+/** The functions' error envelope `{ error: { code, message } }`, a flat `{ error: "…" }`, or raw text. */
+export function parseFunctionError(raw: string): { code: string | null; detail: string } {
+  try {
+    const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown; code?: unknown };
+    const err = parsed.error;
+    const nested =
+      err && typeof err === 'object'
+        ? [(err as { code?: unknown }).code, (err as { message?: unknown }).message]
+            .filter((v) => typeof v === 'string' && v)
+            .join(': ')
+        : '';
+    const detail = String(nested || (typeof err === 'string' ? err : '') || parsed.message || parsed.code || '').trim();
+    const errCode = err && typeof err === 'object' ? (err as { code?: unknown }).code : undefined;
+    const code =
+      typeof errCode === 'string' && errCode
+        ? errCode
+        : typeof parsed.code === 'string' && parsed.code
+          ? parsed.code
+          : null;
+    return { code, detail };
+  } catch {
+    return { code: null, detail: raw.slice(0, 200).trim() };
+  }
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -585,22 +613,10 @@ class WebBillingService implements BillingService {
         let detail = '';
         try {
           const raw = await response.text();
-          try {
-            // The functions answer `{ error: { code, message } }` (the shared
-            // handler envelope) or a flat `{ error: "..." }`; String() of the
-            // first read "[object Object]" in the log.
-            const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown; code?: unknown };
-            const err = parsed.error;
-            const nested =
-              err && typeof err === 'object'
-                ? [(err as { code?: unknown }).code, (err as { message?: unknown }).message]
-                    .filter((v) => typeof v === 'string' && v)
-                    .join(': ')
-                : '';
-            detail = String(nested || (typeof err === 'string' ? err : '') || parsed.message || parsed.code || '').trim();
-          } catch {
-            detail = raw.slice(0, 200).trim();
-          }
+          // The functions answer `{ error: { code, message } }` (the shared
+          // handler envelope) or a flat `{ error: "..." }`; String() of the
+          // first read "[object Object]" in the log.
+          detail = parseFunctionError(raw).detail;
         } catch {
           // unreadable body — the status is enough
         }
@@ -691,10 +707,10 @@ class WebBillingService implements BillingService {
     return null;
   }
 
-  async openCustomerPortal(): Promise<boolean> {
+  async openCustomerPortal(): Promise<PortalResult> {
     if (isNative()) {
       console.error('[WebBilling] Stripe portal attempted on native platform');
-      return false;
+      return { ok: false, code: 'NATIVE' };
     }
 
     try {
@@ -705,7 +721,7 @@ class WebBillingService implements BillingService {
 
       if (sessionError || !session) {
         console.error('[Stripe] Not authenticated');
-        return false;
+        return { ok: false, code: 'NOT_AUTHENTICATED' };
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -721,22 +737,24 @@ class WebBillingService implements BillingService {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        console.error('[Stripe] Portal error:', error);
-        return false;
+        // A gateway 5xx is often an HTML page, so read text, never .json().
+        const raw = await response.text().catch(() => '');
+        const code = parseFunctionError(raw).code ?? `HTTP_${response.status}`;
+        console.error('[Stripe] Portal error:', response.status, code);
+        return { ok: false, code };
       }
 
-      const { url } = await response.json();
+      const { url } = (await response.json().catch(() => ({}))) as { url?: string };
 
       if (url) {
         window.location.href = url;
-        return true;
+        return { ok: true };
       }
 
-      return false;
+      return { ok: false, code: 'NO_URL' };
     } catch (error) {
       console.error('[Stripe] Portal error:', error);
-      return false;
+      return { ok: false, code: 'NETWORK' };
     }
   }
 }

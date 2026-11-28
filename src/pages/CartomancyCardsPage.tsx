@@ -7,7 +7,7 @@ import { SuitGlyph } from '../components/cartomancy/SuitGlyph';
 import { CardGrid } from '../components/cartomancy/CardGrid';
 import { CartomancyCardDetail } from '../components/cartomancy/CartomancyCardDetail';
 import { CARTO_SUITS, isCourtCard, isJoker, PLAYING_CARDS_ALL, PLAYING_SUITS } from '../data/cartomancy';
-import type { PlayingCard, PlayingSuit } from '../types/cartomancy';
+import type { PlayingCard, PlayingRank, PlayingSuit } from '../types/cartomancy';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -34,6 +34,55 @@ function suitIcon(suit: PlayingSuit): ComponentType<{ className?: string }> {
 
 const SUIT_ICONS = Object.fromEntries(PLAYING_SUITS.map((s) => [s, suitIcon(s)])) as Record<PlayingSuit, ComponentType<{ className?: string }>>;
 
+/** The query as compared: full-width ７ and Ｋ folded to 7 and K (NFKC), trimmed, lower-cased. */
+function normalizeQuery(raw: string): string {
+  return raw.normalize('NFKC').trim().toLowerCase();
+}
+
+/** What a card's corners print — A, 2–10, J, Q, K — and 1 for an ace. */
+const PRINTED_RANKS = new Map<string, PlayingRank>([
+  ['a', 'ace'], ['1', 'ace'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'],
+  ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10'], ['j', 'jack'], ['q', 'queen'], ['k', 'king'],
+]);
+
+/**
+ * Rank words: English, singular and plural, and the ace and court names
+ * the ja and ko decks spell out (cartomancy.json). zh prints the letters,
+ * which PRINTED_RANKS already reads.
+ */
+const EN_RANK_WORDS: ReadonlyArray<[string, PlayingRank]> = [
+  ['ace', 'ace'], ['two', '2'], ['three', '3'], ['four', '4'], ['five', '5'], ['six', '6'], ['seven', '7'],
+  ['eight', '8'], ['nine', '9'], ['ten', '10'], ['jack', 'jack'], ['queen', 'queen'], ['king', 'king'],
+];
+const RANK_WORDS = new Map<string, PlayingRank>([
+  ...EN_RANK_WORDS,
+  ...EN_RANK_WORDS.map(([w, r]): [string, PlayingRank] => [w === 'six' ? 'sixes' : `${w}s`, r]),
+  ['エース', 'ace'], ['ジャック', 'jack'], ['クイーン', 'queen'], ['キング', 'king'],
+  ['에이스', 'ace'], ['잭', 'jack'], ['퀸', 'queen'], ['킹', 'king'],
+]);
+
+/** The rank a normalised query names, or null. */
+function rankOf(needle: string): PlayingRank | null {
+  return PRINTED_RANKS.get(needle) ?? RANK_WORDS.get(needle) ?? null;
+}
+
+/**
+ * How a text matches a query that names no rank. A query with a Latin
+ * letter matches at the start of a word (after the start or any character
+ * that is not a letter or digit), so “ten” no longer finds “Contentment”
+ * and “work” no longer finds “Paperwork”. Japanese and Chinese have no
+ * spaces between words, and Korean compounds (첫사랑) would be cut, so any
+ * other query keeps the match anywhere in the text.
+ */
+function textMatcher(needle: string): (text: string) => boolean {
+  if (/[a-z]/.test(needle)) {
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const atWordStart = new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}`, 'u');
+    return (text) => atWordStart.test(text.normalize('NFKC').toLowerCase());
+  }
+  return (text) => text.normalize('NFKC').toLowerCase().includes(needle);
+}
+
 function CartomancyCardsPageBody() {
   const { t } = useT('app');
   const navigate = useNavigate();
@@ -58,7 +107,7 @@ function CartomancyCardsPageBody() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setNeedle(query.trim().toLowerCase()), 120);
+    const timer = window.setTimeout(() => setNeedle(normalizeQuery(query)), 120);
     return () => window.clearTimeout(timer);
   }, [query]);
 
@@ -79,9 +128,11 @@ function CartomancyCardsPageBody() {
       return card.suit === filter;
     });
     if (!needle) return byFilter.map((x) => x.card);
-    return byFilter
-      .filter(({ view }) => view.name.toLowerCase().includes(needle) || view.keywords.some((k) => k.toLowerCase().includes(needle)))
-      .map((x) => x.card);
+    // A rank as printed (7, K) or named (seven, キング) is that rank, inside the tab.
+    const rank = rankOf(needle);
+    if (rank) return byFilter.filter(({ card }) => card.rank === rank).map((x) => x.card);
+    const matches = textMatcher(needle);
+    return byFilter.filter(({ view }) => matches(view.name) || view.keywords.some(matches)).map((x) => x.card);
   }, [localized, filter, needle]);
 
   const suitInfo = filter !== 'all' && filter !== 'courts' && filter !== 'jokers' ? CARTO_SUITS.find((s) => s.id === filter) : null;

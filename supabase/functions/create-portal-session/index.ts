@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import Stripe from "npm:stripe@14.10.0";
 import { isAppRedirectUrl } from "../_shared/cors.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { PORTAL_EXCLUDED_PERIOD, PORTAL_STATUSES } from "../_shared/portal.ts";
 
 interface PortalRequest {
   returnUrl?: string;
@@ -33,7 +34,13 @@ Deno.serve(
         .select("transaction_id")
         .eq("user_id", ctx.userId!)
         .eq("provider", "stripe")
-        .eq("status", "active")
+        // Trial and grace-period (past-due) customers need the portal too; a
+        // lifetime row is a PaymentIntent with nothing to manage; several
+        // rows (a monthly, then a yearly) take the newest (p12 premium-12).
+        .in("status", [...PORTAL_STATUSES])
+        .neq("period", PORTAL_EXCLUDED_PERIOD)
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (!subscription?.transaction_id) {

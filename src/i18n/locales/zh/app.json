@@ -5122,6 +5122,26 @@
         "published": "已发布",
         "keptHidden": "已保持隐藏",
         "alreadyDecided": "这一项已经有人做出决定。"
+      },
+      "memberReports": {
+        "title": "成员举报",
+        "intro": "成员举报的帖子和评论。涉及自伤的举报排在最前面。",
+        "empty": "没有待处理的举报。",
+        "reports": "{{count}} 条举报",
+        "reports_one": "{{count}} 条举报",
+        "reports_other": "{{count}} 条举报",
+        "hidden": "已隐藏",
+        "selfHarm": "自伤",
+        "dismiss": "驳回",
+        "restore": "恢复",
+        "remove": "移除",
+        "removeConfirm": "要对所有人移除这条内容吗？",
+        "removeBody": "它将对所有人隐藏，相关举报也会关闭。",
+        "dismissed": "已驳回举报",
+        "restored": "已恢复",
+        "removed": "已移除",
+        "loadFailed": "无法加载成员举报——点按 Refresh 重试。",
+        "resolveFailed": "无法更新举报——请重试。"
       }
     },
     "blog": {

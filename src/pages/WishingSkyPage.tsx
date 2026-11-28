@@ -5,8 +5,8 @@ import { Card, Button, Chip, Input, Page, Sheet, Tag, toast, PageHeader, EmptySt
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
 import {
-  WISH_THEMES, buildLinks, findsContactDetails,
-  type Wish, type WishEcho, type WishTheme,
+  WISH_THEMES, resolveLinks, findsContactDetails,
+  type Wish, type WishLinkPair, type WishTheme,
 } from '../dal/wishes';
 import { useAuth } from '../context/AuthContext';
 import { setPageMeta } from '../utils/seo';
@@ -32,7 +32,7 @@ export function WishingSkyPage() {
   const { t } = useT('app');
 
   const [sky, setSky] = useState<Wish[]>([]);
-  const [echoes, setEchoes] = useState<WishEcho[]>([]);
+  const [pairs, setPairs] = useState<WishLinkPair[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Wish | null>(null);
   const [composing, setComposing] = useState(false);
@@ -59,25 +59,31 @@ export function WishingSkyPage() {
     );
   }, [t]);
 
+  // The echo lines are the server's to draw (wish_sky_links): the client never
+  // sees whose star is whose, only wish ids.
+  const refreshLinks = useCallback(async () => {
+    const res = await wishesDal.listLinks();
+    if (res.ok) setPairs(res.data);
+  }, []);
+
+  // The sky loads first; lines need two stars, so an empty or one-star sky
+  // asks for none.
   const load = useCallback(async () => {
     setLoading(true);
-    const [skyRes, echoRes] = await Promise.all([wishesDal.listSky(), wishesDal.listEchoes()]);
+    const skyRes = await wishesDal.listSky();
     if (skyRes.ok) setSky(skyRes.data);
-    if (echoRes.ok) setEchoes(echoRes.data);
     setLoading(false);
-  }, []);
+    if (skyRes.ok && skyRes.data.length >= 2) await refreshLinks();
+    else setPairs([]);
+  }, [refreshLinks]);
 
   useEffect(() => { load(); }, [load]);
 
-  const links = useMemo(() => buildLinks(sky, echoes), [sky, echoes]);
-  const myWishIds = useMemo(
-    () => new Set(user ? sky.filter((w) => w.userId === user.id).map((w) => w.id) : []),
-    [sky, user],
-  );
-  const myEchoes = useMemo(
-    () => new Set(user ? echoes.filter((e) => e.userId === user.id).map((e) => e.wishId) : []),
-    [echoes, user],
-  );
+  const links = useMemo(() => resolveLinks(sky, pairs), [sky, pairs]);
+  const myWishIds = useMemo(() => new Set(sky.filter((w) => w.isMine).map((w) => w.id)), [sky]);
+  // The sheet reads the wish from the sky, so a toggle's fresh echoedByMe and
+  // echoCount show at once.
+  const selectedWish = selected ? (sky.find((w) => w.id === selected.id) ?? selected) : null;
 
   const contactWarning = findsContactDetails(text);
 
@@ -90,6 +96,8 @@ export function WishingSkyPage() {
     setSaving(false);
     if (!res.ok) { toast(t(res.error), 'error'); return; }
     setSky((prev) => [res.data, ...prev]);
+    // The member's newest star changed, so the server moves their lines to it.
+    void refreshLinks();
     setComposing(false);
     setText(''); setLabel(''); setOpenToHelp(false);
     toast(t('wishingSky.starLit', { defaultValue: 'Your star is lit.' }), 'success');
@@ -97,18 +105,19 @@ export function WishingSkyPage() {
 
   const toggleEcho = async (wish: Wish) => {
     if (!user) { toast(t('wishingSky.signInToEcho', { defaultValue: 'Sign in to echo a wish.' }), 'error'); return; }
-    const had = myEchoes.has(wish.id);
+    const had = wish.echoedByMe;
     // Optimistic: the sky should respond instantly, and a failed echo is
     // recoverable by reloading.
-    setEchoes((prev) => had
-      ? prev.filter((e) => !(e.wishId === wish.id && e.userId === user.id))
-      : [...prev, { wishId: wish.id, userId: user.id }]);
     setSky((prev) => prev.map((w) =>
-      w.id === wish.id ? { ...w, echoCount: Math.max(0, w.echoCount + (had ? -1 : 1)) } : w));
+      w.id === wish.id
+        ? { ...w, echoedByMe: !had, echoCount: Math.max(0, w.echoCount + (had ? -1 : 1)) }
+        : w));
     const res = had
       ? await wishesDal.unecho(wish.id, user.id)
       : await wishesDal.echo(wish.id, user.id);
-    if (!res.ok) { toast(t(res.error), 'error'); load(); }
+    if (!res.ok) { toast(t(res.error), 'error'); load(); return; }
+    // The line is the server's to draw.
+    void refreshLinks();
   };
 
   const sendOffer = async () => {
@@ -299,30 +308,30 @@ export function WishingSkyPage() {
 
       {/* ── a single wish ── */}
       <Sheet open={!!selected && !offering} onClose={() => { setSelected(null); setReportArmed(false); }} title={t('wishingSky.wishTitle', { defaultValue: 'A wish' })}>
-        {selected && (
+        {selectedWish && (
           <div className="space-y-4">
-            <p className="text-body text-mystic-100 leading-relaxed">{selected.text}</p>
+            <p className="text-body text-mystic-100 leading-relaxed">{selectedWish.text}</p>
             <div className="text-meta text-mystic-500 tabular-nums">
-              {themeLabel(selected.theme)}
-              {selected.wisherLabel && <> · {selected.wisherLabel}</>}
-              {selected.echoCount > 0 && <> · {t('wishingSky.echoCount', { defaultValue: '{{count}} echoes', count: selected.echoCount })}</>}
+              {themeLabel(selectedWish.theme)}
+              {selectedWish.wisherLabel && <> · {selectedWish.wisherLabel}</>}
+              {selectedWish.echoCount > 0 && <> · {t('wishingSky.echoCount', { defaultValue: '{{count}} echoes', count: selectedWish.echoCount })}</>}
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {user && selected.userId !== user.id && (
-                <Button variant={myEchoes.has(selected.id) ? 'primary' : 'outline'} size="sm"
-                        onClick={() => toggleEcho(selected)}>
+              {user && !selectedWish.isMine && (
+                <Button variant={selectedWish.echoedByMe ? 'primary' : 'outline'} size="sm"
+                        onClick={() => toggleEcho(selectedWish)}>
                   <Heart className="w-3.5 h-3.5 mr-1.5" />
-                  {myEchoes.has(selected.id) ? t('wishingSky.echoed', { defaultValue: 'Echoed' }) : t('wishingSky.echo', { defaultValue: 'I wish this too' })}
+                  {selectedWish.echoedByMe ? t('wishingSky.echoed', { defaultValue: 'Echoed' }) : t('wishingSky.echo', { defaultValue: 'I wish this too' })}
                 </Button>
               )}
-              {user && selected.openToHelp && selected.userId !== user.id && (
+              {user && selectedWish.openToHelp && !selectedWish.isMine && (
                 <Button variant="outline" size="sm" onClick={() => setOffering(true)}>
                   <HandHeart className="w-3.5 h-3.5 mr-1.5" /> {t('wishingSky.offerHelp', { defaultValue: 'Offer to help' })}
                 </Button>
               )}
-              {user && selected.userId !== user.id && (
-                reportedIds.has(selected.id) ? (
+              {user && !selectedWish.isMine && (
+                reportedIds.has(selectedWish.id) ? (
                   <Tag tone="neutral" size="md" icon={<Check className="w-3.5 h-3.5" aria-hidden />} className="self-center">
                     {t('wishingSky.reportedTag', { defaultValue: 'Reported' })}
                   </Tag>
@@ -330,7 +339,7 @@ export function WishingSkyPage() {
                   <Button
                     variant={reportArmed ? 'outline' : 'ghost'}
                     size="sm"
-                    onClick={() => reportWish(selected)}
+                    onClick={() => reportWish(selectedWish)}
                     loading={reporting}
                     disabled={reporting}
                   >
@@ -341,12 +350,12 @@ export function WishingSkyPage() {
                   </Button>
                 )
               )}
-              {user && selected.userId === user.id && (
+              {user && selectedWish.isMine && (
                 <span className="text-caption text-mystic-500 self-center">{t('wishingSky.thisIsYours', { defaultValue: 'This one is yours.' })}</span>
               )}
             </div>
 
-            {myEchoes.has(selected.id) && (
+            {selectedWish.echoedByMe && (
               <p className="text-caption text-mystic-500">
                 {t('wishingSky.linked', { defaultValue: 'Your star and theirs are linked in the sky now.' })}
               </p>

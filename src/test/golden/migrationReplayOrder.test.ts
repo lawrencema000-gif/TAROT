@@ -159,12 +159,53 @@ function replay(files: string[], read: (f: string) => string): Problem[] {
   return problems;
 }
 
+/*
+ * A top-level DO block that looks up a production-only auth.users row and
+ * RAISEs an EXCEPTION when it is missing always stops a fresh replay: a
+ * fresh database has no users (WP-F-04: 20260507150000 raised for the
+ * owner's account). Such a block must skip with a NOTICE instead
+ * (S-F04-1). Files allowed to keep the pattern are listed here; none are.
+ */
+const RAISES_ON_MISSING_USER_ALLOWLIST: string[] = [];
+
+const MISSING_ROW_BRANCH = /\bif\s+(?:not\s+found|[A-Za-z_][\w.]*\s+is\s+null)\s+then\b([\s\S]*?)\bend\s+if\b/gi;
+
+/** Top-level DO blocks that read auth.users and raise when the row is missing. */
+function raisesOnMissingUser(sql: string): string[] {
+  const hits: string[] = [];
+  for (const stmt of migrationStatements(sql)) {
+    if (!/^do\b/i.test(stmt)) continue;
+    const body = stmt.replace(/--[^\n]*/g, ' ');
+    if (!/\bauth\s*\.\s*"?users"?\b/i.test(body)) continue;
+    for (const m of body.matchAll(MISSING_ROW_BRANCH)) {
+      if (/\braise\s+exception\b/i.test(m[1])) hits.push(m[0].replace(/\s+/g, ' ').slice(0, 120));
+    }
+  }
+  return hits;
+}
+
 const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql')).sort();
 const read = (f: string) => readFileSync(join(MIGRATIONS, f), 'utf8');
 
 describe('migrations replay on a fresh database', () => {
   it('every table a migration changes or fills was created by an earlier statement', () => {
     expect(replay(files, read)).toEqual([]);
+  });
+
+  it('no top-level DO block raises when a production-only auth.users row is missing', () => {
+    const flagged = files
+      .filter((f) => !RAISES_ON_MISSING_USER_ALLOWLIST.includes(f))
+      .filter((f) => raisesOnMissingUser(read(f)).length > 0);
+    expect(flagged).toEqual([]);
+  });
+
+  it('the missing-user check flags the unguarded pattern and passes the guard', () => {
+    const lookup = "DO $$ DECLARE v_id uuid; BEGIN SELECT id INTO v_id FROM auth.users WHERE email = 'owner@example.invalid';";
+    const update = ' UPDATE public.profiles SET is_premium = TRUE WHERE id = v_id; END $$;';
+    expect(raisesOnMissingUser(`${lookup} IF v_id IS NULL THEN RAISE EXCEPTION 'no auth.users row'; END IF;${update}`)).toHaveLength(1);
+    expect(raisesOnMissingUser(`${lookup} IF NOT FOUND THEN RAISE EXCEPTION 'missing'; END IF;${update}`)).toHaveLength(1);
+    expect(raisesOnMissingUser(`${lookup} IF v_id IS NULL THEN RAISE NOTICE 'skipping'; RETURN; END IF;${update}`)).toEqual([]);
+    expect(raisesOnMissingUser(read('20260507150000_grant_lawrence_premium.sql'))).toEqual([]);
   });
 
   it('the replay-only files are what makes the replay pass', () => {

@@ -451,6 +451,36 @@ export const ELEMENT_CONTROLS: Record<FiveElement, FiveElement> = {
   metal: 'wood',
 };
 
+/** 相生 read backwards: the element that produces each one (木生火 → fire is produced by wood).
+ *  A literal, not derived from ELEMENT_PRODUCES, so an edit of one map cannot silently flip the other. */
+export const ELEMENT_PRODUCED_BY: Record<FiveElement, FiveElement> = {
+  fire: 'wood', earth: 'fire', metal: 'earth', water: 'metal', wood: 'water',
+};
+/** 相克 read backwards: the element that controls each one (木克土 → earth is controlled by wood). */
+export const ELEMENT_CONTROLLED_BY: Record<FiveElement, FiveElement> = {
+  earth: 'wood', water: 'earth', fire: 'water', metal: 'fire', wood: 'metal',
+};
+
+export interface ElementGuidance {
+  weak: FiveElement;
+  /** What feeds the weak element: its producer. */
+  support: FiveElement;
+  /** The dominant element when it is in excess (more than 3 of 8), else null. */
+  excess: FiveElement | null;
+  /** What restrains the excess: its controller. */
+  control: FiveElement | null;
+  /** The weak element's producer is itself the excess (母多子病, e.g. 土多金埋). WP-P2-13 renders a sentence for it once WP-P2-00 carries the key. */
+  supportIsExcess: boolean;
+}
+
+/** The "Element guidance" lines: feed the weak element with its producer, restrain an excess with its controller. */
+export function elementGuidance(r: BaziResult): ElementGuidance {
+  const weak = r.weakElement;
+  const support = ELEMENT_PRODUCED_BY[weak];
+  const excess = r.elementBalance[r.dominantElement] > 3 ? r.dominantElement : null;
+  return { weak, support, excess, control: excess ? ELEMENT_CONTROLLED_BY[excess] : null, supportIsExcess: support === excess };
+}
+
 // ────────────────────────────────────────────────────────────────────
 // Phase-1 classical layers (added 2026-04-24)
 // ────────────────────────────────────────────────────────────────────
@@ -657,7 +687,7 @@ export function computeFavorableElement(r: BaziResult): FavorableElementGuidance
   else if (strength === 'receptive') fav = dm;
   else fav = ELEMENT_PRODUCES[dm];
 
-  const supporting = Object.entries(ELEMENT_PRODUCES).find(([, v]) => v === fav)?.[0] as FiveElement ?? dm;
+  const supporting = ELEMENT_PRODUCED_BY[fav];
 
   return {
     element: fav,
@@ -674,12 +704,10 @@ export function computeFavorableElement(r: BaziResult): FavorableElementGuidance
 // Today's Lucky Color — the 五行穿衣 daily widget.
 // ────────────────────────────────────────────────────────────────────
 
-function todayDayStem(date = new Date()): HeavenlyStem {
-  const anchor = Date.UTC(1984, 1, 2); // 1984-02-02 was a Jia-Zi day
-  const today = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  const diffDays = Math.floor((today - anchor) / 86_400_000);
-  const idx = ((diffDays % 10) + 10) % 10;
-  return STEMS[idx];
+/** The day stem of `date`'s calendar day on the reader's clock: the member's own "today".
+ *  Through computeDayPillar, whose offset is calibrated (1984-01-31 甲子, 2001-06-08 壬寅). */
+export function dayStemOn(date: Date = new Date()): HeavenlyStem {
+  return computeDayPillar(date.getFullYear(), date.getMonth() + 1, date.getDate()).stem;
 }
 
 export interface LuckyColorToday {
@@ -697,9 +725,9 @@ export const LUCKY_COLOR_LINES: Record<LuckyColorToday['alignment'], string> = {
   neutral: 'A touch of {{color}} — grounds you when the day\'s current doesn\'t quite match your chart.',
 };
 
-export function todaysLuckyColor(r: BaziResult): LuckyColorToday {
+export function todaysLuckyColor(r: BaziResult, now: Date = new Date()): LuckyColorToday {
   const fav = computeFavorableElement(r);
-  const dayEl = STEM_ELEMENT[todayDayStem()].element;
+  const dayEl = STEM_ELEMENT[dayStemOn(now)].element;
 
   let alignment: LuckyColorToday['alignment'] = 'neutral';
   let el: FiveElement = fav.element;

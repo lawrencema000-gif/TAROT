@@ -103,6 +103,10 @@
     "resetSuccessHint": "アプリに戻ります…",
     "resetSuccessRecoveryHint": "サインアウトします。新しいパスワードで改めてサインインしてください。",
     "resetLinkExpiredHint": "リセットリンクは一度のみ有効です。期限切れの場合はサインイン画面から再送信してください。",
+    "verifyingLink": "リンクを確認しています…",
+    "resetLinkInvalidTitle": "このリセットリンクは期限切れか、すでに使用されています",
+    "resetLinkInvalidBody": "リセットリンクは一度しか使えません。新しいリンクを申請すると、メールでお送りします。",
+    "requestNewLink": "新しいリンクを送る",
     "createAccount": "アカウントを作成",
     "verifySentTo": "{{email}} に認証リンクを送信しました。メールをご確認ください。",
     "checkSpam": "届かない場合は迷惑メールフォルダもご確認ください。",
@@ -176,7 +180,7 @@
       "runes": "ルーン",
       "dice": "ダイス",
       "celestial": "星の地図",
-      "cartomancy": "トランプ",
+      "cartomancy": "トランプ占い",
       "systems": "ほかの占術"
     },
     "categories": {
@@ -339,6 +343,9 @@
       "aiLimit": "今日のAI解釈の上限に達しました。明日またお越しください。",
       "shared": "シェアしました",
       "imageSaved": "画像をダウンロードフォルダに保存しました",
+      "imageSavedLinkCopied": "画像を保存し、リンクをコピーしました",
+      "copyLink": "リンクをコピー",
+      "linkCopied": "リンクをコピーしました",
       "aiTooManyCards": "AI解釈は{{n}}枚までのスプレッドに対応しています。ムーンストーンは消費されていません。",
       "aiFallback": "AIリーディングは現在ご利用いただけません。ムーンストーンは消費されていません。",
       "aiFallbackCharged": "AIリーディングは現在ご利用いただけず、ムーンストーンを自動で返却することもできませんでした。サポートにお問い合わせいただければ、ムーンストーンをお戻しします。"
@@ -4378,6 +4385,17 @@
       "promptChoose": "いちばん当てはまる答えを選んでください。",
       "progress": "診断の進捗"
     },
+    "flow": {
+      "start": "診断を始める",
+      "whatYouGet": "わかること",
+      "previous": "前の質問",
+      "leave": {
+        "title": "診断をやめますか？",
+        "body": "{{total}}問中{{answered}}問に回答しました。ここでやめると、回答は保存されません。",
+        "stay": "続ける",
+        "leave": "診断をやめる"
+      }
+    },
     "list": {
       "categories": {
         "label": "診断のカテゴリ",
@@ -5209,7 +5227,7 @@
           "desc": "出生図・キャリア・一年の見通し、ムーンストーンの消費なし"
         },
         "everySpread": {
-          "desc": "タロットもトランプも、ケルト十字も含めて",
+          "desc": "タロットもトランプ占いも、ケルト十字も含めて",
           "label": "すべてのスプレッド"
         }
       },
@@ -5276,7 +5294,7 @@
         },
         "unlimitedReadings": {
           "heading": "今日も続けて読む",
-          "outcome": "無料アカウントでは、タロットとトランプを合わせて1日3回までリーディングができます。プレミアムはこの上限をなくし、すべてのスプレッドを広告なしで開きます。",
+          "outcome": "無料アカウントでは、タロットとトランプ占いを合わせて1日3回までリーディングができます。プレミアムはこの上限をなくし、すべてのスプレッドを広告なしで開きます。",
           "cta": "1日の上限をなくす"
         },
         "horoscopeChart": {
@@ -5370,7 +5388,7 @@
         "readingsPlain": "保存したリーディング"
       },
       "restoring": "購入履歴を確認中…",
-      "subheadingEverySpread": "タロットとトランプのすべてのスプレッド、出生図の全体、パートナー相性（シナストリー）、星占いのタブ。広告なし、ムーンストーンの消費なしで使えます。"
+      "subheadingEverySpread": "タロットとトランプ占いのすべてのスプレッド、出生図の全体、パートナー相性（シナストリー）、星占いのタブ。広告なし、ムーンストーンの消費なしで使えます。"
     },
     "gate": {},
     "subscription": {
@@ -5380,6 +5398,8 @@
       "memberFallback": "メンバー",
       "status": "ステータス",
       "statusActive": "有効",
+      "statusTrial": "無料トライアル中",
+      "statusPaymentIssue": "お支払いに問題があります",
       "billing": "お支払い方法",
       "yourBenefits": "プランに含まれるもの",
       "syncStatus": "サブスクリプションを更新",
@@ -5388,22 +5408,27 @@
         "verified": "サブスクリプションを確認しました。",
         "active": "更新はありません。サブスクリプションは表示のとおりです。",
         "verifyFailed": "ストアでサブスクリプションを確認できませんでした。接続を確認して、もう一度お試しください。",
-        "portalFailed": "お支払い管理ページを開けませんでした。接続を確認して、もう一度お試しください。"
+        "portalFailed": "お支払い管理ページを開けませんでした。接続を確認して、もう一度お試しください。",
+        "noCardSubscription": "このアカウントには、ここで管理できるカードのサブスクリプションがありません。アプリストアで登録した場合は、そちらで管理してください。"
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "カード（Stripe経由）"
+        "stripe": "カード（Stripe経由）",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "アカウントに含まれています"
       },
       "manage": {
-        "android": "Google Playで管理",
-        "ios": "App Storeで管理",
-        "web": "サブスクリプションを管理"
+        "portal": "サブスクリプションを管理",
+        "googlePlay": "Google Playで管理",
+        "appStore": "App Storeで管理"
       },
       "storeNote": {
-        "android": "サブスクリプションのキャンセルや変更は、Google Playストアのアプリまたはウェブサイトから行ってください。変更がここに反映されるまで数分かかることがあります。",
-        "ios": "サブスクリプションのキャンセルや変更は、「設定」を開き、自分の名前をタップして「サブスクリプション」から行ってください。変更がここに反映されるまで数分かかることがあります。",
-        "web": "サブスクリプションのキャンセルや変更は、このページからお支払い管理ページを開いて行ってください。変更がここに反映されるまで数分かかることがあります。"
+        "stripe": "サブスクリプションのキャンセルや変更は、このページからお支払い管理ページを開いて行ってください。変更がここに反映されるまで数分かかることがあります。",
+        "stripeInApp": "このサブスクリプションはウェブサイトでカード払いのため、アプリでは変更できません。キャンセルや変更は、ブラウザで tarotlife.app にサインインして行ってください。",
+        "stripeLifetime": "カードで一度だけお支払い済みです。更新やキャンセルは必要ありません。",
+        "googlePlay": "サブスクリプションのキャンセルや変更は、Google Playストアのアプリまたはウェブサイトから行ってください。変更がここに反映されるまで数分かかることがあります。",
+        "appStore": "サブスクリプションのキャンセルや変更は、「設定」を開き、自分の名前をタップして「サブスクリプション」から行ってください。変更がここに反映されるまで数分かかることがあります。",
+        "included": "プレミアムはアカウントに含まれているため、請求・更新・キャンセルはありません。"
       },
       "plan": "あなたのプラン",
       "renewal": {
@@ -10492,6 +10517,7 @@
     "gateCheckFailed": "残高を確認できませんでした。もう一度お試しください。",
     "costLinePortrait": "肖像画を描くと<gold>ムーンストーン{{n}}個</gold>を使います",
     "alreadyClaimedToday": "今日は受け取り済み",
+    "costLineResend": "前回の分はすでに支払い済みの場合があります。もう一度尋ねても、ムーンストーンが二重に使われることはありません",
     "costLineConversationDay": "1回の会話で<gold>ムーンストーン{{n}}個</gold>を使います（24時間以内の返信はすべて含まれます）"
   },
   "companion": {
@@ -10505,6 +10531,9 @@
     "emptyState":"何でも尋ねて始めてください——胸に抱えている問い、読んでほしい夢、理解したい名前。",
     "placeholder": "コンパニオンに問う…",
     "thinking": "考えています……",
+    "replyLost": "コンパニオンの返事が届きませんでした。もう一度送信してください。この会話でムーンストーンが二重に使われることはありません。",
+    "unanswered": "このメッセージへの返事は届きませんでした。",
+    "sendAgain": "もう一度送信",
     "sendFailed": "コンパニオンに届きませんでした。接続を確認して、もう一度送信してください。",
     "sendRejected": "このメッセージは送信できませんでした。新しい会話を始めて、もう一度送信してください。",
     "dailyLimitReached": "今日の上限に達しました——また明日",
@@ -10796,6 +10825,7 @@
     },
     "computing": "チャートを計算しています…",
     "progressedAge": "{{n}}歳",
+    "returnMoment": "回帰の瞬間：{{when}}",
     "synastryPrompt": "相手の出生データ",
     "partnerNamePlaceholder": "相手の名前（任意）",
     "synastryCta": "相手のチャートを重ねる",
@@ -11125,7 +11155,7 @@
     "errorGeneric": "リーディングを生成できませんでした。もう一度お試しください。",
     "deckLabel": "デッキ",
     "deckTarot": "タロット",
-    "deckPlaying": "トランプ",
+    "deckPlaying": "トランプ占い",
     "errorNoCharge": "受け取れなかったリーディングの料金はかかっていません。",
     "tryAgain": "もう一度試す",
     "errorRetryFree": "料金がかかっていた場合は、「もう一度試す」を押すと、追加料金なしで同じリーディングが表示されます。",
@@ -11248,6 +11278,7 @@
     "redraw": "新しいカード",
     "newCardConfirmTitle": "新しいカードを引きますか？",
     "newCardConfirmBody": "{{card}}についての会話は終了し、あとから戻ることはできません。",
+    "newCardConfirmBodyPending": "{{card}}を読む前回の試みは、すでに支払い済みの場合があります。新しいカードは新しい会話になり、ムーンストーン{{n}}個を使います。",
     "newCardConfirmBodyPaid": "{{card}}についての会話は終了し、あとから戻ることはできません。新しいカードを読むと新しい会話になり、ムーンストーン{{n}}個を使います。",
     "newCardConfirmAction": "新しいカードを引く",
     "newCardConfirmKeep": "この会話を続ける",
@@ -11258,6 +11289,7 @@
     "reversed": "逆位置",
     "composerPlaceholder": "続けて聞く…",
     "seedMessage": "今{{card}}を引きました。いまそれが示しているかもしれないことと、どう向き合えばいいか手助けしてください。",
+    "replyLost": "オラクルの答えが届きませんでした。もう一度尋ねてください。このカードでムーンストーンが二重に使われることはありません。",
     "aiFailed": "オラクルに接続できませんでした。接続を確認して、もう一度尋ねてください。",
     "sendRejected": "この質問は送信できませんでした。新しいカードを引いて、新しい会話を始めてください。",
     "thinking": "オラクルが考えています…",
@@ -11279,6 +11311,12 @@
     "tapPrompt": "惑星、ハウス、またはアスペクト線をタップ。",
     "planetLabel": "惑星",
     "transitLabel": "トランジット",
+    "overlayKind": {
+      "transit": "トランジット",
+      "progressed": "プログレス",
+      "solarReturn": "ソーラーリターン",
+      "partner": "相手"
+    },
     "houseLabel": "ハウス {{n}}",
     "aspectLabel": "アスペクト",
     "wheelAria": "出生図のホイール",
@@ -11311,6 +11349,7 @@
     "aspectsAll": "すべて（{{n}}）",
     "aspectsTight": "タイトなオーブ（{{n}}）",
     "noTightAspects": "タイトなオーブに収まるアスペクトはありません。「すべて」に切り替えると、すべてのつながりが見えます。",
+    "noAspectLines": "このチャートにはアスペクト線がありません。",
     "aspectGridAria": "アスペクトグリッド",
     "gridTapPrompt": "セルをタップしてアスペクトを読む",
     "modalities": {
@@ -12297,7 +12336,7 @@
     "toasts": {
       "signInToSave": "このスプレッドを保存するにはログインしてください。",
       "nameRequired": "保存する前に、スプレッドに名前をつけてください。",
-      "positionRequired": "名前と意味の両方を持つ位置を、少なくともひとつ追加してください。",
+      "positionRequired": "名前のある位置を、少なくともひとつ追加してください。",
       "saveFailed": "スプレッドを保存できませんでした。接続を確認して、もう一度お試しください。",
       "saved": "スプレッドを保存しました。「保存したスプレッド」に表示されます。",
       "deleteFailed": "そのスプレッドを削除できませんでした。接続を確認して、もう一度お試しください。",
@@ -12318,8 +12357,11 @@
     "positionCount_one": "位置{{count}}か所",
     "positionCount_other": "位置{{count}}か所",
     "positionMeaningPlaceholder": "この位置が表すもの…",
-    "positionNamePlaceholder": "位置の名前（例：課題）",
+    "positionNamePlaceholder": "位置の名前",
     "positions": "位置",
+    "positionNameMissing": "位置{{n}}に名前をつけるか、この位置を削除してください。",
+    "positionMeaningMissing": "位置{{n}}が表すものを書くか、この位置を削除してください。",
+    "positionsHint": "位置ごとに名前が必要です（例：「課題」）。その位置が表すものは、書かなくてもかまいません。",
     "removePosition": "位置{{n}}を削除",
     "save": "スプレッドを保存",
     "savedTitle": "保存したスプレッド",
@@ -12889,7 +12931,7 @@
       "noMatch": "一致するカードはありません",
       "noMatchHint": "スートや数字、または「お金」のようなキーワードで試してみてください。"
     },
-    "eyebrow": "カルトマンシー",
+    "eyebrow": "普通のトランプで読む",
     "focus": {
       "questionLabel": "あなたの問い",
       "questionPlaceholder": "いま気になっていることは何ですか？（任意）",
@@ -13007,7 +13049,7 @@
         "title": "スペード"
       }
     },
-    "title": "トランプ",
+    "title": "トランプ占い",
     "verdict": {
       "dependsOnPerson": "人か時期しだい",
       "heartsSpades": "ハート{{hearts}}枚、スペード{{spades}}枚",

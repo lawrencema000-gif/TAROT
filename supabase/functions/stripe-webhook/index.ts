@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import Stripe from "npm:stripe@14.10.0";
 import { AppError, handler } from "../_shared/handler.ts";
+import { stripeKeepsPremium, stripeLedgerStatus } from "../_shared/billing-provider.ts";
 
 /**
  * Stripe webhook handler.
@@ -24,6 +25,8 @@ interface StripeSubscriptionMetadata {
   transactionId: string;
   startedAt?: string;
   expiresAt?: string;
+  /** undefined = leave cancelled_at as it is; null clears it (resumed). */
+  cancelledAt?: string | null;
 }
 
 function getPeriodFromInterval(interval: string): string {
@@ -99,6 +102,16 @@ Deno.serve(
 
       ctx.log.info("stripe_webhook.received", { eventId: event.id, type: event.type });
 
+      /** The latest invoice's next_payment_attempt: when Stripe retries next, null when no retry is left. */
+      async function nextPaymentAttempt(subscription: Stripe.Subscription): Promise<number | null> {
+        const latest = subscription.latest_invoice;
+        if (!latest) return null;
+        // A failed read throws: the claim is released and Stripe retries the
+        // event, rather than ending Premium on a guess.
+        const invoice = typeof latest === "string" ? await stripe.invoices.retrieve(latest) : latest;
+        return invoice.next_payment_attempt ?? null;
+      }
+
       async function updateUserPremiumStatus(
         userId: string,
         isPremium: boolean,
@@ -125,6 +138,7 @@ Deno.serve(
               transaction_id: subscriptionData.transactionId,
               started_at: subscriptionData.startedAt,
               expires_at: subscriptionData.expiresAt,
+              ...(subscriptionData.cancelledAt !== undefined ? { cancelled_at: subscriptionData.cancelledAt } : {}),
               updated_at: new Date().toISOString(),
             },
             { onConflict: "transaction_id" },
@@ -262,9 +276,10 @@ Deno.serve(
               await updateUserPremiumStatus(userId, true, {
                 provider: "stripe",
                 productId: productId || subscription.items.data[0].price.id,
-                status: subscription.status === "trialing" ? "trial" : "active",
+                status: stripeLedgerStatus(subscription.status),
                 period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
                 transactionId: subscription.id,
+                cancelledAt: null,
                 startedAt: new Date(subscription.created * 1000).toISOString(),
                 expiresAt: subscription.current_period_end
                   ? new Date(subscription.current_period_end * 1000).toISOString()
@@ -296,14 +311,27 @@ Deno.serve(
               break;
             }
 
-            const isActive = ["active", "trialing"].includes(subscription.status);
+            // D50 C (2026-11-17): a past_due subscription keeps Premium while
+            // Stripe still has a retry scheduled for the unpaid invoice; it
+            // ends when Stripe cancels, marks it unpaid, pauses it, or has no
+            // retry left.
+            const isActive = stripeKeepsPremium(
+              subscription.status,
+              subscription.status === "past_due" ? await nextPaymentAttempt(subscription) : null,
+            );
 
             await updateUserPremiumStatus(userId, isActive, {
               provider: "stripe",
               productId: subscription.items.data[0].price.id,
-              status: subscription.status === "trialing" ? "trial" : subscription.status,
+              status: stripeLedgerStatus(subscription.status),
               period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
               transactionId: subscription.id,
+              // Stripe sets canceled_at when the cancellation is requested;
+              // an active subscription that ends at the period's end stays
+              // `active` in the ledger and records it here.
+              cancelledAt: subscription.cancel_at_period_end || subscription.status === "canceled"
+                ? new Date((subscription.canceled_at ?? Math.floor(Date.now() / 1000)) * 1000).toISOString()
+                : null,
               startedAt: new Date(subscription.created * 1000).toISOString(),
               expiresAt: subscription.current_period_end
                 ? new Date(subscription.current_period_end * 1000).toISOString()
@@ -329,6 +357,9 @@ Deno.serve(
               status: "cancelled",
               period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
               transactionId: subscription.id,
+              cancelledAt: new Date(
+                (subscription.canceled_at ?? subscription.ended_at ?? Math.floor(Date.now() / 1000)) * 1000,
+              ).toISOString(),
               startedAt: new Date(subscription.created * 1000).toISOString(),
               expiresAt: subscription.ended_at
                 ? new Date(subscription.ended_at * 1000).toISOString()
@@ -357,7 +388,23 @@ Deno.serve(
                   ctx.log.error("stripe_webhook.grace_period_update_failed", { err: error, userId });
                 }
 
-                ctx.log.info("stripe_webhook.payment_failed_grace", { userId });
+                // D50 C: Premium stays on through Stripe's retries; when the
+                // last retry has failed and Stripe leaves the subscription
+                // past_due (no further subscription event comes), end it here.
+                // The ledger keeps grace_period so the card form stays reachable.
+                if (sub.status === "past_due" && !stripeKeepsPremium(sub.status, invoice.next_payment_attempt)) {
+                  const { error: endErr } = await ctx.supabase
+                    .from("profiles")
+                    .update({ is_premium: false })
+                    .eq("id", userId);
+                  if (endErr) {
+                    ctx.log.error("stripe_webhook.profile_update_failed", { err: endErr, userId });
+                    throw endErr;
+                  }
+                  ctx.log.info("stripe_webhook.payment_retries_exhausted", { userId });
+                } else {
+                  ctx.log.info("stripe_webhook.payment_failed_grace", { userId });
+                }
               }
             }
             break;

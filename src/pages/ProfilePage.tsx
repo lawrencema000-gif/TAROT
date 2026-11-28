@@ -15,7 +15,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, EyebrowLabel, Section, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, PageGrid } from '../components/ui';
+import { Card, Button, EyebrowLabel, Section, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, PageGrid, EnneagramIcon, AttachmentRingsIcon } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -31,7 +31,7 @@ import { useUI } from '../context/UIContext';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
-import { getLocale } from '../i18n/config';
+import { getLocale, ensureRouteStrings, routeStringsReady } from '../i18n/config';
 import { parseLocalDate } from '../utils/localDate';
 
 const ELEMENT_DEFAULT: Record<string, string> = {
@@ -40,6 +40,19 @@ const ELEMENT_DEFAULT: Record<string, string> = {
   air: 'Air',
   water: 'Water',
 };
+
+/** The styles profiles.attachment_style holds, with the quiz's English names (quizzes.resultCopy.attachment.<style>.name). */
+const ATTACHMENT_NAME_EN: Record<string, string> = {
+  secure: 'Secure Attachment',
+  anxious: 'Anxious Attachment',
+  avoidant: 'Avoidant Attachment',
+  'fearful-avoidant': 'Fearful-Avoidant Attachment',
+};
+/** "4w5", or "4" without a wing; null without a type. */
+function enneagramCode(type?: number, wing?: number): string | null {
+  if (!type) return null;
+  return wing ? `${type}w${wing}` : String(type);
+}
 
 export function ProfilePage() {
   const { t } = useT('app');
@@ -59,6 +72,26 @@ export function ProfilePage() {
     'physical-touch': t('profile.loveLanguages.physical-touch'),
   };
   const { profile } = useAuth();
+  const enneagram = enneagramCode(profile?.enneagramType, profile?.enneagramWing);
+  const attachment = profile?.attachmentStyle && ATTACHMENT_NAME_EN[profile.attachmentStyle] ? profile.attachmentStyle : null;
+  // The style names live with the quiz strings, which load on /quizzes only (vite.config.ts routeNamespacePlugin):
+  // fetch them here only when there is a style to name.
+  const [quizStringsTried, setQuizStringsTried] = useState<string | null>(null);
+  const quizStringsReady = routeStringsReady('quizzes', locale) || quizStringsTried === locale;
+  useEffect(() => {
+    if (!attachment || quizStringsReady) return;
+    let live = true;
+    void ensureRouteStrings('quizzes', locale).then(() => {
+      if (live) setQuizStringsTried(locale);
+    });
+    return () => {
+      live = false;
+    };
+  }, [attachment, quizStringsReady, locale]);
+  const attachmentName =
+    attachment && quizStringsReady
+      ? t(`quizzes.resultCopy.attachment.${attachment}.name`, { defaultValue: ATTACHMENT_NAME_EN[attachment] })
+      : null;
   // Saved opens the one Saved sheet (the header ☆): saved readings, cards and
   // horoscopes, the Library's records. This page used to keep its own sheet
   // of highlights only, which said nothing was saved while the Library held
@@ -207,7 +240,7 @@ export function ProfilePage() {
     <div className="space-y-4">
       {identity}
 
-      {(profile?.mbtiType || profile?.loveLanguage) && (
+      {(profile?.mbtiType || profile?.loveLanguage || enneagram || attachmentName) && (
         <Section title={t('profile.personalityBadges')} headingLevel="h3" spacing="sm">
           <div className="flex flex-wrap gap-2">
             {profile?.mbtiType && (
@@ -218,6 +251,16 @@ export function ProfilePage() {
             {profile?.loveLanguage && (
               <Tag tone="rose" size="md" icon={<Heart className="w-4 h-4" aria-hidden />}>
                 {loveLanguageLabels[profile.loveLanguage] || profile.loveLanguage}
+              </Tag>
+            )}
+            {enneagram && (
+              <Tag tone="violet" size="md" icon={<EnneagramIcon className="w-4 h-4" aria-hidden />}>
+                {t('compatInvite.kinds.enneagram', { defaultValue: 'Enneagram' })} {enneagram}
+              </Tag>
+            )}
+            {attachmentName && (
+              <Tag tone="teal" size="md" icon={<AttachmentRingsIcon className="w-4 h-4" aria-hidden />}>
+                {attachmentName}
               </Tag>
             )}
           </div>

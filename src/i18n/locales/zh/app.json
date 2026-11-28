@@ -103,6 +103,10 @@
     "resetSuccessHint": "正在返回应用…",
     "resetSuccessRecoveryHint": "正在退出登录，请使用新密码重新登录。",
     "resetLinkExpiredHint": "重置链接仅一次性有效。如已失效，请从登录页重新申请。",
+    "verifyingLink": "正在验证链接…",
+    "resetLinkInvalidTitle": "此重置链接已过期或已被使用",
+    "resetLinkInvalidBody": "重置链接只能使用一次。申请新的链接后，我们会通过邮件发送给你。",
+    "requestNewLink": "发送新链接",
     "createAccount": "创建账号",
     "verifySentTo": "已向 {{email}} 发送验证链接，请查收邮件。",
     "checkSpam": "如果没有看到邮件，请检查垃圾邮件文件夹。",
@@ -176,7 +180,7 @@
       "runes": "符文",
       "dice": "骰子",
       "celestial": "天体地图",
-      "cartomancy": "扑克牌",
+      "cartomancy": "扑克牌占卜",
       "systems": "更多体系"
     },
     "categories": {
@@ -339,6 +343,9 @@
       "aiLimit": "今日 AI 解读次数已达上限，明天再来。",
       "shared": "已分享",
       "imageSaved": "图片已保存到你的下载文件夹",
+      "imageSavedLinkCopied": "图片已保存，链接已复制",
+      "copyLink": "复制链接",
+      "linkCopied": "链接已复制",
       "aiTooManyCards": "AI 解读只适用于不超过 {{n}} 张牌的牌阵。你的月光石没有被扣除。",
       "aiFallback": "AI 解读暂时不可用，没有扣除任何月光石。",
       "aiFallbackCharged": "AI 解读暂时不可用，你的月光石也未能自动退还。请联系客服为你恢复。"
@@ -4378,6 +4385,17 @@
       "promptChoose": "选择最符合你的答案。",
       "progress": "测试进度"
     },
+    "flow": {
+      "start": "开始测试",
+      "whatYouGet": "你将了解",
+      "previous": "上一题",
+      "leave": {
+        "title": "要退出这个测试吗？",
+        "body": "你已回答 {{total}} 道题中的 {{answered}} 道。现在退出，答案将不会保存。",
+        "stay": "继续作答",
+        "leave": "退出测试"
+      }
+    },
     "list": {
       "categories": {
         "label": "测试类别",
@@ -4926,7 +4944,7 @@
       },
       "card-reader": {
         "name": "读牌人",
-        "description": "学完扑克牌指南中的全部十二课。"
+        "description": "学完扑克牌占卜指南中的全部十二课。"
       },
       "the-jokers-laugh": {
         "name": "鬼牌的笑声",
@@ -5209,7 +5227,7 @@
           "desc": "本命盘、职业原型与全年展望，无需月光石"
         },
         "everySpread": {
-          "desc": "塔罗与扑克牌，含凯尔特十字",
+          "desc": "塔罗与扑克牌占卜，含凯尔特十字",
           "label": "全部牌阵"
         }
       },
@@ -5276,7 +5294,7 @@
         },
         "unlimitedReadings": {
           "heading": "今天继续解读",
-          "outcome": "免费账号每天可进行三次解读，塔罗与扑克牌合计。高级版取消这一限制，并开启全部牌阵，无广告。",
+          "outcome": "免费账号每天可进行三次解读，塔罗与扑克牌占卜合计。高级版取消这一限制，并开启全部牌阵，无广告。",
           "cta": "取消每日限制"
         },
         "horoscopeChart": {
@@ -5370,7 +5388,7 @@
         "readingsPlain": "已保存的解读"
       },
       "restoring": "正在查询你的购买记录…",
-      "subheadingEverySpread": "全部塔罗与扑克牌牌阵、你的完整出生星盘、伴侣合盘以及星座运势各分页——无广告，也无需消耗月光石。"
+      "subheadingEverySpread": "全部塔罗与扑克牌占卜牌阵、你的完整出生星盘、伴侣合盘以及星座运势各分页——无广告，也无需消耗月光石。"
     },
     "gate": {},
     "subscription": {
@@ -5380,6 +5398,8 @@
       "memberFallback": "会员",
       "status": "状态",
       "statusActive": "已激活",
+      "statusTrial": "免费试用中",
+      "statusPaymentIssue": "付款出现问题",
       "billing": "付款方式",
       "yourBenefits": "你的方案包含",
       "syncStatus": "刷新我的订阅",
@@ -5388,22 +5408,27 @@
         "verified": "你的订阅已确认。",
         "active": "无需更新，你的订阅状态如显示。",
         "verifyFailed": "无法向商店确认你的订阅，请检查网络连接后重试。",
-        "portalFailed": "无法打开账单门户。请检查网络连接后重试。"
+        "portalFailed": "无法打开账单门户。请检查网络连接后重试。",
+        "noCardSubscription": "此账户没有可在这里管理的银行卡订阅。如果你是在应用商店订阅的，请在那里管理。"
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "银行卡，通过 Stripe"
+        "stripe": "银行卡，通过 Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "已包含在你的账户中"
       },
       "manage": {
-        "android": "在 Google Play 管理",
-        "ios": "在 App Store 管理",
-        "web": "管理订阅"
+        "portal": "管理订阅",
+        "googlePlay": "在 Google Play 管理",
+        "appStore": "在 App Store 管理"
       },
       "storeNote": {
-        "android": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
-        "ios": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
-        "web": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。"
+        "stripe": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。",
+        "stripeInApp": "此订阅通过我们的网站以银行卡支付，无法在应用内更改。如需取消或更改，请在浏览器中登录 tarotlife.app。",
+        "stripeLifetime": "已用银行卡一次性付清，无需续订或取消。",
+        "googlePlay": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
+        "appStore": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
+        "included": "高级版已包含在你的账户中，无需付费、续订或取消。"
       },
       "plan": "你的方案",
       "renewal": {
@@ -6031,7 +6056,7 @@
         ]
       },
       "cartomancy-basics": {
-        "title": "扑克牌基础",
+        "title": "扑克牌占卜基础",
         "description": "解读一副普通扑克牌：花色、数字、红与黑",
         "readFull": "阅读全部十二课"
       }
@@ -10492,6 +10517,7 @@
     "gateCheckFailed": "无法查询你的余额——请重试。",
     "costLinePortrait": "绘制这幅画像消耗 <gold>{{n}} 月光石</gold>",
     "alreadyClaimedToday": "今天已领取",
+    "costLineResend": "上一次可能已经扣费——再问一次不会重复消耗月光石",
     "costLineConversationDay": "每段对话消耗 <gold>{{n}} 月光石</gold>，24 小时内的所有回复均包含在内"
   },
   "companion": {
@@ -10505,6 +10531,9 @@
     "emptyState":"就从任何问题开始吧——压在你心口的一个疑问，一个想被读懂的梦，一个想理解的名字。",
     "placeholder": "向灵伴发问…",
     "thinking": "思考中……",
+    "replyLost": "灵伴的回复没有送达。请重新发送——这段对话不会重复消耗月光石。",
+    "unanswered": "这条消息的回复没有送达。",
+    "sendAgain": "重新发送",
     "sendFailed": "无法连接灵伴，请检查网络连接后重新发送。",
     "sendRejected": "这条消息无法发送，请开始新对话后重新发送。",
     "dailyLimitReached": "今日消息已达上限——明天再来",
@@ -10796,6 +10825,7 @@
     },
     "computing": "正在计算你的星盘…",
     "progressedAge": "{{n}}岁",
+    "returnMoment": "回归时刻：{{when}}",
     "synastryPrompt": "对方的出生信息",
     "partnerNamePlaceholder": "对方姓名（可选）",
     "synastryCta": "叠加对方星盘",
@@ -11125,7 +11155,7 @@
     "errorGeneric": "未能生成解读。请重试。",
     "deckLabel": "牌组",
     "deckTarot": "塔罗",
-    "deckPlaying": "扑克牌",
+    "deckPlaying": "扑克牌占卜",
     "errorNoCharge": "你没有收到解读，因此没有扣除任何费用。",
     "tryAgain": "重试",
     "errorRetryFree": "如果你已被扣费，点击「重试」即可取回同一次解读，无需额外付费。",
@@ -11248,6 +11278,7 @@
     "redraw": "新牌",
     "newCardConfirmTitle": "要抽一张新牌吗？",
     "newCardConfirmBody": "关于{{card}}的这段对话将会结束，之后无法再回到这里。",
+    "newCardConfirmBodyPending": "上一次解读{{card}}可能已经扣费。新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmBodyPaid": "关于{{card}}的这段对话将会结束，之后无法再回到这里。解读新牌会开始新的对话，消耗 {{n}} 月光石。",
     "newCardConfirmAction": "抽一张新牌",
     "newCardConfirmKeep": "继续这段对话",
@@ -11258,6 +11289,7 @@
     "reversed": "逆位",
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
+    "replyLost": "神谕的回答没有送达。请再问一次——这张牌不会重复消耗月光石。",
     "aiFailed": "无法连接神谕，请检查网络连接后再问一次。",
     "sendRejected": "这个问题无法发送，请抽一张新牌，开始新的对话。",
     "thinking": "神谕正在思考…",
@@ -11279,6 +11311,12 @@
     "tapPrompt": "点按行星、宫位或相位线。",
     "planetLabel": "行星",
     "transitLabel": "行运",
+    "overlayKind": {
+      "transit": "行运",
+      "progressed": "推运",
+      "solarReturn": "太阳回归",
+      "partner": "对方"
+    },
     "houseLabel": "第{{n}}宫",
     "aspectLabel": "相位",
     "wheelAria": "本命星盘轮",
@@ -11311,6 +11349,7 @@
     "aspectsAll": "全部（{{n}}）",
     "aspectsTight": "紧密相位（{{n}}）",
     "noTightAspects": "没有容许度紧密的相位。切换到「全部」可查看所有连接。",
+    "noAspectLines": "此星盘没有相位线。",
     "aspectGridAria": "相位矩阵",
     "gridTapPrompt": "点按格子阅读相位",
     "modalities": {
@@ -12297,7 +12336,7 @@
     "toasts": {
       "signInToSave": "请登录后保存此牌阵。",
       "nameRequired": "保存前请为牌阵命名。",
-      "positionRequired": "请至少添加一个位置，并填写名称和含义。",
+      "positionRequired": "请至少添加一个带名称的位置。",
       "saveFailed": "无法保存你的牌阵，请检查网络连接后重试。",
       "saved": "牌阵已保存，可在「你保存的牌阵」中找到。",
       "deleteFailed": "无法删除该牌阵，请检查网络连接后重试。",
@@ -12318,8 +12357,11 @@
     "positionCount_one": "{{count}} 个位置",
     "positionCount_other": "{{count}} 个位置",
     "positionMeaningPlaceholder": "这个位置代表什么…",
-    "positionNamePlaceholder": "位置名称（例如：挑战）",
+    "positionNamePlaceholder": "位置名称",
     "positions": "位置",
+    "positionNameMissing": "请为位置 {{n}} 命名，或将其移除。",
+    "positionMeaningMissing": "请写下位置 {{n}} 代表什么，或将其移除。",
+    "positionsHint": "每个位置都需要名称（例如：挑战），它代表什么可以不填。",
     "removePosition": "移除位置 {{n}}",
     "save": "保存牌阵",
     "savedTitle": "你保存的牌阵",
@@ -12889,7 +12931,7 @@
       "noMatch": "没有符合的牌",
       "noMatchHint": "试试花色、点数，或像“金钱”这样的关键词。"
     },
-    "eyebrow": "扑克牌占卜",
+    "eyebrow": "用普通扑克牌解读",
     "focus": {
       "questionLabel": "你的问题",
       "questionPlaceholder": "你在想什么？（可选）",
@@ -13007,7 +13049,7 @@
         "title": "黑桃"
       }
     },
-    "title": "扑克牌",
+    "title": "扑克牌占卜",
     "verdict": {
       "dependsOnPerson": "取决于某个人，或取决于时间",
       "heartsSpades": "红心 {{hearts}} 张，黑桃 {{spades}} 张",

@@ -59,9 +59,13 @@ export interface UserProfile {
   lastRitualDate?: string;
   mbtiType?: string;
   loveLanguage?: string;
+  /** 1–9, from profiles.enneagram_type (the Enneagram result's Save). */
   enneagramType?: number;
+  /** 1–9, the saved wing. */
   enneagramWing?: number;
+  /** 'secure' | 'anxious' | 'avoidant' | 'fearful-avoidant' (the Attachment result's Save and Love Tree). */
   attachmentStyle?: string;
+  /** From profiles.big_five_scores; nothing writes it yet. */
   bigFiveScores?: {
     openness: number;
     conscientiousness: number;

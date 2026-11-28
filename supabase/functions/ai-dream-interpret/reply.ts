@@ -11,7 +11,7 @@
  * detector reads as a crisis gets the app's reading, in the member's language
  * with their own lines (_shared/crisis-reply.ts), before the model; the model
  * answers a dream it reads that way with {"crisis": true} and gets the same.
- * That reading is never charged and never cached (./index.ts).
+ * That reading is never charged (./index.ts).
  */
 
 import { crisisLetter, crisisParagraphs, crisisRule, isCrisisJson, writesCrisis } from "../_shared/crisis-reply.ts";

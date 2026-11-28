@@ -14,6 +14,7 @@ import { awardXP } from '../services/levelSystem';
 import { publishContent, type ModerationSurface, type ModerationResult } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
 import { ConfirmDeleteSheet } from '../components/community/ConfirmDeleteSheet';
+import { ReportPostSheet } from '../components/community/ReportPostSheet';
 
 type CrisisResources = NonNullable<ModerationResult['crisisResources']>;
 
@@ -542,6 +543,9 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reported, setReported] = useState(false);
+  // The report sheet hands focus back here when it closes (its focus trap
+  // returns it to whatever had it on opening, and the menu item is gone).
+  const optionsRef = useRef<HTMLButtonElement>(null);
 
   const displayName = post.isAnonymous
     ? t('community.anonymous', { defaultValue: 'Anonymous' })
@@ -566,6 +570,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
         </div>
         <div className="relative">
           <button
+            ref={optionsRef}
             onClick={() => setMenuOpen(!menuOpen)}
             className="min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-mystic-300"
             aria-label={t('community.options', { defaultValue: 'Options' })}
@@ -585,7 +590,10 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
                   ) : (
                     <button
                       role="menuitem"
-                      onClick={() => { setMenuOpen(false); setReportOpen(true); }}
+                      // ⋮ takes focus first, so the sheet's focus trap records it
+                      // as the opener; a toast from the last action would sit
+                      // over the sheet's buttons (as for Delete).
+                      onClick={() => { setMenuOpen(false); dismissToasts(); optionsRef.current?.focus(); setReportOpen(true); }}
                       className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
                     >
                       <Flag className="w-3 h-3" aria-hidden /> {t('community.report', { defaultValue: 'Report' })}
@@ -658,17 +666,21 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
         </button>
       </div>
 
-      {reportOpen && (
-        <ReportDialog
-          onClose={() => setReportOpen(false)}
-          onSubmit={async (reason) => {
-            const ok = await onReport(post, reason);
-            if (ok) setReported(true);
+      {/* Always mounted: a closed Sheet renders nothing and holds nothing.
+          Drawn on <body> (social-ai-01). A failed send keeps it up, the
+          reason still picked, under handleReport's error toast. */}
+      <ReportPostSheet
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        onSubmit={async (reason) => {
+          const ok = await onReport(post, reason);
+          if (ok) {
+            setReported(true);
             setReportOpen(false);
-          }}
-          t={t}
-        />
-      )}
+          }
+          return ok;
+        }}
+      />
     </Card>
   );
 }
@@ -1226,88 +1238,6 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
         </Card>
       )}
     </Page>
-  );
-}
-
-// ==================================================================
-// Report dialog
-// ==================================================================
-
-/**
- * Two taps, not one: pick the reason, then confirm. A single tap on a
- * reason used to file the report on the spot, so a slip while scrolling the
- * list was a report nobody meant to make (R7).
- */
-function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit: (r: ReportReason) => Promise<void>; t: (key: string, opts?: Record<string, unknown>) => string }) {
-  const reasons: ReportReason[] = ['spam', 'harassment', 'self-harm', 'explicit', 'misinformation', 'other'];
-  const [reason, setReason] = useState<ReportReason | null>(null);
-  const [sending, setSending] = useState(false);
-  const titleId = 'community-report-title';
-  return (
-    <div className="fixed inset-0 bg-mystic-950/80 z-50 flex items-end md:items-center justify-center p-4" onClick={onClose}>
-      <Card
-        padding="lg"
-        className="w-full max-w-sm"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <h3 id={titleId} className="heading-display-md text-mystic-100 mb-1">
-          {t('community.reportPostTitle', { defaultValue: 'Report post' })}
-        </h3>
-        <p className="text-meta text-mystic-400 mb-3">
-          {t('community.reportPrompt', { defaultValue: 'Choose a reason, then confirm.' })}
-        </p>
-        <div role="radiogroup" aria-labelledby={titleId} className="space-y-1">
-          {reasons.map((r) => {
-            const active = reason === r;
-            return (
-              <button
-                key={r}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => setReason(r)}
-                className={`w-full text-left px-3 py-2 min-h-[44px] text-ui rounded-control flex items-center gap-3 ${
-                  active ? 'bg-gold/10 text-mystic-100' : 'text-mystic-300 hover:bg-mystic-800'
-                }`}
-              >
-                <span
-                  className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-gold' : 'border-mystic-600'}`}
-                  aria-hidden
-                >
-                  {active && <span className="w-2 h-2 rounded-full bg-gold" />}
-                </span>
-                {t(`community.reportReasons.${r}`, { defaultValue: r })}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="outline" fullWidth onClick={onClose} disabled={sending}>
-            {t('common.cancel', { defaultValue: 'Cancel' })}
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            disabled={!reason || sending}
-            loading={sending}
-            onClick={async () => {
-              if (!reason) return;
-              setSending(true);
-              try {
-                await onSubmit(reason);
-              } finally {
-                setSending(false);
-              }
-            }}
-          >
-            {t('community.reportConfirm', { defaultValue: 'Report' })}
-          </Button>
-        </div>
-      </Card>
-    </div>
   );
 }
 

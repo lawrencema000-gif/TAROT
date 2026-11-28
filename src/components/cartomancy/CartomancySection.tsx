@@ -11,7 +11,8 @@ import { useGamification } from '../../context/GamificationContext';
 import { useLeaveGuard } from '../../context/leaveGuard';
 import { tarotReadings } from '../../dal';
 import { combinationHitsToLines, generatePremiumReading, playingCardToReadingCard } from '../../services/readingInterpretation';
-import { getDailyReadingCount, incrementDailyReadingCount } from '../../services/offline';
+import { getDailyReadingCount, incrementDailyReadingCount, raiseDailyReadingCount, decideFreeDeal } from '../../services/offline';
+import { claimFreeReading, usedToday, type FreeReadingClaim } from '../../dal/freeReadings';
 import { getZodiacSign } from '../../utils/zodiac';
 import { localDateStr } from '../../utils/localDate';
 import { adsService } from '../../services/ads';
@@ -179,7 +180,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const { sharing, shareOnce } = useShareOnce();
   const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
-  const [dailyReadingCount, setDailyReadingCount] = useState(0);
+  const [dailyCount, setDailyCount] = useState<{ date: string; used: number }>({ date: '', used: 0 });
   const [canWatchAd, setCanWatchAd] = useState(false);
   const [settings, setSettings] = useState<CartoSettings>(() => loadCartoSettings());
   const [showSettings, setShowSettings] = useState(false);
@@ -200,6 +201,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const rewardedRef = useRef(false);
   /** The section is on screen: a "Save and leave" that lands after it has gone takes no step. */
   const mountedRef = useRef(false);
+  /** A free deal's server claim is out: a second tap on Reveal does nothing. */
+  const claimingRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -220,23 +223,28 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
   const cardCount = drawCount !== null && (drawCount === spread.cardCount || drawCount === variantCount) ? drawCount : spread.cardCount;
 
   // The free tier's count belongs to the account, and is the one tarot keeps
-  // (services/offline, p8 F52): read again when the account changes.
+  // (services/offline, p8 F52): read again when the account or Premium
+  // changes. A signed-in free member's count is the server's, across devices
+  // (D08 A), or this device's when that is higher (readings dealt offline).
   const userId = user?.id ?? null;
+  const isPremium = !!profile?.isPremium;
   useEffect(() => {
     let live = true;
+    const today = localDateStr();
     Promise.all([
-      getDailyReadingCount(userId),
+      getDailyReadingCount(userId, today),
       isNative() ? rewardedAdsService.canWatchAd().catch(() => false) : Promise.resolve(false),
-    ]).then(([count, canWatch]) => {
+      userId && !isPremium ? usedToday(today) : Promise.resolve({ ok: true as const, data: 0 }),
+    ]).then(([count, canWatch, server]) => {
       if (!live) return;
-      setDailyReadingCount(count);
+      setDailyCount({ date: today, used: Math.max(count, server.ok ? server.data : 0) });
       setCanWatchAd(canWatch);
       setCountsReady(true);
     });
     return () => {
       live = false;
     };
-  }, [userId]);
+  }, [userId, isPremium]);
 
   useEffect(
     () => () => {
@@ -245,7 +253,8 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     [],
   );
 
-  const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
+  // A count from yesterday no longer blocks today.
+  const isAtDailyLimit = !profile?.isPremium && dailyCount.date === localDateStr() && dailyCount.used >= FREE_TIER.dailyReadings;
 
   useEffect(() => {
     let live = true;
@@ -487,19 +496,47 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
     });
   };
 
-  const handleRevealSelected = () => {
+  const handleRevealSelected = async () => {
     if (selectedIndices.length !== cardCount) return;
     const cards = selectedIndices.map((id) => getPlayingCard(id)).filter((c): c is PlayingCard => !!c);
     if (cards.length !== cardCount) {
       toast(t('readings.toasts.cardsNotFound'), 'error');
       return;
     }
+    // A free reading is claimed on the server before it is dealt (D08 A); the
+    // device's count decides only when the server cannot answer.
+    let dealtOnAdGrant = false;
+    let serverUsed: number | null = null;
+    if (!profile?.isPremium) {
+      if (claimingRef.current) return;
+      claimingRef.current = true;
+      const today = localDateStr();
+      let claim: FreeReadingClaim | null = null;
+      try {
+        claim = userId ? await claimFreeReading(today) : null;
+      } finally {
+        claimingRef.current = false;
+      }
+      if (!mountedRef.current) return;
+      const deviceUsed = await getDailyReadingCount(userId, today);
+      if (claim && claim.status !== 'unavailable') serverUsed = claim.used;
+      const verdict = decideFreeDeal({ claim, deviceUsed, limit: FREE_TIER.dailyReadings, hasAdGrant: !!hasTemporaryAccess['extra_reading'] });
+      if (verdict === 'refuse') {
+        if (userId && serverUsed !== null) await raiseDailyReadingCount(userId, serverUsed, today);
+        setDailyCount({ date: today, used: Math.max(deviceUsed, serverUsed ?? 0) });
+        if (isNative() && canWatchAd) setAdRequest({ feature: 'extra_reading', spreadId: null });
+        else onShowPaywall(t('readings.paywall.unlimited'));
+        return;
+      }
+      dealtOnAdGrant = verdict === 'deal-on-ad-grant';
+    }
     rewardedRef.current = false;
     setDrawnCards(dealCards(cards, settings.reversals));
 
     (async () => {
       await incrementDailyReadingCount(userId);
-      setDailyReadingCount(await getDailyReadingCount(userId));
+      if (userId && serverUsed !== null) await raiseDailyReadingCount(userId, serverUsed);
+      setDailyCount({ date: localDateStr(), used: await getDailyReadingCount(userId) });
       if (!profile?.isPremium) {
         const target = CARTO_SPREADS.find((s) => s.slug === currentSlug);
         if (target && !target.free && hasTemporaryAccess[currentSlug]) {
@@ -509,7 +546,7 @@ function CartomancySectionBody({ onShowPaywall, initialSpread = null, onExit }: 
             setHasTemporaryAccess((prev) => ({ ...prev, [currentSlug]: false }));
           }
         }
-        if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
+        if (dealtOnAdGrant) {
           await rewardedAdsService.consumeTemporaryAccess('extra_reading');
           setHasTemporaryAccess((prev) => ({ ...prev, extra_reading: false }));
         }

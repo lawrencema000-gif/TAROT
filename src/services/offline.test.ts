@@ -11,8 +11,10 @@ import {
   cartoLessonsKey,
   clearUserCache,
   dailyReadingKeys,
+  decideFreeDeal,
   getDailyReadingCount,
   incrementDailyReadingCount,
+  raiseDailyReadingCount,
 } from './offline';
 
 const TODAY = '2026-10-17';
@@ -81,6 +83,37 @@ describe('the daily free-reading count', () => {
     localStorage.setItem('arcana_daily_readings:user-a', 'x');
     localStorage.setItem('arcana_daily_readings_date:user-a', TODAY);
     expect(await getDailyReadingCount('user-a', TODAY)).toBe(0);
+  });
+
+  it("is raised to the server's count (other devices), never lowered, and starts again the next day (D08 A)", async () => {
+    await incrementDailyReadingCount('user-a', TODAY);
+    expect(await raiseDailyReadingCount('user-a', 3, TODAY)).toBe(3);
+    expect(await getDailyReadingCount('user-a', TODAY)).toBe(3);
+    expect(await raiseDailyReadingCount('user-a', 0, TODAY)).toBe(3);
+    expect(await getDailyReadingCount('user-a', TODAY)).toBe(3);
+    expect(await getDailyReadingCount('user-a', '2026-10-18')).toBe(0);
+  });
+});
+
+describe('decideFreeDeal: the server decides when it answers, the device count when it cannot (D08 A)', () => {
+  const limit = 3;
+  const allowed = { status: 'allowed' as const };
+  const refused = { status: 'refused' as const };
+  const unavailable = { status: 'unavailable' as const };
+  it.each([
+    ['allowed, device 0', allowed, 0, false, 'deal'],
+    ['allowed, device 5 (the server counts this device too)', allowed, 5, false, 'deal'],
+    ['refused, no grant', refused, 0, false, 'refuse'],
+    ['refused, ad grant', refused, 0, true, 'deal-on-ad-grant'],
+    ['unavailable, device 0', unavailable, 0, false, 'deal'],
+    ['unavailable, device 2', unavailable, 2, false, 'deal'],
+    ['unavailable, device 3, no grant', unavailable, 3, false, 'refuse'],
+    ['unavailable, device 3, ad grant', unavailable, 3, true, 'deal-on-ad-grant'],
+    ['signed out, device 2', null, 2, false, 'deal'],
+    ['signed out, device 3', null, 3, false, 'refuse'],
+    ['signed out, device 3, ad grant', null, 3, true, 'deal-on-ad-grant'],
+  ] as const)('%s → %s', (_name, claim, deviceUsed, hasAdGrant, verdict) => {
+    expect(decideFreeDeal({ claim, deviceUsed, limit, hasAdGrant })).toBe(verdict);
   });
 });
 

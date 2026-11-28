@@ -70,7 +70,11 @@
       "counts": "{{flowing}} flowing · {{demanding}} demanding",
       "why": "Why this number",
       "influence": "{{transiting}} {{type}} your {{natal}}",
-      "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate."
+      "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate.",
+      "baseline": "Neutral start",
+      "smallerInfluences_one": "{{count}} smaller influence",
+      "smallerInfluences_other": "{{count}} smaller influences",
+      "countsOfAll": "{{flowing}} flowing · {{demanding}} demanding, of {{total}} influences"
     },
     "highlightSaved": "Saved to your highlights",
     "highlightSaveFailed": "Couldn’t save this card to your highlights — check your connection and try again.",
@@ -4665,7 +4669,7 @@
     "journalButton": "Open the journal",
     "birthChartCard": {
       "title": "Birth chart analysis",
-      "subtitle": "Personalized transit notes",
+      "subtitle": "Your full chart, forecasts and the Explore tab",
       "upgrade": "Unlock my birth chart"
     },
     "paywallFeatures": {
@@ -4703,6 +4707,7 @@
       "shadowSide": "Shadow side",
       "houseLabel": "House {{num}}",
       "aspectMeta": "{{type}} • Orb: {{orb}}° • {{motion}}",
+      "aspectMetaNoMotion": "{{type}} • Orb: {{orb}}°",
       "applying": "Applying",
       "separating": "Separating",
       "elements": {
@@ -4861,6 +4866,7 @@
       "title": "Cosmic profile",
       "sun": "Sun",
       "animal": "Animal",
+      "animalYearNote": "Your animal year begins at Lunar New Year.",
       "lifePath": "Life path",
       "expression": "Expression",
       "soulUrge": "Soul urge",
@@ -6974,6 +6980,7 @@
     "cautions": "Cautions",
     "transformsInto": "Transforms into",
     "transformNote": "The changing lines show the energy moving toward this second hexagram — read as “where this situation is heading”.",
+    "changingLines": "Changing lines: {{lines}}",
     "journalPrompt": "Journal prompt",
     "backToStart": "Cast again",
     "castAgain": "Cast again",
@@ -7035,6 +7042,8 @@
     "bodygraphLabel": "Your bodygraph",
     "centersDefined": "centres defined",
     "channelsDefined": "channels",
+    "bodygraphSummary_one": "{{centers}} / 9 centres defined · {{count}} channel",
+    "bodygraphSummary_other": "{{centers}} / 9 centres defined · {{count}} channels",
     "channelsHeading": "Your defined channels",
     "channelsNote": "Each channel connects two centres and defines a consistent life-force flow between them. These are fixed parts of who you are — always available to you.",
     "activationsLabel": "All 26 activations",
@@ -7073,6 +7082,9 @@
     "intro": "Bazi — \"eight characters\" — is the traditional Chinese reading of your birth moment as four pillars: year, month, day, and hour. Each pillar carries one of the five elements (wood, fire, earth, metal, water) and a yin or yang polarity. Together they show your Day Master — the axis of your nature — and where the elements of your life run rich or run thin.",
     "birthDate": "Birth date",
     "birthTime": "Birth time (optional)",
+    "birthPlace": "Birth place (sets the time zone)",
+    "zoneUsed": "Your birth time is read in {{zone}}.",
+    "lateZiNote": "Born between 23:00 and 23:59: this is the Zi (子) hour that opens the next day, so your hour pillar is {{hour}}. Your day pillar stays on your calendar date.",
     "calculate": "Cast the four pillars",
     "calcFailed": "Couldn’t cast your four pillars — check your birth details and try again.",
     "needBirthDate": "Birth date is required",
@@ -10213,6 +10225,10 @@
     "elementalLabel": "Elemental blend",
     "compositeLabel": "Your relationship as a third entity",
     "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.",
+    "compositeIn": "Composite {{planet}} in {{sign}}",
+    "compositeAspect": "Composite {{p1}} {{type}} {{p2}}",
+    "compositeMethod": "Each planet here sits halfway between yours and theirs.",
+    "compositeNoMoon": "Without both birth times, the composite Moon is left out.",
     "share": "Share this match",
     "stillComputing": "Still computing the aspects…",
     "tryAgain": "Try again",
@@ -11375,6 +11391,9 @@
     "aspectsAll": "All ({{n}})",
     "aspectsTight": "Tight orbs ({{n}})",
     "noTightAspects": "No aspects within tight orbs. Switch to all to see every connection.",
+    "houseSystem": {
+      "equal": "Houses: Equal (from the Ascendant)"
+    },
     "noAspectLines": "No aspect lines on this chart.",
     "aspectGridAria": "Aspect grid",
     "gridTapPrompt": "Tap a cell to read the aspect",
@@ -11495,6 +11514,13 @@
     "computing": "Comparing your charts…",
     "needsChart": "The score compares your birth chart with theirs, and yours isn’t set up yet. Add your birth place to cast it — nothing was spent.",
     "setUpChart": "Set up my chart"
+  },
+  "synastry": {
+    "zoneFromPlace": "Their birth time is read in {{zone}}.",
+    "noPlaceNote": "Without a birth place, their birth time is read in your time zone ({{zone}}).",
+    "placeZoneFailed": "We couldn’t find this place’s time zone. Pick it again, or clear it to use your own time zone.",
+    "clearPlace": "Clear place",
+    "zoneAssumedHint": "Their birth time was read in your time zone ({{zone}}). Add their birth place to read it where they were born."
   },
   "ziwei": {
     "title": "Zi Wei Dou Shu",

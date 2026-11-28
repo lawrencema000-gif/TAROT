@@ -1,14 +1,24 @@
 /**
- * Moon phase data + guidance. Computes the current lunar phase from the
- * synodic period and returns an 8-phase classification with ritual prompts
- * for each. Client-only — no API calls.
+ * Moon phase data + guidance. Client-only: no API calls.
  *
- * Reference NEW moon: 2000-01-06 18:14 UTC (canonical ephemeris anchor).
- * Synodic period: 29.53059 days.
+ * The Moon is read from astronomy-engine, the same engine as
+ * src/utils/solarTerms.ts and src/utils/chineseLunar.ts (no mean cycle).
+ *
+ * The rule the card follows (no single authority prescribes one):
+ *  - A principal phase (New moon, First quarter, Full moon, Last quarter) is
+ *    named on the reader's local calendar day that contains its instant, as
+ *    calendars and almanac day listings do.
+ *  - Every other day takes the intermediate name from the Moon–Sun
+ *    elongation (Astronomy.MoonPhase): 0–90° waxing crescent, 90–180°
+ *    waxing gibbous, 180–270° waning gibbous, 270–360° waning crescent.
+ *  - "Next" is the first principal phase after now whose name differs from
+ *    the one shown. So on a First Quarter day the card says "Next: Full moon
+ *    …", never "Next: First quarter in 0.3 days" under a "First quarter" title.
+ *  - Age is the time since the last new moon. Illumination is the lit
+ *    fraction of the disc.
  */
 
-const REFERENCE_NEW_MOON_UTC = new Date('2000-01-06T18:14:00Z').getTime();
-const SYNODIC_MS = 29.53059 * 86400000;
+import * as Astronomy from 'astronomy-engine';
 
 export type MoonPhaseKey =
   | 'new'
@@ -30,7 +40,8 @@ export interface MoonPhaseInfo {
   journalPrompt: string;
   illumination: number;
   ageDays: number;
-  nextPhase: { key: MoonPhaseKey; inDays: number };
+  waxing: boolean;
+  nextPhase: { key: MoonPhaseKey; inDays: number; at: Date };
 }
 
 const PHASE_META: Record<MoonPhaseKey, {
@@ -107,7 +118,8 @@ const PHASE_META: Record<MoonPhaseKey, {
   },
 };
 
-const PHASE_ORDER: MoonPhaseKey[] = [
+/** The eight phases in cycle order. */
+export const PHASE_ORDER: readonly MoonPhaseKey[] = [
   'new',
   'waxing-crescent',
   'first-quarter',
@@ -118,62 +130,68 @@ const PHASE_ORDER: MoonPhaseKey[] = [
   'waning-crescent',
 ];
 
-function classifyPhase(ageDays: number): MoonPhaseKey {
-  const cycle = 29.53059;
-  if (ageDays < 1.84566) return 'new';
-  if (ageDays < 5.53699) return 'waxing-crescent';
-  if (ageDays < 9.22831) return 'first-quarter';
-  if (ageDays < 12.91963) return 'waxing-gibbous';
-  if (ageDays < 16.61096) return 'full';
-  if (ageDays < 20.30228) return 'waning-gibbous';
-  if (ageDays < 23.99361) return 'last-quarter';
-  if (ageDays < 27.68493) return 'waning-crescent';
-  if (ageDays < cycle) return 'new';
-  return 'new';
+const DAY_MS = 86_400_000;
+/** SearchMoonQuarter's `quarter`: 0 new, 1 first quarter, 2 full, 3 last quarter. */
+const QUARTER_KEY: readonly MoonPhaseKey[] = ['new', 'first-quarter', 'full', 'last-quarter'];
+
+/** The calendar day an instant falls on for the reader (undefined = the device's zone). */
+function localDay(d: Date, timeZone?: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 }
 
-function daysUntilNextPhase(ageDays: number, currentKey: MoonPhaseKey): number {
-  const boundaries: Record<MoonPhaseKey, number> = {
-    'new': 1.84566,
-    'waxing-crescent': 5.53699,
-    'first-quarter': 9.22831,
-    'waxing-gibbous': 12.91963,
-    'full': 16.61096,
-    'waning-gibbous': 20.30228,
-    'last-quarter': 23.99361,
-    'waning-crescent': 27.68493,
-  };
-  const boundary = boundaries[currentKey];
-  const days = boundary - ageDays;
-  return Math.max(0, Math.round(days * 10) / 10);
-}
-
-export function getMoonPhase(date: Date = new Date()): MoonPhaseInfo {
-  const diff = date.getTime() - REFERENCE_NEW_MOON_UTC;
-  const phase = ((diff % SYNODIC_MS) + SYNODIC_MS) % SYNODIC_MS;
-  const ageDays = phase / 86400000;
-  const key = classifyPhase(ageDays);
-  const meta = PHASE_META[key];
-
-  // Illumination is 0 at new, 1 at full, back to 0. Approximated with a cosine.
-  const illumination = Math.max(0, Math.min(1, (1 - Math.cos((ageDays / 29.53059) * 2 * Math.PI)) / 2));
-
-  const currentIdx = PHASE_ORDER.indexOf(key);
-  const nextKey = PHASE_ORDER[(currentIdx + 1) % PHASE_ORDER.length];
-  const inDays = daysUntilNextPhase(ageDays, key);
-
-  return {
-    key,
-    name: meta.name,
-    glyph: meta.glyph,
-    energy: meta.energy,
-    guidance: meta.guidance,
-    ritual: meta.ritual,
-    journalPrompt: meta.journalPrompt,
-    illumination: Math.round(illumination * 100) / 100,
-    ageDays: Math.round(ageDays * 10) / 10,
-    nextPhase: { key: nextKey, inDays },
-  };
+/**
+ * The Moon at `date` for a reader in `timeZone` (default: the device's zone).
+ * Returns null when the ephemeris cannot be computed: the card then shows
+ * nothing rather than a wrong Moon.
+ */
+export function getMoonPhase(date: Date = new Date(), timeZone?: string): MoonPhaseInfo | null {
+  try {
+    const t = date.getTime();
+    if (!Number.isFinite(t)) return null;
+    const elongation = Astronomy.MoonPhase(date); // 0 new … 90 FQ … 180 full … 270 LQ
+    // Latest new moon at or before `date` (lunations run 29.27–29.83 days, so 30 always reaches it).
+    const lastNew = Astronomy.SearchMoonPhase(0, date, -30);
+    if (!lastNew) return null;
+    // Principal phases are 6.5–8.2 days apart, so one starting 9 days back is always before `date`.
+    let q = Astronomy.SearchMoonQuarter(new Date(t - 9 * DAY_MS));
+    let prev: Astronomy.MoonQuarter | null = null;
+    const after: Astronomy.MoonQuarter[] = [];
+    while (after.length < 2) {
+      if (q.time.date.getTime() <= t) prev = q;
+      else after.push(q);
+      q = Astronomy.NextMoonQuarter(q);
+    }
+    const today = localDay(date, timeZone);
+    let key: MoonPhaseKey;
+    if (prev && localDay(prev.time.date, timeZone) === today) key = QUARTER_KEY[prev.quarter];
+    else if (localDay(after[0].time.date, timeZone) === today) key = QUARTER_KEY[after[0].quarter];
+    else
+      key =
+        elongation < 90
+          ? 'waxing-crescent'
+          : elongation < 180
+            ? 'waxing-gibbous'
+            : elongation < 270
+              ? 'waning-gibbous'
+              : 'waning-crescent';
+    const next = QUARTER_KEY[after[0].quarter] === key ? after[1] : after[0];
+    const meta = PHASE_META[key];
+    const illumination = Astronomy.Illumination(Astronomy.Body.Moon, date).phase_fraction;
+    return {
+      key,
+      ...meta, // name, glyph, energy, guidance, ritual, journalPrompt
+      illumination: Math.round(illumination * 100) / 100,
+      ageDays: Math.round(((t - lastNew.date.getTime()) / DAY_MS) * 10) / 10,
+      waxing: elongation < 180,
+      nextPhase: {
+        key: QUARTER_KEY[next.quarter],
+        inDays: Math.round(((next.time.date.getTime() - t) / DAY_MS) * 10) / 10,
+        at: next.time.date,
+      },
+    };
+  } catch {
+    return null; // the card shows nothing rather than a wrong Moon
+  }
 }
 
 export function getPhaseMeta(key: MoonPhaseKey) {

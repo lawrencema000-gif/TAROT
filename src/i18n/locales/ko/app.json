@@ -70,7 +70,11 @@
       "counts": "조화로운 {{flowing}} · 도전적인 {{demanding}}",
       "why": "이 숫자의 이유",
       "influence": "{{transiting}}이 당신의 {{natal}}에 {{type}}",
-      "footnote": "지금 이 순간의 실제 행성 위치를 당신의 출생 차트에 비추어 매긴 점수예요. 운명이 아니라 날씨를 말해요."
+      "footnote": "지금 이 순간의 실제 행성 위치를 당신의 출생 차트에 비추어 매긴 점수예요. 운명이 아니라 날씨를 말해요.",
+      "baseline": "중립 출발점",
+      "smallerInfluences_one": "작은 영향 {{count}}개 더",
+      "smallerInfluences_other": "작은 영향 {{count}}개 더",
+      "countsOfAll": "{{total}}개 중 조화로운 {{flowing}} · 도전적인 {{demanding}}"
     },
     "highlightSaved": "저장했어요",
     "highlightSaveFailed": "이 카드를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -4459,7 +4463,7 @@
     "journalButton": "저널 열기",
     "birthChartCard": {
       "title": "출생 차트 분석",
-      "subtitle": "개인 맞춤 트랜짓 노트",
+      "subtitle": "전체 차트, 예보, 탐색 탭",
       "upgrade": "내 출생 차트 열기"
     },
     "paywallFeatures": {
@@ -4497,6 +4501,7 @@
       "shadowSide": "그림자 면",
       "houseLabel": "{{num}}번째 하우스",
       "aspectMeta": "{{type}} • 오브: {{orb}}° • {{motion}}",
+      "aspectMetaNoMotion": "{{type}} • 오브: {{orb}}°",
       "applying": "접근 중",
       "separating": "분리 중",
       "elements": {
@@ -4645,6 +4650,7 @@
       "title": "코스믹 프로파일",
       "sun": "태양",
       "animal": "띠",
+      "animalYearNote": "띠는 음력 설날부터 바뀌어요.",
       "lifePath": "라이프 패스",
       "shareButton": "코스믹 프로파일 공유",
       "shareSubtitle": "태양 · 띠 · 라이프 패스",
@@ -6784,6 +6790,7 @@
     "cautions": "주의",
     "transformsInto": "변해서 다음 괘로",
     "transformNote": "동효는 이 상황이 두 번째 괘를 향해 움직이고 있음을 보여 줘요 — ‘이 상황이 어디로 향하고 있는가’로 읽어 보세요.",
+    "changingLines": "동효: {{lines}}",
     "journalPrompt": "저널 질문",
     "backToStart": "다시 던지기",
     "castAgain": "다시 던지기",
@@ -7039,6 +7046,8 @@
     "bodygraphLabel": "당신의 바디그래프",
     "centersDefined": "센터 정의됨",
     "channelsDefined": "채널",
+    "bodygraphSummary_one": "정의된 센터 {{centers}} / 9 · 채널 {{count}}개",
+    "bodygraphSummary_other": "정의된 센터 {{centers}} / 9 · 채널 {{count}}개",
     "channelsHeading": "당신의 정의된 채널",
     "channelsNote": "각 채널은 두 센터를 이어 그 사이에 일정한 생명력의 흐름을 정의해요. 이것은 당신이라는 사람의 고정된 부분이며, 언제나 당신 곁에 있어요.",
     "activationsLabel": "26개 활성화 전체",
@@ -7077,6 +7086,9 @@
     "intro": "사주팔자(四柱八字) — ‘여덟 글자’ — 는 당신이 태어난 순간을 년·월·일·시 네 기둥으로 읽는 중국의 전통 명리예요. 각 기둥은 오행(목·화·토·금·수) 가운데 하나와 음양을 지녀요. 일간(日干)은 당신 본성의 축이고, 오행의 비율은 당신 삶에서 어떤 기운이 풍성하고 어떤 기운이 부족한지를 보여 줘요.",
     "birthDate": "생년월일",
     "birthTime": "출생 시간 (선택)",
+    "birthPlace": "출생지(시간대를 정해요)",
+    "zoneUsed": "출생 시간은 {{zone}} 기준으로 읽어요.",
+    "lateZiNote": "23:00~23:59에 태어나면 다음 날을 여는 자시에 해당해요(시주 {{hour}}). 일주는 태어난 날짜를 그대로 따라요.",
     "calculate": "사주 뽑기",
     "calcFailed": "네 기둥을 세우지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
     "needBirthDate": "생년월일이 필요합니다",
@@ -10217,6 +10229,10 @@
     "elementalLabel": "원소의 조합",
     "compositeLabel": "제3의 존재로서의 관계",
     "compositeIntro": "컴포짓 차트는 관계 그 자체를 두 사람 각각과는 별개의, 고유한 성격을 가진 존재로 다뤄요. 이 관찰은 그 관계라는 존재를 설명해요.",
+    "compositeIn": "컴포짓의 {{planet}}({{sign}})",
+    "compositeAspect": "컴포짓 {{p1}}–{{p2}} {{type}}",
+    "compositeMethod": "여기의 각 행성은 당신의 행성과 상대의 행성 사이 한가운데에 놓여요.",
+    "compositeNoMoon": "두 사람의 출생 시간이 모두 있어야 컴포짓의 달을 보여 줄 수 있어요.",
     "share": "이 궁합 공유",
     "stillComputing": "아직 각도를 계산하는 중…",
     "tryAgain": "다시 시도",
@@ -11353,6 +11369,9 @@
     "aspectsAll": "전체 ({{n}})",
     "aspectsTight": "좁은 오브 ({{n}})",
     "noTightAspects": "좁은 오브 안에 드는 각도가 없어요. 전체로 바꾸면 모든 연결을 볼 수 있어요.",
+    "houseSystem": {
+      "equal": "하우스: 이퀄 하우스(어센던트 기준)"
+    },
     "noAspectLines": "이 차트에는 각도 선이 없어요.",
     "aspectGridAria": "각도 표",
     "gridTapPrompt": "칸을 누르면 각도를 읽을 수 있어요",
@@ -11467,6 +11486,13 @@
     "computing": "두 차트를 비교하는 중…",
     "needsChart": "스코어는 당신의 출생 차트와 상대의 차트를 비교하는데, 아직 당신의 차트가 설정되지 않았어요. 출생지를 추가해 차트를 만드세요 — 아무것도 차감되지 않았어요.",
     "setUpChart": "내 차트 설정하기"
+  },
+  "synastry": {
+    "zoneFromPlace": "상대의 출생 시간은 {{zone}} 기준으로 읽어요.",
+    "noPlaceNote": "출생지가 없으면 상대의 출생 시간을 당신의 시간대({{zone}}) 기준으로 읽어요.",
+    "placeZoneFailed": "이 장소의 시간대를 찾지 못했어요. 다시 고르거나, 지우고 당신의 시간대를 사용해 주세요.",
+    "clearPlace": "출생지 지우기",
+    "zoneAssumedHint": "상대의 출생 시간을 당신의 시간대({{zone}}) 기준으로 읽었어요. 출생지를 더하면 태어난 곳의 시간으로 읽어요."
   },
   "askOracle": {
     "cardLabel": "뽑힌 카드",

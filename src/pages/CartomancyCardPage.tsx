@@ -70,7 +70,7 @@ function CartomancyCardPageBody() {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
-        { '@type': 'ListItem', position: 2, name: 'Playing cards', item: `${ORIGIN}/cartomancy` },
+        { '@type': 'ListItem', position: 2, name: 'Cartomancy', item: `${ORIGIN}/cartomancy` },
         { '@type': 'ListItem', position: 3, name: 'Card meanings', item: `${ORIGIN}/cartomancy/cards` },
         { '@type': 'ListItem', position: 4, name: source.name, item: url },
       ],
@@ -197,7 +197,7 @@ function CartomancyCardPageBody() {
       )}
 
       <div className="text-center space-y-3">
-        <EyebrowLabel>{t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })}</EyebrowLabel>
+        <EyebrowLabel>{t('cartomancy.eyebrow', { defaultValue: 'Reading with playing cards' })}</EyebrowLabel>
         <p className="text-ui text-mystic-300">{t('cartomancy.card.readWithDeck', { defaultValue: 'Draw this card for yourself in a reading.' })}</p>
         {/* Signed out, the app sends the visitor to sign in and back to the reading. */}
         <Button variant="gold" onClick={() => navigate('/cartomancy/reading')}>

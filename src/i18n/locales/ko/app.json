@@ -103,6 +103,10 @@
     "resetSuccessHint": "앱으로 돌아가는 중…",
     "resetSuccessRecoveryHint": "로그아웃합니다. 새 비밀번호로 다시 로그인해 주세요.",
     "resetLinkExpiredHint": "재설정 링크는 일회성입니다. 만료된 경우 로그인 화면에서 다시 요청하세요.",
+    "verifyingLink": "링크를 확인하는 중…",
+    "resetLinkInvalidTitle": "이 재설정 링크는 만료되었거나 이미 사용되었어요",
+    "resetLinkInvalidBody": "재설정 링크는 한 번만 쓸 수 있어요. 새 링크를 요청하면 이메일로 보내 드려요.",
+    "requestNewLink": "새 링크 받기",
     "createAccount": "계정 만들기",
     "verifySentTo": "{{email}}로 인증 링크를 보냈어요. 메일함을 확인해 주세요.",
     "checkSpam": "메일이 보이지 않으면 스팸함도 확인해 주세요.",
@@ -339,6 +343,9 @@
       "aiLimit": "오늘의 AI 해석 한도에 도달했어요. 내일 다시 오세요.",
       "shared": "공유했어요",
       "imageSaved": "이미지를 다운로드 폴더에 저장했어요",
+      "imageSavedLinkCopied": "이미지를 저장하고 링크를 복사했어요",
+      "copyLink": "링크 복사",
+      "linkCopied": "링크를 복사했어요",
       "aiTooManyCards": "AI 해석은 {{n}}장 이하의 스프레드만 읽을 수 있어요. 문스톤은 차감되지 않았어요.",
       "aiFallback": "지금은 AI 리더를 이용할 수 없어요. 문스톤은 차감되지 않았어요.",
       "aiFallbackCharged": "지금은 AI 리더를 이용할 수 없고, 문스톤을 자동으로 돌려드리지 못했어요. 지원팀에 문의해 주시면 복구해 드릴게요."
@@ -4377,6 +4384,17 @@
       "promptAgree": "얼마나 동의하나요?",
       "promptChoose": "자신에게 가장 잘 맞는 답을 골라 주세요.",
       "progress": "퀴즈 진행도"
+    },
+    "flow": {
+      "start": "퀴즈 시작하기",
+      "whatYouGet": "알 수 있는 것",
+      "previous": "이전 문항",
+      "leave": {
+        "title": "퀴즈를 그만둘까요?",
+        "body": "{{total}}문항 중 {{answered}}문항에 답했어요. 지금 나가면 답이 저장되지 않아요.",
+        "stay": "계속하기",
+        "leave": "그만두기"
+      }
     },
     "list": {
       "categories": {
@@ -10503,6 +10521,7 @@
     "gateCheckFailed": "잔액을 확인하지 못했어요 — 다시 시도해 주세요.",
     "costLinePortrait": "초상을 그리면 <gold>문스톤 {{n}}개</gold>를 사용해요",
     "alreadyClaimedToday": "오늘은 이미 받았어요",
+    "costLineResend": "지난 시도가 이미 결제되었을 수 있어요 — 다시 물어봐도 문스톤이 두 번 사용되지 않아요",
     "costLineConversationDay": "대화 한 번에 <gold>문스톤 {{n}}개</gold>를 사용해요 — 24시간 동안의 모든 답변 포함"
   },
   "companion": {
@@ -10516,6 +10535,9 @@
     "emptyState":"무엇이든 물어 보세요 — 가슴에 품은 질문, 해석되길 바라는 꿈, 이해하고 싶은 이름.",
     "placeholder": "컴패니언에게 물어보세요…",
     "thinking": "생각 중…",
+    "replyLost": "컴패니언의 답장이 도착하지 않았어요. 다시 보내 주세요 — 이 대화로 문스톤이 두 번 사용되지 않아요.",
+    "unanswered": "이 메시지에 대한 답장이 도착하지 않았어요.",
+    "sendAgain": "다시 보내기",
     "sendFailed": "컴패니언에게 닿지 못했어요 — 연결을 확인하고 다시 보내 주세요.",
     "sendRejected": "이 메시지는 보낼 수 없었어요. 새 대화를 시작하고 다시 보내 주세요.",
     "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
@@ -10807,6 +10829,7 @@
     },
     "computing": "차트를 계산하는 중…",
     "progressedAge": "{{n}}세",
+    "returnMoment": "리턴 시점: {{when}}",
     "synastryPrompt": "파트너 출생 정보",
     "partnerNamePlaceholder": "파트너 이름(선택)",
     "synastryCta": "파트너 차트 오버레이",
@@ -11259,6 +11282,7 @@
     "redraw": "새 카드",
     "newCardConfirmTitle": "새 카드를 뽑을까요?",
     "newCardConfirmBody": "{{card}}에 대한 대화는 닫히고, 다시 돌아올 수 없어요.",
+    "newCardConfirmBodyPending": "{{card}}에 대한 지난 시도는 이미 결제되었을 수 있어요. 새 카드를 읽으면 새 대화가 시작되고 문스톤 {{n}}개를 사용해요.",
     "newCardConfirmBodyPaid": "{{card}}에 대한 대화는 닫히고, 다시 돌아올 수 없어요. 새 카드를 읽으면 새 대화가 시작되고 문스톤 {{n}}개를 사용해요.",
     "newCardConfirmAction": "새 카드 뽑기",
     "newCardConfirmKeep": "이 대화 계속하기",
@@ -11269,6 +11293,7 @@
     "reversed": "역방향",
     "composerPlaceholder": "이어 물어보기…",
     "seedMessage": "방금 {{card}}을(를) 뽑았어요. 지금 이것이 무엇을 가리키는지 함께 머물며 살펴보게 도와줘요.",
+    "replyLost": "오라클의 답이 도착하지 않았어요. 다시 물어봐 주세요 — 이 카드로 문스톤이 두 번 사용되지 않아요.",
     "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요.",
     "sendRejected": "이 질문은 보낼 수 없었어요. 새 카드를 뽑아 새 대화를 시작해 주세요.",
     "thinking": "오라클이 생각하는 중…",
@@ -11290,6 +11315,12 @@
     "tapPrompt": "행성, 하우스, 또는 각줄을 탭하세요.",
     "planetLabel": "행성",
     "transitLabel": "트랜짓",
+    "overlayKind": {
+      "transit": "트랜짓",
+      "progressed": "프로그레스드",
+      "solarReturn": "솔라 리턴",
+      "partner": "파트너"
+    },
     "houseLabel": "하우스 {{n}}",
     "aspectLabel": "각",
     "wheelAria": "출생 차트 휠",
@@ -11322,6 +11353,7 @@
     "aspectsAll": "전체 ({{n}})",
     "aspectsTight": "좁은 오브 ({{n}})",
     "noTightAspects": "좁은 오브 안에 드는 각도가 없어요. 전체로 바꾸면 모든 연결을 볼 수 있어요.",
+    "noAspectLines": "이 차트에는 각도 선이 없어요.",
     "aspectGridAria": "각도 표",
     "gridTapPrompt": "칸을 누르면 각도를 읽을 수 있어요",
     "modalities": {
@@ -12308,7 +12340,7 @@
     "toasts": {
       "signInToSave": "이 스프레드를 저장하려면 로그인하세요.",
       "nameRequired": "저장하기 전에 스프레드에 이름을 붙여 주세요.",
-      "positionRequired": "이름과 의미가 모두 있는 자리를 최소 하나 추가하세요.",
+      "positionRequired": "이름이 있는 자리를 최소 하나 추가하세요.",
       "saveFailed": "스프레드를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "saved": "스프레드를 저장했어요 — 저장한 스프레드 아래에 있어요.",
       "deleteFailed": "스프레드를 삭제하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -12329,8 +12361,11 @@
     "positionCount_one": "자리 {{count}}개",
     "positionCount_other": "자리 {{count}}개",
     "positionMeaningPlaceholder": "이 자리가 나타내는 것…",
-    "positionNamePlaceholder": "자리 이름 (예: 마주한 과제)",
+    "positionNamePlaceholder": "자리 이름",
     "positions": "카드 자리",
+    "positionNameMissing": "{{n}}번 자리에 이름을 붙이거나, 이 자리를 삭제해 주세요.",
+    "positionMeaningMissing": "{{n}}번 자리가 나타내는 것을 적거나, 이 자리를 삭제해 주세요.",
+    "positionsHint": "자리마다 이름이 필요해요 (예: 마주한 과제). 그 자리가 나타내는 것은 적지 않아도 돼요.",
     "removePosition": "{{n}}번 자리 삭제",
     "save": "스프레드 저장",
     "savedTitle": "저장한 스프레드",

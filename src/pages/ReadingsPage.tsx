@@ -49,7 +49,7 @@ const SYSTEM_IDS: ReadonlySet<string> = new Set<SystemId>(['iching', 'human-desi
  */
 const LINKABLE: ReadonlySet<string> = new Set<ReadingTab | SystemId>([
   'tarot', 'horoscope', 'compatibility', 'library', 'cartomancy',
-  'iching', 'mood', 'fengshui', 'runes', 'dice',
+  'iching', 'dream', 'mood', 'fengshui', 'runes', 'dice',
 ]);
 
 function initialSelection(state: unknown): { tab: ReadingTab; system: SystemId | null } {
@@ -123,14 +123,18 @@ export function ReadingsPage() {
     setShowPaywall(true);
   };
 
-  // `premium: true` marks premium-only systems (real AI, real ephemeris,
-  // real synastry); they stay visible so a free reader can see what there
-  // is to unlock, and tapping one surfaces the paywall.
+  // `premium: true` marks systems only Premium opens (Bazi's reading).
+  // Systems priced per reading in Moonstones (Dreams) open for everyone;
+  // their pages show the price and gate the balance, and Premium pays
+  // nothing. Premium ones stay visible so a free reader can see what there
+  // is to unlock; tapping one surfaces the paywall.
+  // Human Design and Partner keep `premium: true` here until D15's step A4
+  // (WP-P3-09) opens them the same way as Dreams.
   const allSystems: SystemDef[] = [
     { id: 'iching', labelKey: 'readings.tabs.iching', icon: Coins, enabled: ichingEnabled },
     { id: 'human-design', labelKey: 'readings.tabs.humanDesign', icon: Layers, premium: true, enabled: humanDesignEnabled },
     { id: 'bazi', labelKey: 'readings.tabs.bazi', icon: Mountain, premium: true, enabled: baziEnabled },
-    { id: 'dream', labelKey: 'readings.tabs.dream', icon: Cloud, premium: true, enabled: dreamEnabled },
+    { id: 'dream', labelKey: 'readings.tabs.dream', icon: Cloud, enabled: dreamEnabled },
     { id: 'mood', labelKey: 'readings.tabs.mood', icon: Smile, enabled: moodDiaryEnabled },
     { id: 'partner', labelKey: 'readings.tabs.partner', icon: Users, premium: true, enabled: partnerCompatEnabled },
     { id: 'fengshui', labelKey: 'readings.tabs.fengshui', icon: Home, enabled: fengShuiEnabled },

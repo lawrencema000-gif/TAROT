@@ -30,7 +30,7 @@ function answer(state: State) {
   rpc.mockReset();
   if (state === 'processing') rpc.mockReturnValue(new Promise(() => {}));
   if (state === 'done') rpc.mockResolvedValue({ data: { ok: true, email: EMAIL }, error: null });
-  if (state === 'already') rpc.mockResolvedValue({ data: { ok: false, reason: 'unknown_or_already_unsubscribed' }, error: null });
+  if (state === 'already') rpc.mockResolvedValue({ data: { ok: false, reason: 'already_unsubscribed' }, error: null }); // WP-P5-03: the reason a second click gets
 }
 
 /** The page in `lng`, opened from a link with `token`, once it shows `state`. */

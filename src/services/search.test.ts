@@ -26,6 +26,7 @@ import {
   searchPlayingCards,
   searchSigns,
   searchJournalEntries,
+  englishRankSpellings,
   RECENT_SEARCH_LIMIT,
 } from './search';
 
@@ -284,5 +285,49 @@ describe('foldForSearch', () => {
   it('folds width, case and spaces', () => {
     expect(foldForSearch(' Ｔｈｅ  Fool ')).toBe('thefool');
     expect(foldForSearch('완드 3')).toBe('완드3');
+  });
+});
+
+describe('a numbered card typed with its number (gap-2-11)', () => {
+  it('en: “7 of hearts”, “7 hearts” and “K of spades” find the playing cards they name', async () => {
+    await inLanguage('en');
+    expect((await searchPlayingCards('7 of hearts'))[0]).toMatchObject({ slug: 'seven-of-hearts', title: 'Seven of Hearts', relevance: 100 });
+    expect((await searchPlayingCards('7 hearts'))[0]).toMatchObject({ slug: 'seven-of-hearts' });
+    expect((await searchPlayingCards('A of hearts'))[0]).toMatchObject({ slug: 'ace-of-hearts' });
+    expect((await searchPlayingCards('10 of spades'))[0]).toMatchObject({ slug: 'ten-of-spades' });
+    // A whole-name match for the King; the Jack only contains “kofspades”.
+    expect((await searchPlayingCards('K of spades'))[0].slug).toBe('king-of-spades');
+  });
+
+  it('en: “3 of cups”, “10 of swords”, “1 of cups” and “A of cups” find the tarot cards they name', async () => {
+    await inLanguage('en');
+    expect((await searchCards('3 of cups'))[0]).toMatchObject({ cardId: 38, title: 'Three of Cups', relevance: 100 });
+    expect((await searchCards('10 of swords'))[0]).toMatchObject({ cardId: 59 });
+    expect((await searchCards('1 of cups'))[0]).toMatchObject({ cardId: 36 });
+    expect((await searchCards('A of cups'))[0]).toMatchObject({ cardId: 36 });
+  });
+
+  it('ja: the English digits find the card, named in Japanese', async () => {
+    await inLanguage('ja');
+    expect((await searchPlayingCards('7 of hearts'))[0].title).toBe('ハートの7');
+    expect((await searchCards('3 of cups'))[0].title).toBe('カップの3');
+  });
+
+  it('leaves what worked alone', async () => {
+    await inLanguage('en');
+    expect((await searchPlayingCards('seven of hearts'))[0]).toMatchObject({ slug: 'seven-of-hearts', relevance: 100 });
+    expect((await searchCards('wheel of fortune'))[0].cardId).toBe(10);
+    await inLanguage('ja');
+    expect(await searchCards('運命輪')).toEqual([]);
+  });
+
+  it('englishRankSpellings: digits and corner letters for a one-word rank, nothing for Page, Knight or a major', () => {
+    expect(englishRankSpellings('Seven of Hearts')).toEqual(['7 of Hearts', '7 Hearts']);
+    expect(englishRankSpellings('Ace of Cups')).toEqual(['1 of Cups', '1 Cups', 'A of Cups', 'A Cups']);
+    expect(englishRankSpellings('King of Spades')).toEqual(['K of Spades', 'K Spades']);
+    expect(englishRankSpellings('Knight of Wands')).toEqual([]);
+    expect(englishRankSpellings('Page of Cups')).toEqual([]);
+    expect(englishRankSpellings('The Wheel of Fortune')).toEqual([]);
+    expect(englishRankSpellings('Red Joker')).toEqual([]);
   });
 });

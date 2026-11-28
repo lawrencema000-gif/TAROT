@@ -28,6 +28,7 @@ import { fallbackZone } from '../components/horoscope/birthZone';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
 import { useT } from '../i18n/useT';
+import { logWarn } from '../utils/telemetry';
 import type { Goal, TonePreference, UserProfile } from '../types';
 
 // Value-based goal options — labels read from app.profile.goals.* at render time.
@@ -116,6 +117,65 @@ function firstIncompleteStep(data: OnboardingData): number {
   return 3;
 }
 
+/*
+ * The answers of each step as a profile patch. Each step saves its own as it
+ * is given (gap-1-12): before, the goals and the birth details were written
+ * only together at Finish, so a member who closed the tab on the goals or the
+ * birth step came back to step 0 with nothing selected. Finish writes all
+ * four again, in one call, as it always has.
+ */
+export function goalsPatch(d: Pick<OnboardingData, 'goals'>): Partial<UserProfile> {
+  return { goals: d.goals };
+}
+
+export async function birthPatch(
+  d: Pick<OnboardingData, 'birthDate' | 'birthTime' | 'birthPlace' | 'birthLat' | 'birthLon'>,
+  profile: Pick<UserProfile, 'timezone'> | null | undefined,
+  derive: (lat: number, lon: number) => Promise<string | null> = deriveBirthTz,
+): Promise<Record<string, unknown>> {
+  const place = d.birthPlace.trim();
+  const patch: Record<string, unknown> = {
+    birthDate: d.birthDate,
+    // null, not undefined: a time the member cleared is cleared on the row.
+    birthTime: d.birthTime || null,
+    birthPlace: place || null,
+    // The device's zone, as the email onboarding writes it. An OAuth
+    // account otherwise keeps the signup default, 'UTC', which the
+    // birth_utc trigger falls back to when no birth-place zone is known
+    // (F21).
+    timezone: fallbackZone(profile),
+  };
+  if (d.birthLat !== undefined && d.birthLon !== undefined) {
+    patch.birthLat = d.birthLat;
+    patch.birthLon = d.birthLon;
+    // The birth place's own zone: the one the birth time is read in, by
+    // the chart cast and by the birth_utc trigger (F21). Derived from the
+    // coordinates, which every result carries (the geocoder's zone is not
+    // on every row). A zone that cannot be derived clears one left by an
+    // earlier place.
+    patch.birthTz = await derive(d.birthLat, d.birthLon);
+  } else {
+    // No place picked from the list: no coordinates, so none of an
+    // earlier pick (a resumed onboarding) may stay under the new text.
+    // Horoscope resolves a typed place itself.
+    patch.birthLat = null;
+    patch.birthLon = null;
+    patch.birthTz = null;
+  }
+  return patch;
+}
+
+export function tonePatch(d: Pick<OnboardingData, 'tonePreference'>): Partial<UserProfile> {
+  return { tonePreference: d.tonePreference };
+}
+
+export function remindersPatch(d: Pick<OnboardingData, 'notificationsEnabled' | 'notificationTime'>): Partial<UserProfile> {
+  return { notificationsEnabled: d.notificationsEnabled, notificationTime: d.notificationTime };
+}
+
+/** How long a valid typed birth date settles before it is saved. */
+const BIRTH_SAVE_DEBOUNCE_MS = 600;
+
 export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const { t } = useT(['onboarding', 'app', 'common']);
   const goalOptions = goalValues.map(value => ({
@@ -138,6 +198,78 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Attribution runs while the reveal is on screen; Begin awaits it.
   const pendingRef = useRef<Promise<void> | null>(null);
+
+  // Step saves run one after another through this queue, in the order the
+  // answers were given. The stepper never awaits it (a failed save only
+  // means that step is not resumable); Finish awaits it, then writes every
+  // answer again, so its write lands last.
+  const saveQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+  const birthSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The latest answers and profile, for a debounced save or a flush on
+  // pagehide that runs after the render that scheduled it.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
+
+  const enqueue = (makePatch: () => Record<string, unknown> | Promise<Record<string, unknown>>) => {
+    saveQueueRef.current = saveQueueRef.current
+      .then(async () => {
+        const { error } = await updateProfile(await makePatch());
+        if (error) logWarn('onboarding.stepSave', 'Onboarding step save failed', { errorMessage: error.message });
+      })
+      .catch((err: unknown) => {
+        logWarn('onboarding.stepSave', 'Onboarding step save failed', {
+          errorMessage: err instanceof Error ? err.message : String(err),
+        });
+      });
+  };
+
+  const saveBirth = () => {
+    const snapshot = dataRef.current;
+    const prof = profileRef.current;
+    // Never a partial or impossible date: the row keeps what it had.
+    if (!validateBirthDate(snapshot.birthDate).valid) return;
+    enqueue(() => birthPatch(snapshot, prof));
+  };
+
+  const cancelBirthSave = () => {
+    if (birthSaveRef.current) {
+      clearTimeout(birthSaveRef.current);
+      birthSaveRef.current = null;
+    }
+  };
+
+  /** Saves the birth details once the member has paused on a valid date. */
+  const scheduleBirthSave = () => {
+    cancelBirthSave();
+    birthSaveRef.current = setTimeout(() => {
+      birthSaveRef.current = null;
+      saveBirth();
+    }, BIRTH_SAVE_DEBOUNCE_MS);
+  };
+
+  // A date typed and left (tab closed, app switched) is saved at once rather
+  // than lost with the pending debounce.
+  const flushBirthSaveRef = useRef(() => {});
+  flushBirthSaveRef.current = () => {
+    if (!birthSaveRef.current) return;
+    cancelBirthSave();
+    saveBirth();
+  };
+  useEffect(() => {
+    const onHidden = () => {
+      if (document.visibilityState === 'hidden') flushBirthSaveRef.current();
+    };
+    const onPageHide = () => flushBirthSaveRef.current();
+    document.addEventListener('visibilitychange', onHidden);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden);
+      window.removeEventListener('pagehide', onPageHide);
+      flushBirthSaveRef.current();
+    };
+  }, []);
 
   const totalSteps = 4;
 
@@ -171,6 +303,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
         setBirthDateError(t(validation.error ?? 'oauth.basics.invalidBirthDate'));
       } else {
         setBirthDateError('');
+        scheduleBirthSave();
       }
     } else {
       setBirthDateError('');
@@ -187,47 +320,25 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const handleSelectGeoResult = (result: { lat: number; lon: number; displayName: string }) => {
     setData(d => ({ ...d, birthPlace: result.displayName, birthLat: result.lat, birthLon: result.lon }));
     setShowGeoResults(false);
+    // The picked place is saved with its zone, beside a valid date.
+    scheduleBirthSave();
   };
 
   const handleComplete = async () => {
     setLoading(true);
+    cancelBirthSave();
+    // The step saves land first; this write, with every answer, lands last.
+    await saveQueueRef.current;
 
-    const place = data.birthPlace.trim();
-    const located = data.birthLat !== undefined && data.birthLon !== undefined;
+    // onboardingComplete is written by finish(): App.tsx renders this page
+    // only while it is false, so flipping it here would unmount the page
+    // before the reveal step could paint.
     const profileUpdate: Record<string, unknown> = {
-      goals: data.goals,
-      birthDate: data.birthDate,
-      birthTime: data.birthTime || undefined,
-      birthPlace: place || null,
-      tonePreference: data.tonePreference,
-      notificationsEnabled: data.notificationsEnabled,
-      notificationTime: data.notificationTime,
-      // The device's zone, as the email onboarding writes it. An OAuth
-      // account otherwise keeps the signup default, 'UTC', which the
-      // birth_utc trigger falls back to when no birth-place zone is known
-      // (F21).
-      timezone: fallbackZone(profile),
-      // onboardingComplete is written by finish(): App.tsx renders this page
-      // only while it is false, so flipping it here would unmount the page
-      // before the reveal step could paint.
+      ...goalsPatch(data),
+      ...(await birthPatch(data, profile)),
+      ...tonePatch(data),
+      ...remindersPatch(data),
     };
-    if (located) {
-      profileUpdate.birthLat = data.birthLat;
-      profileUpdate.birthLon = data.birthLon;
-      // The birth place's own zone: the one the birth time is read in, by
-      // the chart cast and by the birth_utc trigger (F21). Derived from the
-      // coordinates, which every result carries (the geocoder's zone is not
-      // on every row). A zone that cannot be derived clears one left by an
-      // earlier place.
-      profileUpdate.birthTz = await deriveBirthTz(data.birthLat!, data.birthLon!);
-    } else {
-      // No place picked from the list: no coordinates, so none of an
-      // earlier pick (a resumed onboarding) may stay under the new text.
-      // Horoscope resolves a typed place itself.
-      profileUpdate.birthLat = null;
-      profileUpdate.birthLon = null;
-      profileUpdate.birthTz = null;
-    }
 
     const { error } = await updateProfile(profileUpdate);
 
@@ -285,9 +396,20 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const SunGlyph = sunSign ? ZODIAC_ICONS[sunSign] : null;
 
   const nextStep = () => {
-    if (step < totalSteps - 1) {
-      setStep(s => s + 1);
+    if (step >= totalSteps - 1) return;
+    // Each answer is saved as Continue is tapped, so a reopened tab, a new
+    // sign-in or another device resumes here with it (gap-1-12). Never
+    // awaited: Finish writes everything again.
+    const snapshot = data;
+    if (step === 0) {
+      enqueue(() => goalsPatch(snapshot));
+    } else if (step === 1) {
+      cancelBirthSave();
+      saveBirth();
+    } else if (step === 2) {
+      enqueue(() => tonePatch(snapshot));
     }
+    setStep(s => s + 1);
   };
 
   const prevStep = () => {

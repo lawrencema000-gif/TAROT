@@ -21,7 +21,7 @@ vi.mock('../../../dal', () => ({ journalEntries: { listForUser: (...a: unknown[]
 
 import i18n from '../../../i18n/config';
 import { recentSearchesKey } from '../../../services/search';
-import { SearchSheet } from '../SearchSheet';
+import { SearchSheet } from '../SearchSheet';
 import { useLeaveGuard } from '../../../context/leaveGuard';
 
 /** Node 25 ships its own (file-less, broken) localStorage over jsdom's; give the code a real one. */

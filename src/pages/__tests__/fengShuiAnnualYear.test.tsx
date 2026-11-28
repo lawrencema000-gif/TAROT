@@ -58,12 +58,12 @@ describe('FengShuiPage annual flying stars (WP-P2-14)', { timeout: 20_000 }, () 
     expect(rows.map((r) => r.dataset.palace)).toEqual(['Center', 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']);
     const centre = rows[0];
     expect(within(centre).getByText('Centre')).toBeInTheDocument();
-    expect(within(centre).getByText(new RegExp(starN(1)))).toBeInTheDocument();
+    expect(within(centre).getByText(`· ${starN(1)}`)).toBeInTheDocument();
     expect(within(centre).getByText(CENTRE_PALACE_NOTE)).toBeInTheDocument();
     expect(within(palace('N')).getByText('North')).toBeInTheDocument();
-    expect(within(palace('N')).getByText(new RegExp(starN(6)))).toBeInTheDocument();
+    expect(within(palace('N')).getByText(`· ${starN(6)}`)).toBeInTheDocument();
     expect(within(palace('S')).getByText('South')).toBeInTheDocument();
-    expect(within(palace('S')).getByText(new RegExp(starN(5)))).toBeInTheDocument();
+    expect(within(palace('S')).getByText(`· ${starN(5)}`)).toBeInTheDocument();
     expect(screen.getByText(/In effect until/).textContent).toContain('February 4, 2027');
   });
 
@@ -73,8 +73,8 @@ describe('FengShuiPage annual flying stars (WP-P2-14)', { timeout: 20_000 }, () 
     render(<FengShuiPage />);
     reveal();
     expect(heading(2027)).toBeInTheDocument();
-    expect(within(palace('N')).getByText(new RegExp(starN(5)))).toBeInTheDocument();
-    expect(within(palace('Center')).getByText(new RegExp(starN(9)))).toBeInTheDocument();
+    expect(within(palace('N')).getByText(`· ${starN(5)}`)).toBeInTheDocument();
+    expect(within(palace('Center')).getByText(`· ${starN(9)}`)).toBeInTheDocument();
   });
 
   it('a page left open across 立春 shows the new chart on the next Reveal', async () => {

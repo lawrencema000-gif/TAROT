@@ -6,8 +6,11 @@
 // direction tells whether that area of your home is auspicious or
 // needs remedies for the coming 12 months.
 //
-// The annual centre star DECREMENTS by 1 each year (mod 9, where 0 → 9):
-//   2023 → 4, 2024 → 3, 2025 → 2, 2026 → 1, 2027 → 9, 2028 → 8…
+// The annual centre star belongs to the solar year, from 立春 to 立春 (about
+// 4 February), and decreases by 1 each solar year (mod 9, 0 → 9):
+//   2024 → 3, 2025 → 2, 2026 → 1, 2027 → 9, 2028 → 8.
+// Centre 1 holds from 立春 2026 (4 Feb, 04:01 Beijing) to 立春 2027
+// (4 Feb, 09:46 Beijing).
 //
 // Once the centre star is known, the other 8 palaces are filled by
 // flying that centre value through the Lo Shu magic square pattern:
@@ -18,9 +21,11 @@
 //     SW=2   S=9   SE=4
 //
 // To get a year's layout, shift every Lo Shu cell by (centreStar - 5)
-// mod 9. So 2026 (centre 1) shifts every cell by -4: NW=2, N=6, NE=4,
+// mod 9. So solar year 2026 (centre 1) shifts every cell by -4: NW=2, N=6, NE=4,
 // W=3, C=1, E=8, SW=7, S=5, SE=9. Star 5 (the worst — Wu Wang) lands
 // in the SOUTH in 2026.
+
+import { lichunInstant, solarYearAt } from '../utils/solarTerms';
 
 export type FlyingStar = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type Direction = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW' | 'Center';
@@ -47,9 +52,10 @@ const LO_SHU: Record<Direction, FlyingStar> = {
 };
 
 /**
- * Compute the annual centre star for a given Gregorian year. The annual
- * star decrements by 1 each year (mod 9, where 0 maps to 9). Anchor:
- * 2024 = 3.
+ * The annual centre star of a solar year, which runs from 立春 to 立春
+ * (about 4 February): `year` is the year whose 立春 opens it. The star
+ * decreases by 1 each solar year (mod 9, where 0 maps to 9). Anchor:
+ * 2024 = 3, so 2026 = 1 (立春 2026 to 立春 2027) and 2027 = 9.
  */
 function centerStarFor(year: number): FlyingStar {
   const anchor = 2024;
@@ -124,6 +130,7 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
   },
 };
 
+/** The chart of a solar year (立春 `year` to 立春 `year + 1`). For the chart in force now, use getAnnualReadingAt. */
 export function getAnnualReading(year: number): { year: number; centerStar: FlyingStar; readings: Record<Direction, AnnualStarReading> } {
   const center = centerStarFor(year);
   const layout = flyLayout(center);
@@ -134,6 +141,15 @@ export function getAnnualReading(year: number): { year: number; centerStar: Flyi
   }
   return { year, centerStar: center, readings };
 }
+
+/** The chart in force at an instant: the solar year's chart, and the 立春 instants that bound it. */
+export function getAnnualReadingAt(instant: Date): ReturnType<typeof getAnnualReading> & { validFrom: Date | null; validUntil: Date | null } {
+  const year = solarYearAt(instant);
+  return { ...getAnnualReading(year), validFrom: lichunInstant(year), validUntil: lichunInstant(year + 1) };
+}
+
+/** One line for the centre palace: the star that governs the year (eastern-09). The 'fengshui' overlay translates it as annual.centre.note. */
+export const CENTRE_PALACE_NOTE = 'The centre star governs the year as a whole and the middle of your home; its influence reaches every room.';
 
 /**
  * Year-over-year hint for the most-impactful directions (most users

@@ -25,8 +25,11 @@ import {
   type Direction as KuaDirection,
 } from '../data/fengShuiKua';
 import {
-  getAnnualReading,
+  getAnnualReadingAt,
+  CENTRE_PALACE_NOTE,
 } from '../data/fengShuiAnnual';
+import { getLocale } from '../i18n/config';
+import { birthZoneOf, castInstant } from '../components/horoscope/birthZone';
 import { ROOM_GUIDANCE, type Room } from '../data/fengShuiRooms';
 import { FENG_SHUI_PROBLEMS } from '../data/fengShuiProblems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
@@ -80,16 +83,34 @@ export function FengShuiPage() {
     }
   }, [profile, birthYear]);
 
+  // The zone the profile's birth is read in, as the natal chart reads it:
+  // the stored birth zone, else one derived from the birth place, else the
+  // device's. The Kua's year turns at the 立春 instant of the birth.
+  const [birthTz, setBirthTz] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (profile?.birthDate) void birthZoneOf(profile).then(({ tz }) => { if (live) setBirthTz(tz); });
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the zone depends only on these fields
+  }, [profile?.birthDate, profile?.birthTz, profile?.birthLat, profile?.birthLon, profile?.timezone]);
+
+  const profileBirthDate = profile?.birthDate;
+  const profileBirthTime = profile?.birthTime ?? null;
   const kua: KuaProfile | null = useMemo(() => {
     const yr = parseInt(birthYear, 10);
     if (!gender || !Number.isFinite(yr)) return null;
-    // If we have the user's full birthDate (from profile), pass it so the
-    // Feb-4 solar-year boundary is applied; otherwise fall back to year only.
-    const birthDate = profile?.birthDate?.startsWith(birthYear) ? profile.birthDate : undefined;
-    return computeKua(yr, gender, birthDate);
-  }, [birthYear, gender, profile?.birthDate]);
+    // With the profile's own birth date, pass the birth instant (its time in
+    // its birth zone; noon CST until the zone is known) so the year turns at
+    // that birth's 立春; a typed year alone is used as given.
+    const own = !!profileBirthDate && profileBirthDate.startsWith(birthYear);
+    const birth = own ? (birthTz ? castInstant(profileBirthDate, profileBirthTime, birthTz) : profileBirthDate) : undefined;
+    return computeKua(yr, gender, birth);
+  }, [birthYear, gender, profileBirthDate, profileBirthTime, birthTz]);
 
-  const annual = useMemo(() => getAnnualReading(new Date().getFullYear()), []);
+  // The chart in force now: the solar year turns at 立春, not 1 January.
+  // Recomputed on each change of stage, so every Reveal reads the clock.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- stage is the trigger, not an input
+  const annual = useMemo(() => getAnnualReadingAt(new Date()), [stage]);
 
   // Each stage opens at its top. Reveal sits at the foot of the rating
   // form, and the result kept that scroll: it opened on the annual flying
@@ -462,7 +483,7 @@ export function FengShuiPage() {
           </Card>
         )}
 
-        {/* ─── Annual flying stars 2026 ─── */}
+        {/* ─── Annual flying stars (立春 to 立春) ─── */}
         <Card padding="lg" className="border-gold/30">
           <div className="flex items-center gap-2 mb-3">
             <Star className="w-4 h-4 text-gold" />
@@ -470,6 +491,14 @@ export function FengShuiPage() {
               {t('fengshui.annualHeading', { defaultValue: 'Annual flying stars · {{year}}', year: annual.year })}
             </h3>
           </div>
+          {annual.validUntil && (
+            <p className="reading-meta mb-3">
+              {t('fengshui.annualUntil', {
+                defaultValue: 'In effect until {{date}}, when the next solar year begins (立春)',
+                date: annual.validUntil.toLocaleDateString(getLocale(), { year: 'numeric', month: 'long', day: 'numeric' }),
+              })}
+            </p>
+          )}
           <p className="reading-copy mb-4">
             {t('fengshui.annualIntro', {
               defaultValue:
@@ -477,8 +506,10 @@ export function FengShuiPage() {
             })}
           </p>
           <div className="space-y-2">
-            {(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as KuaDirection[]).map((dir) => {
+            {/* The centre palace first: its star governs the year (eastern-09). */}
+            {(['Center', 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const).map((dir) => {
               const r = annual.readings[dir];
+              const isCentre = dir === 'Center';
               const tint =
                 r.nature === 'auspicious' ? 'border-teal/25 bg-teal/10'
                 : r.nature === 'inauspicious' ? 'border-coral/25 bg-coral/10'
@@ -488,13 +519,16 @@ export function FengShuiPage() {
                 : r.nature === 'inauspicious' ? 'bg-coral'
                 : 'bg-gold';
               return (
-                <div key={dir} className={`p-3 rounded-control border ${tint}`}>
+                <div key={dir} data-palace={dir} className={`p-3 rounded-control border ${tint}`}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className={`w-2 h-2 rounded-full ${dotColor}`} aria-hidden />
-                    <span className="text-ui font-medium text-mystic-100">{dirLabel(dir)}</span>
+                    <span className="text-ui font-medium text-mystic-100">
+                      {isCentre ? (t('fengshui.directions.Center', { defaultValue: 'Centre' }) as string) : dirLabel(dir)}
+                    </span>
                     <span className="text-meta text-mystic-400 tabular-nums">· {t('fengshui.starN', { defaultValue: 'Star {{n}}', n: r.star })}</span>
                   </div>
                   <div className="reading-copy">
+                    {isCentre && <p>{ct(overlay, 'annual.centre.note', CENTRE_PALACE_NOTE)}</p>}
                     <p>{ct(overlay, `annual.stars.${r.star}.meaning`, r.meaning)}</p>
                     <p>{ct(overlay, `annual.stars.${r.star}.remedy`, r.remedy)}</p>
                   </div>

@@ -26,6 +26,13 @@ const ERROR_MAPPINGS: Array<{
   likelyCause?: string;
 }> = [
   {
+    // Leaked-password refusal as a plain string (p12 health-status-17).
+    patterns: ['known to be weak and easy to guess', 'pwned'],
+    code: 'PWNED_PASSWORD',
+    message: 'This password has shown up in a data breach elsewhere. Choose a different one.',
+    isRetryable: true,
+  },
+  {
     patterns: ['should be different from the old password', 'same_password'],
     code: 'SAME_PASSWORD',
     message: "Choose a password you haven\u2019t used before.",
@@ -202,6 +209,33 @@ export function normalizeSupabaseError(error: unknown): NormalizedError {
       message: 'An unknown error occurred.',
       isRetryable: true,
     };
+  }
+
+  // Auth's password-strength refusal (422 weak_password). With leaked-password
+  // protection on, a password found in HaveIBeenPwned is refused with reason
+  // 'pwned' and a message no pattern below matches, so it read "That didn't
+  // go through" (p12 health-status-17). Read the code and reasons first.
+  if (typeof error === 'object') {
+    const e = error as { code?: unknown; reasons?: unknown; message?: unknown; status?: number };
+    const reasons: unknown[] = Array.isArray(e.reasons) ? e.reasons : [];
+    if (reasons.includes('pwned') || (typeof e.message === 'string' && /known to be weak|pwned/i.test(e.message))) {
+      return {
+        code: 'PWNED_PASSWORD',
+        status: e.status,
+        message: 'This password has shown up in a data breach elsewhere. Choose a different one.',
+        isRetryable: true,
+        originalError: typeof e.message === 'string' ? e.message : undefined,
+      };
+    }
+    if (e.code === 'weak_password') {
+      return {
+        code: 'WEAK_PASSWORD',
+        status: e.status,
+        message: 'Use at least 8 characters, with letters and numbers.',
+        isRetryable: true,
+        originalError: typeof e.message === 'string' ? e.message : undefined,
+      };
+    }
   }
 
   let errorMessage = '';

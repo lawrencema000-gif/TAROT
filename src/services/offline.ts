@@ -154,6 +154,9 @@ export async function getCachedDailyRitual(userId: string, date: string): Promis
 // starts from their own count (p8 F52). Signed out, the device keys of before
 // count (the guest's allowance). These keys are deliberately NOT cleared on
 // sign-out. TarotSection and CartomancySection share this one count.
+// The server (claim_free_reading, D08 A) counts the account across devices;
+// this device count is what a deal falls back on when the server cannot be
+// reached, and is raised to the server's count whenever one arrives.
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -192,6 +195,35 @@ export async function incrementDailyReadingCount(userId?: string | null, today: 
   } catch {
     // silent
   }
+}
+
+/** Raise this account's count for `today` to at least `n` (the server's count, which includes other devices). Never lowers it. */
+export async function raiseDailyReadingCount(userId: string | null | undefined, n: number, today: string = localDateStr()): Promise<number> {
+  try {
+    const current = await getDailyReadingCount(userId, today);
+    const next = Math.max(current, Number.isFinite(n) ? Math.floor(n) : 0);
+    if (next !== current) {
+      const keys = dailyReadingKeys(userId);
+      await appStorage.set(keys.date, today);
+      await appStorage.set(keys.count, String(next));
+    }
+    return next;
+  } catch {
+    return 0;
+  }
+}
+
+export type FreeDealVerdict = 'deal' | 'deal-on-ad-grant' | 'refuse';
+/**
+ * May a free member's reading be dealt? The server's answer decides when there
+ * is one; without it (offline, signed out) the device's count does, as before.
+ * A rewarded-ad grant ('extra_reading', native only) deals one past the limit.
+ */
+export function decideFreeDeal(p: { claim: { status: 'allowed' | 'refused' | 'unavailable' } | null; deviceUsed: number; limit: number; hasAdGrant: boolean }): FreeDealVerdict {
+  if (p.claim?.status === 'allowed') return 'deal';
+  const spent = p.claim?.status === 'refused' || p.deviceUsed >= p.limit;
+  if (!spent) return 'deal';
+  return p.hasAdGrant ? 'deal-on-ad-grant' : 'refuse';
 }
 
 /**

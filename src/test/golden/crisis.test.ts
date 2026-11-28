@@ -14,7 +14,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { detectCrisis, CRISIS_LINES, type CrisisLocale } from '../../../supabase/functions/_shared/crisis';
+import { detectCrisis, CRISIS_LINES, CRISIS_RESOURCES, type CrisisLocale } from '../../../supabase/functions/_shared/crisis';
 import {
   SYSTEM, crisisShortcut, fallbackPrompts, journalCrisisReply, parseCoachReply,
 } from '../../../supabase/functions/ai-journal-coach/reply';
@@ -309,5 +309,44 @@ describe('journal coach: the crisis reply (p9 Q32)', () => {
   it.each(['ja', 'ko', 'zh'] as const)('%s: the fallback questions are in the member’s language', (lng) => {
     for (const q of fallbackPrompts(lng)) expect(q).not.toMatch(/[A-Za-z]/);
     if (lng !== 'ko') for (const q of fallbackPrompts(lng)) expect(q).not.toMatch(ASCII_MARK_BY_CJK);
+  });
+});
+
+/**
+ * social-ai-05: 741741 is Crisis Text Line's US short code only
+ * (crisistextline.org/where-we-are): the UK texts 85258, Canada 686868 and
+ * Ireland 50808. The banner, the AI replies and community-moderate's resources
+ * said "US/UK/CA/IE".
+ */
+describe('each helpline names only the countries its number serves (social-ai-05)', () => {
+  const NON_US = /\b(?:UK|CA|IE|AU|NZ)\b|Canada|Ireland|United Kingdom|Australia|New Zealand/;
+
+  it('the English text line is labelled US only, in the locale file and on the server', () => {
+    const s = crisisStrings('en');
+    expect(s.text.number).toBe('741741');
+    expect(s.text.body).toBe('Text HOME to 741741 · 24/7 · US');
+    expect(s.text.body).not.toMatch(NON_US);
+    expect(CRISIS_LINES.en.text.body).not.toMatch(NON_US);
+  });
+
+  it('community-moderate’s resources are the English banner’s lines', () => {
+    const s = crisisStrings('en');
+    const expected = {
+      us: { name: '988 Suicide & Crisis Lifeline', number: '988' },
+      textLine: { name: 'Crisis Text Line', instructions: 'Text HOME to 741741 · 24/7 · US' },
+      international: 'https://findahelpline.com',
+    };
+    expect(CRISIS_RESOURCES).toEqual(expected);
+    expect({ name: s.phone.title, number: s.phone.number }).toEqual(expected.us);
+    expect({ name: s.text.title, instructions: s.text.body }).toEqual(expected.textLine);
+  });
+
+  it('community-moderate keeps no wording of its own', () => {
+    const src = readFileSync(
+      join(__dirname, '..', '..', '..', 'supabase', 'functions', 'community-moderate', 'index.ts'),
+      'utf8',
+    );
+    expect(src).not.toMatch(/741741|instructions:\s*"/);
+    expect(src).toMatch(/import \{[^}]*\bCRISIS_RESOURCES\b[^}]*\} from "\.\.\/_shared\/crisis\.ts"/);
   });
 });

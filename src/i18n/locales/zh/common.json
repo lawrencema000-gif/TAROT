@@ -32,7 +32,7 @@
     "mansions": "二十八宿",
     "goodDays": "择日",
     "wishingSky": "许愿星空",
-    "cartomancy": "扑克牌",
+    "cartomancy": "扑克牌占卜",
     "mainNavigation": "主导航"
   },
   "actions": {
@@ -103,7 +103,8 @@
       "UNKNOWN": "操作未完成，请再试一次。",
       "SAME_PASSWORD": "请设置一个未曾使用过的密码。",
       "WEAK_PASSWORD": "请使用至少 8 个字符，并包含字母和数字。",
-      "LINK_EXPIRED": "此链接已过期，请重新获取。"
+      "LINK_EXPIRED": "此链接已过期，请重新获取。",
+      "PWNED_PASSWORD": "此密码曾在其他网站的数据泄露中出现，请换一个密码。"
     },
     "birthDateTooOld": "出生日期距今超过 120 年，请检查年份。",
     "birthTimeInvalid": "请按 HH:MM 格式输入时间，例如 14:30。",

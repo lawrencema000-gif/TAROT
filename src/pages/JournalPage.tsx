@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, useId } from 'react';
 import {
   Plus,
   Search,
@@ -77,7 +77,7 @@ import { awardXP } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
 import { getDailyPrompt } from '../data/dailyPrompts';
 import { localDateStr, parseLocalDate } from '../utils/localDate';
-import { CrisisBanner } from '../components/community/CrisisBanner';
+import { CrisisBanner, CrisisLineRows } from '../components/community/CrisisBanner';
 
 /**
  * What ai-journal-coach answers. `crisis: true` comes with an entry about
@@ -280,6 +280,7 @@ export function JournalPage() {
   // The helplines, opened by a crisis reply from the coach (QS R-4).
   const [crisisOpen, setCrisisOpen] = useState(false);
   const closeCrisis = useCallback(() => setCrisisOpen(false), []);
+  const coachCrisisTitleId = useId();
   const [activeTab, setActiveTab] = useState<JournalTab>(() => requestedTab(location.state) ?? 'entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1485,7 +1486,7 @@ export function JournalPage() {
                 </Button>
               )}
 
-              {coachResult && (
+              {coachResult && coachResult.crisis !== true && (
                 <Card padding="md" className="border-cosmic-violet/30">
                   <EyebrowLabel align="left" className="!text-cosmic-violet-ink block mb-2">
                     {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
@@ -1513,6 +1514,31 @@ export function JournalPage() {
                     className="text-caption text-mystic-500 [@media(hover:hover)]:hover:text-mystic-300 mt-2 min-h-[44px] underline underline-offset-2"
                   >
                     {t('journalCoach.dismiss', { defaultValue: 'Hide these prompts' })}
+                  </button>
+                </Card>
+              )}
+
+              {coachResult?.crisis === true && (
+                // A crisis reply is not a set of reflection prompts (social-ai-18): its own
+                // heading, the member's lines one tap away after the banner is closed, and
+                // a dismissal that does not call the helplines "prompts".
+                <Card padding="md" className="border-coral/40" role="region" aria-labelledby={coachCrisisTitleId}>
+                  <h3 id={coachCrisisTitleId} className="heading-display-md text-mystic-100 mb-2">
+                    {t('crisis.title', { defaultValue: 'You are not alone' })}
+                  </h3>
+                  <p className="text-ui text-mystic-200 leading-relaxed mb-3">{coachResult.observation}</p>
+                  <div className="space-y-2 mb-4">
+                    {coachResult.prompts.map((p, i) => (
+                      <p key={i} className="text-meta text-mystic-300 leading-relaxed">{p}</p>
+                    ))}
+                  </div>
+                  <CrisisLineRows />
+                  <button
+                    type="button"
+                    onClick={() => setCoachResult(null)}
+                    className="w-full mt-4 py-2.5 min-h-[44px] text-ui text-mystic-300 [@media(hover:hover)]:hover:text-mystic-100 border-t border-mystic-800 pt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 rounded-control"
+                  >
+                    {t('crisis.closeButton', { defaultValue: 'I’m okay for now' })}
                   </button>
                 </Card>
               )}

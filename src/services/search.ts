@@ -74,10 +74,31 @@ function byRelevance<T extends Hit>(hits: T[]): T[] {
   return [...hits].sort((a, b) => b.relevance - a.relevance);
 }
 
-/** "The Star" is also "Star". */
+/** The corner index of each one-word English rank; Page and Knight have none, so "K" is always the King. */
+const EN_RANK_INDEX: ReadonlyMap<string, readonly string[]> = new Map([
+  ['ace', ['1', 'A']], ['two', ['2']], ['three', ['3']], ['four', ['4']], ['five', ['5']],
+  ['six', ['6']], ['seven', ['7']], ['eight', ['8']], ['nine', ['9']], ['ten', ['10']],
+  ['jack', ['J']], ['queen', ['Q']], ['king', ['K']],
+]);
+
+/**
+ * A suit card's English name with its rank as a digit or a corner letter,
+ * matched and never shown: "Seven of Hearts" is also "7 of Hearts" and
+ * "7 Hearts", "Ace of Cups" "1 of Cups" and "A of Cups" (gap-2-11). A name
+ * without a one-word rank before "of" (The Wheel of Fortune, Knight of
+ * Wands, the Jokers) has none.
+ */
+export function englishRankSpellings(name: string): string[] {
+  const m = /^(\S+) of (\S+)$/.exec(name);
+  const index = m ? EN_RANK_INDEX.get(m[1].toLowerCase()) : undefined;
+  if (!m || !index) return [];
+  return index.flatMap((r) => [`${r} of ${m[2]}`, `${r} ${m[2]}`]);
+}
+
+/** "The Star" is also "Star"; "Seven of Hearts" also "7 of Hearts". */
 function englishNames(name: string): string[] {
   const bare = name.replace(/^the\s+/i, '');
-  return bare === name ? [name] : [name, bare];
+  return [...(bare === name ? [name] : [name, bare]), ...englishRankSpellings(name)];
 }
 
 /*

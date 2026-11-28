@@ -127,7 +127,7 @@
       "answer": {
         "yes": "はい",
         "no": "いいえ",
-        "maybe": "かもしれません"
+        "maybe": "状況次第"
       },
       "keywordSeparator": "と",
       "explanation": {
@@ -147,6 +147,7 @@
     "decan": "デカン",
     "hebrewLetter": "ヘブライ文字",
     "numerology": "数秘術",
+    "courtRank": "コートカードの段階",
     "reinforcingCards": "強め合うカード",
     "reinforcingIntro": "{{name}}がこれらのカードと並ぶと、リーディングのエネルギーはいっそう強まります——{{reason}}",
     "opposingCards": "対立するカード",
@@ -5007,7 +5008,7 @@
     "yesOrNo": "YES / NO",
     "cardDescription": "カードの説明",
     "quickReference": "クイックリファレンス",
-    "element": "元素",
+    "element": "エレメント",
     "loveAndRelationships": "恋愛と人間関係",
     "careerAndFinances": "仕事とお金",
     "reflectionPrompt": "振り返りのプロンプト",
@@ -6141,6 +6142,9 @@
     },
     "profile": {
       "title": "プロフィール"
+    },
+    "compatInvite": {
+      "title": "相性リーディングへの招待"
     }
   },
   "dailyInsights": {
@@ -13017,6 +13021,7 @@
       "summaryLead": "{{name}}：{{sentence}}",
       "suitMajority": "{{total}}枚中{{n}}枚が{{suit}}",
       "colorMajority": "{{total}}枚中{{n}}枚が{{color}}",
+      "suitMinority": "いちばん少ない{{suit}}は、なおざりにされているものを示します。",
       "colorNames": {
         "red": "赤",
         "black": "黒"
@@ -13080,8 +13085,16 @@
     "title": "トランプ占い",
     "verdict": {
       "dependsOnPerson": "人か時期しだい",
-      "heartsSpades": "ハート{{hearts}}枚、スペード{{spades}}枚",
+      "heartsSpades": "{{hearts}}、{{spades}}",
       "redCount": "{{total}}枚中{{reds}}枚が赤",
+      "strengthenedYes": "ハートの9がイエスを強めている",
+      "strengthenedNo": "スペードのエースがノーを強めている",
+      "suitReason": "{{suit}}：{{reason}}",
+      "line": "{{label}}（{{detail}}）",
+      "hearts_one": "ハート{{count}}枚",
+      "hearts_other": "ハート{{count}}枚",
+      "spades_one": "スペード{{count}}枚",
+      "spades_other": "スペード{{count}}枚",
       "wishOnTable": "ハートの9がテーブルに出ています"
     }
   },
@@ -13133,6 +13146,7 @@
       "tarotConnection": "タロットとのつながり",
       "metaphysicalProperties": "スピリチュアルな性質",
       "lifePath": "ライフパス数の計算方法",
+      "lifePathExamples": "計算例",
       "personality": "性格",
       "origin": "由来",
       "usedInContext": "用例",
@@ -13219,6 +13233,12 @@
       "numberLabel": "ナンバー{{number}}",
       "lifePathEyebrow": "ライフパス数",
       "lifePathMasterEyebrow": "ライフパス数（マスターナンバー）",
+      "working": {
+        "method": "Arcanaでは、ライフパス数を三つの部分から求めます。生まれた月、日、年を、それぞれ別々に還元します。還元とは、1桁になるまで各桁の数字を足していくことで、年はまず4つの桁を足します。11か22になった部分は、そのまま残します。次に三つの部分を足し、その合計も同じように還元します。このとき11、22、33は残します。日付のすべての桁を一度に足す数秘術家もいます。たいていは同じ数になりますが、マスターナンバーが関わると結果が変わることがあります。",
+        "example": "{{date}}：月 {{month}} · 日 {{day}} · 年 {{year}} · 合計 {{total}}",
+        "kept": "{{n}}（そのまま）",
+        "exampleWithEveryDigit": "{{example}}（すべての桁を一度に足すと{{chain}}）"
+      },
       "notFound": "数字が見つかりません",
       "backToHub": "すべての数字",
       "seo": {

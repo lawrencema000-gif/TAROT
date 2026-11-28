@@ -147,6 +147,7 @@
     "decan": "十度区间",
     "hebrewLetter": "希伯来字母",
     "numerology": "数字学",
+    "courtRank": "宫廷牌的阶位",
     "reinforcingCards": "强化牌",
     "reinforcingIntro": "当{{name}}与这些牌同时出现时，解读的能量会更强——{{reason}}",
     "opposingCards": "对立牌",
@@ -6141,6 +6142,9 @@
     },
     "profile": {
       "title": "个人资料"
+    },
+    "compatInvite": {
+      "title": "契合度解读邀请"
     }
   },
   "dailyInsights": {
@@ -13017,6 +13021,7 @@
       "summaryLead": "{{name}}：{{sentence}}",
       "suitMajority": "{{total}} 张牌中有 {{n}} 张为{{suit}}",
       "colorMajority": "{{total}} 张牌中有 {{n}} 张为{{color}}",
+      "suitMinority": "最少的{{suit}}代表被忽视的事。",
       "colorNames": {
         "red": "红色",
         "black": "黑色"
@@ -13080,8 +13085,16 @@
     "title": "扑克牌占卜",
     "verdict": {
       "dependsOnPerson": "取决于某个人，或取决于时间",
-      "heartsSpades": "红心 {{hearts}} 张，黑桃 {{spades}} 张",
+      "heartsSpades": "{{hearts}}，{{spades}}",
       "redCount": "{{total}} 张牌中有 {{reds}} 张为红色",
+      "strengthenedYes": "红心9强化了“是”",
+      "strengthenedNo": "黑桃A强化了“否”",
+      "suitReason": "{{suit}}：{{reason}}",
+      "line": "{{label}}（{{detail}}）",
+      "hearts_one": "红心 {{count}} 张",
+      "hearts_other": "红心 {{count}} 张",
+      "spades_one": "黑桃 {{count}} 张",
+      "spades_other": "黑桃 {{count}} 张",
       "wishOnTable": "红心9出现在牌面上"
     }
   },
@@ -13133,6 +13146,7 @@
       "tarotConnection": "塔罗对应",
       "metaphysicalProperties": "能量属性",
       "lifePath": "生命数如何计算",
+      "lifePathExamples": "计算示例",
       "personality": "性格",
       "origin": "起源",
       "usedInContext": "用法示例",
@@ -13219,6 +13233,12 @@
       "numberLabel": "数字 {{number}}",
       "lifePathEyebrow": "生命数",
       "lifePathMasterEyebrow": "生命数（大师数）",
+      "working": {
+        "method": "Arcana分三部分计算你的生命数。先把出生的月、日、年分别化简：化简就是把一个数的各位数字相加，直到只剩一位数；年份要先把四位数字相加。得出11或22的部分予以保留。然后把三部分相加，再用同样的方法化简总和，保留11、22或33。也有数字命理师把日期的所有数字一次性相加；结果通常相同，但涉及大师数时可能不同。",
+        "example": "{{date}}：月 {{month}} · 日 {{day}} · 年 {{year}} · 总和 {{total}}",
+        "kept": "{{n}}（保留）",
+        "exampleWithEveryDigit": "{{example}}（若一次把所有数字相加，则为{{chain}}）"
+      },
       "notFound": "未找到该数字",
       "backToHub": "全部数字",
       "seo": {

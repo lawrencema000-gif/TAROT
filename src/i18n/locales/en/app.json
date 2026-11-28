@@ -147,6 +147,7 @@
     "decan": "Decan",
     "hebrewLetter": "Hebrew letter",
     "numerology": "Numerology",
+    "courtRank": "Court rank",
     "reinforcingCards": "Reinforcing cards",
     "reinforcingIntro": "When {{name}} appears alongside these cards, the reading’s energy intensifies — {{reason}}",
     "opposingCards": "Opposing cards",
@@ -155,15 +156,15 @@
     "correspondences": "Astrology and numerology",
     "combinations": "Card combinations",
     "faqItems": {
-      "astrologyQ": "What is the astrological correspondence of the {{name}}?",
+      "astrologyQ": "What is the astrological correspondence of {{name}}?",
       "combinationsA": "Reinforcing: {{reinforcing}}. Opposing: {{opposing}}.",
-      "combinationsQ": "What cards reinforce or oppose the {{name}}?",
-      "meaningQ": "What does the {{name}} tarot card mean?",
+      "combinationsQ": "What cards reinforce or oppose {{name}}?",
+      "meaningQ": "What does {{name}} mean in tarot?",
       "pair": "{{label}}: {{value}}",
       "pairSeparator": " · ",
-      "reversedQ": "What does the {{name}} mean reversed?",
+      "reversedQ": "What does {{name}} mean reversed?",
       "yesNoA": "{{answer}}. {{reason}}",
-      "yesNoQ": "Is the {{name}} a yes or no card?"
+      "yesNoQ": "Is {{name}} a yes or no card?"
     },
     "listSeparator": ", "
   },
@@ -618,7 +619,7 @@
         "Final outcome"
       ]
     },
-    "shareText": "My {{spread}} tarot reading on Arcana",
+    "shareText": "My tarot reading on Arcana: {{spread}}",
     "spreadCount_one": "{{count}} spread",
     "spreadCount_other": "{{count}} spreads",
     "cardCount_one": "{{count}} card",
@@ -6331,6 +6332,9 @@
     },
     "profile": {
       "title": "Profile"
+    },
+    "compatInvite": {
+      "title": "Compatibility reading invite"
     }
   },
   "dailyInsights": {
@@ -11882,7 +11886,7 @@
     "related": "Related spreads",
     "signUpToRead": "Sign up to read this spread",
     "whenToUse": "When to use",
-    "metaTitle": "{{name}} Tarot Spread — Position Meanings",
+    "metaTitle": "{{name}} — Tarot Spread Position Meanings",
     "metaDescription": "{{description}} {{n}}-card layout with position-by-position interpretation."
   },
   "chartSuite": {
@@ -12808,6 +12812,7 @@
       "summaryLead": "{{name}}: {{sentence}}",
       "suitMajority": "{{n}} of {{total}} are {{suit}}",
       "colorMajority": "{{n}} of {{total}} are {{color}}",
+      "suitMinority": "The fewest are {{suit}}: what is being neglected.",
       "colorNames": {
         "red": "red",
         "black": "black"
@@ -12871,8 +12876,16 @@
     "title": "Cartomancy",
     "verdict": {
       "dependsOnPerson": "depends on a person or on time",
-      "heartsSpades": "{{hearts}} Hearts, {{spades}} Spades",
+      "heartsSpades": "{{hearts}}, {{spades}}",
       "redCount": "{{reds}} of {{total}} cards red",
+      "strengthenedYes": "the Nine of Hearts strengthens the yes",
+      "strengthenedNo": "the Ace of Spades strengthens the no",
+      "suitReason": "{{suit}}: {{reason}}",
+      "line": "{{label}} ({{detail}})",
+      "hearts_one": "{{count}} Heart",
+      "hearts_other": "{{count}} Hearts",
+      "spades_one": "{{count}} Spade",
+      "spades_other": "{{count}} Spades",
       "wishOnTable": "The Nine of Hearts is on the table"
     }
   },
@@ -12924,6 +12937,7 @@
       "tarotConnection": "Tarot connection",
       "metaphysicalProperties": "Metaphysical properties",
       "lifePath": "How the life path is calculated",
+      "lifePathExamples": "Worked examples",
       "personality": "Personality",
       "origin": "Origin",
       "usedInContext": "Used in context",
@@ -13010,6 +13024,12 @@
       "numberLabel": "Number {{number}}",
       "lifePathEyebrow": "Life path number",
       "lifePathMasterEyebrow": "Life path number (master)",
+      "working": {
+        "method": "Arcana works out your life path in three parts. Reduce the month, the day and the year of your birth separately: reducing means adding a number’s digits until one digit is left, and for the year you start by adding its four digits. A part that comes to 11 or 22 is kept as it is. Then add the three parts and reduce the total the same way, keeping 11, 22 or 33. Some numerologists add every digit of the date at once instead; that usually gives the same number, but it can differ when a master number is involved.",
+        "example": "{{date}}: month {{month}} · day {{day}} · year {{year}} · total {{total}}",
+        "kept": "{{n}} (kept)",
+        "exampleWithEveryDigit": "{{example}} (adding every digit at once gives {{chain}})"
+      },
       "notFound": "Number not found",
       "backToHub": "All numbers",
       "seo": {

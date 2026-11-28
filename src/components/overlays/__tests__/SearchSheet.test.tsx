@@ -21,7 +21,7 @@ vi.mock('../../../dal', () => ({ journalEntries: { listForUser: (...a: unknown[]
 
 import i18n from '../../../i18n/config';
 import { recentSearchesKey } from '../../../services/search';
-import { SearchSheet } from '../SearchSheet';
+import { SearchSheet } from '../SearchSheet';
 import { useLeaveGuard } from '../../../context/leaveGuard';
 
 /** Node 25 ships its own (file-less, broken) localStorage over jsdom's; give the code a real one. */
@@ -205,7 +205,7 @@ describe('SearchSheet', () => {
     renderSheet();
     type('7 of hearts');
     const row = await resultRow('Seven of Hearts');
-    expect(screen.getByRole('heading', { name: 'Playing cards' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cartomancy cards' })).toBeInTheDocument();
     expect(row).toBeInTheDocument();
     expect(screen.queryByText(/Nothing matches/)).toBeNull();
   });

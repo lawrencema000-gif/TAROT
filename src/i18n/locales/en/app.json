@@ -385,7 +385,7 @@
       "runes": "Runes",
       "dice": "Dice",
       "celestial": "Celestial Map",
-      "cartomancy": "Playing cards",
+      "cartomancy": "Cartomancy",
       "systems": "More systems"
     },
     "categories": {
@@ -5126,19 +5126,19 @@
       },
       "first-hand": {
         "name": "First Hand",
-        "description": "Complete your first playing-card reading."
+        "description": "Complete your first cartomancy reading."
       },
       "card-sharp": {
         "name": "Card Sharp",
-        "description": "Complete 10 playing-card readings."
+        "description": "Complete 10 cartomancy readings."
       },
       "full-deck": {
         "name": "Full Deck",
-        "description": "Complete 52 playing-card readings, one for every card in the deck."
+        "description": "Complete 52 cartomancy readings, one for every card in the deck."
       },
       "four-suits": {
         "name": "Four Suits",
-        "description": "Read with five different playing-card spreads."
+        "description": "Read with five different cartomancy spreads."
       },
       "romany-table": {
         "name": "Romany Table",
@@ -5150,7 +5150,7 @@
       },
       "card-reader": {
         "name": "Card Reader",
-        "description": "Finish all twelve lessons in the playing-card guide."
+        "description": "Finish all twelve lessons in the cartomancy guide."
       },
       "the-jokers-laugh": {
         "name": "The Joker’s Laugh",
@@ -5437,7 +5437,7 @@
           "desc": "Natal, career and year ahead, no Moonstones to spend"
         },
         "everySpread": {
-          "desc": "Tarot and playing cards, Celtic Cross included",
+          "desc": "Tarot and cartomancy, Celtic Cross included",
           "label": "Every spread"
         }
       },
@@ -5504,7 +5504,7 @@
         },
         "unlimitedReadings": {
           "heading": "Keep reading today",
-          "outcome": "Free accounts get three readings a day, tarot and playing cards together. Premium lifts that limit and opens every spread, with no ads.",
+          "outcome": "Free accounts get three readings a day, tarot and cartomancy together. Premium lifts that limit and opens every spread, with no ads.",
           "cta": "Lift the daily limit"
         },
         "horoscopeChart": {
@@ -5598,7 +5598,7 @@
         "readingsPlain": "saved readings"
       },
       "restoring": "Checking your purchases…",
-      "subheadingEverySpread": "Every tarot and playing-card spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend."
+      "subheadingEverySpread": "Every tarot and cartomancy spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend."
     },
     "subscription": {
       "heading": "Premium is on",
@@ -5607,6 +5607,8 @@
       "memberFallback": "Member",
       "status": "Status",
       "statusActive": "Active",
+      "statusTrial": "Free trial",
+      "statusPaymentIssue": "Payment problem",
       "billing": "Billing",
       "yourBenefits": "Included in your plan",
       "syncStatus": "Refresh my subscription",
@@ -5614,22 +5616,27 @@
         "verified": "Your subscription is confirmed.",
         "active": "Nothing to update — your subscription is as shown.",
         "verifyFailed": "Couldn’t confirm your subscription with the store — check your connection and try again.",
-        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again."
+        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again.",
+        "noCardSubscription": "There’s no card subscription on this account to manage here. If you subscribed in an app store, manage it there."
       },
       "billingVia": {
-        "android": "Google Play",
-        "ios": "App Store",
-        "web": "Card, through Stripe"
+        "stripe": "Card, through Stripe",
+        "googlePlay": "Google Play",
+        "appStore": "App Store",
+        "included": "Included with your account"
       },
       "manage": {
-        "android": "Manage on Google Play",
-        "ios": "Manage in the App Store",
-        "web": "Manage subscription"
+        "portal": "Manage subscription",
+        "googlePlay": "Manage on Google Play",
+        "appStore": "Manage in the App Store"
       },
       "storeNote": {
-        "android": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
-        "ios": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
-        "web": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here."
+        "stripe": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here.",
+        "stripeInApp": "You pay by card on our website, so this subscription can’t be changed in the app. To cancel or change it, sign in at tarotlife.app in a browser.",
+        "stripeLifetime": "Paid once by card. There is nothing to renew or cancel.",
+        "googlePlay": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
+        "appStore": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
+        "included": "Premium comes with your account, so there is nothing to bill, renew or cancel."
       },
       "plan": "Your plan",
       "renewal": {
@@ -5910,7 +5917,7 @@
     },
     "groups": {
       "tarot": "Tarot cards",
-      "playing": "Playing cards",
+      "playing": "Cartomancy cards",
       "signs": "Zodiac signs",
       "journal": "Your journal"
     },
@@ -6239,7 +6246,7 @@
         ]
       },
       "cartomancy-basics": {
-        "title": "Playing-card basics",
+        "title": "Cartomancy basics",
         "description": "Read an ordinary deck: suits, numbers, red and black",
         "readFull": "Read the twelve lessons"
       }
@@ -11170,7 +11177,7 @@
     "errorGeneric": "Could not generate a reading. Try again.",
     "deckLabel": "Deck",
     "deckTarot": "Tarot",
-    "deckPlaying": "Playing cards",
+    "deckPlaying": "Cartomancy",
     "errorNoCharge": "Nothing was charged for a reading you did not receive.",
     "tryAgain": "Try again",
     "errorRetryFree": "If you were charged, Try again returns the same reading at no extra cost.",
@@ -12715,7 +12722,7 @@
       "noMatch": "No card matches that",
       "noMatchHint": "Try a suit, a rank or a keyword like “money”."
     },
-    "eyebrow": "Cartomancy",
+    "eyebrow": "Reading with playing cards",
     "focus": {
       "questionLabel": "Your question",
       "questionPlaceholder": "What is on your mind? (optional)",
@@ -12789,7 +12796,7 @@
       "hubTitle": "Playing Card Cartomancy — Readings, Card Meanings and Lessons",
       "lessonTitle": "{{title}} — How to Read Playing Cards",
       "readingDesc": "Shuffle an ordinary deck and read it the old way: suit, number and color, card by card.",
-      "readingTitle": "Playing card reading"
+      "readingTitle": "Cartomancy reading"
     },
     "settings": {
       "jokers": "Jokers",
@@ -12806,13 +12813,13 @@
       "significatorTag": "Significator: {{name}}",
       "title": "How the deck is read"
     },
-    "shareText": "My {{spread}} playing-card reading on Arcana",
+    "shareText": "My {{spread}} cartomancy reading on Arcana",
     "shared": {
       "cta": "Read the deck yourself on Arcana",
-      "eyebrow": "Shared playing-card reading",
-      "title": "Shared playing-card reading — {{count}} cards",
-      "title_one": "Shared playing-card reading — one card",
-      "title_other": "Shared playing-card reading — {{count}} cards"
+      "eyebrow": "Shared cartomancy reading",
+      "title": "Shared cartomancy reading — {{count}} cards",
+      "title_one": "Shared cartomancy reading — one card",
+      "title_other": "Shared cartomancy reading — {{count}} cards"
     },
     "suits": {
       "clubs": {
@@ -12833,7 +12840,7 @@
         "title": "Spades"
       }
     },
-    "title": "Playing cards",
+    "title": "Cartomancy",
     "verdict": {
       "dependsOnPerson": "depends on a person or on time",
       "heartsSpades": "{{hearts}} Hearts, {{spades}} Spades",

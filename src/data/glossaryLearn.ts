@@ -281,13 +281,13 @@ export const glossaryEntries: GlossaryEntry[] = [
     term: 'Midheaven',
     category: 'astrology',
     shortDefinition:
-      'The highest point of the ecliptic at the moment of birth, marking the cusp of the tenth house.',
+      'The point where the ecliptic crosses the meridian above the horizon at the moment of birth — the top of the chart. In quadrant house systems such as Placidus it is the cusp of the tenth house.',
     longDefinition:
       'The Midheaven, often abbreviated MC, sits at the top of the natal chart and represents public life, vocation, and how a person is recognised in the world. It is not literally directly overhead; it is the southernmost intersection of the meridian and the ecliptic in the northern hemisphere. The MC paired with the Ascendant gives a quick read of how someone presents and what they are publicly steering toward.',
     pronunciation: 'MID-heh-vuhn',
     origin:
       'From the Latin medium coeli, "middle of the sky," abbreviated MC.',
-    alsoKnownAs: ['MC', 'Medium Coeli', '10th house cusp'],
+    alsoKnownAs: ['MC', 'Medium Coeli', '10th house cusp (quadrant systems)'],
     example:
       'A Capricorn Midheaven often shows up as a serious, structured public reputation — even if the rest of the chart is playful.',
     relatedEntries: ['ic', 'ascendant', 'descendant', 'natal-chart'],
@@ -297,13 +297,13 @@ export const glossaryEntries: GlossaryEntry[] = [
     term: 'IC',
     category: 'astrology',
     shortDefinition:
-      'The Imum Coeli — the lowest point of the chart and cusp of the fourth house.',
+      'The Imum Coeli — the point opposite the Midheaven, at the bottom of the chart. In quadrant house systems such as Placidus it is the cusp of the fourth house.',
     longDefinition:
       'The IC sits directly opposite the Midheaven and represents private life: home, lineage, the inner foundation a person is built on. While the MC is the chart\'s public face, the IC is the basement. Family of origin, ancestral pattern, and the place a person retreats to all live here. A strong IC connection in synastry often shows up as feeling immediately at home with someone.',
     pronunciation: 'eye-see',
     origin:
       'From the Latin imum coeli, "bottom of the sky." Abbreviated IC.',
-    alsoKnownAs: ['Imum Coeli', 'Nadir', '4th house cusp'],
+    alsoKnownAs: ['Imum Coeli', 'Nadir', '4th house cusp (quadrant systems)'],
     example:
       'A Cancer IC often suggests a person whose private life is built around food, family, and emotional safety.',
     relatedEntries: ['midheaven', 'ascendant', 'descendant', 'natal-chart'],
@@ -343,9 +343,9 @@ export const glossaryEntries: GlossaryEntry[] = [
     term: 'Conjunction',
     category: 'astrology',
     shortDefinition:
-      'An aspect formed when two planets occupy the same point in the zodiac.',
+      'An aspect formed when two planets sit close together in the zodiac, within about 8°.',
     longDefinition:
-      'A conjunction is the tightest of the major aspects: two planets sit in the same degree, fusing their energies. The result depends on which planets meet — Sun conjunct Jupiter often expands confidence, while Mars conjunct Saturn can feel like driving with the brake on. Conjunctions are the engine of the chart; they concentrate themes that other aspects merely flavour.',
+      'A conjunction is the tightest of the major aspects: two planets sit at or near the same degree of the zodiac (within about 8°), fusing their energies. The result depends on which planets meet — Sun conjunct Jupiter often expands confidence, while Mars conjunct Saturn can feel like driving with the brake on. Conjunctions are the engine of the chart; they concentrate themes that other aspects merely flavour.',
     pronunciation: 'kon-JUNK-shun',
     alsoKnownAs: ['Conj', '0° aspect'],
     example:
@@ -373,7 +373,7 @@ export const glossaryEntries: GlossaryEntry[] = [
     shortDefinition:
       'An aspect formed when two planets sit 90 degrees apart in the zodiac.',
     longDefinition:
-      'A square is the classic friction aspect. Two planets ninety degrees apart pull on each other from incompatible signs and modalities, creating tension that demands resolution. Squares show up as the recurring problem the chart is working on — the same lesson dressed in different clothes. They are often described as growth aspects: uncomfortable, but the source of real development if engaged honestly.',
+      'A square is the classic friction aspect. Two planets ninety degrees apart pull on each other from signs that share a modality but clash in element, creating tension that demands resolution. Squares show up as the recurring problem the chart is working on — the same lesson dressed in different clothes. They are often described as growth aspects: uncomfortable, but the source of real development if engaged honestly.',
     pronunciation: 'skwair',
     alsoKnownAs: ['90° aspect', 'Quadrate'],
     example:

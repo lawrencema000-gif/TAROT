@@ -33,6 +33,8 @@ export async function checkPurchaseStatus(userId: string): Promise<PurchaseInfo>
       .eq('user_id', userId)
       .in('status', ['active', 'trial'])
       .order('created_at', { ascending: false })
+      // Two live rows made maybeSingle() fail; take the newest (p12 FWP-06).
+      .limit(1)
       .maybeSingle();
 
     if (!subscription) {

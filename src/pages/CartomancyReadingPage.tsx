@@ -31,14 +31,14 @@ function CartomancyReadingPageBody() {
 
   useEffect(() => {
     setPageMeta(
-      t('cartomancy.seo.readingTitle', { defaultValue: 'Playing card reading' }),
+      t('cartomancy.seo.readingTitle', { defaultValue: 'Cartomancy reading' }),
       t('cartomancy.seo.readingDesc', { defaultValue: 'Shuffle an ordinary deck and read it the old way: suit, number and color, card by card.' }),
     );
   }, [t]);
 
   return (
     <Page spacing="md">
-      <PageHeader eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })} title={t('cartomancy.title', { defaultValue: 'Playing cards' })} divider />
+      <PageHeader eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Reading with playing cards' })} title={t('cartomancy.title', { defaultValue: 'Cartomancy' })} divider />
       <CartomancySection initialSpread={params.get('spread')} onShowPaywall={setPaywall} onExit={() => navigate('/cartomancy')} />
       <PaywallSheet open={paywall !== null} onClose={() => setPaywall(null)} feature={paywall ?? ''} />
     </Page>

@@ -180,7 +180,7 @@
       },
       "privacy": {
         "q": "Is my journal private?",
-        "a": "Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock entries with a password."
+        "a": "Absolutely. Journal entries are stored securely and only visible to you."
       },
       "premium": {
         "q": "Is there a premium version?",

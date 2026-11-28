@@ -10308,6 +10308,7 @@
     "kuaUnfavorable": "凶方——请避开",
     "annualHeading": "{{year}} 年流年飞星",
     "annualIntro": "每年九星轮转于家中九宫。今年各方位的飞星告诉你该催旺什么、避开什么。以大门为准，面向屋内确定方位。",
+    "annualUntil": "有效至{{date}}（立春）",
     "roomsHeading": "分房间指引",
     "rules": "宜",
     "avoid": "忌",
@@ -10326,7 +10327,8 @@
       "S": "南",
       "SE": "东南",
       "SW": "西南",
-      "W": "西"
+      "W": "西",
+      "Center": "中宫"
     },
     "elements": {
       "Earth": "土",

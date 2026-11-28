@@ -10304,6 +10304,7 @@
     "kuaUnfavorable": "Unfavourable directions — avoid",
     "annualHeading": "Annual flying stars · {{year}}",
     "annualIntro": "Each year, 9 stars rotate through the 9 palaces of your home. The star in each direction this year tells you what to activate and what to avoid. Orient from your front door looking inward.",
+    "annualUntil": "In effect until {{date}}, when the next solar year begins (立春)",
     "roomsHeading": "Room-specific guidance",
     "rules": "Rules",
     "avoid": "Avoid",
@@ -10322,7 +10323,8 @@
       "S": "South",
       "SE": "Southeast",
       "SW": "Southwest",
-      "W": "West"
+      "W": "West",
+      "Center": "Centre"
     },
     "elements": {
       "Earth": "Earth",

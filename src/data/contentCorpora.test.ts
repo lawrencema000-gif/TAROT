@@ -89,6 +89,7 @@ describe('content corpora', () => {
     for (const k of Object.keys(FAVORABLE_LABEL)) { expect(has(c, `kua.favorable.${k}.label`)).toBe(true); expect(has(c, `kua.favorable.${k}.meaning`)).toBe(true); }
     for (const k of Object.keys(UNFAVORABLE_LABEL)) { expect(has(c, `kua.unfavorable.${k}.label`)).toBe(true); expect(has(c, `kua.unfavorable.${k}.meaning`)).toBe(true); }
     for (let n = 1; n <= 9; n++) { expect(has(c, `annual.stars.${n}.meaning`)).toBe(true); expect(has(c, `annual.stars.${n}.remedy`)).toBe(true); }
+    expect(has(c, 'annual.centre.note')).toBe(true);
     for (const room of Object.keys(ROOM_GUIDANCE) as Room[]) {
       expect(has(c, `rooms.${room}.name`)).toBe(true);
       ROOM_GUIDANCE[room].rules.forEach((_, i) => {

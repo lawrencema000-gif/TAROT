@@ -14,6 +14,8 @@
 // Northeast. These are not interchangeable — getting your group right
 // is the single most consequential feng shui decision a person makes.
 
+import { solarYearAt } from '../utils/solarTerms';
+
 export type KuaNumber = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 export type Direction = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
 export type Gender = 'male' | 'female';
@@ -128,13 +130,10 @@ function buildProfile(kua: KuaNumber): KuaProfile {
 /**
  * Compute a person's Kua number from birth year + gender.
  *
- * Traditional formula uses the solar year (anchored at 立春, the start
- * of spring, around Feb 4). Users born Jan 1 - Feb 3 belong to the
- * previous solar year. If a `birthDate` (YYYY-MM-DD) is supplied, we
- * apply that adjustment automatically; otherwise we use the Gregorian
- * year as an approximation and trust the user to know their own
- * boundary. This matches how Bazi handles the same boundary elsewhere
- * in the app.
+ * The Kua uses the solar year, which turns at the 立春 instant. Pass the
+ * birth instant (from the birth date, time and birth-place zone), or a
+ * YYYY-MM-DD date, which is read as noon China Standard Time. With
+ * neither, the typed year is used as given.
  *
  * Male formula:    10 - (sum of last two digits of year, reduced to single digit)
  *   (After 2000: 9 - (sum of last two digits, reduced))
@@ -143,18 +142,18 @@ function buildProfile(kua: KuaNumber): KuaProfile {
  *
  * 5 maps to 2 for males and 8 for females (as 5 has no Kua trigram).
  */
-export function computeKua(birthYear: number, gender: Gender, birthDate?: string): KuaProfile | null {
+export function computeKua(birthYear: number, gender: Gender, birth?: string | Date): KuaProfile | null {
   if (!Number.isFinite(birthYear) || birthYear < 1900 || birthYear > 2100) return null;
 
-  // Solar-year boundary at 立春 (Feb 4). Anyone born Jan 1 - Feb 3
-  // belongs to the previous year for the purpose of Kua computation.
-  let effectiveYear = birthYear;
-  if (birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
-    const [, m, d] = birthDate.split('-').map(Number);
-    if (m === 1 || (m === 2 && d <= 3)) {
-      effectiveYear = birthYear - 1;
-    }
+  let instant: Date | null = null;
+  if (birth instanceof Date) instant = Number.isFinite(birth.getTime()) ? birth : null;
+  else if (birth && /^\d{4}-\d{2}-\d{2}$/.test(birth)) {
+    const [y, m, d] = birth.split('-').map(Number);
+    instant = new Date(Date.UTC(y, m - 1, d, 4)); // noon CST, as computeBazi reads a date with no time
   }
+  const solar = instant ? solarYearAt(instant) : birthYear;
+  // The instant belongs to the typed year's birth, so the solar year is that year or the one before.
+  const effectiveYear = solar === birthYear || solar === birthYear - 1 ? solar : birthYear;
 
   // Sum the last two digits and reduce to single digit.
   const last2 = effectiveYear % 100;

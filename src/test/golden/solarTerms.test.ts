@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import * as Astronomy from 'astronomy-engine';
 import {
   SECTIONAL_TERMS,
   nextSolarTermAt,
   surroundingSectionalTerms,
   luckStartAge,
+  lichunInstant,
+  solarYearAt,
 } from '../../utils/solarTerms';
 
 /**
@@ -131,5 +133,68 @@ describe('luck-pillar start age (3 days = 1 year)', () => {
     const lichun = nextSolarTermAt(315, new Date(Date.UTC(2000, 0, 15)))!;
     const res = luckStartAge(new Date(lichun.getTime() + 1000), false)!;
     expect(res.years).toBeLessThan(0.01);
+  });
+});
+
+/*
+ * WP-P2-14 (eastern-04 / eastern-18): the Feng Shui annual chart and the Kua
+ * year turn at 立春, the Sun at 315°, not on 1 January. References:
+ * astronomia VSOP87 (2027-02-04T01:46:16Z, 1980-02-04T16:09:30Z) and
+ * lunar-javascript 1.7.3's 寿星 table in Beijing time (2026-02-04 04:01:51,
+ * 2027-02-04 09:46:00, 1980-02-05 00:09:28); the Hong Kong Observatory lists
+ * "Spring Commences 2027/2/4" and "1980/02/05".
+ */
+describe('lichunInstant / solarYearAt — 立春, not 1 January', () => {
+  const ORIGINAL_TZ = process.env.TZ;
+  afterEach(() => {
+    process.env.TZ = ORIGINAL_TZ;
+  });
+  const cstDate = (d: Date) => new Date(d.getTime() + 8 * 3_600_000).toISOString().slice(0, 10);
+  const near = (d: Date | null, iso: string) => {
+    expect(d).not.toBeNull();
+    expect(Math.abs(d!.getTime() - new Date(iso).getTime())).toBeLessThan(120_000);
+  };
+
+  it('立春 2027 is 2027-02-04 09:46 Beijing', () => {
+    const d = lichunInstant(2027);
+    near(d, '2027-02-04T01:46:16Z');
+    expect(cstDate(d!)).toBe('2027-02-04');
+  });
+
+  it('立春 1980 is 1980-02-05 00:09 Beijing', () => {
+    const d = lichunInstant(1980);
+    near(d, '1980-02-04T16:09:30Z');
+    expect(cstDate(d!)).toBe('1980-02-05');
+  });
+
+  it('立春 2026 is 3 Feb in UTC and 4 Feb in Beijing', () => {
+    const d = lichunInstant(2026);
+    near(d, '2026-02-03T20:01:51Z');
+    expect(d!.toISOString().slice(0, 10)).toBe('2026-02-03');
+    expect(cstDate(d!)).toBe('2026-02-04');
+  });
+
+  const ROWS: Array<[string, number]> = [
+    ['2026-12-31T15:30:00Z', 2026], // 00:30 JST, 1 January 2027
+    ['2027-01-20T01:00:00Z', 2026],
+    ['2027-02-04T01:40:00Z', 2026],
+    ['2027-02-04T01:52:00Z', 2027],
+    ['2027-02-05T00:00:00Z', 2027],
+    ['2026-02-03T19:55:00Z', 2025],
+    ['2026-02-03T20:08:00Z', 2026],
+    ['2026-11-15T03:00:00Z', 2026],
+  ];
+
+  it.each(ROWS)('solarYearAt(%s) = %i', (iso, year) => {
+    expect(solarYearAt(new Date(iso))).toBe(year);
+  });
+
+  it.each(['America/Los_Angeles', 'Pacific/Kiritimati'])('gives the same answers with the device in %s', (zone) => {
+    process.env.TZ = zone;
+    for (const [iso, year] of [ROWS[0], ROWS[2], ROWS[3]]) expect(solarYearAt(new Date(iso)), iso).toBe(year);
+  });
+
+  it('rejects an invalid date', () => {
+    expect(() => solarYearAt(new Date('nope'))).toThrow(RangeError);
   });
 });

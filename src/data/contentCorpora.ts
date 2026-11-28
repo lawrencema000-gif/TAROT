@@ -24,7 +24,7 @@ import { BAGUA_AREAS, BAGUA_AREA_ORDER } from './fengShuiBagua';
 import { FAVORABLE_LABEL, FAVORABLE_MEANING, UNFAVORABLE_LABEL, UNFAVORABLE_MEANING, type FavorableType, type UnfavorableType } from './fengShuiKua';
 import { ROOM_GUIDANCE, type Room } from './fengShuiRooms';
 import { FENG_SHUI_PROBLEMS } from './fengShuiProblems';
-import { STAR_BASE_TEXT } from './fengShuiAnnual';
+import { STAR_BASE_TEXT, CENTRE_PALACE_NOTE } from './fengShuiAnnual';
 
 type Obj = Record<string, unknown>;
 
@@ -130,7 +130,7 @@ export function fengshuiCorpus(): Obj {
   }
   const problems: Obj = {};
   for (const p of FENG_SHUI_PROBLEMS) problems[p.id] = { problem: p.problem, why: p.why, remedy: p.remedy };
-  return { bagua, kua: { favorable, unfavorable }, annual: { stars }, rooms, problems };
+  return { bagua, kua: { favorable, unfavorable }, annual: { stars, centre: { note: CENTRE_PALACE_NOTE } }, rooms, problems };
 }
 
 export const CONTENT_CORPORA = {

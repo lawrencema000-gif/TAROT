@@ -139,7 +139,7 @@ export const MADE_WISH_COLUMNS =
  * The sky. Newest first; the map itself does not care about order.
  *
  * Read through the owner-run view wish_sky (migration
- * 20261127122751_wish_authors_private_moderation_server_owned): members read
+ * 20261128122358_wish_authors_private_moderation_server_owned): members read
  * only their own rows of the wishes table, and no author id leaves the database.
  */
 export async function listSky(limit = 2000): Promise<Result<Wish[]>> {

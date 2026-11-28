@@ -31,7 +31,9 @@ BEGIN
   WHERE u.email = 'lawrence.ma000@gmail.com';
 
   IF v_user_id IS NULL THEN
-    RAISE EXCEPTION '[grant-lawrence-premium] no auth.users row for lawrence.ma000@gmail.com';
+    -- Replay guard (WP-F-04, S-F04-1): on a fresh database the row is missing; skip instead of failing. Production applied this file on 2026-05-08; its path is unchanged.
+    RAISE NOTICE '[grant-lawrence-premium] owner account not found; skipping the grant (fresh database replay)';
+    RETURN;
   END IF;
 
   UPDATE public.profiles

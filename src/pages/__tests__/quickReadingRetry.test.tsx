@@ -147,7 +147,7 @@ describe('p9 R10 — the "Try again" promise is bound to the unanswered question
     expect(screen.getByRole('button', { name: /Draw and read/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Anything' }));
     expect(screen.getByText(FREE_RETRY)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Playing cards/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Cartomancy/ }));
     expect(screen.queryByText(FREE_RETRY)).toBeNull();
     expect(screen.getByRole('button', { name: /Draw and read/ })).toBeInTheDocument();
   });

@@ -14,6 +14,10 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Capacitor 8.1+ SystemBars paints the decor view (the strips behind
+             the status and navigation bars on WebView < 140) with this colour.
+             Without it DayNight gave white strips under light status-bar icons. -->
+        <item name="android:windowBackground">@color/colorPrimaryDark</item>
     </style>
 
 

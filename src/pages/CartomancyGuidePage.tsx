@@ -55,7 +55,7 @@ function CartomancyGuidePageBody() {
   return (
     <Page spacing="md">
       <PageHeader
-        eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Cartomancy' })}
+        eyebrow={t('cartomancy.eyebrow', { defaultValue: 'Reading with playing cards' })}
         title={t('cartomancy.guide.title', { defaultValue: 'Guide' })}
         subtitle={t('cartomancy.guide.subtitle', { defaultValue: 'Twelve short lessons, in order. Each one ends with something to try with a real deck.' })}
         backHref="/cartomancy"
@@ -63,7 +63,7 @@ function CartomancyGuidePageBody() {
           e.preventDefault();
           navigate('/cartomancy');
         }}
-        backLabel={t('cartomancy.title', { defaultValue: 'Playing cards' })}
+        backLabel={t('cartomancy.title', { defaultValue: 'Cartomancy' })}
       />
 
       <div className="space-y-2">

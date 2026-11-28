@@ -403,6 +403,25 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     }
   };
 
+  // Switching on is a fresh opt-in: the database stamps its consent time and,
+  // if the member was never welcomed, queues the one welcome email (WP-P5-03).
+  // Switching off stops it.
+  const handleToggleNewsletter = async () => {
+    try {
+      const { error } = await updateProfile({
+        subscribedToNewsletter: !profile?.subscribedToNewsletter,
+      });
+      if (error) {
+        toast(tAppSettings('settings.toasts.updateFailed'), 'error');
+      } else {
+        await refreshProfile();
+        toast(profile?.subscribedToNewsletter ? tAppSettings('settings.menu.newsletterOff') : tAppSettings('settings.menu.newsletterOn'), 'success');
+      }
+    } catch {
+      toast(tAppSettings('settings.menu.updateFailed'), 'error');
+    }
+  };
+
   const readingSizeLabel = (id: ReadingScaleId) =>
     tAppSettings(`settings.readingSize.${id}`, {
       defaultValue: id === 'smaller' ? 'Smaller' : id === 'larger' ? 'Larger' : 'Default',
@@ -506,6 +525,18 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   checked={!!profile?.notificationsEnabled}
                   onChange={handleToggleNotifications}
                   aria-labelledby="settings-daily-reminders"
+                />
+              }
+            />
+            <ListRow
+              icon={<Mail />}
+              label={<span id="settings-newsletter">{tAppSettings('settings.newsletter')}</span>}
+              meta={tAppSettings('settings.newsletterMeta')}
+              trailing={
+                <Switch
+                  checked={!!profile?.subscribedToNewsletter}
+                  onChange={handleToggleNewsletter}
+                  aria-labelledby="settings-newsletter"
                 />
               }
             />

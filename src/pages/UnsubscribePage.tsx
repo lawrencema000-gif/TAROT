@@ -39,11 +39,17 @@ export function UnsubscribePage() {
         setStatus('invalid');
         return;
       }
-      const result = data as { ok: boolean; email?: string; reason?: string };
-      if (result.ok && result.email) {
-        setEmail(result.email);
+      const result = data as { ok: boolean; email?: string; reason?: string } | null;
+      if (result?.ok) {
+        // A member's profile token may come back without an address; the
+        // unsubscribe still happened, so say so (the address line is optional).
+        setEmail(result.email || null);
         setStatus('success');
-      } else if (result.reason === 'unknown_or_already_unsubscribed') {
+      } else if (result?.reason === 'already_unsubscribed') {
+        // A second click on a real link (WP-P5-03). A token that belongs to
+        // nobody answers `unknown_token`, and the old combined reason
+        // `unknown_or_already_unsubscribed` could be either: both read "Link
+        // not recognised", never "No further emails will be sent." (gap-1-17).
         setStatus('already');
       } else {
         setStatus('invalid');

@@ -5539,6 +5539,8 @@
       "backToSettings": "설정으로 돌아가기",
       "notificationsEnabled": "알림을 켰어요",
       "notificationsDisabled": "알림을 껐어요",
+      "newsletterOn": "환영 이메일을 켰어요",
+      "newsletterOff": "환영 이메일을 껐어요",
       "themeChanged": "테마가 {{name}}(으)로 바뀌었어요",
       "updateFailed": "설정을 변경하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
     },
@@ -5563,6 +5565,8 @@
     "saveChanges": "변경 사항 저장",
     "dailyReminders": "일일 알림",
     "getNotified": "매일의 의식에 대한 알림 받기",
+    "newsletter": "환영 이메일",
+    "newsletterMeta": "시작하는 데 도움이 되는 팁을 영어 이메일 한 통으로 보내 드려요",
     "noTransits": "이 기간 동안의 트랜짓을 찾을 수 없습니다",
     "chartUnavailable": "아직 차트 데이터가 없어요 — 출생 정보를 추가하면 계산할 수 있어요.",
     "birthCity": "출생 도시",

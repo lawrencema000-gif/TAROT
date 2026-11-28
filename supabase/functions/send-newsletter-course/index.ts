@@ -20,12 +20,19 @@ import { captureEdgeException } from "../_shared/sentry.ts";
  *
  * No-ops gracefully when RESEND_API_KEY is unset (logs only).
  *
+ * A row whose send fails counts it in send_failures and is not tried again
+ * after 5 (WP-P5-03): it used to be retried every hour forever. Logs carry the
+ * signup id and Resend's error name, never an address or Resend's raw body.
+ * A run where every send failed answers COURSE_SEND_FAILED.
+ *
  * Auth: webhook (CRON_SECRET via X-Webhook-Secret).
  */
 
 const SITE_URL = "https://tarotlife.app";
 const FROM_EMAIL = Deno.env.get("NEWSLETTER_FROM_EMAIL") || "Arcana <onboarding@resend.dev>";
 const REPLY_TO = Deno.env.get("NEWSLETTER_REPLY_TO") || "lawrence.ma000@gmail.com";
+/** A row is not tried again after this many failed sends (newsletter_signups.send_failures). */
+const MAX_SEND_FAILURES = 5;
 
 interface SignupRow {
   id: string;
@@ -34,6 +41,7 @@ interface SignupRow {
   last_emailed_at: string | null;
   created_at: string;
   unsubscribe_token: string;
+  send_failures: number;
 }
 
 interface LessonContent {
@@ -252,7 +260,7 @@ Unsubscribe: ${unsubscribeUrl}
 `;
 }
 
-async function sendOne(row: SignupRow, lesson: 1 | 2 | 3, apiKey: string, ctx: { log: { info: (a: string, b?: unknown) => void; warn: (a: string, b?: unknown) => void } }): Promise<{ ok: boolean; error?: string }> {
+async function sendOne(row: SignupRow, lesson: 1 | 2 | 3, apiKey: string, ctx: { log: { info: (a: string, b?: Record<string, unknown>) => void; warn: (a: string, b?: Record<string, unknown>) => void } }): Promise<{ ok: boolean; error?: string }> {
   const content = buildEmail(lesson, row.unsubscribe_token, row.email);
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -270,18 +278,20 @@ async function sendOne(row: SignupRow, lesson: 1 | 2 | 3, apiKey: string, ctx: {
         text: content.textBody,
         headers: {
           "List-Unsubscribe": `<${SITE_URL}/unsubscribe?token=${row.unsubscribe_token}>`,
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
       }),
     });
     if (!res.ok) {
-      const body = await res.text();
-      ctx.log.warn("send_newsletter.resend_non_ok", { status: res.status, body: body.slice(0, 300) });
-      return { ok: false, error: `resend ${res.status}: ${body.slice(0, 200)}` };
+      // Only Resend's error name (e.g. validation_error): its message and the
+      // raw body can quote the recipient's address.
+      const parsed = await res.json().catch(() => null) as { name?: unknown } | null;
+      const name = typeof parsed?.name === "string" && /^[a-z_]{1,64}$/.test(parsed.name) ? parsed.name : "";
+      ctx.log.warn("send_newsletter.resend_non_ok", { status: res.status, name });
+      return { ok: false, error: `resend ${res.status}${name ? ` ${name}` : ""}` };
     }
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: String(e) };
+    return { ok: false, error: e instanceof Error ? e.name : "network_error" };
   }
 }
 
@@ -306,9 +316,10 @@ Deno.serve(handler<unknown>({
     const fiveMinAgo = new Date(Date.now() - 5 * 60_000).toISOString();
     const { data: l1Rows, error: l1Err } = await ctx.supabase
       .from("newsletter_signups")
-      .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token")
+      .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token, send_failures")
       .eq("emails_sent", 0)
       .is("unsubscribed_at", null)
+      .lt("send_failures", MAX_SEND_FAILURES)
       .lt("created_at", fiveMinAgo)
       .limit(PER_RUN_CAP);
     if (l1Err) ctx.log.warn("send_newsletter.l1_query_failed", { err: l1Err.message });
@@ -324,7 +335,8 @@ Deno.serve(handler<unknown>({
         totals.lesson1++;
       } else {
         totals.failed++;
-        ctx.log.warn("send_newsletter.l1_failed", { email: row.email, err: r.error });
+        await ctx.supabase.from("newsletter_signups").update({ send_failures: row.send_failures + 1 }).eq("id", row.id);
+        ctx.log.warn("send_newsletter.l1_failed", { signupId: row.id, err: r.error });
       }
     }
 
@@ -334,9 +346,10 @@ Deno.serve(handler<unknown>({
     if (remainingCap > 0) {
       const { data: l2Rows } = await ctx.supabase
         .from("newsletter_signups")
-        .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token")
+        .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token, send_failures")
         .eq("emails_sent", 1)
         .is("unsubscribed_at", null)
+        .lt("send_failures", MAX_SEND_FAILURES)
         .lt("last_emailed_at", twoDaysAgo)
         .limit(remainingCap);
       for (const row of (l2Rows || []) as SignupRow[]) {
@@ -350,7 +363,8 @@ Deno.serve(handler<unknown>({
           totals.lesson2++;
         } else {
           totals.failed++;
-          ctx.log.warn("send_newsletter.l2_failed", { email: row.email, err: r.error });
+          await ctx.supabase.from("newsletter_signups").update({ send_failures: row.send_failures + 1 }).eq("id", row.id);
+          ctx.log.warn("send_newsletter.l2_failed", { signupId: row.id, err: r.error });
         }
       }
     }
@@ -360,9 +374,10 @@ Deno.serve(handler<unknown>({
     if (remainingCap2 > 0) {
       const { data: l3Rows } = await ctx.supabase
         .from("newsletter_signups")
-        .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token")
+        .select("id, email, emails_sent, last_emailed_at, created_at, unsubscribe_token, send_failures")
         .eq("emails_sent", 2)
         .is("unsubscribed_at", null)
+        .lt("send_failures", MAX_SEND_FAILURES)
         .lt("last_emailed_at", twoDaysAgo)
         .limit(remainingCap2);
       for (const row of (l3Rows || []) as SignupRow[]) {
@@ -376,7 +391,8 @@ Deno.serve(handler<unknown>({
           totals.lesson3++;
         } else {
           totals.failed++;
-          ctx.log.warn("send_newsletter.l3_failed", { email: row.email, err: r.error });
+          await ctx.supabase.from("newsletter_signups").update({ send_failures: row.send_failures + 1 }).eq("id", row.id);
+          ctx.log.warn("send_newsletter.l3_failed", { signupId: row.id, err: r.error });
         }
       }
     }
@@ -392,6 +408,8 @@ Deno.serve(handler<unknown>({
     }
 
     ctx.log.info("send_newsletter.done", totals);
-    return { ok: true, ...totals };
+    // Every send failing is systemic (a wrong sender, Resend down); one bad row is not.
+    const sentAny = totals.lesson1 + totals.lesson2 + totals.lesson3 > 0;
+    return { ok: sentAny || totals.failed === 0, ...(sentAny || totals.failed === 0 ? {} : { code: "COURSE_SEND_FAILED" }), ...totals };
   },
 }));

@@ -39,8 +39,13 @@ function makePost(i: number): BlogPost {
 let delays: Record<number, number> = {};
 const delayFor = (from: number) => delays[from] ?? 0;
 
-const listPublished = vi.fn(async ({ from, to }: { from: number; to: number }) => {
+const listPublished = vi.fn(async ({ from, to }: { from: number; to: number }): Promise<
+  { ok: true; data: { posts: BlogPost[]; total: number } } | { ok: false; error: string }
+> => {
   await new Promise((r) => setTimeout(r, delayFor(from)));
+  // Like PostgREST with count=exact: an offset past the total is HTTP 416
+  // (PGRST103), which the DAL reports as an error.
+  if (from >= TOTAL) return { ok: false as const, error: 'Requested range not satisfiable' };
   const posts: BlogPost[] = [];
   for (let i = from; i <= Math.min(to, TOTAL - 1); i += 1) posts.push(makePost(i));
   return { ok: true as const, data: { posts, total: TOTAL } };
@@ -213,5 +218,16 @@ describe('useBlogPosts', () => {
     await new Promise((r) => setTimeout(r, 200));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.posts[0].title).toBe('Post 1');
+  });
+
+  it('a page past the end (PostgREST 416) reports the total, not an error', async () => {
+    const { result } = renderHook(() => useBlogPosts(20));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(listPublished).toHaveBeenCalledWith({ from: 228, to: 239 });
+    expect(listPublished).toHaveBeenCalledWith({ from: 0, to: 0 });
+    expect(result.current.error).toBeNull();
+    expect(result.current.total).toBe(133);
+    expect(result.current.totalPages).toBe(12);
+    expect(result.current.posts).toEqual([]);
   });
 });

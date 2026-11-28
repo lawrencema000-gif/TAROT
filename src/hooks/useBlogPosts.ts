@@ -25,6 +25,19 @@ export function useBlogPosts(page = 1) {
 
     const res = await blogPosts.listPublished({ from, to });
     if (call !== latest.current) return;
+    // Past the last page PostgREST answers 416 (PGRST103) and the DAL reports
+    // an error. Ask for the total alone, so the page can settle on the last
+    // page (or page 1 when there are none) instead of showing "couldn't load".
+    if (!res.ok && from > 0) {
+      const probe = await blogPosts.listPublished({ from: 0, to: 0 });
+      if (call !== latest.current) return;
+      if (probe.ok && probe.data.total <= from) {
+        setPosts([]);
+        setTotal(probe.data.total);
+        setLoading(false);
+        return;
+      }
+    }
     if (!res.ok) {
       setError(res.error);
     } else {

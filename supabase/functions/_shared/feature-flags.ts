@@ -37,7 +37,9 @@ function bucket(userId: string, key: string): number {
 /**
  * Return true if the named flag is ON for the given user. Safe default
  * (false) on any DB error — flags fail closed server-side so a bad flag
- * fetch never auto-enables an expensive feature.
+ * fetch never auto-enables an expensive feature. Pass the service-role
+ * client: it reads `feature_flag_settings`, which is closed to anon and
+ * authenticated.
  */
 export async function isFlagEnabled(
   supabase: SupabaseClient,
@@ -48,8 +50,12 @@ export async function isFlagEnabled(
   let entry = CACHE.get(key);
 
   if (!entry || entry.expiresAt < now) {
+    // The table, not the `feature_flags` view: the view shows each caller only
+    // their own place on an allow-list, so a server caller would see none
+    // (FWP-02). Only the service role may read the table; with any other
+    // client this read fails and the flag is off (fails closed).
     const { data, error } = await supabase
-      .from("feature_flags")
+      .from("feature_flag_settings")
       .select("key, enabled, rollout_percent, allowed_user_ids")
       .eq("key", key)
       .maybeSingle();

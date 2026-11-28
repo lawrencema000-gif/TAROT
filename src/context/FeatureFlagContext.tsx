@@ -9,13 +9,17 @@
  * flag check) because:
  *   1. Flag table is small and public-read; one fetch covers the app.
  *   2. The hook needs to be synchronous.
- *   3. Authoritative decisions (e.g. 'use Gemini Flash') are made by edge
- *      functions which evaluate against the same table, so client drift
- *      doesn't affect trust.
+ *   3. The client's answer decides what the UI shows. Anything that writes or
+ *      spends must check the flag on the server as well — in SQL with
+ *      `public.feature_on_for_me(key)` (or `assert_feature_enabled(key)`,
+ *      which reads `enabled` only), in edge functions with `isFlagEnabled()`
+ *      (`supabase/functions/_shared/feature-flags.ts`). `?ff_<key>` overrides
+ *      are honoured only by the dev server and `VITE_AUDIT_SMOKE` builds
+ *      (social-ai-02).
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { featureFlags } from '../dal';
-import { evaluate, parseQueryOverrides, type EvalContext } from '../utils/featureFlagEval';
+import { evaluate, evalContextFor, type EvalContext } from '../utils/featureFlagEval';
 import { useAuth } from './AuthContext';
 import type { FeatureFlag } from '../dal/featureFlags';
 
@@ -69,13 +73,13 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
     };
   }, [load]);
 
-  const evalCtx = useMemo<EvalContext>(() => ({
+  const evalCtx = useMemo<EvalContext>(() => evalContextFor({
     userId: user?.id ?? null,
     anonymousId: getOrCreateAnonymousId(),
-    queryOverrides: typeof window !== 'undefined'
-      ? parseQueryOverrides(window.location.search)
-      : undefined,
-    smokeMode: import.meta.env.VITE_AUDIT_SMOKE === 'true',
+    search: typeof window !== 'undefined' ? window.location.search : '',
+    // Read here, not at module scope, so a test's vi.stubEnv reaches them.
+    dev: import.meta.env.DEV,
+    smoke: import.meta.env.VITE_AUDIT_SMOKE === 'true',
   }), [user?.id]);
 
   const isEnabled = useCallback(

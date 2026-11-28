@@ -6,7 +6,7 @@ import type { FeatureFlag } from '../dal/featureFlags';
  * a CLI audit script, or the edge-function equivalent in Deno).
  *
  * Evaluation order (first match wins):
- *   1. URL query-string override `?ff_<key>=on|off` (local testing)
+ *   1. URL query-string override ?ff_<key>=on|off — only when the caller passes queryOverrides, which evalContextFor() does on the dev server and in VITE_AUDIT_SMOKE builds only. A production build never parses them (social-ai-02).
  *   2. User is in `allowed_user_ids` -> ON
  *   3. Flag is globally `enabled` AND `rollout_percent` >= 100 -> ON
  *   4. `rollout_percent` > 0 AND deterministic bucket(user, key) < percent -> ON
@@ -74,4 +74,29 @@ export function parseQueryOverrides(search: string): Record<string, string> {
     if (key.startsWith('ff_')) out[key] = value.toLowerCase();
   });
   return out;
+}
+
+/**
+ * Whether this build may honour ?ff_<key>=on|off: the dev server and the
+ * audit-smoke / preview builds (VITE_AUDIT_SMOKE=true), never production.
+ * In production '?ff_advisors=on' opened the government-ID upload (social-ai-02).
+ */
+export function overridesAllowed(env: { dev: boolean; smoke: boolean }): boolean {
+  return env.dev || env.smoke;
+}
+
+/** The evaluation context for this visit. Pure, so the build rule is unit-tested without stubbing the env. */
+export function evalContextFor(opts: {
+  userId: string | null;
+  anonymousId: string | null;
+  search: string;
+  dev: boolean;
+  smoke: boolean;
+}): EvalContext {
+  return {
+    userId: opts.userId,
+    anonymousId: opts.anonymousId,
+    queryOverrides: overridesAllowed(opts) ? parseQueryOverrides(opts.search) : undefined,
+    smokeMode: opts.smoke,
+  };
 }

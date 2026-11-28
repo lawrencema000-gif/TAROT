@@ -43,6 +43,10 @@ CREATE INDEX IF NOT EXISTS idx_transit_events_user_date
 ALTER TABLE public.astrology_natal_charts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.astrology_transit_events ENABLE ROW LEVEL SECURITY;
 
+-- The two INSERT policies use WITH CHECK (auth.uid() = user_id), not the
+-- (SELECT auth.uid()) form: that is production's definition, as the drift run
+-- 46138418587 (PR #43) showed. The plan text's (SELECT auth.uid()) form was an
+-- assumption. Replay-only, so production is unaffected.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -51,7 +55,7 @@ BEGIN
       AND policyname = 'Users can insert own natal chart'
   ) THEN
     CREATE POLICY "Users can insert own natal chart" ON public.astrology_natal_charts
-      FOR INSERT TO authenticated WITH CHECK ((SELECT auth.uid()) = user_id);
+      FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
@@ -59,6 +63,6 @@ BEGIN
       AND policyname = 'Users can insert own transit events'
   ) THEN
     CREATE POLICY "Users can insert own transit events" ON public.astrology_transit_events
-      FOR INSERT TO authenticated WITH CHECK ((SELECT auth.uid()) = user_id);
+      FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
   END IF;
 END $$;

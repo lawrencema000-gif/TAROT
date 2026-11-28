@@ -5122,6 +5122,26 @@
         "published": "게시했어요",
         "keptHidden": "숨긴 채로 두었어요",
         "alreadyDecided": "이미 결정된 항목이에요."
+      },
+      "memberReports": {
+        "title": "회원 신고",
+        "intro": "회원이 신고한 게시물과 댓글이에요. 자해 관련 신고가 맨 위에 표시돼요.",
+        "empty": "처리할 신고가 없어요.",
+        "reports": "신고 {{count}}건",
+        "reports_one": "신고 {{count}}건",
+        "reports_other": "신고 {{count}}건",
+        "hidden": "숨김",
+        "selfHarm": "자해",
+        "dismiss": "기각",
+        "restore": "복원",
+        "remove": "삭제",
+        "removeConfirm": "모든 사람에게서 삭제할까요?",
+        "removeBody": "모든 사람에게 숨겨지고 신고는 처리 완료돼요.",
+        "dismissed": "신고를 기각했어요",
+        "restored": "복원했어요",
+        "removed": "삭제했어요",
+        "loadFailed": "회원 신고를 불러오지 못했어요. Refresh를 눌러 다시 시도해 주세요.",
+        "resolveFailed": "신고를 업데이트하지 못했어요. 다시 시도해 주세요."
       }
     },
     "blog": {

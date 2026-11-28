@@ -5328,6 +5328,26 @@
         "published": "Published",
         "keptHidden": "Kept hidden",
         "alreadyDecided": "That one was already decided."
+      },
+      "memberReports": {
+        "title": "Member reports",
+        "intro": "Posts and comments members reported. Self-harm reports come first.",
+        "empty": "No open reports.",
+        "reports_one": "{{count}} report",
+        "reports": "{{count}} reports",
+        "reports_other": "{{count}} reports",
+        "hidden": "Hidden",
+        "selfHarm": "Self-harm",
+        "dismiss": "Dismiss",
+        "restore": "Restore",
+        "remove": "Remove",
+        "removeConfirm": "Remove this for everyone?",
+        "removeBody": "It is hidden from everyone and the reports are closed.",
+        "dismissed": "Reports dismissed",
+        "restored": "Restored",
+        "removed": "Removed",
+        "loadFailed": "Couldn’t load member reports — tap Refresh to try again.",
+        "resolveFailed": "Couldn’t update the reports — try again."
       }
     },
     "blog": {

@@ -11,15 +11,17 @@ interface ReportPostSheetProps {
   onClose: () => void;
   /** Resolves true when the report landed. On false the sheet stays up so Report can be tried again. */
   onSubmit: (reason: ReportReason) => Promise<boolean>;
+  /** The sheet's heading; "Report post" when not given (a comment's sheet says "Report"). */
+  title?: string;
 }
 
 /**
- * Report a post or a whisper: pick a reason, then confirm (two taps, R7).
+ * Report a post, a whisper or a comment: pick a reason, then confirm (two taps, R7).
  * On the shared Sheet and portalled to <body> (social-ai-01): the old
  * ReportDialog was a fixed overlay inside <main class="relative z-10">, so the
  * bottom nav (z-40, main's sibling) covered its Cancel and Report on every phone.
  */
-export function ReportPostSheet({ open, onClose, onSubmit }: ReportPostSheetProps) {
+export function ReportPostSheet({ open, onClose, onSubmit, title }: ReportPostSheetProps) {
   const { t } = useT('app');
   const promptId = useId();
   const [reason, setReason] = useState<ReportReason | null>(null);
@@ -41,7 +43,7 @@ export function ReportPostSheet({ open, onClose, onSubmit }: ReportPostSheetProp
   };
 
   const sheet = (
-    <Sheet open={open} onClose={sending ? () => {} : onClose} title={t('community.reportPostTitle', { defaultValue: 'Report post' })}>
+    <Sheet open={open} onClose={sending ? () => {} : onClose} title={title ?? t('community.reportPostTitle', { defaultValue: 'Report post' })}>
       <div className="mx-auto w-full max-w-md">
         <p id={promptId} className="text-meta text-mystic-400 mb-3">
           {t('community.reportPrompt', { defaultValue: 'Choose a reason, then confirm.' })}

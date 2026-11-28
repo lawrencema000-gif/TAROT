@@ -5122,6 +5122,26 @@
         "published": "公開しました",
         "keptHidden": "非表示のままにしました",
         "alreadyDecided": "その項目はすでに判断済みです。"
+      },
+      "memberReports": {
+        "title": "メンバーからの報告",
+        "intro": "メンバーが報告した投稿とコメントです。自傷に関する報告が先頭に表示されます。",
+        "empty": "未対応の報告はありません。",
+        "reports": "報告 {{count}} 件",
+        "reports_one": "報告 {{count}} 件",
+        "reports_other": "報告 {{count}} 件",
+        "hidden": "非表示",
+        "selfHarm": "自傷",
+        "dismiss": "却下",
+        "restore": "元に戻す",
+        "remove": "削除",
+        "removeConfirm": "すべての人に対して削除しますか？",
+        "removeBody": "すべての人から非表示になり、報告は完了扱いになります。",
+        "dismissed": "報告を却下しました",
+        "restored": "元に戻しました",
+        "removed": "削除しました",
+        "loadFailed": "メンバーからの報告を読み込めませんでした。「Refresh」をタップしてもう一度お試しください。",
+        "resolveFailed": "報告を更新できませんでした。もう一度お試しください。"
       }
     },
     "blog": {

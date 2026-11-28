@@ -1044,6 +1044,25 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
   const [commentToDelete, setCommentToDelete] = useState<CommunityComment | null>(null);
   const [commentDeleteOpen, setCommentDeleteOpen] = useState(false);
   const [deletingComment, setDeletingComment] = useState(false);
+  // Another member's comment can be reported (WP-P0-20): the same sheet as a
+  // post, and the report reaches Admin → Moderation → Member reports.
+  const [commentToReport, setCommentToReport] = useState<CommunityComment | null>(null);
+  const [reportedComments, setReportedComments] = useState<ReadonlySet<string>>(() => new Set());
+
+  // Resolves true when the report landed (a second report of the same comment
+  // is the first one, already filed: the DAL reads its 23505 as done).
+  const submitCommentReport = async (c: CommunityComment, reason: ReportReason): Promise<boolean> => {
+    if (!user) return false;
+    const res = await community.report({ reporterId: user.id, commentId: c.id, reason });
+    if (res.ok) {
+      setReportedComments((prev) => new Set(prev).add(c.id));
+      setCommentToReport(null);
+      toast(t('community.reported', { defaultValue: 'Report submitted. Thank you.' }), 'success');
+      return true;
+    }
+    toast(t('community.reportFailed', { defaultValue: 'Couldn’t send the report — check your connection and try again.' }), 'error');
+    return false;
+  };
 
   const confirmDeleteComment = async () => {
     const c = commentToDelete;
@@ -1177,6 +1196,22 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
                   <Trash2 className="w-4 h-4" aria-hidden />
                 </button>
               )}
+              {user && !c.isMine && (
+                reportedComments.has(c.id) ? (
+                  <Tag tone="neutral" className="shrink-0">
+                    {t('community.reportedTag', { defaultValue: 'Reported' })}
+                  </Tag>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { dismissToasts(); setCommentToReport(c); }}
+                    className="shrink-0 -my-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-mystic-200"
+                    aria-label={t('community.report', { defaultValue: 'Report' })}
+                  >
+                    <Flag className="w-4 h-4" aria-hidden />
+                  </button>
+                )
+              )}
             </div>
             <p className="text-mystic-200 text-ui whitespace-pre-wrap">{c.content}</p>
           </Card>
@@ -1191,6 +1226,14 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onDelete, onCris
         busy={deletingComment}
         onCancel={() => setCommentDeleteOpen(false)}
         onConfirm={confirmDeleteComment}
+      />
+
+      {/* Always mounted, as the post's: drawn on <body>; a failed send keeps it up. */}
+      <ReportPostSheet
+        open={commentToReport !== null}
+        title={t('community.report', { defaultValue: 'Report' })}
+        onClose={() => setCommentToReport(null)}
+        onSubmit={async (reason) => (commentToReport ? submitCommentReport(commentToReport, reason) : false)}
       />
 
       {user && (

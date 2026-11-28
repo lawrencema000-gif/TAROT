@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Shield, AlertTriangle, RefreshCw, CheckCircle2, Clock, Flag, EyeOff } from 'lucide-react';
-import { Button, Badge, Tag, toast } from '../ui';
+import { Shield, AlertTriangle, RefreshCw, CheckCircle2, Clock, Flag, EyeOff, Users } from 'lucide-react';
+import { Button, Badge, Tag, toast, dismissToasts } from '../ui';
 import { supabase } from '../../lib/supabase';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
+import { ConfirmDeleteSheet } from '../community/ConfirmDeleteSheet';
 
 /**
  * Moderation admin panel — surfaces the audit tables the community-moderate
@@ -13,6 +15,9 @@ import { useT } from '../../i18n/useT';
  *   - flagged posts and comments (community_flagged_queue): a 'review'
  *     verdict publishes the row as 'flagged', visible to its author only,
  *     until a moderator publishes it or keeps it hidden here.
+ *   - member reports (community_reported_queue, WP-P0-20): every post and
+ *     comment with a pending member report, self-harm first. Dismiss,
+ *     Restore (when hidden) or Remove call community_resolve_reports.
  *
  * Admin-only on the server. Both tables reject reads from non-admins, and
  * the two queue functions check public.is_admin() (20261003000014), so if
@@ -29,6 +34,42 @@ interface FlaggedItem {
   categories: string[] | null;
   crisis_flagged: boolean;
   created_at: string;
+}
+
+/** One row of community_reported_queue(): no reporter id, no author id. */
+export interface MemberReportItem {
+  kind: 'post' | 'comment';
+  id: string;
+  post_id: string | null;
+  topic: string;
+  content: string;
+  is_anonymous: boolean;
+  is_hidden: boolean;
+  reports: number;
+  reasons: string[] | null;
+  self_harm: boolean;
+  first_reported: string;
+  last_reported: string;
+}
+
+type ResolveAction = 'dismiss' | 'restore' | 'remove';
+
+/** How long ago, in the UI's language; a date after a week. */
+function relativeTime(iso: string): string {
+  const locale = getLocale();
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
+  try {
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
+    if (mins < 1) return rtf.format(0, 'second');
+    if (mins < 60) return rtf.format(-mins, 'minute');
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return rtf.format(-hrs, 'hour');
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return rtf.format(-days, 'day');
+  } catch {
+    /* no RelativeTimeFormat: fall through to a date */
+  }
+  return new Date(iso).toLocaleDateString(locale);
 }
 
 /** The queue functions arrive with 20261003000014; before that there is no queue. */
@@ -72,6 +113,10 @@ export function ModerationPanel() {
   const [crisisFlags, setCrisisFlags] = useState<CrisisFlag[]>([]);
   const [flagged, setFlagged] = useState<FlaggedItem[]>([]);
   const [flaggedQueueExists, setFlaggedQueueExists] = useState(true);
+  const [memberReports, setMemberReports] = useState<MemberReportItem[]>([]);
+  const [reportsQueueExists, setReportsQueueExists] = useState(true);
+  const [resolving, setResolving] = useState<string | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<MemberReportItem | null>(null);
   const [deciding, setDeciding] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showReviewed, setShowReviewed] = useState(false);
@@ -86,7 +131,7 @@ export function ModerationPanel() {
       .limit(100);
     if (!showReviewed) eventsQuery = eventsQuery.eq('reviewed', false);
 
-    const [eventsRes, crisisRes, flaggedRes] = await Promise.all([
+    const [eventsRes, crisisRes, flaggedRes, reportsRes] = await Promise.all([
       eventsQuery,
       supabase
         .from('crisis_flags')
@@ -95,7 +140,21 @@ export function ModerationPanel() {
         .order('created_at', { ascending: false })
         .limit(50),
       supabase.rpc('community_flagged_queue'),
+      supabase.rpc('community_reported_queue'),
     ]);
+
+    if (reportsRes.error) {
+      if (isMissingFunction(reportsRes.error)) {
+        setReportsQueueExists(false);
+        setMemberReports([]);
+      } else {
+        console.error('[Moderation] Member reports load failed:', reportsRes.error.message);
+        toast(t('admin.moderation.memberReports.loadFailed', { defaultValue: 'Couldn’t load member reports — tap Refresh to try again.' }), 'error');
+      }
+    } else {
+      setReportsQueueExists(true);
+      setMemberReports((reportsRes.data ?? []) as MemberReportItem[]);
+    }
 
     if (flaggedRes.error) {
       if (isMissingFunction(flaggedRes.error)) {
@@ -184,6 +243,39 @@ export function ModerationPanel() {
     } else {
       toast(t('admin.moderation.flagged.alreadyDecided', { defaultValue: 'That one was already decided.' }), 'info');
     }
+  };
+
+  // The server checks is_admin() and changes only reports still pending, so a
+  // second moderator's click on the same row changes nothing.
+  const resolve = async (item: MemberReportItem, action: ResolveAction): Promise<boolean> => {
+    setResolving(item.id);
+    const { error } = await supabase.rpc('community_resolve_reports', {
+      p_kind: item.kind,
+      p_id: item.id,
+      p_action: action,
+    });
+    setResolving(null);
+    if (error) {
+      console.error('[Moderation] Resolve reports failed:', error.message);
+      toast(t('admin.moderation.memberReports.resolveFailed', { defaultValue: 'Couldn’t update the reports — try again.' }), 'error');
+      return false;
+    }
+    const done: Record<ResolveAction, string> = {
+      dismiss: t('admin.moderation.memberReports.dismissed', { defaultValue: 'Reports dismissed' }),
+      restore: t('admin.moderation.memberReports.restored', { defaultValue: 'Restored' }),
+      remove: t('admin.moderation.memberReports.removed', { defaultValue: 'Removed' }),
+    };
+    toast(done[action], 'success');
+    setMemberReports((prev) => prev.filter((r) => !(r.kind === item.kind && r.id === item.id)));
+    void load();
+    return true;
+  };
+
+  const confirmRemove = async () => {
+    const item = removeTarget;
+    if (!item) return;
+    const ok = await resolve(item, 'remove');
+    if (ok) setRemoveTarget(null);
   };
 
   const pendingCount = events.length;
@@ -276,6 +368,82 @@ export function ModerationPanel() {
                 </div>
               ))}
             </div>
+          )}
+
+          {reportsQueueExists && (
+            <section className="space-y-2" aria-labelledby="member-reports-heading">
+              <h4 id="member-reports-heading" className="text-caption uppercase tracking-wider text-mystic-400 flex items-center gap-1.5">
+                <Users className="w-3 h-3" aria-hidden />
+                {t('admin.moderation.memberReports.title', { defaultValue: 'Member reports' })}
+              </h4>
+              <p className="text-meta text-mystic-500">
+                {t('admin.moderation.memberReports.intro', { defaultValue: 'Posts and comments members reported. Self-harm reports come first.' })}
+              </p>
+              {memberReports.length === 0 && !loading && (
+                <p className="text-meta text-mystic-500 italic">
+                  {t('admin.moderation.memberReports.empty', { defaultValue: 'No open reports.' })}
+                </p>
+              )}
+              <ul className="space-y-2">
+                {memberReports.map((item) => {
+                  const busy = resolving === item.id;
+                  const excerpt = item.content.length > 280 ? `${item.content.slice(0, 280)}…` : item.content;
+                  return (
+                    <li
+                      key={`${item.kind}:${item.id}`}
+                      data-testid="member-report"
+                      className={`p-3 border rounded-lg ${item.self_harm ? 'border-cosmic-rose/25 bg-cosmic-rose/10' : 'border-mystic-700/50 bg-mystic-800/40'}`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex items-center flex-wrap gap-2 min-w-0">
+                          <span className="text-caption font-medium uppercase tracking-wider text-mystic-300">
+                            {item.kind === 'post'
+                              ? t('admin.moderation.flagged.post', { defaultValue: 'Post' })
+                              : t('admin.moderation.flagged.comment', { defaultValue: 'Comment' })}
+                          </span>
+                          {item.self_harm && (
+                            <Badge tone="rose">{t('admin.moderation.memberReports.selfHarm', { defaultValue: 'Self-harm' })}</Badge>
+                          )}
+                          {item.is_hidden && (
+                            <Tag tone="neutral">{t('admin.moderation.memberReports.hidden', { defaultValue: 'Hidden' })}</Tag>
+                          )}
+                          <span className="text-meta text-mystic-500">
+                            {item.topic}
+                            {item.is_anonymous ? ` · ${t('admin.moderation.flagged.anonymous', { defaultValue: 'anonymous' })}` : ''}
+                          </span>
+                        </div>
+                        <span className="shrink-0 text-meta text-mystic-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" aria-hidden />
+                          <time dateTime={item.last_reported}>{relativeTime(item.last_reported)}</time>
+                        </span>
+                      </div>
+                      <p className="text-meta text-mystic-200 leading-relaxed whitespace-pre-wrap my-2">{excerpt}</p>
+                      <div className="flex flex-wrap items-center gap-1 mb-2">
+                        <span className="text-meta text-mystic-300 mr-1">
+                          {t('admin.moderation.memberReports.reports', { count: item.reports, defaultValue: '{{count}} reports' })}
+                        </span>
+                        {(item.reasons ?? []).map((reason) => (
+                          <Tag key={reason} tone="neutral">{t(`community.reportReasons.${reason}`, { defaultValue: reason })}</Tag>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => void resolve(item, 'dismiss')} disabled={busy}>
+                          {t('admin.moderation.memberReports.dismiss', { defaultValue: 'Dismiss' })}
+                        </Button>
+                        {item.is_hidden && (
+                          <Button variant="outline" size="sm" onClick={() => void resolve(item, 'restore')} disabled={busy}>
+                            {t('admin.moderation.memberReports.restore', { defaultValue: 'Restore' })}
+                          </Button>
+                        )}
+                        <Button variant="destructive" size="sm" onClick={() => { dismissToasts(); setRemoveTarget(item); }} disabled={busy}>
+                          {t('admin.moderation.memberReports.remove', { defaultValue: 'Remove' })}
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           )}
 
           {flaggedQueueExists && (
@@ -394,6 +562,16 @@ export function ModerationPanel() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteSheet
+        open={removeTarget !== null}
+        title={t('admin.moderation.memberReports.removeConfirm', { defaultValue: 'Remove this for everyone?' })}
+        body={t('admin.moderation.memberReports.removeBody', { defaultValue: 'It is hidden from everyone and the reports are closed.' })}
+        excerpt={removeTarget?.content}
+        busy={removeTarget !== null && resolving === removeTarget.id}
+        onCancel={() => setRemoveTarget(null)}
+        onConfirm={() => void confirmRemove()}
+      />
     </div>
   );
 }

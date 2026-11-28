@@ -91,6 +91,23 @@ export function sectionalTermsForYear(year: number): SolarTerm[] {
   return found;
 }
 
+/** 立春 (the Sun at 315°) of a Gregorian year: the instant the solar year turns.
+ *  The same memoised table the Bazi pillars use, so both read one 立春. */
+export function lichunInstant(year: number): Date | null {
+  return sectionalTermsForYear(year).find((t) => t.longitude === 315)?.date ?? null;
+}
+
+/** The solar (節氣) year an instant belongs to: the year whose 立春 last passed, so 1 January to 立春
+ *  still counts as the year before. Instant-based, so the device's zone plays no part. If the
+ *  ephemeris fails, falls back to the nominal 4 February 00:00 China Standard Time. */
+export function solarYearAt(instant: Date): number {
+  const t = instant.getTime();
+  if (!Number.isFinite(t)) throw new RangeError('solarYearAt: invalid date');
+  const y = new Date(t + 8 * 3_600_000).getUTCFullYear();
+  const lc = lichunInstant(y);
+  return t >= (lc ? lc.getTime() : Date.UTC(y, 1, 3, 16)) ? y : y - 1;
+}
+
 /** The BaZi month branch index (0 = 子) that a sectional term opens. */
 export function branchIndexForTermLongitude(longitude: number): number {
   // 立春 (315°) opens 寅 (2); every further 30° advances one branch.

@@ -31,6 +31,10 @@ const REPLAY_ONLY: Record<string, string[]> = {
   '20260424000001_replay_ai_usage_ledger_spring_partitions.sql': ['ai_usage_ledger_2026_04', 'ai_usage_ledger_2026_05'],
   '20260505121141_replay_seo_blog_topics_table.sql': ['seo_blog_topics'],
   '20260529235959_replay_prod_only_astrology_tables.sql': ['astrology_natal_charts', 'astrology_transit_events'],
+  // Makes the monthly ai_usage_ledger partitions production's cron made, in a DO
+  // block (names depend on the replay date), so no static statement needs them;
+  // the drift job's `db diff` does (round 4).
+  '20260612215702_replay_ai_usage_ledger_monthly_partitions.sql': [],
 };
 
 /** Statements, with comments dropped and quoted / dollar-quoted text kept whole. */

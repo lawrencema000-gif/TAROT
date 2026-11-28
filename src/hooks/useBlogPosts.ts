@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { blogPosts } from '../dal';
 import type { BlogPost } from '../types/blog';
 
@@ -10,7 +10,13 @@ export function useBlogPosts(page = 1) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Only the newest request writes: paging quickly, or Back/Forward through
+  // ?page=, can bring an older page's answer in last.
+  const latest = useRef(0);
+  useEffect(() => () => { latest.current += 1; }, []);
+
   const fetchPosts = useCallback(async () => {
+    const call = ++latest.current;
     setLoading(true);
     setError(null);
 
@@ -18,6 +24,7 @@ export function useBlogPosts(page = 1) {
     const to = from + PAGE_SIZE - 1;
 
     const res = await blogPosts.listPublished({ from, to });
+    if (call !== latest.current) return;
     if (!res.ok) {
       setError(res.error);
     } else {
